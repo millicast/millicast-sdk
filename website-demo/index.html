@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Millicast - Realtime Streaming Demo (Broadcaster)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=10.0, user-scalable=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+          integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+          crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-122476980-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-122476980-1');
+    </script>
+
+    <!-- BEGIN PRIVY WIDGET CODE -->
+    <!-- <script type='text/javascript'> var _d_site = _d_site || '4192E2863CF77E2D079E0E15'; </script>
+    <script src='https://widget.privy.com/assets/widget.js'></script> -->
+    
+    <style>
+      .privy-dismiss-content{
+        visibility: hidden !important;
+        overflow: hidden;
+        height: 0;
+        top: -15px !important;
+        display: fixed !important;
+      }
+      .privy-powered-by {
+        display: none !important;
+        overflow: hidden;
+        height: 0;
+        width:0;
+      }
+      .privy-privacy-container{
+        display: none !important;
+      }
+      /* experimental */
+      .privy-popup-container{
+         pointer-events: none; 
+      }
+      .privy-popup-content-wrap .privy-popup-content{
+        pointer-events: all;
+      }
+
+    </style>
+
+</head>
+<body>
+<div class="turnDeviceNotification"><img class="w-100" src='./do-landscape-icon.png'></div>
+<div class="turnDeviceNotification notification-margin-top"><img class="w-100" src='do-landscape-icon-wide.png'></div>
+<div id="publishView" class="">
+
+    <!-- Video Window -->
+    <section id="vidView" class="">
+        <div id="vidContainer" class="">
+            <video id="vidWin" autoplay muted playsinline></video>
+        </div>
+        <!-- Overlay controls -->
+        <div id="controlDisplay" class="">
+
+            <div id="topFade" class="fixed-top vid-fade blk-fade-top-bottom"></div>
+            <div id="btmFade" class="fixed-bottom vid-fade blk-fade-bottom-top"></div>
+
+            <div id="airIndicatorView" class="w-100 d-flex justify-content-center">
+              <span id="airIndicator" class="badge ignore-mouse p-2 badge-light"> READY </span>
+            </div>
+
+            <div class="dropdown" style="z-index: 20; right: 20px; top: 20px; position: absolute;">
+                <button id="bandwidthMenuButton" class="btn btn-secondary dropdown-toggle w-100 fs-15px" type="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Maximum Bitrate
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" id="bandwidthMenu" aria-labelledby="dropdownMenuButton">
+                    <div class="dropdown-item fs-15px"  data-rate="unlimited">Maximum Bitrate</div>
+                    <div class="dropdown-item fs-15px"  data-rate="2000">2000 kbps</div>
+                    <div class="dropdown-item fs-15px"  data-rate="1000">1000 kbps</div>
+                    <div class="dropdown-item fs-15px"  data-rate="500">500 kbps</div>
+                    <div class="dropdown-item fs-15px"  data-rate="250">250 kbps</div>
+                    <div class="dropdown-item fs-15px"  data-rate="125">125 kbps</div>
+                </div>
+            </div>
+            
+            <div id="overlayLogo">
+              <svg version="1.1" id="coLogo" xmlns="http://www.w3.org/2000/svg" onclick="window.location.href = 'https://www.millicast.com'" style="cursor: pointer;"
+                  xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 422.2 117.3" 
+                  enable-background="new 0 0 422.2 117.3" xml:space="preserve"
+              >
+                <g>
+                  <path fill-rule="evenodd" clip-rule="evenodd" fill="#F1F2F2" d="M57.4,47.1l3.4,11.4l-6.6,22l9.5-5.5l5-16.5L67,52.6l10.3,5.9
+                    l-0.7,0.4l-3.2,10.6l19-11C73.7,47.7,55,36.9,36.3,26.1L46,58.5l-9.7,32.4l9.6-5.5l8.1-26.9L49,42.2L57.4,47.1z"/>
+                  <path fill-rule="evenodd" clip-rule="evenodd" fill="#F1F2F2" d="M58.2,5.8c29.1,0,52.7,23.6,52.7,52.7c0,29.1-23.6,52.7-52.7,52.7
+                    c-29.1,0-52.7-23.6-52.7-52.7C5.6,29.4,29.1,5.8,58.2,5.8L58.2,5.8z M58.2,14.5c-24.3,0-44,19.7-44,44c0,24.3,19.7,44,44,44
+                    c24.3,0,44-19.7,44-44C102.2,34.2,82.5,14.5,58.2,14.5z"/>
+                </g>
+                <g>
+                  <path fill="#F1F2F2" d="M143.6,54v19.5h-7.6V37.4h7.6V44c1.1-2.2,2.7-4,4.9-5.2c2.2-1.3,4.6-1.9,7.1-1.9c5.7,0,9.6,2.4,11.6,7.1
+                    c3.6-4.7,8-7.1,13.4-7.1c4.1,0,7.4,1.2,9.9,3.7c2.5,2.5,3.8,6.1,3.8,10.8v22.1h-7.6V53.7c0-6.6-2.8-10-8.3-10
+                    c-2.6,0-4.8,0.8-6.7,2.5c-1.9,1.7-2.9,4.1-3,7.2v20.1H161V53.7c0-3.4-0.6-6-1.8-7.6c-1.2-1.6-3.1-2.4-5.8-2.4
+                    c-2.6,0-4.9,0.9-6.9,2.6C144.6,48.1,143.6,50.6,143.6,54z"/>
+                  <path fill="#F1F2F2" d="M205.3,30.2c-0.9-0.9-1.4-2.1-1.4-3.4c0-1.3,0.5-2.4,1.4-3.4c0.9-0.9,2.1-1.4,3.4-1.4
+                    c1.3,0,2.4,0.5,3.4,1.4c0.9,0.9,1.4,2.1,1.4,3.4c0,1.3-0.5,2.4-1.4,3.4c-0.9,0.9-2.1,1.4-3.4,1.4C207.4,31.7,206.2,31.2,205.3,30.2
+                    z M212.4,73.5h-7.6V37.4h7.6V73.5z"/>
+                  <path fill="#F1F2F2" d="M231,73.5h-7.6V23.2h7.6V73.5z"/>
+                  <path fill="#F1F2F2" d="M249.6,73.5H242V23.2h7.6V73.5z"/>
+                  <path fill="#F1F2F2" d="M261,30.2c-1-0.9-1.4-2.1-1.4-3.4c0-1.3,0.5-2.4,1.4-3.4c0.9-0.9,2.1-1.4,3.4-1.4c1.3,0,2.4,0.5,3.4,1.4
+                    c0.9,0.9,1.4,2.1,1.4,3.4c0,1.3-0.5,2.4-1.4,3.4c-1,0.9-2.1,1.4-3.4,1.4C263.1,31.7,262,31.2,261,30.2z M268.2,73.5h-7.6V37.4h7.6
+                    V73.5z"/>
+                  <path fill="#F1F2F2" d="M295.2,74.1c-5,0-9.3-1.7-13-5.1c-3.6-3.4-5.4-7.9-5.4-13.4c0-5.5,1.9-10,5.7-13.5
+                    c3.8-3.5,8.4-5.2,13.8-5.2s10,1.9,13.8,5.6l-4.5,5.5c-3.1-2.7-6.3-4.1-9.4-4.1c-3.2,0-5.9,1.1-8.2,3.2c-2.3,2.1-3.5,4.8-3.5,8.1
+                    c0,3.3,1.2,6.1,3.5,8.4s5.1,3.5,8.5,3.5c3.4,0,6.5-1.5,9.5-4.6l4.5,4.9C306,71.8,300.9,74.1,295.2,74.1z"/>
+                  <path fill="#F1F2F2" d="M347.2,73.5h-6.9v-4.8c-3,3.6-7,5.4-12,5.4c-3.8,0-6.9-1.1-9.3-3.2c-2.5-2.1-3.7-5-3.7-8.5
+                    c0-3.5,1.3-6.2,3.9-8c2.6-1.8,6.2-2.6,10.6-2.6h9.8v-1.4c0-4.8-2.7-7.2-8-7.2c-3.3,0-6.8,1.2-10.4,3.7l-3.4-4.7
+                    c4.4-3.5,9.4-5.2,14.9-5.2c4.2,0,7.7,1.1,10.4,3.2c2.7,2.1,4,5.5,4,10.1V73.5z M339.6,60.1V57H331c-5.5,0-8.2,1.7-8.2,5.2
+                    c0,1.8,0.7,3.1,2,4c1.4,0.9,3.2,1.4,5.7,1.4s4.5-0.7,6.3-2C338.7,64.2,339.6,62.4,339.6,60.1z"/>
+                  <path fill="#F1F2F2" d="M383.5,62.7c0,3.4-1.2,6.2-3.7,8.2c-2.5,2.1-5.7,3.1-9.6,3.1c-2.6,0-5.3-0.5-8.2-1.4
+                    c-2.8-0.9-5.3-2.3-7.5-4l3.7-5.9c4.2,3.2,8.3,4.7,12.2,4.7c1.7,0,3.1-0.4,4.1-1.2c1-0.8,1.5-1.8,1.5-3c0-1.8-2.4-3.4-7.2-4.9
+                    c-0.4-0.1-0.6-0.2-0.8-0.3c-7.5-2-11.3-5.4-11.3-10.2c0-3.3,1.3-6,3.9-8c2.6-2,6-3,10.1-3s8.1,1.2,11.8,3.7l-2.8,5.6
+                    c-2.9-1.9-6.1-2.9-9.6-2.9c-1.8,0-3.3,0.3-4.4,1c-1.1,0.7-1.7,1.6-1.7,3c0,1.2,0.6,2,1.8,2.6c0.8,0.4,2,0.8,3.4,1.2
+                    c1.5,0.4,2.8,0.7,3.9,1.1c1.1,0.4,2.2,0.8,3.3,1.2c1.1,0.5,2.2,1.1,3.4,1.9C382.2,56.8,383.5,59.3,383.5,62.7z"/>
+                  <path fill="#F1F2F2" d="M401.4,43.5v18.3c0,1.7,0.5,3.1,1.4,4.1c0.9,1,2.2,1.5,3.8,1.5s3.2-0.8,4.7-2.4l3.1,5.4
+                    c-2.7,2.4-5.6,3.6-8.9,3.6c-3.2,0-6-1.1-8.3-3.4s-3.4-5.3-3.4-9.1V43.5h-4.5v-6.1h4.5V26.1h7.6v11.3h9.5v6.1H401.4z"/>
+                </g>
+                <g>
+                  <path fill="#F1F2F2" d="M143.5,88.4c0,1.5-0.6,2.4-1.9,2.8l2.3,3.2H142l-2.1-3h-2v3h-1.5v-8.9h3.3c1.4,0,2.3,0.2,2.9,0.7
+                    S143.5,87.4,143.5,88.4z M141.5,89.7c0.3-0.3,0.5-0.7,0.5-1.3s-0.2-1-0.5-1.2c-0.3-0.2-0.9-0.3-1.7-0.3h-1.9v3.2h1.9
+                    C140.6,90.1,141.2,89.9,141.5,89.7z"/>
+                  <path fill="#F1F2F2" d="M153.8,85.5v1.4h-4.7v2.3h4.3v1.3h-4.3V93h4.9v1.4h-6.4v-8.9H153.8z"/>
+                  <path fill="#F1F2F2" d="M159,92.4l-0.9,2h-1.6l3.9-8.9h1.6l3.9,8.9h-1.6l-0.9-2H159z M162.9,91l-1.6-3.7l-1.6,3.7H162.9z"/>
+                  <path fill="#F1F2F2" d="M169.1,94.4v-8.9h1.5V93h4v1.4H169.1z"/>
+                  <path fill="#F1F2F2" d="M177,91.3V90h4.2v1.3H177z"/>
+                  <path fill="#F1F2F2" d="M187.9,86.9v7.5h-1.5v-7.5h-2.7v-1.4h6.9v1.4H187.9z"/>
+                  <path fill="#F1F2F2" d="M194.1,85.5h1.5v8.9h-1.5V85.5z"/>
+                  <path fill="#F1F2F2" d="M201.5,94.4H200v-8.9h2.3l2.7,5.6l2.7-5.6h2.3v8.9h-1.5v-6.9l-3.1,6.2h-0.8l-3.1-6.2V94.4z"/>
+                  <path fill="#F1F2F2" d="M220.6,85.5v1.4h-4.7v2.3h4.3v1.3h-4.3V93h4.9v1.4h-6.4v-8.9H220.6z"/>
+                  <path fill="#F1F2F2" d="M232.7,86.7c-0.4,0-0.8,0.1-1.1,0.3s-0.4,0.4-0.4,0.8s0.1,0.6,0.4,0.8s0.9,0.4,1.8,0.6
+                    c0.9,0.2,1.6,0.5,2.1,0.9c0.5,0.4,0.7,1,0.7,1.8c0,0.8-0.3,1.4-0.9,1.9s-1.3,0.7-2.3,0.7c-1.4,0-2.6-0.5-3.7-1.4l0.9-1.1
+                    c0.9,0.8,1.8,1.2,2.8,1.2c0.5,0,0.9-0.1,1.1-0.3c0.3-0.2,0.4-0.5,0.4-0.8c0-0.3-0.1-0.6-0.4-0.8s-0.7-0.4-1.4-0.5
+                    c-0.7-0.2-1.1-0.3-1.5-0.4c-0.3-0.1-0.6-0.3-0.9-0.5c-0.5-0.4-0.8-1-0.8-1.8c0-0.8,0.3-1.5,0.9-1.9s1.3-0.7,2.2-0.7
+                    c0.6,0,1.1,0.1,1.7,0.3c0.6,0.2,1,0.4,1.4,0.8l-0.8,1.1c-0.3-0.2-0.6-0.4-1.1-0.6C233.5,86.8,233.1,86.7,232.7,86.7z"/>
+                  <path fill="#F1F2F2" d="M243.2,86.9v7.5h-1.5v-7.5H239v-1.4h6.9v1.4H243.2z"/>
+                  <path fill="#F1F2F2" d="M256.5,88.4c0,1.5-0.6,2.4-1.9,2.8l2.3,3.2H255l-2.1-3h-2v3h-1.5v-8.9h3.3c1.4,0,2.3,0.2,2.9,0.7
+                    S256.5,87.4,256.5,88.4z M254.5,89.7c0.3-0.3,0.5-0.7,0.5-1.3s-0.2-1-0.5-1.2c-0.3-0.2-0.9-0.3-1.7-0.3H251v3.2h1.9
+                    C253.7,90.1,254.2,89.9,254.5,89.7z"/>
+                  <path fill="#F1F2F2" d="M266.8,85.5v1.4h-4.7v2.3h4.3v1.3h-4.3V93h4.9v1.4h-6.4v-8.9H266.8z"/>
+                  <path fill="#F1F2F2" d="M272.1,92.4l-0.9,2h-1.6l3.9-8.9h1.6l3.9,8.9h-1.6l-0.9-2H272.1z M275.9,91l-1.6-3.7l-1.6,3.7H275.9z"/>
+                  <path fill="#F1F2F2" d="M283.6,94.4h-1.5v-8.9h2.3l2.7,5.6l2.7-5.6h2.3v8.9h-1.5v-6.9l-3.1,6.2h-0.8l-3.1-6.2V94.4z"/>
+                  <path fill="#F1F2F2" d="M296.5,85.5h1.5v8.9h-1.5V85.5z"/>
+                  <path fill="#F1F2F2" d="M309,85.5h1.5v8.9h-1.6l-5-6.5v6.5h-1.5v-8.9h1.5l5.2,6.6V85.5z"/>
+                  <path fill="#F1F2F2" d="M321,90.1h1.5v3c-0.8,0.9-2,1.4-3.6,1.4c-1.3,0-2.4-0.4-3.3-1.3c-0.9-0.9-1.3-2-1.3-3.3s0.5-2.4,1.4-3.3
+                    c0.9-0.9,2-1.3,3.3-1.3c1.3,0,2.3,0.4,3.2,1.1l-0.8,1.1c-0.3-0.3-0.7-0.5-1-0.6c-0.4-0.1-0.8-0.2-1.2-0.2c-0.9,0-1.6,0.3-2.3,0.9
+                    c-0.6,0.6-0.9,1.3-0.9,2.3s0.3,1.7,0.9,2.3c0.6,0.6,1.3,0.9,2.2,0.9s1.5-0.2,2.1-0.5V90.1z"/>
+                  <path fill="#F1F2F2" d="M337.8,86.3c0.6,0.5,0.9,1.3,0.9,2.4c0,1.1-0.3,1.9-0.9,2.4c-0.6,0.5-1.6,0.7-2.9,0.7h-1.6v2.6h-1.5v-8.9h3
+                    C336.2,85.5,337.2,85.8,337.8,86.3z M336.7,90c0.3-0.3,0.5-0.8,0.5-1.4s-0.2-1-0.6-1.3s-1-0.4-1.8-0.4h-1.5v3.6h1.7
+                    C335.9,90.4,336.4,90.3,336.7,90z"/>
+                  <path fill="#F1F2F2" d="M342.4,94.4v-8.9h1.5V93h4v1.4H342.4z"/>
+                  <path fill="#F1F2F2" d="M352.7,92.4l-0.9,2h-1.6l3.9-8.9h1.6l3.9,8.9H358l-0.9-2H352.7z M356.5,91l-1.6-3.7l-1.6,3.7H356.5z"/>
+                  <path fill="#F1F2F2" d="M365.4,86.9v7.5h-1.5v-7.5h-2.7v-1.4h6.9v1.4H365.4z"/>
+                  <path fill="#F1F2F2" d="M373.2,86.9v2.4h3.9v1.4h-3.9v3.7h-1.5v-8.9h5.9l0,1.4H373.2z"/>
+                  <path fill="#F1F2F2" d="M388.7,93.2c-0.9,0.9-2,1.3-3.3,1.3c-1.3,0-2.4-0.4-3.3-1.3c-0.9-0.9-1.3-2-1.3-3.3s0.4-2.4,1.3-3.3
+                    c0.9-0.9,2-1.3,3.3-1.3c1.3,0,2.4,0.4,3.3,1.3c0.9,0.9,1.3,2,1.3,3.3S389.5,92.3,388.7,93.2z M387.6,87.6c-0.6-0.6-1.3-0.9-2.2-0.9
+                    c-0.9,0-1.6,0.3-2.2,0.9c-0.6,0.6-0.9,1.4-0.9,2.3s0.3,1.7,0.9,2.3s1.3,0.9,2.2,0.9c0.9,0,1.6-0.3,2.2-0.9c0.6-0.6,0.9-1.4,0.9-2.3
+                    S388.2,88.3,387.6,87.6z"/>
+                  <path fill="#F1F2F2" d="M400.9,88.4c0,1.5-0.6,2.4-1.9,2.8l2.3,3.2h-1.9l-2.1-3h-2v3h-1.5v-8.9h3.3c1.4,0,2.3,0.2,2.9,0.7
+                    S400.9,87.4,400.9,88.4z M398.9,89.7c0.3-0.3,0.5-0.7,0.5-1.3s-0.2-1-0.5-1.2c-0.3-0.2-0.9-0.3-1.7-0.3h-1.9v3.2h1.9
+                    C398,90.1,398.6,89.9,398.9,89.7z"/>
+                  <path fill="#F1F2F2" d="M406.4,94.4h-1.5v-8.9h2.3l2.7,5.6l2.7-5.6h2.3v8.9h-1.5v-6.9l-3.1,6.2h-0.8l-3.1-6.2V94.4z"/>
+                </g>
+              </svg>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONTROLS -->
+    <section id="vidCtrlView" class="p-3">
+        <div id="ctrlUI" class="row no-gutters">
+            <!-- MIC CONTROL -->
+            <div class="col-4 col-xl-3 offset-xl-1">
+                <div class="btn-group btn-block" role="group" aria-label="Microphone Controls">
+                    <!-- MIC LIST -->
+                    <div class="btn-group dropup btn-block">
+                        <button id="micListBtn" class="btn btn-secondary btn-lg dropdown-toggle btn-block" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            <p>...</p><span class="boxCover"></span>
+                        </button>
+                        <div id="micList" class="dropdown-menu dropdown-menu-left">
+                            <button class="dropdown-item" type="button">...</button>
+                        </div>
+                    </div>
+                    <!-- MIC MUTE -->
+                    <button id="micMuteBtn" type="button" class="btn btn-secondary">
+                        <i id="micOnIcon" class="fas fa-microphone"></i>
+                        <!--<i id="micOffIcon" class="fas fa-microphone-slash d-none"></i>-->
+                        <span ref="volMeter" class="vol-meter-lg d-none"></span>
+                    </button>
+                </div>
+            </div>
+            <!-- PUBLISH BUTTON -->
+            <div class="col-4 col-xl-4 px-1 px-sm-3">
+                <button id="publishBtn" type="button" class="btn btn-success btn-lg btn-block">Start</button>
+            </div>
+            <!-- CAMERA CONTROL -->
+            <div class="col-4 col-xl-3">
+                <div class="row">
+                    <div class="col">
+                        <!--<div class="btn btn-outline-light">-->
+                            <!--tetst-->
+                        <!--</div>-->
+                        <div class="btn-group btn-block w-100" role="group" aria-label="Camera Controls">
+                            <!-- CAM MUTE -->
+                            <button id="camMuteBtn" type="button" class="btn btn-secondary">
+                                <i id="camOnIcon" class="fas fa-video"></i>
+                                <!--<i id="camOffIcon" class="fas fa-video-slash d-none"></i>-->
+                            </button>
+                            <!-- CAM LIST -->
+                            <div class="btn-group dropup btn-block">
+                                <button id="camListBtn" class="btn btn-secondary btn-lg dropdown-toggle btn-block" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <p>...</p><span class="boxCover"></span>
+                                </button>
+                                <div id="camList" class="dropdown-menu dropdown-menu-right">
+                                    <button class="dropdown-item" type="button">...</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- VIEWER URL -->
+        <div id="shareView" class="row w-100 no-gutters d-none">
+            <div class="col-12 col-md-6 offset-md-3">
+                <div class="btn-group btn-block" role="group" aria-label="Viewer Path">
+                    <button id="viewerURL" type="button" class="btn btn-block px-3">https://</button>
+                    <button id="copyBtn" type="button" class="btn btn-secondary px-3">copy</button><!-- <i class="fas fa-copy ignore-mouse"></i> -->
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+  <div id="guides" class="w-100 h-100 position-absolute" style="pointer-events: none;">
+    <div style="pointer-events:all;">
+
+      <div id="guide1" class="guide-view p-4">
+        <div class="position-absolute" onclick="showGuide('guide1', false)"
+              style="cursor: pointer; color: #464646; right:0; top: 0; padding: 0px 5px; margin-right: 0.5rem; margin-top: 0.6rem;">
+          <i class="fas fa-times text-white"></i>
+        </div>
+
+        <h5 class="mb-4">How to use:</h5>
+
+        <div class="text-left mb-0">
+          <div class="d-flex flex-row"> 
+            <span class="p-0"><b>1.</b></span>
+            <p class="ml-2">Check your Microphone and make sure that the correct one is selected from the drop down list on the bottom left.</p>
+          </div>
+          
+          <div class="d-flex flex-row"> 
+            <span class=""><b></b>2.</b></span>
+            <p class="ml-2">Check your Camera and make sure that the correct one is selected from the drop down list on the bottom right.</p>
+          </div>
+          
+          <div class="d-flex flex-row"> 
+            <span class=""><b>3.</b></span>
+            <p class="ml-2">If all looks well, and you have selected the correct camera and microphone options below click the green start button to begin broadcasting.</p>
+          </div>
+        </div>
+
+        <!-- <div class="d-flex flex-row">
+          <div>
+            <!- <div class="step-flag"><b>1</b></div> ->
+            <p class="mb-2">Adjust your Microphone</p>
+            <div class="rounded p-2" style="width: 35px; margin: 0px auto; color: white; background: #6c757d; cursor: pointer;">
+              <i class="fas fa-microphone"></i>
+            </div>
+          </div>
+          <div >
+            <!- <div class="step-flag"><b>2</b></div> ->
+            <p class="mb-2">Adjust your Camera</p>
+            <div class="rounded p-2" style="width: 35px; margin: 0px auto; color: white; background: #6c757d;">
+              <i class="fas fa-video"></i>
+            </div>
+          </div>
+          <div >
+            <!- <div class="step-flag-alt"><b>3</b></div> ->
+            <p class="mb-2">Start your Broadcast</p>
+            <div class="rounded p-2 btn-success" style="width: 48px; margin: 0px auto; color: white; ">
+              Start
+            </div>
+          </div>
+        </div> -->
+      </div>
+
+      <div id="guide2" class="guide-view px-3 py-3 rounded d-none">
+          <div class="position-absolute" onclick="showGuide('guide2', false)"
+                style="cursor: pointer; color: #464646; right:0; top: 0; padding: 0px 5px; margin-right: 0.5rem; margin-top: 0.6rem;">
+            <i class="fas fa-times text-white"></i>
+          </div>
+          <h6 class="mb-3">How to Share:</h6>
+          <p class="mb-2">To share the URL to your live broadcast, click on the copy button below to copy the URL to your computer's clipboard so you can share it publicly.</p>
+          <!-- <div class="rounded p-2" style="width: 35px; margin: 0px auto; color: #555; background: #aaaaaa">
+              <i class="fas fa-copy"></i>
+          </div> -->
+      </div>
+
+    </div>
+  </div>
+
+<!-- END DEMO! -->
+<div id="thanks" class="text-center align-middle d-none">
+    <div id="coLogo" class="mb-4">
+        <svg version="1.1" id="coLogo" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+      viewBox="0 0 279.5 292.3" enable-background="new 0 0 279.5 292.3" xml:space="preserve">
+      <g>
+        <path fill-rule="evenodd" clip-rule="evenodd" fill="#40308E" d="M133.6,73.6l6.1,20.4l-11.8,39.3l17-9.8l8.8-29.4l-3.2-10.6
+          L169,94l-1.3,0.7l-5.7,18.9L196,94c-33.4-19.3-66.8-38.5-100.2-57.8L113.2,94l-17.4,57.8l17.1-9.8l14.4-48l-8.7-29.1L133.6,73.6z"
+          />
+        <path fill-rule="evenodd" clip-rule="evenodd" fill="#40308E" d="M135,0c51.9,0,94,42.1,94,94c0,51.9-42.1,94-94,94
+          c-51.9,0-94-42.1-94-94C41,42.1,83.1,0,135,0L135,0z M135,15.4c-43.4,0-78.6,35.2-78.6,78.6c0,43.4,35.2,78.6,78.6,78.6
+          c43.4,0,78.6-35.2,78.6-78.6C213.6,50.6,178.4,15.4,135,15.4z"/>
+      </g>
+      <g>
+        <path d="M8.5,251.9v19.5H0.9v-36.1h7.6v6.6c1.1-2.2,2.7-4,4.9-5.2c2.2-1.3,4.6-1.9,7.1-1.9c5.7,0,9.6,2.4,11.6,7.1
+          c3.6-4.7,8-7.1,13.4-7.1c4.1,0,7.4,1.2,9.9,3.7c2.5,2.5,3.8,6.1,3.8,10.8v22.1h-7.6v-19.8c0-6.6-2.8-10-8.3-10
+          c-2.6,0-4.8,0.8-6.7,2.5c-1.9,1.7-2.9,4.1-3,7.2v20.1h-7.6v-19.8c0-3.4-0.6-6-1.8-7.6c-1.2-1.6-3.1-2.4-5.8-2.4
+          c-2.6,0-4.9,0.9-6.9,2.6C9.4,246,8.5,248.6,8.5,251.9z"/>
+        <path d="M70.1,228.2c-0.9-1-1.4-2.1-1.4-3.4c0-1.3,0.5-2.4,1.4-3.4c0.9-1,2.1-1.4,3.4-1.4c1.3,0,2.4,0.5,3.4,1.4
+          c0.9,0.9,1.4,2.1,1.4,3.4c0,1.3-0.5,2.4-1.4,3.4c-0.9,0.9-2.1,1.4-3.4,1.4C72.2,229.6,71.1,229.1,70.1,228.2z M77.2,271.4h-7.6
+          v-36.1h7.6V271.4z"/>
+        <path d="M95.8,271.4h-7.6v-50.3h7.6V271.4z"/>
+        <path d="M114.4,271.4h-7.6v-50.3h7.6V271.4z"/>
+        <path d="M125.9,228.2c-1-1-1.4-2.1-1.4-3.4c0-1.3,0.5-2.4,1.4-3.4c0.9-1,2.1-1.4,3.4-1.4c1.3,0,2.4,0.5,3.4,1.4
+          c0.9,0.9,1.4,2.1,1.4,3.4c0,1.3-0.5,2.4-1.4,3.4c-1,0.9-2.1,1.4-3.4,1.4C127.9,229.6,126.8,229.1,125.9,228.2z M133,271.4h-7.6
+          v-36.1h7.6V271.4z"/>
+        <path d="M160,272c-5,0-9.3-1.7-13-5.1c-3.6-3.4-5.4-7.9-5.4-13.4c0-5.5,1.9-10,5.7-13.5c3.8-3.5,8.4-5.2,13.8-5.2s10,1.9,13.8,5.6
+          l-4.5,5.5c-3.1-2.7-6.3-4.1-9.4-4.1c-3.2,0-5.9,1.1-8.2,3.2c-2.3,2.1-3.5,4.8-3.5,8.1c0,3.3,1.2,6.1,3.5,8.4
+          c2.3,2.3,5.1,3.5,8.5,3.5c3.4,0,6.5-1.5,9.5-4.6l4.5,4.9C170.8,269.8,165.7,272,160,272z"/>
+        <path d="M212,271.4h-6.9v-4.8c-3,3.6-7,5.4-12,5.4c-3.8,0-6.9-1.1-9.3-3.2c-2.5-2.1-3.7-5-3.7-8.5c0-3.5,1.3-6.2,3.9-8
+          c2.6-1.8,6.2-2.6,10.6-2.6h9.8v-1.4c0-4.8-2.7-7.2-8-7.2c-3.3,0-6.8,1.2-10.4,3.7l-3.4-4.7c4.4-3.5,9.4-5.2,14.9-5.2
+          c4.2,0,7.7,1.1,10.4,3.2c2.7,2.1,4,5.5,4,10.1V271.4z M204.4,258V255h-8.5c-5.5,0-8.2,1.7-8.2,5.2c0,1.8,0.7,3.1,2,4
+          s3.2,1.4,5.7,1.4s4.5-0.7,6.3-2C203.5,262.1,204.4,260.3,204.4,258z"/>
+        <path d="M248.3,260.6c0,3.4-1.2,6.2-3.7,8.2c-2.5,2.1-5.7,3.1-9.6,3.1c-2.6,0-5.3-0.5-8.2-1.4c-2.8-0.9-5.3-2.3-7.5-4l3.7-5.9
+          c4.2,3.2,8.3,4.7,12.2,4.7c1.7,0,3.1-0.4,4.1-1.2c1-0.8,1.5-1.8,1.5-3c0-1.8-2.4-3.4-7.2-4.9c-0.4-0.1-0.6-0.2-0.8-0.3
+          c-7.5-2-11.3-5.4-11.3-10.2c0-3.3,1.3-6,3.9-8c2.6-2,6-3,10.1-3s8.1,1.2,11.8,3.7l-2.8,5.6c-2.9-1.9-6.1-2.9-9.6-2.9
+          c-1.8,0-3.3,0.3-4.4,1c-1.1,0.7-1.7,1.6-1.7,3c0,1.2,0.6,2,1.8,2.6c0.8,0.4,2,0.8,3.4,1.2c1.5,0.4,2.8,0.7,3.9,1.1
+          c1.1,0.4,2.2,0.8,3.3,1.2c1.1,0.5,2.2,1.1,3.4,1.9C247.1,254.7,248.3,257.2,248.3,260.6z"/>
+        <path d="M266.3,241.5v18.3c0,1.7,0.5,3.1,1.4,4.1c0.9,1,2.2,1.5,3.8,1.5s3.2-0.8,4.7-2.4l3.1,5.4c-2.7,2.4-5.6,3.6-8.9,3.6
+          c-3.2,0-6-1.1-8.3-3.4c-2.3-2.2-3.4-5.3-3.4-9.1v-18.1h-4.5v-6.1h4.5V224h7.6v11.3h9.5v6.1H266.3z"/>
+      </g>
+      <g>
+        <path d="M8.3,286.3c0,1.5-0.6,2.4-1.9,2.8l2.3,3.2H6.8l-2.1-3h-2v3H1.2v-8.9h3.3c1.4,0,2.3,0.2,2.9,0.7S8.3,285.3,8.3,286.3z
+          M6.3,287.6c0.3-0.3,0.5-0.7,0.5-1.3s-0.2-1-0.5-1.2c-0.3-0.2-0.9-0.3-1.7-0.3H2.7v3.2h1.9C5.4,288,6,287.9,6.3,287.6z"/>
+        <path d="M18.6,283.5v1.4h-4.7v2.3h4.3v1.3h-4.3v2.4h4.9v1.4h-6.4v-8.9H18.6z"/>
+        <path d="M23.8,290.3l-0.9,2h-1.6l3.9-8.9h1.6l3.9,8.9h-1.6l-0.9-2H23.8z M27.7,288.9l-1.6-3.7l-1.6,3.7H27.7z"/>
+        <path d="M33.9,292.3v-8.9h1.5v7.5h4v1.4H33.9z"/>
+        <path d="M41.9,289.2v-1.3h4.2v1.3H41.9z"/>
+        <path d="M52.7,284.8v7.5h-1.5v-7.5h-2.7v-1.4h6.9v1.4H52.7z"/>
+        <path d="M59,283.5h1.5v8.9H59V283.5z"/>
+        <path d="M66.3,292.3h-1.5v-8.9h2.3l2.7,5.6l2.7-5.6h2.3v8.9h-1.5v-6.9l-3.1,6.2h-0.8l-3.1-6.2V292.3z"/>
+        <path d="M85.4,283.5v1.4h-4.7v2.3H85v1.3h-4.3v2.4h4.9v1.4h-6.4v-8.9H85.4z"/>
+        <path d="M97.5,284.6c-0.4,0-0.8,0.1-1.1,0.3s-0.4,0.4-0.4,0.8s0.1,0.6,0.4,0.8s0.9,0.4,1.8,0.6c0.9,0.2,1.6,0.5,2.1,0.9
+          c0.5,0.4,0.7,1,0.7,1.8c0,0.8-0.3,1.4-0.9,1.9s-1.3,0.7-2.3,0.7c-1.4,0-2.6-0.5-3.7-1.4l0.9-1.1c0.9,0.8,1.8,1.2,2.8,1.2
+          c0.5,0,0.9-0.1,1.1-0.3c0.3-0.2,0.4-0.5,0.4-0.8c0-0.3-0.1-0.6-0.4-0.8s-0.7-0.4-1.4-0.5c-0.7-0.2-1.1-0.3-1.5-0.4
+          c-0.3-0.1-0.6-0.3-0.9-0.5c-0.5-0.4-0.8-1-0.8-1.8c0-0.8,0.3-1.5,0.9-1.9s1.3-0.7,2.2-0.7c0.6,0,1.1,0.1,1.7,0.3
+          c0.6,0.2,1,0.4,1.4,0.8l-0.8,1.1c-0.3-0.2-0.6-0.4-1.1-0.6C98.4,284.7,97.9,284.6,97.5,284.6z"/>
+        <path d="M108,284.8v7.5h-1.5v-7.5h-2.7v-1.4h6.9v1.4H108z"/>
+        <path d="M121.4,286.3c0,1.5-0.6,2.4-1.9,2.8l2.3,3.2h-1.9l-2.1-3h-2v3h-1.5v-8.9h3.3c1.4,0,2.3,0.2,2.9,0.7
+          S121.4,285.3,121.4,286.3z M119.4,287.6c0.3-0.3,0.5-0.7,0.5-1.3s-0.2-1-0.5-1.2c-0.3-0.2-0.9-0.3-1.7-0.3h-1.9v3.2h1.9
+          C118.5,288,119.1,287.9,119.4,287.6z"/>
+        <path d="M131.6,283.5v1.4h-4.7v2.3h4.3v1.3h-4.3v2.4h4.9v1.4h-6.4v-8.9H131.6z"/>
+        <path d="M136.9,290.3l-0.9,2h-1.6l3.9-8.9h1.6l3.9,8.9h-1.6l-0.9-2H136.9z M140.7,288.9l-1.6-3.7l-1.6,3.7H140.7z"/>
+        <path d="M148.4,292.3h-1.5v-8.9h2.3l2.7,5.6l2.7-5.6h2.3v8.9h-1.5v-6.9l-3.1,6.2h-0.8l-3.1-6.2V292.3z"/>
+        <path d="M161.3,283.5h1.5v8.9h-1.5V283.5z"/>
+        <path d="M173.8,283.5h1.5v8.9h-1.6l-5-6.5v6.5h-1.5v-8.9h1.5l5.2,6.6V283.5z"/>
+        <path d="M185.8,288h1.5v3c-0.8,0.9-2,1.4-3.6,1.4c-1.3,0-2.4-0.4-3.3-1.3c-0.9-0.9-1.3-2-1.3-3.3s0.5-2.4,1.4-3.3
+          c0.9-0.9,2-1.3,3.3-1.3c1.3,0,2.3,0.4,3.2,1.1l-0.8,1.1c-0.3-0.3-0.7-0.5-1-0.6c-0.4-0.1-0.8-0.2-1.2-0.2c-0.9,0-1.6,0.3-2.3,0.9
+          c-0.6,0.6-0.9,1.3-0.9,2.3s0.3,1.7,0.9,2.3c0.6,0.6,1.3,0.9,2.2,0.9s1.5-0.2,2.1-0.5V288z"/>
+        <path d="M202.6,284.2c0.6,0.5,0.9,1.3,0.9,2.4c0,1.1-0.3,1.9-0.9,2.4c-0.6,0.5-1.6,0.7-2.9,0.7h-1.6v2.6h-1.5v-8.9h3
+          C201,283.5,202,283.7,202.6,284.2z M201.5,287.9c0.3-0.3,0.5-0.8,0.5-1.4s-0.2-1-0.6-1.3s-1-0.4-1.8-0.4h-1.5v3.6h1.7
+          C200.7,288.4,201.2,288.2,201.5,287.9z"/>
+        <path d="M207.2,292.3v-8.9h1.5v7.5h4v1.4H207.2z"/>
+        <path d="M217.5,290.3l-0.9,2H215l3.9-8.9h1.6l3.9,8.9h-1.6l-0.9-2H217.5z M221.4,288.9l-1.6-3.7l-1.6,3.7H221.4z"/>
+        <path d="M230.3,284.8v7.5h-1.5v-7.5h-2.7v-1.4h6.9v1.4H230.3z"/>
+        <path d="M238,284.8v2.4h3.9v1.4H238v3.7h-1.5v-8.9h5.9l0,1.4H238z"/>
+        <path d="M253.5,291.1c-0.9,0.9-2,1.3-3.3,1.3c-1.3,0-2.4-0.4-3.3-1.3c-0.9-0.9-1.3-2-1.3-3.3s0.4-2.4,1.3-3.3
+          c0.9-0.9,2-1.3,3.3-1.3c1.3,0,2.4,0.4,3.3,1.3c0.9,0.9,1.3,2,1.3,3.3S254.4,290.2,253.5,291.1z M252.4,285.5
+          c-0.6-0.6-1.3-0.9-2.2-0.9c-0.9,0-1.6,0.3-2.2,0.9c-0.6,0.6-0.9,1.4-0.9,2.3s0.3,1.7,0.9,2.3s1.3,0.9,2.2,0.9
+          c0.9,0,1.6-0.3,2.2-0.9c0.6-0.6,0.9-1.4,0.9-2.3S253,286.2,252.4,285.5z"/>
+        <path d="M265.7,286.3c0,1.5-0.6,2.4-1.9,2.8l2.3,3.2h-1.9l-2.1-3h-2v3h-1.5v-8.9h3.3c1.4,0,2.3,0.2,2.9,0.7
+          S265.7,285.3,265.7,286.3z M263.7,287.6c0.3-0.3,0.5-0.7,0.5-1.3s-0.2-1-0.5-1.2c-0.3-0.2-0.9-0.3-1.7-0.3h-1.9v3.2h1.9
+          C262.8,288,263.4,287.9,263.7,287.6z"/>
+        <path d="M271.3,292.3h-1.5v-8.9h2.3l2.7,5.6l2.7-5.6h2.3v8.9h-1.5v-6.9l-3.1,6.2h-0.8l-3.1-6.2V292.3z"/>
+      </g>
+    </svg>
+    </div>
+    <div>
+        <h4><strong>Thank you for trying our demo.</strong></h4>
+        <p class="mb-4">Sign-up today</p>
+        <button id="signUpBtn" type="button" class="btn btn-purp btn-lg">14 Day Free Trial</button>
+    </div>
+</div>
+
+<script>
+
+  /* function ready(){
+    setTimeout(setgo, 3000);
+  }
+  function setgo(){
+    let pv = $('.privy-popup-container');
+    console.log('init ',pv);
+    if(pv.length > 0){
+      console.log('set! ',$('#privy-submit-btn'));
+      let f = e => {
+        console.log('Bing!!');
+        let eml = $('.privy-email-input');
+        console.log('eml ',eml);
+        if(eml.length > 0){
+          let s = eml.val();
+          console.log('text info ',s);
+          if(s.length < 5) return;
+        }
+        // pv.css('display','none');
+        // pv.css('width','0px');
+        setTimeout( () => {pv.remove()}, 1000 );
+      }
+      // pv.on('click', '#privy-submit-btn', e => {
+      $('#privy-submit-btn').click(f);
+    }
+  } */
+
+  function showGuide(id, b){
+    console.log('toggleGuide ',id,' show:',b);
+    let gd = $('#'+id);
+    if(!!gd && gd.length > 0) {
+      if(b) {
+        if(gd.hasClass('d-none')){
+          gd.toggleClass('d-none',false);
+        }
+        gd.show();
+      } else {
+        gd.hide();
+      }
+    }
+  }
+
+  // document.addEventListener('DOMContentLoaded', ready);
+</script>
+
+<!-- BOOTSTRAP -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<!-- MILLICAST -->
+<!-- <script src="./adapter.min.js"></script> -->
+<!--<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>-->
+<script src="./adapter-latest.js"></script>
+<script src="./js/millicast-manager.js"></script>
+<script src="./js/publisher.js"></script>
+
+</body>
+</html>
+

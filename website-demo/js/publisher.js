@@ -1,0 +1,516 @@
+//Get our url
+const href               = new URL(window.location.href);
+const default_ws_url     = 'wss://turn.millicast.com/millisock';
+//Get or set Defaults
+let url                = (!!href.searchParams.get('url')) ? href.searchParams.get('url') : default_ws_url;
+const streamId           = (!!href.searchParams.get('streamId')) ? href.searchParams.get('streamId') : 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
+const accountId          = (!!href.searchParams.get('accountId')) ? href.searchParams.get('accountId') : '2tenbE';//millicast acc
+const publishToken       = (!!href.searchParams.get('publishToken')) ? href.searchParams.get('publishToken') : 'dcbf2ff8b06ad00150d6a36b963f07300c036573741bde7b0723b1cdc28e1343';
+const disableVideo       = (href.searchParams.get('disableVideo') === 'true');
+const disableAudio       = (href.searchParams.get('disableAudio') === 'true');
+const disableStereo      = (href.searchParams.get('disableStereo') === 'true');
+const disableOrientation = true;//(href.searchParams.get('do') === 'true');
+
+
+document.addEventListener("DOMContentLoaded", (event) => {
+  //override:
+  $('.privy-popup-container, .privy-popup-content-wrap').click(e => {
+    return false;
+  });
+
+
+  //Stage credentials
+  let videoWin = document.querySelector('video');
+  //
+  //check if mobile user.
+  let isMobile = window.mobilecheck = function () {
+    let check = false;
+    (function (a) {
+      if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
+        a) ||
+          /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+            a.substr(0, 4))) {
+        check = true;
+      }
+    })(navigator.userAgent || navigator.vendor || window.opera);
+    return check;
+  }();
+  //console.log('*index*  isMobile: ', isMobile);
+  if (!isMobile) {
+    videoWin.setAttribute("class", "vidWinBrowser");
+  }
+  //GUI ELEMENTS Refs
+  //video overlay
+  let viewUrlEl   = document.getElementById('viewerURL');
+  let onAirFlag   = document.getElementById('airIndicator');
+  //publish button
+  let pubBtn      = document.getElementById('publishBtn');
+  //Cam elements
+  let camsList    = document.getElementById('camList'),
+      camMuteBtn  = document.getElementById('camMuteBtn');
+  //Mic elements
+  let micsList    = document.getElementById('micList'),
+      micMuteBtn  = document.getElementById('micMuteBtn');
+  //Share Copy element
+  let cpy         = document.getElementById('copyBtn');
+  let ctrl        = document.getElementById('ctrlUI');
+  let view        = document.getElementById('shareView');
+  //Signup element
+  let signup      = document.getElementById('signUpBtn');
+  //Bandwidth Video element
+  let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item');
+
+  //demo timer
+  let tm;
+  let tmInt          = 300000;//300000 - 5min
+  let isBroadcasting = false;
+  let isVideoMuted   = false;
+  let isAudioMuted   = false;
+
+  function handleOrientation() {
+    let el  = document.querySelector(".turnDeviceNotification");
+    let elW = document.querySelector(".turnDeviceNotification.notification-margin-top");
+    let thx = document.getElementById('thanks');
+
+    if (window.orientation === undefined || !thx.classList.contains('d-none')) {
+      return;
+    }
+    switch (window.orientation) {
+      case 90:
+        /* Device is in landscape mode */
+        el.style.display  = "none";
+        elW.style.display = "none";
+        break;
+      case -90:
+        /* Device is upside-down in landscape mode*/
+        el.style.display  = "none";
+        elW.style.display = "block";
+        break;
+      default:
+        /* Device is in portrait mode*/
+        el.style.display  = "block";
+        elW.style.display = "none";
+    }
+
+    /*if(!!window.screen.orientation.lock){
+      if(window.screen.orientation.type.indexOf("landscape") > -1){
+        return;
+      }
+      window.screen.orientation.lock("landscape")
+        .then((res)=>{
+          console.log(res);
+        })
+        .catch((err)=>{
+          console.log(err.message);
+        })
+    }*/
+  }
+
+  //handleOrientation();
+  let previousOrientation = window.orientation;
+  let checkOrientation    = function () {
+    //console.log('checkOrientation', window.orientation, window.orientation !== previousOrientation);
+    if (window.orientation !== previousOrientation) {
+      previousOrientation = window.orientation;
+    }
+    handleOrientation()
+  };
+
+  if (!disableOrientation) {
+    window.addEventListener("resize", checkOrientation, false);
+    window.addEventListener("orientationchange", checkOrientation, false);
+
+
+
+    // (optional) Android doesn't always fire orientationChange on 180 degree turns
+    setInterval(checkOrientation, 2000);
+    checkOrientation();
+
+  }
+  //
+  let media;
+  let mediaStream;
+  //let millicastStream;
+  //let millicastWebRTCClient;
+  let millicastPub = new MillicastPublish(streamId);
+  let peer;
+  /* Broadcast */
+  let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
+  let bandwidth            = 'unlimited';//1000;
+
+  const BroadcastMillicastStream = () => {
+    millicastPub.broadcast({token: publishToken, streamName: streamId})
+        .then(() => {
+          isBroadcasting = true;
+          broadcastHandler();
+        })
+        .catch((error) => {
+          console.log(error);
+          isBroadcasting = false;
+          broadcastHandler();
+          onSetSessionDescriptionError(error)
+        });
+  };
+
+  const onSetVideoBandwidth = async (evt) => {
+    selectedBandwidthBtn.disabled  = true;
+    bandwidth                      = evt.target.dataset.rate;
+    selectedBandwidthBtn.innerHTML = bandwidth === 'unlimited' ? 'Maximum Bitrate' : `${bandwidth} kbps`;
+
+    if (!isBroadcasting) {
+      selectedBandwidthBtn.disabled = false;
+      return;
+    }
+    if(bandwidth === 'unlimited'){
+      try{
+        await millicastPub.updateBitrate(0);
+      }catch (e) {
+        onSetSessionDescriptionError(e)
+      }
+    }else{
+      try{
+        await millicastPub.updateBitrate(bandwidth);
+      }catch (e) {
+        onSetSessionDescriptionError(e)
+      }
+    }
+    selectedBandwidthBtn.disabled = false;
+  };
+
+  function onSetSessionDescriptionError(error) {
+    isBroadcasting = false;
+    console.log('Failed to set session description: ' + error.toString());
+  }
+
+  function getPublishDirector(token, streamName) {
+    const PUBLISH_TOKEN = token;//"cd3c9fa91481dba9fd5b047012c7af177849e8c18edf5c68a85f6bedd9d81b0b";
+    const PUBLISH_DATA = { streamName };
+    const TYPE = 'publish';
+    return getDirector(TYPE, PUBLISH_TOKEN, PUBLISH_DATA)
+  }
+  function getDirector(type, token, data) {
+    return new Promise((resolve, reject)=>{
+      let xhr = new XMLHttpRequest();
+      xhr.open('POST', `https://director.millicast.com/api/director/${type}`, true);
+      if(!!token)xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      let jsonData;
+      xhr.onreadystatechange = function () {
+        // Call a function when the state changes.
+        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+          jsonData = JSON.parse(xhr.responseText);
+          console.log('Call Complete:',jsonData);
+          resolve(jsonData);
+        }else if(this.readyState === XMLHttpRequest.DONE && this.status >= 400){
+          jsonData = JSON.parse(xhr.responseText);
+          reject(jsonData)
+        }
+      };
+      (!!data) ? xhr.send(JSON.stringify(data)) : xhr.send();
+
+    })
+  }
+
+  /* UI */
+  function initUI() {
+    //selectedBandwidthBtn.disabled = true;
+    if (disableVideo === true) {
+      selectedBandwidthBtn.classList.add('d-none');
+    }
+    selectedBandwidthBtn.innerHTML = bandwidth === 'unlimited' ? 'Maximum Bitrate' : `${bandwidth} kbps`;
+    if( bandwidth !== 'unlimited' )onSetVideoBandwidth();
+    elementList.forEach(function (el) {
+      el.classList.add('btn');
+      el.addEventListener('click', onSetVideoBandwidth)
+    });
+    let a = true;
+    //stereo support
+    if(!disableStereo){
+      a = {
+        channelCount: {ideal:2},
+        echoCancellation: false
+      }
+    }
+    console.log('constraints audio:',a, ' disableAudio:',(!disableAudio ? a : false));
+    millicastPub.constraints = {
+      audio: !disableAudio ? a : false,
+      video: !disableVideo ? {
+        width: {min: 640, max: 1280, ideal: 1280},
+        height: {min: 480, max: 720, ideal: 720},
+        frameRate: {min: 10, max: 60, ideal: 24},
+      } : false,
+    };
+    millicastPub.getMediaStream()
+        .then((stream) => {
+          selectedBandwidthBtn.disabled = isBroadcasting;
+          mediaStream = stream;
+          if (videoWin) {
+            videoWin.srcObject = stream;
+          }
+          let aTracks = stream.getAudioTracks();
+          console.log('media constraints',aTracks[0].getSettings());
+          
+          displayDevices(millicastPub.devices);
+          console.log('devices -- ', millicastPub.devices);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    //
+    pubBtn.addEventListener('click', (e) => {
+      BroadcastMillicastStream();
+    });
+    //
+    camsList.addEventListener('click', (e) => {
+      if (isBroadcasting) {
+        alert('You must stop broadcasting first in order to update your media.');
+        return;
+      }
+      let target = e.target;
+      millicastPub.updateMediaStream('video',target.id)
+          .then(stream => {
+            mediaStream = stream;
+            if (videoWin) {
+              videoWin.srcObject = stream;
+            }
+            displayActiveDevice('cam');
+          })
+          .catch(e => {
+            console.log('*index*  new stream failed ', e);
+            //debug
+            alert('Failed to update.',e);
+          })
+    });
+    camMuteBtn.addEventListener('click', (e) => {
+      //if (media.muteVideo(!isVideoMuted)) {
+      if (millicastPub.muteMedia('video',!isVideoMuted)) {
+        isVideoMuted = !isVideoMuted;
+        let iconEl = document.querySelector('#camOnIcon');
+        isVideoMuted ? iconEl.classList.add('fa-video-slash') : iconEl.classList.remove('fa-video-slash');
+      } else {
+        //no change occurred
+      }
+    });
+    //
+    micsList.addEventListener('click', e => {
+      if (isBroadcasting) {
+        alert('You must stop broadcasting first in order to update your media.');
+        return;
+      }
+      let target = e.target;
+      console.log(target.id);
+      millicastPub.updateMediaStream('audio', target.id)
+          .then(stream => {
+            mediaStream = stream;
+            if (videoWin) {
+              videoWin.srcObject = stream;
+            }
+            displayActiveDevice('mic');
+          })
+          .catch(e => {
+            console.log('*index*  new stream failed ', e);
+          })
+    });
+    micMuteBtn.addEventListener('click', (e) => {
+      //if (media.muteAudio(!isAudioMuted)) {
+      if (millicastPub.muteMedia('audio',!isAudioMuted)) {
+        isAudioMuted = !isAudioMuted;
+        let iconEl   = document.querySelector('#micOnIcon');
+        isAudioMuted ? iconEl.classList.add('fa-microphone-slash') : iconEl.classList.remove('fa-microphone-slash');
+      } else {
+        //no change occurred
+      }
+    });
+    //
+
+    cpy.addEventListener('click', () => {
+      doCopy();
+      showGuide('guide2', false);
+    });
+
+    viewUrlEl.addEventListener('click', e => {
+      //do not open browser if mobile.
+      if (isMobile) {
+        return doCopy();
+      }
+
+      let url = (viewUrlEl.textContent || viewUrlEl.innerText).trim();
+      //console.log('openViewer: ', url);
+      if (url.length === 0 || url === 'https://' || url === 'Must broadcast first') {
+        alert('You need to start a broadcast first.');
+        return false;
+      } else {
+        window.open(url, '_blank');
+      }
+    });
+    signup.addEventListener('click', e => {
+      window.location = 'https://millicast.com/pricing/';//'https://dash.millicast.com/#/signup?planId=5';
+    });
+  }
+
+  function displayDevices(data) {
+    let mics = data.audioin;
+    while (micsList.firstChild) {
+      micsList.removeChild(micsList.firstChild);
+    }
+    if (mics.length > 0) {
+      mics.forEach(device => {
+        //console.log('device: ',device);
+        let item       = document.createElement('button');
+        item.innerHTML = device.label;
+        item.classList = 'dropdown-item use-hand';
+        item.id        = device.deviceId;
+        micsList.appendChild(item);
+      })
+    }
+
+    // update cam list
+    let cams = data.videoin;
+    while (camsList.firstChild) {
+      camsList.removeChild(camsList.firstChild);
+    }
+    if (cams.length > 0) {
+      cams.forEach(device => {
+        //console.log('device: ',device);
+        let item       = document.createElement('button');
+        item.innerHTML = device.label;
+        item.classList = 'dropdown-item use-hand';
+        item.id        = device.deviceId;
+        camsList.appendChild(item);
+      })
+    }
+
+    displayActiveDevice();
+  }
+
+  function displayActiveDevice(type) {
+    if (type === 'mic' || !type) {
+      micListBtn.innerHTML = '<p>' + cleanLabel(millicastPub.activeAudio.label) + '</p><span class="boxCover"></span>';
+    }
+    if (type === 'cam' || !type) {
+      camListBtn.innerHTML = '<p>' + cleanLabel(millicastPub.activeVideo.label) + '</p><span class="boxCover"></span>';
+    }
+  }
+
+  function broadcastHandler(b) {
+    let list = onAirFlag.classList;
+    if (isBroadcasting) {
+      showViewerUrl();
+      onAirFlag.innerHTML = 'LIVE';
+      list.remove('badge-light');
+      list.add('badge-danger');
+      //
+      pubBtn.disabled               = true;
+      selectedBandwidthBtn.disabled = false;
+      if (!tm) {
+        setTimer();
+      }
+      //switch guides display.
+      if(showGuide){
+        showGuide('guide1', false);
+        showGuide('guide2', true);
+      }
+    } else {
+      onAirFlag.innerHTML = 'READY';
+      list.remove('badge-danger');
+      list.add('badge-light');
+      //
+      pubBtn.disabled               = false;
+      // selectedBandwidthBtn.disabled = true;
+    }
+  }
+
+  function showViewerUrl() {
+    ctrl.classList.add('d-none');
+    let href = (location.href).split('?')[0];
+    if (href.indexOf('htm') > -1) {
+      href = href.substring(0, href.lastIndexOf('/') + 1);
+    }
+
+    let viewerUrl = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamId}`;//`${href}viewer.html?streamId=${accountId}/${streamId}`;
+
+    if (disableVideo === true) {
+      viewerUrl = `${viewerUrl}&disableVideo=${disableVideo}`
+    }
+
+    /*if (url !== default_ws_url) {
+      let wsViewURL = new URL(url);
+      if (wsViewURL.pathname.lastIndexOf('pub') > -1) {
+        viewerUrl = `${viewerUrl}&url=${wsViewURL.origin}/ws/v1/sub`
+      }
+    }*/
+
+
+    viewUrlEl.removeChild(viewUrlEl.firstChild);
+    viewUrlEl.innerHTML = viewerUrl;//innerHTML
+    view.classList.remove('d-none');
+  }
+
+  function endDemo() {
+    if (millicastPub) {
+      millicastPub.stop();
+    }
+    let pb = document.getElementById('publishView');
+    while (pb.firstChild) {
+      pb.removeChild(pb.firstChild);
+    }
+    let thx = document.getElementById('thanks');
+    thx.classList.remove('d-none');
+  }
+
+  function setTimer() {
+    // console.log('*index*  setTimer ');
+    tm = setTimeout(endDemo, tmInt);
+  }
+
+  /* UTILS */
+  function cleanLabel(s) {
+    if (s.indexOf('Default - ') === 0) {
+      s = s.split('Default - ').join('');
+    }
+    return s;
+  }
+
+  function doCopy() {
+    //add to clean text.
+    let view = document.getElementById("viewerURL");
+    let path = (view.textContent || view.innerText).trim();
+    /* if(path.length == 0 || path == 'https://') {
+        alert('Error: No Broadcast. [ Please begin a live broadcasting. ]');
+        return false;
+    } */
+    let txt            = document.createElement('input');
+    txt.type           = 'text';
+    txt.readonly       = true;
+    txt.value          = path;
+    txt.style.position = 'fixed';
+    txt.style.left     = '-9999px';
+    document.body.appendChild(txt);
+    //console.log('view: ', txt);
+
+    let iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    //let txt = input;
+    if (iOS) {
+      console.log('IS iOS!');
+      txt.setAttribute('contenteditable', true);
+      txt.setAttribute('readonly', false);
+      let range = document.createRange();
+      range.selectNodeContents(txt);
+      let s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(range);
+      txt.setSelectionRange(0, 999999);
+      txt.setAttribute('contenteditable', false);
+      txt.setAttribute('readonly', true);
+    } else {
+      //console.log('NOT iOS!');
+      txt.select();
+    }
+    document.execCommand('copy');
+    alert('Copied to Clipboard!');
+    document.body.removeChild(txt);
+    return true;
+  }
+
+  initUI();
+});
