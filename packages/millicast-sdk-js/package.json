@@ -2,13 +2,16 @@
   "name": "millicast-sdk-js",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/millicast.cjs.js",
+  "module": "dist/millicast.esm.js",
+  "browser": "dist/millicast.umd.js",
   "scripts": {
-    "test": "test"
+    "build": "rollup -c"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "rollup": "^2.41.0"
-  }
+    "rollup": "^2.41.1"
+  },
+  "devDependencies": {}
 }
