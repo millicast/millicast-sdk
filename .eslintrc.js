@@ -105,4 +105,9 @@ module.exports = {
     'no-unused-expressions': [2, { allowTernary: true }],
     'jest/valid-expect': 0,
   },
+  settings: {
+    jest: {
+      version: 24,
+    },
+  },
 }

@@ -1,11 +1,6 @@
 {
   "eslint.alwaysShowStatus": true,
-  "eslint.workingDirectories": [
-    {
-      "directory": "./packages/millicast-sdk-js",
-      "changeProcessCWD": true
-    }
-  ],
+  "eslint.workingDirectories": ["packages"],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
