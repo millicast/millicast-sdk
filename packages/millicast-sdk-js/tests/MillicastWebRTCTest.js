@@ -1,13 +1,13 @@
-import MillicastWebRTC from "../src/MillicastWebRTC";
+const MillicastWebRTC = require('../src/MillicastWebRTC')
 
 class MillicastWebRTCTest {
   constructor() {
-    this.webRTC = new MillicastWebRTC();
+    this.webRTC = new MillicastWebRTC()
   }
 
   testGetRTCPeer() {
-    return this.webRTC.getRTCPeer();
+    return this.webRTC.getRTCPeer()
   }
 }
 
-module.exports = MillicastWebRTCTest;
+module.exports = MillicastWebRTCTest
