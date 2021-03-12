@@ -12,7 +12,7 @@ class MillicastMediaTest {
     const mediaStream = await this.millicastMedia.getMedia()
     console.log('GetMedia response:', mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = mediaStream
-    await this.testGetDevices()
+    //await this.testGetDevices()
     return mediaStream
   }
 
@@ -22,9 +22,9 @@ class MillicastMediaTest {
     const videoSelect = document.getElementById('video-select')
     const devices = await this.millicastMedia.getMediaDevices()
     console.log('GetDevices response:', devices)
-    this.fillSelectElement(audioInputSelect, devices.audioin)
-    this.fillSelectElement(audioOutputSelect, devices.audioout)
-    this.fillSelectElement(videoSelect, devices.videoin)
+    this.fillSelectElement(audioInputSelect, devices.audioinput)
+    this.fillSelectElement(audioOutputSelect, devices.audiooutput)
+    this.fillSelectElement(videoSelect, devices.videoinput)
     return devices
   }
 

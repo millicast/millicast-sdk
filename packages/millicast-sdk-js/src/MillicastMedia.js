@@ -36,41 +36,31 @@ export default class MillicastMedia {
   }
 
   get videoInput() {
-    return this.getInput("video");
+    return this.getInput("video")
   }
 
   get audioInput() {
-    return this.getInput("audio");
+    return this.getInput("audio")
   }
 
   /**
    * Get User Media
    *
-   * @param {Boolean} omitDevices - false by default.
    * @return {MediaStream}
    *
    */
-  getMedia(omitDevices = false) {
+  async getMedia() {
     //gets user cam and mic
-    return new Promise((resolve, reject) => {
-      navigator.mediaDevices
-        .getUserMedia(this.constraints)
-        .then((stream) => {
-          this.mediaStream = stream;
-          if (omitDevices !== true) {
-            return this.getMediaDevices();
-          } else {
-            resolve(this.mediaStream);
-          }
-        })
-        .then(() => {
-          resolve(this.mediaStream);
-        })
-        .catch((error) => {
-          console.error("Could not get Media: ", error, this.constraints);
-          reject(error);
-        });
-    });
+    try{
+      this.mediaStream = await navigator.mediaDevices.getUserMedia(this.constraints)
+      // if(omitDevices !== true)
+      //   return await this.getMediaDevices()
+      return this.mediaStream
+    }
+    catch(error){
+      console.error("Could not get Media: ", error, this.constraints)
+      throw error
+    }
   }
   /**
    * Get Enumerate Devices
@@ -78,92 +68,71 @@ export default class MillicastMedia {
    * @return {Promise} devices - sorted object containing arrays audioin, videoin
    *
    */
-  getMediaDevices() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-      return Promise.reject(
-        new Error(
-          "Could not get list of media devices!  This might not be supported by this browser."
-        )
-      );
+  async getMediaDevices() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
+      throw new Error("Could not get list of media devices!  This might not be supported by this browser.")
+
+    try{
+      const items = {audioinput: [], videoinput: [], audiooutput: []}
+      const mediaDevices = await navigator.mediaDevices.enumerateDevices()
+      for(const device of mediaDevices)
+        this.addMediaDevicesToList(items, device)
+      this.devices = items
     }
-    return new Promise((resolve, reject) => {
-      navigator.mediaDevices
-        .enumerateDevices()
-        .then((list) => {
-          let items = {audioin: [], videoin: [], audioout: []};
-          list.forEach(device => {
-            switch (device.kind) {
-              case "audioinput":
-                if (device.deviceId !== "default") {
-                  items.audioin.push(device);
-                }
-                break;
-              case "videoinput":
-                if (device.deviceId !== "default") {
-                  items.videoin.push(device);
-                }
-                break;
-              case 'audiooutput':
-                if (device.deviceId !== 'default') {
-                  items.audioout.push(device);
-                }
-                break;
-            }
-          });
-          this.devices = items;
-          resolve(this.devices);
-        })
-        .catch((error) => {
-          console.error("Could not get Media: ", error);
-          //reject(error);
-          this.devices = [];
-          resolve(this.devices);
-        });
-    });
+    catch(error){
+      console.error("Could not get Media: ", error)
+      this.devices = []
+    }
+    return this.devices
   }
 
-  changeVideo(id) {
-    if (!id) return Promise.reject("Required id");
-    let video = {
+  addMediaDevicesToList(items, device){
+    if (device.deviceId !== "default" && items[device.kind])
+      items[device.kind].push(device)
+  }
+
+  async changeVideo(id) {
+    return await this.changeSource(id, "video")
+  }
+
+  async changeAudio(id) {
+    return await this.changeSource(id, "audio")
+  }
+
+  async changeSource(id, sourceType){
+    if (!id) 
+      throw new Error("Required id")
+
+    this.constraints[sourceType] = {
+      ...this.constraints[sourceType],
       deviceId: {
         exact: id,
       },
-    };
-    let constraints = { video };
-    Object.assign(this.constraints, constraints);
-    return this.getMedia(true);
-  }
-
-  changeAudio(id) {
-    if (!id) return Promise.reject("Required id");
-    let audio = {
-      deviceId: {
-        exact: id,
-      },
-    };
-    let constraints = { audio };
-    Object.assign(this.constraints, constraints);
-    return this.getMedia(true);
+    }
+    return await this.getMedia()
   }
 
   muteVideo(boolean = true) {
-    let changed = false;
-    if (!this.mediaStream) {
-      return changed;
+    let changed = false
+    if (this.mediaStream){
+      this.mediaStream.getVideoTracks()[0].enabled = !boolean
+      changed = true
     }
-    this.mediaStream.getVideoTracks()[0].enabled = !boolean;
-    changed = true;
-    return changed;
+    else{
+      console.error("There is no media stream object.");
+    }
+    return changed
   }
 
   muteAudio(boolean = true) {
-    let changed = false;
-    if (!this.mediaStream) {
-      console.error("There is no media stream object.");
-      return changed;
+    let changed = false
+    if (this.mediaStream){
+      this.mediaStream.getAudioTracks()[0].enabled = !boolean
+      changed = true
     }
-    this.mediaStream.getAudioTracks()[0].enabled = !boolean;
-    changed = true;
-    return changed;
+    else{
+      console.error("There is no media stream object.")
+    }
+    return changed
   }
 }
