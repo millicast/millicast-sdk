@@ -6,7 +6,8 @@
   "module": "dist/millicast.esm.js",
   "browser": "dist/millicast.umd.js",
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "start": "rollup -c -w"
   },
   "author": "",
   "license": "ISC",

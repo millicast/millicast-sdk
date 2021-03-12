@@ -1,0 +1,23 @@
+<script src="../dist/millicast.umd.js"></script>
+<script src="./MillicastSignalingTest.js"></script>
+
+<div>
+  <h1>MillicastSignaling</h1>
+  <br />
+
+  <fieldset>
+    <button onclick="millicastSignalingTest.testConnect()">
+      Connect webSocket
+    </button>
+    <button onclick="millicastSignalingTest.testClose()">
+      Close webSocket
+    </button>
+    <button onclick="millicastSignalingTest.testSubscribe()">Subscribe</button>
+    <button onclick="millicastSignalingTest.testPublish()">Publish</button>
+  </fieldset>
+
+  <div id="">
+    <h2>Response</h2>
+    <div id="response"></div>
+  </div>
+</div>

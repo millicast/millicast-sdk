@@ -1,4 +1,5 @@
-import MillicastWebRTC from '../src/MillicastWebRTC'
-import MillicastMedia from '../src/MillicastMedia'
+import MillicastMedia from "../src/MillicastMedia";
+import MillicastWebRTC from "../src/MillicastWebRTC";
+import MillicastSignaling from "../src/MillicastSignaling";
 
-export { MillicastWebRTC, MillicastMedia }
+export { MillicastMedia, MillicastWebRTC, MillicastSignaling };
