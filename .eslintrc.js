@@ -6,7 +6,7 @@ module.exports = {
   },
   plugins: ["jest"],
   parserOptions: {
-    ecmaVersion: 2015,
+    ecmaVersion: 8,
     sourceType: "module",
   },
   settings: {
