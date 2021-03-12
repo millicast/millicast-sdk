@@ -1,8 +1,7 @@
 const MillicastUtils = require("./MillicastUtils.js");
 
 export default class MillicastWebRTC {
-  constructor() {
-    // constructor syntactic suga
+  constructor() { // constructor syntactic suga
     this.peer = null;
   }
 
@@ -23,67 +22,6 @@ export default class MillicastWebRTC {
     } catch (e) {
       throw e;
     }
-  }
-
-  getRTCLocalSDP(
-    RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
-  ) {
-    let desc = null;
-    return this.peer
-      .createOffer(RTCOfferOptions)
-      .then((res) => {
-        desc = res;
-        return this.peer.setLocalDescription(desc);
-      })
-      .then(() => {
-        return Promise.resolve(desc.sdp);
-      })
-      .catch((err) => {
-        //console.error(err);
-        return Promise.reject(err);
-      });
-  }
-
-  getRTCPublisherSDP(
-    mediaStream,
-    RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
-  ) {
-    let desc;
-    //let RTCOfferOptions = {offerToReceiveAudio, offerToReceiveVideo};
-    if (mediaStream) {
-      mediaStream.getTracks().forEach((track) => {
-        //console.log('audio track: ', track);
-        this.peer.addTrack(track, mediaStream);
-      });
-    }
-
-    return this.peer
-      .createOffer(RTCOfferOptions)
-      .then((res) => {
-        desc = res;
-        //support for stereo
-        desc.sdp = desc.sdp.replace(
-          "useinbandfec=1",
-          "useinbandfec=1; stereo=1"
-        );
-        return this.peer.setLocalDescription(desc);
-      })
-      .then(() => {
-        return Promise.resolve(desc.sdp);
-      })
-      .catch((err) => {
-        //console.error(err);
-        return Promise.reject(err);
-      });
-  }
-
-  setRTCRemoteSDP(sdp) {
-    const answer = new RTCSessionDescription({
-      type: "answer",
-      sdp,
-    });
-    //Set it
-    return this.peer.setRemoteDescription(answer);
   }
 
   getRTCConfiguration() {
@@ -128,5 +66,41 @@ export default class MillicastWebRTC {
           resolve(a);
         });
     });
+  }
+
+  setRTCRemoteSDP(sdp) {
+    const answer = new RTCSessionDescription({
+      type: "answer",
+      sdp,
+    });
+    //Set it
+    return this.peer.setRemoteDescription(answer);
+  }
+
+  getRTCLocalSDP(
+    stereo,
+    mediaStream,
+    RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
+  ) {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => {
+        this.peer.addTrack(track, mediaStream)
+      })
+    }
+
+    return this.peer.createOffer(RTCOfferOptions)
+      .then((res) => {
+        let desc = res
+        if (stereo) {
+          desc.sdp = desc.sdp.replace("useinbandfec=1", "useinbandfec=1; stereo=1")
+        }
+        return this.peer.setLocalDescription(desc)
+      })
+      .then(() => {
+        return Promise.resolve(desc.sdp)
+      })
+      .catch((err) => {
+        return Promise.reject(err)
+      })
   }
 }
