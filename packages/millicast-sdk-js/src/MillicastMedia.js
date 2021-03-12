@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 /**
  * MillicastMedia class.
  * @param {Object} options - {constraints, }
  * @constructor
  */
-class MillicastMedia {
+export default class MillicastMedia {
   constructor(options) {
     // constructor syntactic sugar
     this.mediaStream = null;
@@ -13,22 +13,23 @@ class MillicastMedia {
       /* audio: true, */
       audio: {
         echoCancellation: false,
-        channelCount: {ideal:2}
+        channelCount: { ideal: 2 },
       },
-      video: true
+      video: true,
     };
     /*Apply Options*/
-    if(options){
-      if(!!options.constraints)Object.assign(this.constraints, options.constraints);
+    if (options) {
+      if (!!options.constraints)
+        Object.assign(this.constraints, options.constraints);
     }
   }
 
-  getInput(kind){
+  getInput(kind) {
     let input = null;
-    if(!kind)return input;
-    if(this.mediaStream){
-      for(let track of this.mediaStream.getTracks()){
-        if(track.kind === kind){
+    if (!kind) return input;
+    if (this.mediaStream) {
+      for (let track of this.mediaStream.getTracks()) {
+        if (track.kind === kind) {
           input = track;
           break;
         }
@@ -37,15 +38,13 @@ class MillicastMedia {
     return input;
   }
 
-
-  get videoInput(){
-    return this.getInput('video');
+  get videoInput() {
+    return this.getInput("video");
   }
 
-  get audioInput(){
-    return this.getInput('audio');
+  get audioInput() {
+    return this.getInput("audio");
   }
-
 
   /**
    * Get User Media
@@ -57,12 +56,13 @@ class MillicastMedia {
   getMedia(omitDevices = false) {
     //gets user cam and mic
     return new Promise((resolve, reject) => {
-      navigator.mediaDevices.getUserMedia(this.constraints)
+      navigator.mediaDevices
+        .getUserMedia(this.constraints)
         .then((stream) => {
           this.mediaStream = stream;
           if (omitDevices !== true) {
             return this.getMediaDevices();
-          }else{
+          } else {
             resolve(this.mediaStream);
           }
         })
@@ -70,10 +70,10 @@ class MillicastMedia {
           resolve(this.mediaStream);
         })
         .catch((error) => {
-          console.error('Could not get Media: ', error, this.constraints);
+          console.error("Could not get Media: ", error, this.constraints);
           reject(error);
-        })
-    })
+        });
+    });
   }
   /**
    * Get Enumerate Devices
@@ -83,23 +83,28 @@ class MillicastMedia {
    */
   getMediaDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-      return Promise.reject(new Error("Could not get list of media devices!  This might not be supported by this browser."));
+      return Promise.reject(
+        new Error(
+          "Could not get list of media devices!  This might not be supported by this browser."
+        )
+      );
     }
     return new Promise((resolve, reject) => {
-      navigator.mediaDevices.enumerateDevices()
+      navigator.mediaDevices
+        .enumerateDevices()
         .then((list) => {
-          let items = {audioin: [], videoin: []};//,active:{audio:null,video:null}};
+          let items = { audioin: [], videoin: [] }; //,active:{audio:null,video:null}};
           //console.log('*media*  list of devices: ', list);
-          list.forEach(device => {
+          list.forEach((device) => {
             //console.log('device: ',device);
             switch (device.kind) {
-              case 'audioinput':
-                if (device.deviceId !== 'default') {
+              case "audioinput":
+                if (device.deviceId !== "default") {
                   items.audioin.push(device);
                 }
                 break;
-              case 'videoinput':
-                if (device.deviceId !== 'default') {
+              case "videoinput":
+                if (device.deviceId !== "default") {
                   items.videoin.push(device);
                 }
                 break;
@@ -109,7 +114,7 @@ class MillicastMedia {
           resolve(this.devices);
         })
         .catch((error) => {
-          console.error('Could not get Media: ', error);
+          console.error("Could not get Media: ", error);
           //reject(error);
           this.devices = [];
           resolve(this.devices);
@@ -117,33 +122,33 @@ class MillicastMedia {
     });
   }
 
-  changeVideo(id){
-    if(!id)return Promise.reject('Required id');
+  changeVideo(id) {
+    if (!id) return Promise.reject("Required id");
     let video = {
-      deviceId:{
-        exact: id
-      }
+      deviceId: {
+        exact: id,
+      },
     };
-    let constraints = {video};
+    let constraints = { video };
     Object.assign(this.constraints, constraints);
     return this.getMedia(true);
   }
 
-  changeAudio(id){
-    if(!id) return Promise.reject('Required id');
+  changeAudio(id) {
+    if (!id) return Promise.reject("Required id");
     let audio = {
-      deviceId:{
-        exact: id
-      }
+      deviceId: {
+        exact: id,
+      },
     };
-    let constraints = {audio};
+    let constraints = { audio };
     Object.assign(this.constraints, constraints);
     return this.getMedia(true);
   }
 
-  muteVideo(boolean = true){
+  muteVideo(boolean = true) {
     let changed = false;
-    if(!this.mediaStream) {
+    if (!this.mediaStream) {
       return changed;
     }
     this.mediaStream.getVideoTracks()[0].enabled = !boolean;
@@ -151,17 +156,14 @@ class MillicastMedia {
     return changed;
   }
 
-  muteAudio(boolean = true){
+  muteAudio(boolean = true) {
     let changed = false;
-    if(!this.mediaStream) {
-      console.error('There is no media stream object.');
+    if (!this.mediaStream) {
+      console.error("There is no media stream object.");
       return changed;
     }
     this.mediaStream.getAudioTracks()[0].enabled = !boolean;
     changed = true;
     return changed;
   }
-
 }
-
-module.exports = MillicastMedia;
