@@ -10,7 +10,6 @@ export default class MillicastMedia {
     this.mediaStream = null;
 
     this.constraints = {
-      /* audio: true, */
       audio: {
         echoCancellation: false,
         channelCount: { ideal: 2 },
@@ -18,10 +17,8 @@ export default class MillicastMedia {
       video: true,
     };
     /*Apply Options*/
-    if (options) {
-      if (!!options.constraints)
-        Object.assign(this.constraints, options.constraints);
-    }
+    if(options && !!options.constraints)
+      Object.assign(this.constraints, options.constraints);
   }
 
   getInput(kind) {
@@ -93,10 +90,8 @@ export default class MillicastMedia {
       navigator.mediaDevices
         .enumerateDevices()
         .then((list) => {
-          let items = { audioin: [], videoin: [] }; //,active:{audio:null,video:null}};
-          //console.log('*media*  list of devices: ', list);
-          list.forEach((device) => {
-            //console.log('device: ',device);
+          let items = {audioin: [], videoin: [], audioout: []};
+          list.forEach(device => {
             switch (device.kind) {
               case "audioinput":
                 if (device.deviceId !== "default") {
@@ -106,6 +101,11 @@ export default class MillicastMedia {
               case "videoinput":
                 if (device.deviceId !== "default") {
                   items.videoin.push(device);
+                }
+                break;
+              case 'audiooutput':
+                if (device.deviceId !== 'default') {
+                  items.audioout.push(device);
                 }
                 break;
             }
