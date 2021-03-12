@@ -103,4 +103,28 @@ export default class MillicastWebRTC {
         return Promise.reject(err)
       })
   }
+
+  /**
+   * Establish MillicastStream Update Bandwidth.
+   * @param {String} sdp - Remote SDP.
+   * @param {Number} bitrate - Bitrate, 0 unlimited bitrate
+   * @return {String} sdp - Mangled SDP
+   */
+   updateBandwidthRestriction(sdp, bitrate = 0) {
+    let offer = SemanticSDP.SDPInfo.process(sdp);
+    let videoOffer = offer.getMedia("video");
+
+    if (bitrate < 1) {
+        this.sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
+    } else {
+        videoOffer.setBitrate(bitrate);
+        this.sdp = offer.toString();
+        if (!!window.adapter) {
+            if (this.sdp.indexOf('b=AS:') > -1 && adapter.browserDetails.browser === 'firefox') {
+                this.sdp = this.sdp.replace('b=AS:', 'b=TIAS:');
+            }
+        }
+    }
+    return this.sdp;
+}
 }
