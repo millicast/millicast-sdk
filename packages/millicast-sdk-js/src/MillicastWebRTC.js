@@ -3,7 +3,8 @@ const MillicastUtils = require("./MillicastUtils.js")
 
 export default class MillicastWebRTC {
   constructor() { // constructor syntactic suga
-    this.peer = null
+    this.peer = null,
+    this.RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
   }
 
   async getRTCPeer(config) {
@@ -81,7 +82,6 @@ export default class MillicastWebRTC {
   getRTCLocalSDP(
     stereo,
     mediaStream,
-    RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
   ) {
     if (mediaStream) {
       mediaStream.getTracks().forEach((track) => {
@@ -89,7 +89,7 @@ export default class MillicastWebRTC {
       })
     }
 
-    return this.peer.createOffer(RTCOfferOptions)
+    return this.peer.createOffer(this.RTCOfferOptions)
       .then((res) => {
         let desc = res
         if (stereo) {
@@ -127,5 +127,17 @@ export default class MillicastWebRTC {
       }
     }
     return sdp
+  }
+
+  updateBitrate(bitrate = 0){
+    return this.getRTCPeer()
+      .then((pc)=>{
+        this.peer = pc
+        return this.getRTCLocalSDP(true, null, this.RTCOfferOptions)
+      })
+      .then(() => {
+        let sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
+        return this.setRTCRemoteSDP(sdp)
+      })
   }
 }
