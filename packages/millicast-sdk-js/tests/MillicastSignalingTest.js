@@ -2,9 +2,10 @@ class MillicastSignalingTest {
   constructor(options = {}) {
     const defaultOptions = {
       wsUrl: "ws://localhost:8080/",
+      sdp: "",
+      streamId: "",
     };
-    const optionsToUse = options ? options : defaultOptions;
-    this.millicastSignaling = new millicast.millicastSignaling(optionsToUse);
+    this.millicastSignaling = new millicast.MillicastSignaling();
   }
 
   async testConnect() {
@@ -24,8 +25,8 @@ class MillicastSignalingTest {
   }
 
   async testSubscribe() {
-    const sdp = "";
-    const streamId = "";
+    const sdp = options.sdp;
+    const streamId = options.streamId;
     const subscriptionSdp = this.millicastSignaling.subscribe(sdp, streamId);
     console.log("subscription sdp: ", subscriptionSdp);
     document.getElementById("response").innerHTML = subscriptionSdp;
@@ -33,8 +34,7 @@ class MillicastSignalingTest {
   }
 
   async testPublish() {
-    const sdp = "";
-    const streamId = "";
+    const sdp = options.sdp;
     const publishSdp = this.millicastSignaling.publish(sdp);
     console.log("publish sdp: ", publishSdp);
     document.getElementById("response").innerHTML = publishSdp;
@@ -42,4 +42,4 @@ class MillicastSignalingTest {
   }
 }
 
-const millicastSignaling = new MillicastSignalingTest();
+const millicastSignalingTest = new MillicastSignalingTest();
