@@ -1,26 +1,27 @@
-const MillicastUtils = require("./MillicastUtils.js");
+const SemanticSDP = require("semantic-sdp")
+const MillicastUtils = require("./MillicastUtils.js")
 
 export default class MillicastWebRTC {
   constructor() { // constructor syntactic suga
-    this.peer = null;
+    this.peer = null
   }
 
   async getRTCPeer(config) {
-    if (!!this.peer) return this.peer;
+    if (!!this.peer) return this.peer
     try {
-      if (!!config) config = await this.getRTCConfiguration();
-      this.peer = new RTCPeerConnection(config);
-      return this.peer;
+      if (!!config) config = await this.getRTCConfiguration()
+      this.peer = new RTCPeerConnection(config)
+      return this.peer
     } catch (e) {
-      throw e;
+      throw e
     }
   }
 
   async closeRTCPeer() {
     try {
-      this.peer = null;
+      this.peer = null
     } catch (e) {
-      throw e;
+      throw e
     }
   }
 
@@ -29,52 +30,52 @@ export default class MillicastWebRTC {
       //iceServers,
       rtcpMuxPolicy: "require",
       bundlePolicy: "max-bundle",
-    };
+    }
     //return new Promise((resolve, reject) => {
     return this.getRTCIceServers()
       .then((res) => {
-        config.iceServers = res;
-        return Promise.resolve(config);
+        config.iceServers = res
+        return Promise.resolve(config)
       })
       .catch(() => {
-        return Promise.resolve(config);
-      });
+        return Promise.resolve(config)
+      })
   }
 
   getRTCIceServers(location = "https://turn.millicast.com/webrtc/_turn") {
-    const url = location;
+    const url = location
     return new Promise((resolve, reject) => {
-      let a = [];
+      let a = []
       MillicastUtils.request(location, "PUT")
         .then((result) => {
           if (result.s === "ok") {
-            let list = result.v.iceServers;
+            let list = result.v.iceServers
             //call returns old format, this updates URL to URLS in credentials path.
             list.forEach((cred) => {
-              let v = cred.url;
+              let v = cred.url
               if (!!v) {
-                cred.urls = v;
-                delete cred.url;
+                cred.urls = v
+                delete cred.url
               }
-              a.push(cred);
-            });
+              a.push(cred)
+            })
           }
-          resolve(a);
+          resolve(a)
         })
         .catch((error) => {
           //console.error(error);
-          resolve(a);
-        });
-    });
+          resolve(a)
+        })
+    })
   }
 
   setRTCRemoteSDP(sdp) {
     const answer = new RTCSessionDescription({
       type: "answer",
       sdp,
-    });
+    })
     //Set it
-    return this.peer.setRemoteDescription(answer);
+    return this.peer.setRemoteDescription(answer)
   }
 
   getRTCLocalSDP(
@@ -111,20 +112,20 @@ export default class MillicastWebRTC {
    * @return {String} sdp - Mangled SDP
    */
    updateBandwidthRestriction(sdp, bitrate = 0) {
-    let offer = SemanticSDP.SDPInfo.process(sdp);
-    let videoOffer = offer.getMedia("video");
+    let offer = SemanticSDP.SDPInfo.process(sdp)
+    let videoOffer = offer.getMedia("video")
 
     if (bitrate < 1) {
-        this.sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
+      sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
-        videoOffer.setBitrate(bitrate);
-        this.sdp = offer.toString();
-        if (!!window.adapter) {
-            if (this.sdp.indexOf('b=AS:') > -1 && adapter.browserDetails.browser === 'firefox') {
-                this.sdp = this.sdp.replace('b=AS:', 'b=TIAS:');
-            }
+      videoOffer.setBitrate(bitrate)
+      sdp = offer.toString()
+      if (!!window.adapter) {
+        if (sdp.indexOf('b=AS:') > -1 && adapter.browserDetails.browser === 'firefox') {
+            sdp = sdp.replace('b=AS:', 'b=TIAS:')
         }
+      }
     }
-    return this.sdp;
-}
+    return sdp
+  }
 }
