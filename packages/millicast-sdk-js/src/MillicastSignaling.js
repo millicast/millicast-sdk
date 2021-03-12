@@ -1,5 +1,5 @@
-const EventEmitter = require("events");
-const TransactionManager = require("transaction-manager");
+import EventEmitter from "events";
+import { TransactionManager } from "transaction-manager";
 
 export default class MillicastSignaling extends EventEmitter {
   constructor(options) {
