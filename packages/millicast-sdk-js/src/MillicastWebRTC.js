@@ -105,6 +105,16 @@ export default class MillicastWebRTC {
       })
   }
 
+  resolveLocalSDP(mediaStream) {
+    return this.getRTCConfiguration()
+      .then((config) => {
+        return this.getRTCPeer(config)
+      })
+      .then(() => {
+        return this.getRTCLocalSDP(true, mediaStream)
+      })
+  }
+
   /**
    * Establish MillicastStream Update Bandwidth.
    * @param {String} sdp - Remote SDP.
@@ -133,7 +143,7 @@ export default class MillicastWebRTC {
     return this.getRTCPeer()
       .then((pc)=>{
         this.peer = pc
-        return this.getRTCLocalSDP(true, null, this.RTCOfferOptions)
+        return this.getRTCLocalSDP(true, null)
       })
       .then(() => {
         let sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
