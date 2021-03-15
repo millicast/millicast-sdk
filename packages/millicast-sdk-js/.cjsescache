@@ -1,0 +1,7 @@
+[
+  "node_modules/transaction-manager/index.js",
+  "src/MillicastMedia.js",
+  "src/MillicastSignaling.js",
+  "src/MillicastUtils.js",
+  "src/MillicastWebRTC.js"
+]
