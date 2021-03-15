@@ -163,4 +163,4 @@ class MillicastWebRTC {
   }
 }
 
-module.export = MillicastWebRTC;
+module.exports = MillicastWebRTC;
