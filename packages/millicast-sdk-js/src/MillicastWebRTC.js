@@ -93,17 +93,17 @@ export default class MillicastWebRTC {
     return this.peer
       .createOffer(this.RTCOfferOptions)
       .then((res) => {
-        let desc = res;
+        this.desc = res;
         if (stereo) {
           desc.sdp = desc.sdp.replace(
             "useinbandfec=1",
             "useinbandfec=1; stereo=1"
           );
         }
-        return this.peer.setLocalDescription(desc);
+        return this.peer.setLocalDescription(this.desc);
       })
       .then(() => {
-        return Promise.resolve(desc.sdp);
+        return Promise.resolve(this.desc.sdp);
       })
       .catch((err) => {
         return Promise.reject(err);
