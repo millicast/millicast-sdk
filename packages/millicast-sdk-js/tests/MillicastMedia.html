@@ -1,0 +1,21 @@
+<script src="../dist/millicast.umd.js"></script>
+<script src="./MillicastMediaTest.js"></script>
+<div>
+  <video autoplay id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
+  <br>
+  <fieldset>
+    Microphone (audio input): <select id="audio-input-select" onchange="millicastMediaTest.testChangeAudio(this)" style="width: 200px;"></select>
+    Speakers (audio output): <select id="audio-output-select" style="width: 200px;"></select>
+    Video: <select id="video-select" onchange="millicastMediaTest.testChangeVideo(this)" style="width: 200px;"></select>
+  </fieldset>
+
+  <fieldset>
+  <button onclick="millicastMediaTest.testGetMedia()">Get media</button>
+  <button onclick="millicastMediaTest.testGetDevices()">Get devices</button>
+  <button onclick="millicastMediaTest.testGetTracks()">Get tracks</button>
+  <button onclick="millicastMediaTest.testUnmuteAudio()">Unmute microphone</button>
+  <button onclick="millicastMediaTest.testMuteAudio()">Mute microphone</button>
+  <button onclick="millicastMediaTest.testUnmuteVideo()">Active video</button>
+  <button onclick="millicastMediaTest.testMuteVideo()">Disable video</button>
+  </fieldset>
+</div>
