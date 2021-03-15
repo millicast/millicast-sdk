@@ -1,43 +1,39 @@
 class MillicastSignalingTest {
-  constructor(options = {}) {
-    const defaultOptions = {
-      wsUrl: "ws://localhost:8080/",
-      sdp: "",
-      streamId: "",
+  constructor() {
+    const options = {
+      url: "wss://echo.websocket.org/",
+      sdp: "sdp mock",
     };
-    this.millicastSignaling = new millicast.MillicastSignaling();
+    this.url = options.url;
+    this.sdp = options.sdp;
+    this.millicastSignaling = new millicast.MillicastSignaling(options);
   }
 
   async testConnect() {
-    const url = options.wsUrl;
+    const url = this.url;
     const ws = this.millicastSignaling.connect(url);
     console.log("webSocket open: ", ws);
-    document.getElementById("response").innerHTML = ws;
     return ws;
   }
 
   async testClose() {
-    const url = options.wsUrl;
-    const ws = this.millicastSignaling.close(url);
+    const ws = this.millicastSignaling.close();
     console.log("webSocket closed", ws);
-    document.getElementById("response").innerHTML = ws;
     return ws;
   }
 
   async testSubscribe() {
-    const sdp = options.sdp;
-    const streamId = options.streamId;
+    const sdp = this.sdp;
+    const streamId = "streamId mock";
     const subscriptionSdp = this.millicastSignaling.subscribe(sdp, streamId);
     console.log("subscription sdp: ", subscriptionSdp);
-    document.getElementById("response").innerHTML = subscriptionSdp;
     return subscriptionSdp;
   }
 
   async testPublish() {
-    const sdp = options.sdp;
+    const sdp = this.sdp;
     const publishSdp = this.millicastSignaling.publish(sdp);
     console.log("publish sdp: ", publishSdp);
-    document.getElementById("response").innerHTML = publishSdp;
     return publishSdp;
   }
 }

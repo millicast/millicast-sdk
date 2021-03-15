@@ -24,7 +24,7 @@ export default class MillicastSignaling extends EventEmitter {
       this.ws = new WebSocket(url);
       this.tm = new TransactionManager(this.ws);
       this.ws.onopen = () => {
-        //console.log('ws::onopen');
+        console.log("ws::onopen");
         if (this.ws.readyState !== WebSocket.OPEN) {
           let error = { state: this.ws.readyState };
           this.emit("connection.error", error);
