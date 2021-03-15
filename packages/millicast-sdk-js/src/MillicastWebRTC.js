@@ -1,6 +1,6 @@
-const MillicastUtils = require("./MillicastUtils.js");
+const { MillicastUtils } = require("./MillicastUtils.js");
 
-export default class MillicastWebRTC {
+class MillicastWebRTC {
   constructor() {
     // constructor syntactic suga
     this.peer = null;
@@ -130,3 +130,5 @@ export default class MillicastWebRTC {
     });
   }
 }
+
+module.exports = MillicastWebRTC;
