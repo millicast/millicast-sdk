@@ -38,4 +38,4 @@ class MillicastWebRTCTest {
   }
 }
 
-const millicastWebRTCTest = new millicastWebRTCTest()
+const millicastWebRTCTest = new MillicastWebRTCTest()
