@@ -4,11 +4,11 @@ const MillicastUtils = require("./MillicastUtils.js");
 class MillicastWebRTC {
   constructor() {
     // constructor syntactic suga
-    (this.peer = null),
-      (this.RTCOfferOptions = {
-        offerToReceiveVideo: true,
-        offerToReceiveAudio: true,
-      });
+    this.peer = null,
+    this.RTCOfferOptions = {
+      offerToReceiveVideo: true,
+      offerToReceiveAudio: true,
+    };
   }
 
   async getRTCPeer(config) {
