@@ -8,6 +8,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 8,
     sourceType: "module",
+    experimentalObjectRestSpread: true,
   },
   settings: {
     jest: {
