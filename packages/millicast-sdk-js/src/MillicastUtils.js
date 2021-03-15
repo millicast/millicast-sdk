@@ -1,4 +1,4 @@
-class MillicastUtils {
+export default class MillicastUtils {
   static request(url, method, token, payload) {
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest();
@@ -25,5 +25,3 @@ class MillicastUtils {
     });
   }
 }
-
-module.exports = MillicastUtils;

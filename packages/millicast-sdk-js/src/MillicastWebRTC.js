@@ -1,7 +1,7 @@
-const SemanticSDP = require("semantic-sdp");
-const MillicastUtils = require("./MillicastUtils.js");
+import SemanticSDP from "semantic-sdp";
+import MillicastUtils from "./MillicastUtils.js";
 
-class MillicastWebRTC {
+export default class MillicastWebRTC {
   constructor() {
     // constructor syntactic suga
     (this.peer = null),
@@ -162,5 +162,3 @@ class MillicastWebRTC {
       });
   }
 }
-
-module.export = MillicastWebRTC;

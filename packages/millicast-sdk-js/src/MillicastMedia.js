@@ -4,7 +4,7 @@
  * @param {Object} options - {constraints, }
  * @constructor
  */
-class MillicastMedia {
+export default class MillicastMedia {
   constructor(options) {
     // constructor syntactic sugar
     this.mediaStream = null;
@@ -135,5 +135,3 @@ class MillicastMedia {
     return changed;
   }
 }
-
-module.exports = MillicastMedia;

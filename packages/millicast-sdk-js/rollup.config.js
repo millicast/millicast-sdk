@@ -2,7 +2,6 @@ import pkg from "./package.json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import nodePolyfills from "rollup-plugin-node-polyfills";
-import cjs from "rollup-plugin-cjs-es";
 
 export default [
   // browser-friendly UMD build
@@ -17,7 +16,7 @@ export default [
         "transaction-manager": "TransactionManager",
       },
     },
-    plugins: [nodePolyfills(), nodeResolve(), cjs(), commonjs()],
+    plugins: [nodePolyfills(), nodeResolve(), commonjs()],
   },
 
   {
@@ -26,6 +25,6 @@ export default [
       { file: pkg.main, format: "cjs" },
       { file: pkg.module, format: "es" },
     ],
-    plugins: [nodePolyfills(), nodeResolve(), cjs(), commonjs()],
+    plugins: [nodePolyfills(), nodeResolve(), commonjs()],
   },
 ];
