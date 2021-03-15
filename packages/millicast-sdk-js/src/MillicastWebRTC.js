@@ -121,7 +121,7 @@ export default class MillicastWebRTC {
    * @param {Number} bitrate - Bitrate, 0 unlimited bitrate
    * @return {String} sdp - Mangled SDP
    */
-   updateBandwidthRestriction(sdp, bitrate = 0) {
+  updateBandwidthRestriction(sdp, bitrate = 0) {
     let offer = SemanticSDP.SDPInfo.process(sdp)
     let videoOffer = offer.getMedia("video")
 
