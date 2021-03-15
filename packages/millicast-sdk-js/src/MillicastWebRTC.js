@@ -1,5 +1,5 @@
-import SemanticSDP from "semantic-sdp"
-const MillicastUtils = require("./MillicastUtils.js")
+import SemanticSDP from 'semantic-sdp'
+import MillicastUtils from './MillicastUtils.js'
 
 export default class MillicastWebRTC {
   constructor() { // constructor syntactic suga
