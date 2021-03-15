@@ -21,7 +21,7 @@ class MillicastUtils {
       if (!!token) {
         xhr.setRequestHeader("Authorization", `Bearer ${token}`);
       }
-      (!!payload) ? xhr.send(JSON.stringify(payload)) : xhr.send();
+      !!payload ? xhr.send(JSON.stringify(payload)) : xhr.send();
     });
   }
 }

@@ -1,9 +1,14 @@
-const { MillicastUtils } = require("./MillicastUtils.js");
+import SemanticSDP from "semantic-sdp";
+import MillicastUtils from "./MillicastUtils.js";
 
 class MillicastWebRTC {
   constructor() {
     // constructor syntactic suga
-    this.peer = null;
+    (this.peer = null),
+      (this.RTCOfferOptions = {
+        offerToReceiveVideo: true,
+        offerToReceiveAudio: true,
+      });
   }
 
   async getRTCPeer(config) {
@@ -23,67 +28,6 @@ class MillicastWebRTC {
     } catch (e) {
       throw e;
     }
-  }
-
-  getRTCLocalSDP(
-    RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
-  ) {
-    let desc = null;
-    return this.peer
-      .createOffer(RTCOfferOptions)
-      .then((res) => {
-        desc = res;
-        return this.peer.setLocalDescription(desc);
-      })
-      .then(() => {
-        return Promise.resolve(desc.sdp);
-      })
-      .catch((err) => {
-        //console.error(err);
-        return Promise.reject(err);
-      });
-  }
-
-  getRTCPublisherSDP(
-    mediaStream,
-    RTCOfferOptions = { offerToReceiveVideo: true, offerToReceiveAudio: true }
-  ) {
-    let desc;
-    //let RTCOfferOptions = {offerToReceiveAudio, offerToReceiveVideo};
-    if (mediaStream) {
-      mediaStream.getTracks().forEach((track) => {
-        //console.log('audio track: ', track);
-        this.peer.addTrack(track, mediaStream);
-      });
-    }
-
-    return this.peer
-      .createOffer(RTCOfferOptions)
-      .then((res) => {
-        desc = res;
-        //support for stereo
-        desc.sdp = desc.sdp.replace(
-          "useinbandfec=1",
-          "useinbandfec=1; stereo=1"
-        );
-        return this.peer.setLocalDescription(desc);
-      })
-      .then(() => {
-        return Promise.resolve(desc.sdp);
-      })
-      .catch((err) => {
-        //console.error(err);
-        return Promise.reject(err);
-      });
-  }
-
-  setRTCRemoteSDP(sdp) {
-    const answer = new RTCSessionDescription({
-      type: "answer",
-      sdp,
-    });
-    //Set it
-    return this.peer.setRemoteDescription(answer);
   }
 
   getRTCConfiguration() {
@@ -128,6 +72,94 @@ class MillicastWebRTC {
           resolve(a);
         });
     });
+  }
+
+  setRTCRemoteSDP(sdp) {
+    const answer = new RTCSessionDescription({
+      type: "answer",
+      sdp,
+    });
+    //Set it
+    return this.peer.setRemoteDescription(answer);
+  }
+
+  getRTCLocalSDP(stereo, mediaStream) {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => {
+        this.peer.addTrack(track, mediaStream);
+      });
+    }
+
+    return this.peer
+      .createOffer(this.RTCOfferOptions)
+      .then((res) => {
+        let desc = res;
+        if (stereo) {
+          desc.sdp = desc.sdp.replace(
+            "useinbandfec=1",
+            "useinbandfec=1; stereo=1"
+          );
+        }
+        return this.peer.setLocalDescription(desc);
+      })
+      .then(() => {
+        return Promise.resolve(desc.sdp);
+      })
+      .catch((err) => {
+        return Promise.reject(err);
+      });
+  }
+
+  resolveLocalSDP(mediaStream) {
+    return this.getRTCConfiguration()
+      .then((config) => {
+        return this.getRTCPeer(config);
+      })
+      .then(() => {
+        return this.getRTCLocalSDP(true, mediaStream);
+      });
+  }
+
+  /**
+   * Establish MillicastStream Update Bandwidth.
+   * @param {String} sdp - Remote SDP.
+   * @param {Number} bitrate - Bitrate, 0 unlimited bitrate
+   * @return {String} sdp - Mangled SDP
+   */
+  updateBandwidthRestriction(sdp, bitrate = 0) {
+    let offer = SemanticSDP.SDPInfo.process(sdp);
+    let videoOffer = offer.getMedia("video");
+
+    if (bitrate < 1) {
+      sdp = sdp.replace(/b=AS:.*\r\n/, "").replace(/b=TIAS:.*\r\n/, "");
+    } else {
+      videoOffer.setBitrate(bitrate);
+      sdp = offer.toString();
+      if (!!window.adapter) {
+        if (
+          sdp.indexOf("b=AS:") > -1 &&
+          adapter.browserDetails.browser === "firefox"
+        ) {
+          sdp = sdp.replace("b=AS:", "b=TIAS:");
+        }
+      }
+    }
+    return sdp;
+  }
+
+  updateBitrate(bitrate = 0) {
+    return this.getRTCPeer()
+      .then((pc) => {
+        this.peer = pc;
+        return this.getRTCLocalSDP(true, null);
+      })
+      .then(() => {
+        let sdp = this.updateBandwidthRestriction(
+          this.peer.remoteDescription.sdp,
+          bitrate
+        );
+        return this.setRTCRemoteSDP(sdp);
+      });
   }
 }
 
