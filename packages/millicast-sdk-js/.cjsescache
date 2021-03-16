@@ -1,6 +1,0 @@
-[
-  "src/MillicastMedia.js",
-  "src/MillicastSignaling.js",
-  "src/MillicastUtils.js",
-  "src/MillicastWebRTC.js"
-]
