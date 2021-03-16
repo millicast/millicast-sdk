@@ -7,6 +7,13 @@ class MillicastWebRTCTest {
     this.streamAccountId = "tnJhvK";
     this.millicastWebRTC = new millicast.MillicastWebRTC()
     this.millicastSignaling = new millicast.MillicastSignaling()
+
+    const defaultConstraints = {
+      audio: true,
+      video: true
+    }
+    const constraintsToUse = defaultConstraints
+    this.millicastMedia = new millicast.MillicastMedia(constraintsToUse)
   }
 
   async testGetRTCPeer() {
@@ -45,25 +52,12 @@ class MillicastWebRTCTest {
   }
 
   async testSetRTCRemoteSDP() {
-    // const sdp = await this.millicastWebRTC.resolveLocalSDP(null)
-    // const remoteSDP = await this.millicastSignaling.publish(sdp)
-
-    // const response = await this.millicastWebRTC.setRTCRemoteSDP(remoteSDP)
-    // console.log('setRTCRemoteSDP response: ', response)
-    // return response
+    const mediaStream = await this.millicastMedia.getMedia()
 
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
-    const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, null)
+    const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, mediaStream)
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
     let remotesdp = await this.millicastSignaling.publish(localsdp)
-
-    if (remotesdp && remotesdp.indexOf('\na=extmap-allow-mixed') !== -1) {
-      remotesdp = remotesdp.split('\n').filter(function (line) {
-        return line.trim() !== 'a=extmap-allow-mixed'
-      }).join('\n')
-      // console.log('trimed a=extmap-allow-mixed - sdp \n',remotesdp)
-    }
-    // console.log(remotesdp)
 
     const response = await this.millicastWebRTC.setRTCRemoteSDP(remotesdp)
     console.log('setRTCRemoteSDP response: ', response)
