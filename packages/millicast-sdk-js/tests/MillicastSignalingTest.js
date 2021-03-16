@@ -49,19 +49,14 @@ class MillicastSignalingTest {
           return this.millicastSignaling
             .subscribe(localSdp, this.streamAccountId)
             .then((remoteSdp) => {
-              return this.millicastRTCPeer.setRTCRemoteSDP(remoteSdp);
+              console.log("remote sdp: ", remoteSdp);
+              return this.millicastWebRTC.setRTCRemoteSDP(remoteSdp);
             });
         });
     });
   }
 
-  async testPublish(
-    options = {
-      mediaStream: null,
-      disableVideo: false,
-      disableAudio: false,
-    }
-  ) {
+  async testPublish() {
     let director = null;
 
     return millicast.MillicastDirector.getPublisher(
@@ -70,7 +65,7 @@ class MillicastSignalingTest {
     ).then((dir) => {
       director = dir;
       return this.millicastWebRTC
-        .resolveLocalSDP(true, options.mediaStream)
+        .resolveLocalSDP(true, null)
         .then((localSdp) => {
           this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
           return this.millicastSignaling
