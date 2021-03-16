@@ -1,6 +1,8 @@
 class MillicastSignalingTest {
   constructor() {
     this.wsUrl = "";
+    this.testUrl = "wss://echo.websocket.org/";
+    this.sdp = "sdp mock";
     this.millicastSignaling = new millicast.MillicastSignaling();
   }
 
@@ -23,16 +25,26 @@ class MillicastSignalingTest {
   async testSubscribe() {
     const sdp = this.sdp;
     const streamId = "streamId mock";
-    const subscriptionSdp = this.millicastSignaling.subscribe(sdp, streamId);
-    console.log("subscription sdp: ", subscriptionSdp);
-    return subscriptionSdp;
+    return millicast.MillicastDirector.getPublisher().then((res) => {
+      this.millicastSignaling.wsUrl = `${res.data.wsUrl}?token=${res.data.jwt}`;
+      return this.millicastSignaling
+        .subscribe(sdp, streamId)
+        .then((subscriptionSdp) => {
+          console.log("subscription sdp: ", subscriptionSdp);
+          return subscriptionSdp;
+        });
+    });
   }
 
   async testPublish() {
     const sdp = this.sdp;
-    const publishSdp = this.millicastSignaling.publish(sdp);
-    console.log("publish sdp: ", publishSdp);
-    return publishSdp;
+    return millicast.MillicastDirector.getPublisher().then((res) => {
+      this.millicastSignaling.wsUrl = `${res.data.wsUrl}?token=${res.data.jwt}`;
+      return this.millicastSignaling.publish(sdp).then((publishSdp) => {
+        console.log("publish sdp: ", publishSdp);
+        return publishSdp;
+      });
+    });
   }
 }
 
