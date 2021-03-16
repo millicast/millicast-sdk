@@ -24,10 +24,13 @@ export default class MillicastPublish {
             return Promise.reject('Token required')
         }
         if(!streamName){
-            return Promise.reject( 'Streamname required')
+            return Promise.reject('Streamname required')
         }
         if(!options.mediaStream){
-          return Promise.reject( 'MediaStream required')
+          return Promise.reject('MediaStream required')
+        }
+        if(this.isActive()){
+            return Promise.reject('Broadcast currently working')
         }
 
         return MillicastDirector.getPublisher(token, streamName)
@@ -64,5 +67,11 @@ export default class MillicastPublish {
     stop() {
         this.webRTCPeer.closeRTCPeer()
         this.millicastSignaling.close()
+    }
+
+    isActive(){
+        const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
+        console.log("RTCPeer status: ", rtcPeerState)
+        return rtcPeerState === 'connected'
     }
 }

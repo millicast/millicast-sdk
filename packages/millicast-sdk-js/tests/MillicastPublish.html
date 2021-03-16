@@ -9,7 +9,7 @@
   <video autoplay controls id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
   <br />
   <fieldset>
-    Bitrate: <select id='bitrate-select'>
+    Bitrate: <select id='bitrate-select' onchange="millicastPublishTest.testUpdateBitrate(this)">
       <option value="0" default>Unlimited</option>
       <option value="2000">2000</option>
       <option value="1000">1000</option>

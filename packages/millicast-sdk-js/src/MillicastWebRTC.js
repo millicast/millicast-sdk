@@ -95,7 +95,7 @@ export default class MillicastWebRTC {
       .then((res) => {
         this.desc = res;
         if (stereo) {
-          desc.sdp = desc.sdp.replace(
+          this.desc.sdp = this.desc.sdp.replace(
             "useinbandfec=1",
             "useinbandfec=1; stereo=1"
           );
@@ -160,5 +160,13 @@ export default class MillicastWebRTC {
         );
         return this.setRTCRemoteSDP(sdp);
       });
+  }
+
+  getRTCPeerStatus() {
+    let state = 'not_established'
+    if(this.peer)
+      state = this.peer.connectionState
+
+    return state
   }
 }
