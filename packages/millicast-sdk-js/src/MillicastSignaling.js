@@ -6,6 +6,7 @@ export default class MillicastSignaling extends EventEmitter {
     super();
     this.ws = null;
     this.tm = null;
+    this.streamName = "klr0vxjk";
     this.wsUrl = options && options.url ? options.url : "ws://localhost:8080/";
   }
 
@@ -92,6 +93,7 @@ export default class MillicastSignaling extends EventEmitter {
   async publish(sdp) {
     //console.log('publish ', sdp)
     let data = {
+      name: this.streamName,
       sdp,
       codec: "h264",
     };
