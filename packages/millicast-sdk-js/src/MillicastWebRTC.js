@@ -4,11 +4,12 @@ import MillicastUtils from "./MillicastUtils.js";
 export default class MillicastWebRTC {
   constructor() {
     // constructor syntactic suga
-    (this.peer = null),
-      (this.RTCOfferOptions = {
-        offerToReceiveVideo: true,
-        offerToReceiveAudio: true,
-      });
+    this.desc = null,
+    this.peer = null,
+    this.RTCOfferOptions = {
+      offerToReceiveVideo: true,
+      offerToReceiveAudio: true,
+    };
   }
 
   async getRTCPeer(config) {
@@ -24,7 +25,8 @@ export default class MillicastWebRTC {
 
   async closeRTCPeer() {
     try {
-      this.peer = null;
+      this.peer.close();
+      return this.peer
     } catch (e) {
       throw e;
     }
@@ -79,8 +81,8 @@ export default class MillicastWebRTC {
       type: "answer",
       sdp,
     });
-    //Set it
-    return this.peer.setRemoteDescription(answer);
+    this.peer.setRemoteDescription(answer)
+    return this.peer
   }
 
   getRTCLocalSDP(stereo, mediaStream) {
