@@ -35,44 +35,24 @@ class MillicastSignalingTest {
     }
   ) {
     let director = null;
-    let pc = null;
 
     return millicast.MillicastDirector.getSubscriber(
       this.streamAccountId,
       this.streamName,
       true
-    )
-      .then((dir) => {
-        director = dir;
-        return this.millicastWebRTC.getRTCConfiguration();
-      })
-      .then((config) => {
-        return this.millicastWebRTC.getRTCPeer(config);
-      })
-      .then((peer) => {
-        pc = peer;
-        pc.ontrack = function (event) {
-          document.getElementById("received_video").srcObject =
-            event.streams[0];
-          document.getElementById("hangup-button").disabled = false;
-        };
-        this.millicastWebRTC.RTCOfferOptions = {
-          offerToReceiveVideo: !options.disableVideo,
-          offerToReceiveAudio: !options.disableAudio,
-        };
-        return this.millicastWebRTC
-          .getRTCLocalSDP(null, options.mediaStream)
-          .then((sdp) => {
-            this.millicastWebRTC.setRTCRemoteSDP(sdp).then((remoteSdp) => {
-              this.millicastSignaling
-                .subscribe(remoteSdp, this.streamId)
-                .then((subscriptionSdp) => {
-                  console.log("subscription sdp: ", subscriptionSdp);
-                  return subscriptionSdp;
-                });
+    ).then((dir) => {
+      director = dir;
+      return this.millicastWebRTC
+        .resolveLocalSDP(false, options.mediaStream)
+        .then((localSdp) => {
+          this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
+          return this.millicastSignaling
+            .subscribe(localSdp, this.streamAccountId)
+            .then((remoteSdp) => {
+              return this.millicastRTCPeer.setRTCRemoteSDP(remoteSdp);
             });
-          });
-      });
+        });
+    });
   }
 
   async testPublish(
@@ -83,31 +63,24 @@ class MillicastSignalingTest {
     }
   ) {
     let director = null;
-    let pc = null;
 
-    return millicast.MillicastDirector.getPublisher(this.token, this.streamName)
-      .then((dir) => {
-        director = dir;
-        return this.millicastWebRTC.getRTCConfiguration();
-      })
-      .then((config) => {
-        return this.millicastWebRTC.getRTCPeer(config);
-      })
-      .then((peer) => {
-        pc = peer;
-        this.millicastWebRTC.RTCOfferOptions = {
-          offerToReceiveVideo: !options.disableVideo,
-          offerToReceiveAudio: !options.disableAudio,
-        };
-        return this.millicastWebRTC.getRTCLocalSDP(null, options.mediaStream);
-      })
-      .then((localSdp) => {
-        this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
-        return this.millicastSignaling.publish(localSdp).then((publishSdp) => {
-          console.log("publish sdp: ", publishSdp);
-          return publishSdp;
+    return millicast.MillicastDirector.getPublisher(
+      this.token,
+      this.streamName
+    ).then((dir) => {
+      director = dir;
+      return this.millicastWebRTC
+        .resolveLocalSDP(true, options.mediaStream)
+        .then((localSdp) => {
+          this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
+          return this.millicastSignaling
+            .publish(localSdp)
+            .then((publishSdp) => {
+              console.log("publish sdp: ", publishSdp);
+              return publishSdp;
+            });
         });
-      });
+    });
   }
 }
 
