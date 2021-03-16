@@ -112,13 +112,13 @@ export default class MillicastWebRTC {
       });
   }
 
-  resolveLocalSDP(mediaStream) {
+  resolveLocalSDP(stereo, mediaStream) {
     return this.getRTCConfiguration()
       .then((config) => {
         return this.getRTCPeer(config);
       })
       .then(() => {
-        return this.getRTCLocalSDP(true, mediaStream);
+        return this.getRTCLocalSDP(stereo, mediaStream);
       });
   }
 
