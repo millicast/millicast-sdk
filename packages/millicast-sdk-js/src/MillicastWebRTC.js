@@ -26,6 +26,7 @@ export default class MillicastWebRTC {
   async closeRTCPeer() {
     try {
       this.peer.close();
+      this.peer = null
       return this.peer
     } catch (e) {
       throw e;
