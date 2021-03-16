@@ -3,35 +3,33 @@ class MillicastPublishTest {
     this.millicastPublish = new millicast.MillicastPublish()
   }
 
+  async init(){
+    this.mediaStream = await millicastMediaTest.testGetMedia()
+  }
+
   async testStart(options = undefined) {
-    const mediaStream = await millicastMediaTest.testGetMedia()
+    const accountId = 'tnJhvK'
     const broadcastOptions = options ?? {
-      token: 'dummyToken', 
-      streamName: 'dummyStreamName', 
-      mediaStream: mediaStream, 
+      token: '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849', 
+      streamName: 'km0n0h1u', 
+      mediaStream: this.mediaStream,
       bandwidth: 0, 
       disableVideo: false, 
       disableAudio: false
     }
     const response = await this.millicastPublish.broadcast(broadcastOptions)
-    console.log("Start response: ", response);
-    // const url = this.url;
-    // const ws = this.millicastSignaling.connect(url);
-    // console.log("webSocket open: ", ws);
-    // return ws;
+    console.log('BROADCASTING!! Start response: ', response);
+    const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`
+    console.log('Broadcast viewer link: ', viewLink)
+    document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
   }
 
   testStop() {
     this.millicastPublish.stop()
     console.log("Broadcast stopped")
+    document.getElementById('broadcast-status-label').innerHTML = 'READY!'
   }
-
-  // async testPublish() {
-  //   const sdp = this.sdp;
-  //   const publishSdp = this.millicastSignaling.publish(sdp);
-  //   console.log("publish sdp: ", publishSdp);
-  //   return publishSdp;
-  // }
 }
 
-const millicastPublishTest = new MillicastPublishTest();
+const millicastPublishTest = new MillicastPublishTest()
+millicastPublishTest.init()
