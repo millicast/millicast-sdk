@@ -46,7 +46,7 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Destory MillicastStream Connection.
+   * Destroy MillicastStream Connection.
    *
    */
   async close() {

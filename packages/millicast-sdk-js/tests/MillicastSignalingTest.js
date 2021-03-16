@@ -1,19 +1,17 @@
 class MillicastSignalingTest {
   constructor() {
-    const options = {
-      url: "wss://echo.websocket.org/",
-      sdp: "sdp mock",
-    };
-    this.url = options.url;
-    this.sdp = options.sdp;
-    this.millicastSignaling = new millicast.MillicastSignaling(options);
+    this.wsUrl = "";
+    this.millicastSignaling = new millicast.MillicastSignaling();
   }
 
   async testConnect() {
-    const url = this.url;
-    const ws = this.millicastSignaling.connect(url);
-    console.log("webSocket open: ", ws);
-    return ws;
+    return millicast.MillicastDirector.getPublisher().then((res) => {
+      this.wsUrl = `${res.data.wsUrl}?token=${res.data.jwt}`;
+      return this.millicastSignaling.connect(this.wsUrl).then((ws) => {
+        console.log("webSocket open: ", ws);
+        return ws;
+      });
+    });
   }
 
   async testClose() {
