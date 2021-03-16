@@ -6,7 +6,7 @@ export default class MillicastSignaling extends EventEmitter {
     super();
     this.ws = null;
     this.tm = null;
-    this.streamName = "klr0vxjk";
+    this.streamName = "kmc1vt0c";
     this.wsUrl = options && options.url ? options.url : "ws://localhost:8080/";
   }
 
