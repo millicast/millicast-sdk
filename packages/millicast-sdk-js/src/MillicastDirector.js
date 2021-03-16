@@ -18,12 +18,12 @@ export default class MillicastDirector {
   }
 
   static async getSubscriber(
-    token,
     streamAccountId,
     streamName,
     unauthorizedSubscribe = true
   ) {
     let payload = { streamAccountId, streamName, unauthorizedSubscribe };
+    const token = null;
     let response;
     try {
       response = await MillicastUtils.request(
@@ -32,6 +32,7 @@ export default class MillicastDirector {
         token,
         payload
       );
+      console.log(response.data);
       return response.data;
     } catch (e) {
       throw e;
