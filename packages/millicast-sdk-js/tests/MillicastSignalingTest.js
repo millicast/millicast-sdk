@@ -48,9 +48,8 @@ class MillicastSignalingTest {
           this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
           return this.millicastSignaling
             .subscribe(localSdp, this.streamAccountId)
-            .then((remoteSdp) => {
-              console.log("remote sdp: ", remoteSdp);
-              return this.millicastWebRTC.setRTCRemoteSDP(remoteSdp);
+            .then((response) => {
+              console.log("subscribe sdp: ", response);
             });
         });
     });
