@@ -1,5 +1,10 @@
+
 class MillicastWebRTCTest {
   constructor() {
+    this.token =
+      "5159e188181e7fea4b21bd4af7a04e1c634af11995d421431a2472c134b59f31";
+    this.streamName = "kmc1vt0c";
+    this.streamAccountId = "tnJhvK";
     this.millicastWebRTC = new millicast.MillicastWebRTC()
     this.millicastSignaling = new millicast.MillicastSignaling()
   }
@@ -40,13 +45,27 @@ class MillicastWebRTCTest {
   }
 
   async testSetRTCRemoteSDP() {
-    const sdp = await this.millicastWebRTC.resolveLocalSDP(null)
+    // const sdp = await this.millicastWebRTC.resolveLocalSDP(null)
+    // const remoteSDP = await this.millicastSignaling.publish(sdp)
 
-    const remoteSDP = await this.millicastSignaling.publish(sdp)
+    // const response = await this.millicastWebRTC.setRTCRemoteSDP(remoteSDP)
+    // console.log('setRTCRemoteSDP response: ', response)
+    // return response
 
-    // await this.millicastWebRTC.getRTCPeer()
-    // const sdp = await this.millicastWebRTC.getRTCLocalSDP(false, null)
-    const response = this.millicastWebRTC.setRTCRemoteSDP(remoteSDP)
+    const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
+    const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, null)
+    this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
+    let remotesdp = await this.millicastSignaling.publish(localsdp)
+
+    if (remotesdp && remotesdp.indexOf('\na=extmap-allow-mixed') !== -1) {
+      remotesdp = remotesdp.split('\n').filter(function (line) {
+        return line.trim() !== 'a=extmap-allow-mixed'
+      }).join('\n')
+      // console.log('trimed a=extmap-allow-mixed - sdp \n',remotesdp)
+    }
+    // console.log(remotesdp)
+
+    const response = await this.millicastWebRTC.setRTCRemoteSDP(remotesdp)
     console.log('setRTCRemoteSDP response: ', response)
     return response
   }
