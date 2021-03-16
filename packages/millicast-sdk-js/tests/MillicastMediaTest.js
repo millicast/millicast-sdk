@@ -12,7 +12,6 @@ class MillicastMediaTest {
     const mediaStream = await this.millicastMedia.getMedia()
     console.log('GetMedia response:', mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = mediaStream
-    //await this.testGetDevices()
     return mediaStream
   }
 

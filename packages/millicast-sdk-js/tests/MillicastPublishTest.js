@@ -4,22 +4,23 @@ class MillicastPublishTest {
   }
 
   async init(){
-    this.mediaStream = await millicastMediaTest.testGetMedia()
+    this.millicastMedia = new millicast.MillicastMedia({ audio: true, video: true })
+    const mediaStream = await this.millicastMedia.getMedia()
+    console.log('GetMedia response:', mediaStream)
+    document.getElementById('millicast-media-video-test').srcObject = mediaStream
   }
 
   async testStart(options = undefined) {
     const accountId = 'tnJhvK'
-    const disableVideo = document.getElementById('disable-video-checkbox').checked
-    const disableAudio = document.getElementById('disable-audio-checkbox').checked
     const bandwidth = Number.parseInt(document.getElementById('bitrate-select').value)
 
     const broadcastOptions = options ?? {
       token: '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849', 
       streamName: 'km0n0h1u', 
-      mediaStream: this.mediaStream,
+      mediaStream: this.millicastMedia.mediaStream,
       bandwidth: bandwidth, 
-      disableVideo: disableVideo,
-      disableAudio: disableAudio
+      disableVideo: false,
+      disableAudio: false
     }
     try{
       const response = await this.millicastPublish.broadcast(broadcastOptions)
@@ -45,6 +46,16 @@ class MillicastPublishTest {
       await this.millicastPublish.webRTCPeer.updateBitrate(bitrate)
       console.log('Bitrate updated')
     }
+  }
+
+  testMuteAudio(checkboxObject){
+    const muted = this.millicastMedia.muteAudio(checkboxObject.checked)
+    console.log('MuteAudio response:', muted)
+  }
+
+  testMuteVideo(checkboxObject){
+    const muted = this.millicastMedia.muteVideo(checkboxObject.checked)
+    console.log('MuteVideo response:', muted)
   }
 }
 

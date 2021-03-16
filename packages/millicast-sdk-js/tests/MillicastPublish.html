@@ -17,10 +17,10 @@
       <option value="250">250</option>
       <option value="125">125</option>
     </select>
-    <input type="checkbox" id="disable-audio-checkbox">
-    <label for="disable-audio">Disable audio</label>
-    <input type="checkbox" id="disable-video-checkbox">
-    <label for="disable-video">Disable video</label>
+    <input type="checkbox" id="disable-audio-checkbox" onclick="millicastPublishTest.testMuteAudio(this)">
+    <label for="disable-audio">Mute audio</label>
+    <input type="checkbox" id="disable-video-checkbox" onclick="millicastPublishTest.testMuteVideo(this)">
+    <label for="disable-video">Mute video</label>
   </fieldset>
   <fieldset>
     <button onclick="millicastPublishTest.testStart()">
