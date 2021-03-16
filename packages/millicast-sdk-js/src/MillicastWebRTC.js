@@ -82,8 +82,7 @@ export default class MillicastWebRTC {
       type: "answer",
       sdp,
     });
-    this.peer.setRemoteDescription(answer)
-    return this.peer
+    return this.peer.setRemoteDescription(answer)
   }
 
   getRTCLocalSDP(stereo, mediaStream) {

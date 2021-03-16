@@ -40,13 +40,13 @@ class MillicastWebRTCTest {
   }
 
   async testSetRTCRemoteSDP() {
-    // const sdp = await this.millicastWebRTC.resolveLocalSDP(null)
+    const sdp = await this.millicastWebRTC.resolveLocalSDP(null)
 
-    // const publishSdp = await this.millicastSignaling.publish(sdp)
+    const remoteSDP = await this.millicastSignaling.publish(sdp)
 
-    await this.millicastWebRTC.getRTCPeer()
-    const sdp = await this.millicastWebRTC.getRTCLocalSDP(false, null)
-    const response = this.millicastWebRTC.setRTCRemoteSDP(sdp)
+    // await this.millicastWebRTC.getRTCPeer()
+    // const sdp = await this.millicastWebRTC.getRTCLocalSDP(false, null)
+    const response = this.millicastWebRTC.setRTCRemoteSDP(remoteSDP)
     console.log('setRTCRemoteSDP response: ', response)
     return response
   }
@@ -65,7 +65,7 @@ class MillicastWebRTCTest {
   }
 
   async testResolveLocalSDP() {
-    const response = await this.millicastWebRTC.resolveLocalSDP(null)
+    const response = await this.millicastWebRTC.resolveLocalSDP(false, null)
     console.log('resolveLocalSDP response: ', response)
     return response
   }
