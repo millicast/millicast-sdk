@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * MillicastMedia class.
+ * MillicastMedia class: it's in charge of the devices, their respective streams, and the states of those streams.
  * @param {Object} options - {constraints, }
  *
  * @constructor

@@ -21,7 +21,7 @@
   },
   "docdash": {
     "static": false, // Display the static members inside the navbar
-    "sort": false, // Sort the methods in the navbar
+    "sort": true, // Sort the methods in the navbar
     "sectionOrder": [
       // Order the main section in the navbar (default order shown here)
       "Classes",
