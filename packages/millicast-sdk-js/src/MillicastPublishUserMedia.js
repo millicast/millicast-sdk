@@ -12,6 +12,12 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
       this.mediaManager = new MillicastMedia(options)
     }
 
+    static async build(options = undefined){
+      const instance = new MillicastPublishUserMedia(options)
+      await instance.getMediaStream()
+      return instance
+    }
+
     get constraints() {
       return this.mediaManager.constraint
     }
@@ -30,6 +36,10 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
 
     get activeAudio(){
         return this.mediaManager.audioInput
+    }
+
+    getBroadcastMediaStream(){
+      return this.mediaManager.mediaStream
     }
 
     /**
@@ -81,7 +91,7 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
         }
     }
 
-    async muteMedia(type, boo){
+    muteMedia(type, boo){
         if(type === 'audio'){
             return this.mediaManager.muteAudio(boo)
         }else if(type === 'video'){

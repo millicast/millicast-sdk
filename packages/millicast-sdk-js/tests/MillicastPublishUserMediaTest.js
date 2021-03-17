@@ -1,22 +1,23 @@
 class MillicastPublishUserMediaTest {
   constructor() {
     this.mediaStream = null
-    const options = {
+    this.options = {
       audio: {
         echoCancellation: false,
         channelCount: { ideal: 2 },
       },
       video: true,
     }
-    this.millicastPublishUserMedia = new millicast.MillicastPublishUserMedia(options)
+    this.millicastPublishUserMedia = null
   }
 
   async init(){
-    await this.getMediaStream()
+    this.millicastPublishUserMedia = await millicast.MillicastPublishUserMedia.build(this.options)
+    await this.setVideoSource()
     await this.getDevices()
   }
 
-  async getMediaStream() {
+  async setVideoSource() {
     this.mediaStream = await this.millicastPublishUserMedia.getMediaStream()
     console.log('GetMedia response:', this.mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream 
@@ -46,7 +47,6 @@ class MillicastPublishUserMediaTest {
     const broadcastOptions = options ?? {
       token: '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849', 
       streamName: 'km0n0h1u', 
-      mediaStream: this.mediaStream,
       bandwidth: bandwidth, 
       disableVideo: false,
       disableAudio: false
