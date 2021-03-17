@@ -8,7 +8,7 @@ import MillicastDirector from './MillicastDirector.js'
  * @constructor
  */
 export default class MillicastPublish {
-    constructor(options) {
+    constructor() {
         this.webRTCPeer = new MillicastWebRTC()
         this.millicastSignaling = new MillicastSignaling()
     }
