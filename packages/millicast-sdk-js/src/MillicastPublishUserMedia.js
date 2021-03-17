@@ -21,7 +21,7 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
     }
 
     get devices() {
-        return this.mediaManager.devices
+        return this.mediaManager.getDevices
     }
 
     get activeVideo(){
@@ -86,16 +86,6 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
             return this.mediaManager.muteAudio(boo)
         }else if(type === 'video'){
             return this.mediaManager.muteVideo(boo)
-        }else{
-            return false
-        }
-    }
-
-    async unMuteMedia(type){
-        if(type === 'audio'){
-            return this.mediaManager.muteAudio(false)
-        }else if(type === 'video'){
-            return this.mediaManager.muteVideo(false)
         }else{
             return false
         }
