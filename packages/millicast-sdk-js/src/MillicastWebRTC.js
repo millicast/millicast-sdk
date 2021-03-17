@@ -153,6 +153,7 @@ export default class MillicastWebRTC {
     return this.getRTCPeer()
       .then((pc) => {
         this.peer = pc;
+        console.log(this.peer)
         return this.getRTCLocalSDP(true, null);
       })
       .then(() => {
@@ -166,7 +167,7 @@ export default class MillicastWebRTC {
 
   getRTCPeerStatus() {
     let state = 'not_established'
-    if(this.peer)
+    if (this.peer)
       state = this.peer.connectionState
 
     return state
