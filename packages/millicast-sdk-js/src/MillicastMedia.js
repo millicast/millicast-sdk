@@ -1,12 +1,15 @@
 "use strict";
+
 /**
- * MillicastMedia class.
+ * MillicastMedia class: it's in charge of the devices, their respective streams, and the states of those streams.
  * @param {Object} options - {constraints, }
+ *
  * @constructor
  */
+
 export default class MillicastMedia {
   constructor(options) {
-    // constructor syntactic sugar
+    //constructor syntactic sugar
     this.mediaStream = null;
 
     this.constraints = {
@@ -39,9 +42,21 @@ export default class MillicastMedia {
     return input;
   }
 
+  /**
+   * Get active video device
+   *
+   * @returns {MediaStreamTrack}
+   */
+
   get videoInput() {
     return this.getInput("video");
   }
+
+  /**
+   * Get active audio device
+   *
+   * @returns {MediaStreamTrack}
+   */
 
   get audioInput() {
     return this.getInput("audio");
@@ -50,9 +65,9 @@ export default class MillicastMedia {
   /**
    * Get User Media
    *
-   * @return {MediaStream}
-   *
+   * @returns {MediaStream}
    */
+
   async getMedia() {
     //gets user cam and mic
     try {
@@ -65,12 +80,13 @@ export default class MillicastMedia {
       throw error
     }
   }
+
   /**
    * Get Enumerate Devices
    *
-   * @return {Promise} devices - sorted object containing arrays audioin, videoin
-   *
+   * @returns {Promise} devices - sorted object containing arrays audioin, videoin
    */
+
   async getMediaDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
       throw new Error(
@@ -95,9 +111,21 @@ export default class MillicastMedia {
       items[device.kind].push(device);
   }
 
+  /**
+   * @param {String} id the id from the selected video device
+   *
+   * @returns {MediaStream} stream from the latest selected video device
+   */
+
   async changeVideo(id) {
     return await this.changeSource(id, "video");
   }
+
+  /**
+   * @param {String} id the id from the selected audio device
+   *
+   * @returns {MediaStream} stream from the latest selected audio device
+   */
 
   async changeAudio(id) {
     return await this.changeSource(id, "audio");
@@ -115,6 +143,12 @@ export default class MillicastMedia {
     return await this.getMedia();
   }
 
+  /**
+   * @param {boolean} boo true or false depending of the state of the selected device stream
+   *
+   * @returns {boolean} if mediaStream exists, returns false for setting the new video state
+   */
+
   muteVideo(boolean = true) {
     let changed = false;
     if (this.mediaStream) {
@@ -125,6 +159,12 @@ export default class MillicastMedia {
     }
     return changed;
   }
+
+  /**
+   * @param {boolean} boo true or false depending of the state of the selected device stream
+   *
+   * @returns {boolean} if mediaStream exists, returns false for setting the new audio state
+   */
 
   muteAudio(boolean = true) {
     let changed = false;
