@@ -38,8 +38,8 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
         return this.mediaManager.audioInput
     }
 
-    getBroadcastMediaStream(){
-      return this.mediaManager.mediaStream
+    broadcast(options = {token: null, streamName: null, bandwidth: 0, disableVideo: false, disableAudio: false}) {
+      return super.broadcast({...options, mediaStream: this.mediaManager.mediaStream})
     }
 
     /**
@@ -61,6 +61,8 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
       this.mediaManager.mediaStream = null
     }
 
+    //Used for change audio and video given by type before broadcast.
+    //The goal of this method is to update the mediaStream and change it in WebRTC while broadcasting.
     updateMediaStream(type, id){
         if(type === 'audio'){
           return new Promise((resolve, reject) => {

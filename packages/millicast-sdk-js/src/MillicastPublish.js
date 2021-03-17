@@ -9,14 +9,11 @@ import MillicastDirector from './MillicastDirector.js'
  */
 export default class MillicastPublish {
     constructor() {
-        this.broadcastOptions = null
         this.webRTCPeer = new MillicastWebRTC()
         this.millicastSignaling = new MillicastSignaling()
     }
 
     broadcast(options = {token: null, streamName: null, mediaStream: null, bandwidth: 0, disableVideo: false, disableAudio: false}) {
-        this.broadcastOptions = options
-        const mediaStream = this.getBroadcastMediaStream()
         let bandwidth = options.bandwidth
         let disableVideo = options.disableVideo, disableAudio = options.disableAudio
         let pc = null
@@ -29,7 +26,7 @@ export default class MillicastPublish {
         if(!streamName){
             return Promise.reject('Streamname required')
         }
-        if(!mediaStream){
+        if(!options.mediaStream){
           return Promise.reject('MediaStream required')
         }
         if(this.isActive()){
@@ -47,7 +44,7 @@ export default class MillicastPublish {
             .then((peer) => {
                 pc = peer
                 this.webRTCPeer.RTCOfferOptions = {offerToReceiveVideo: !options.disableVideo, offerToReceiveAudio: !options.disableAudio}
-                return this.webRTCPeer.getRTCLocalSDP(null, mediaStream)
+                return this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
             })
             .then((localsdp) => {
                 this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
@@ -65,10 +62,6 @@ export default class MillicastPublish {
                 }
                 return this.webRTCPeer.setRTCRemoteSDP(remotesdp)
             });
-    }
-
-    getBroadcastMediaStream(){
-        return this.broadcastOptions.mediaStream
     }
 
     stop() {
