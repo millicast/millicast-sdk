@@ -59,7 +59,7 @@ class MillicastWebRTCTest {
     let remotesdp = await this.millicastSignaling.publish(localsdp)
 
     const response = await this.millicastWebRTC.setRTCRemoteSDP(remotesdp)
-    console.log('setRTCRemoteSDP response: ', response)
+    console.log('setRTCRemoteSDP result: ', this.millicastWebRTC.peer.remoteDescription)
     return response
   }
 
@@ -83,14 +83,14 @@ class MillicastWebRTCTest {
 
   async testUpdateBandwidthRestriction() {
     const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, null)
-    const response = this.millicastWebRTC.updateBandwidthRestriction(localsdp, 1.5)
+    const response = this.millicastWebRTC.updateBandwidthRestriction(localsdp, 4000000)
     console.log('updateBandwidhRestriction response: ', response)
     console.log('oldsdp == newsdp? ', localsdp == response)
     return response
   }
 
   async testUpdateBitrate() {
-    const response = await this.millicastWebRTC.updateBitrate(1.5)
+    const response = await this.millicastWebRTC.updateBitrate(4000000)
     console.log('updateBitrate response: ', response)
     return response
   }
