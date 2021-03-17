@@ -15,6 +15,7 @@ export default class MillicastSignaling extends EventEmitter {
    * @param {String} url - WebSocket url.
    * @return {Promise}
    */
+
   async connect(url) {
     if (!!this.tm && !!this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.emit("connection.success", { ws: this.ws, tm: this.tm });

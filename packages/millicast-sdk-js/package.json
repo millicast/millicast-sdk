@@ -7,17 +7,20 @@
   "browser": "dist/millicast.umd.js",
   "scripts": {
     "build": "rollup -c",
-    "start": "rollup -c -w"
+    "start": "rollup -c -w",
+    "build-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "docdash": "^1.2.0",
     "rollup": "^2.41.1",
     "semantic-sdp": "^3.21.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
+    "jsdoc": "~3.6.6",
     "rollup-plugin-node-polyfills": "^0.2.1"
   }
 }
