@@ -78,10 +78,10 @@ export default class MillicastWebRTC {
   }
 
   setRTCRemoteSDP(sdp) {
-    const answer = new RTCSessionDescription({
-      type: "answer",
-      sdp,
-    });
+    const answer = {
+      type: 'answer',
+      sdp
+    }
     return this.peer.setRemoteDescription(answer)
   }
 
@@ -102,6 +102,7 @@ export default class MillicastWebRTC {
             "useinbandfec=1; stereo=1"
           );
         }
+        console.log('getLocal sdp peer: ', this.peer)
         return this.peer.setLocalDescription(this.desc);
       })
       .then(() => {
@@ -153,12 +154,13 @@ export default class MillicastWebRTC {
     return this.getRTCPeer()
       .then((pc) => {
         this.peer = pc;
-        console.log(this.peer)
         return this.getRTCLocalSDP(true, null);
       })
-      .then(() => {
+      .then( data => {
+        console.log(data)
+        debugger
         let sdp = this.updateBandwidthRestriction(
-          this.peer.remoteDescription.sdp,
+          data,
           bitrate
         );
         return this.setRTCRemoteSDP(sdp);
