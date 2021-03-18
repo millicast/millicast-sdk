@@ -8,7 +8,7 @@ import MillicastMedia from "./MillicastMedia";
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
  * @example
- * import MillicastPublishUserMedia from '';
+ * import MillicastPublishUserMedia from 'millicast-sdk-js';
  *
  * //Create a new instance
  * const millicastPublishUserMedia = await MillicastPublishUserMedia.build(options);
