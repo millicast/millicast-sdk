@@ -1,7 +1,9 @@
 import pkg from "./package.json";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import babel from '@rollup/plugin-babel';
 import commonjs from "@rollup/plugin-commonjs";
 import nodePolyfills from "rollup-plugin-node-polyfills";
+import { terser } from "rollup-plugin-terser";
 
 export default [
   // browser-friendly UMD build
@@ -12,11 +14,22 @@ export default [
       file: pkg.browser,
       format: "umd",
       globals: {
-        events: "EventEmmiter",
+        events: 
+        "EventEmmiter",
         "transaction-manager": "TransactionManager",
       },
     },
-    plugins: [nodePolyfills(), nodeResolve(), commonjs()],
+    plugins: [
+      nodePolyfills(),
+      nodeResolve(),
+      commonjs(),
+      babel({ 
+        babelHelpers: 'runtime',
+        presets: ['@babel/preset-env'],
+        plugins: ['@babel/plugin-transform-runtime']
+      }),
+      terser()
+    ],
   },
 
   {
