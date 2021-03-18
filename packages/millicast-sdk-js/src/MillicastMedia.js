@@ -7,7 +7,7 @@
  * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
- * @example const MillicastMedia = new MillicastMedia();
+ * @example const millicastMedia = new MillicastMedia();
  * @constructor
  */
 
@@ -33,7 +33,7 @@ export default class MillicastMedia {
 
   /**
    * Get Enumerate Devices.
-   * @example const devices = await MillicastMedia.getDevices;
+   * @example const devices = await millicastMedia.getDevices;
    * @returns {Promise} devices - sorted object containing arrays with audio devices and video devices.
    */
 
@@ -57,7 +57,7 @@ export default class MillicastMedia {
 
   /**
    * Get active video device.
-   * @example const videoInput = MillicastMedia.videoInput;
+   * @example const videoInput = millicastMedia.videoInput;
    * @returns {MediaStreamTrack}
    */
 
@@ -67,7 +67,7 @@ export default class MillicastMedia {
 
   /**
    * Get active audio device.
-   * @example const audioInput = MillicastMedia.audioInput;
+   * @example const audioInput = millicastMedia.audioInput;
    * @returns {MediaStreamTrack}
    */
 
@@ -120,7 +120,7 @@ export default class MillicastMedia {
 
   /**
    * @param {String} id - the id from the selected video device.
-   * @example const media = await MillicastMedia.changeVideo(id);
+   * @example const media = await millicastMedia.changeVideo(id);
    * @returns {MediaStream} - stream from the latest selected video device.
    */
 
@@ -130,7 +130,7 @@ export default class MillicastMedia {
 
   /**
    * @param {String} id - the id from the selected audio device.
-   * @example const media = await MillicastMedia.changeAudio(id);
+   * @example const media = await millicastMedia.changeAudio(id);
    * @returns {MediaStream} - stream from the latest selected audio device.
    */
 
@@ -151,8 +151,8 @@ export default class MillicastMedia {
   }
 
   /**
-   * @param {boolean} boo - true or false depending of the state of the selected device stream.
-   * @returns {boolean} - if mediaStream exists, returns false for setting the new video state.
+   * @param {boolean} boolean - true if you want to mute the video, false for mute it.
+   * @returns {boolean} - returns true if it was changed, otherwise returns false.
    */
 
   muteVideo(boolean = true) {
@@ -167,8 +167,8 @@ export default class MillicastMedia {
   }
 
   /**
-   * @param {boolean} boo - true or false depending of the state of the selected device stream.
-   * @returns {boolean} - if mediaStream exists, returns false for setting the new audio state.
+   * @param {boolean} boolean - true if you want to mute the audio, false for mute it.
+   * @returns {boolean} - returns true if it was changed, otherwise returns false.
    */
 
   muteAudio(boolean = true) {
