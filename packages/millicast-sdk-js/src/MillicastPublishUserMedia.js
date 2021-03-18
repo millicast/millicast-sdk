@@ -42,6 +42,9 @@ import MillicastMedia from "./MillicastMedia";
  *    document.getElementById("bitrate-select").value
  * );
  *
+ * //Account ID
+ * const accountId = ""; <- Your account id
+ *
  * //Options
  * const broadcastOptions = options ?? {
  *    token: "", <- your publishing token
