@@ -2,13 +2,18 @@ class MillicastPublishUserMediaTest {
   constructor() {
     this.mediaStream = null;
     this.options = {
-      audio: {
-        echoCancellation: false,
-        channelCount: { ideal: 2 },
-      },
-      video: true,
-    };
-    this.millicastPublishUserMedia = null;
+      constraints: {
+        audio: {
+          echoCancellation: true,
+          channelCount: { ideal: 2 },
+        },
+        video: {
+          height: 1080,
+          width: 1920
+        },
+      } 
+    }
+    this.millicastPublishUserMedia = null
   }
 
   async init() {

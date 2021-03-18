@@ -21,7 +21,10 @@ export default class MillicastMedia {
         echoCancellation: false,
         channelCount: { ideal: 2 },
       },
-      video: true,
+      video: {
+        height: 1080,
+        width: 1920,
+      }
     };
     /*Apply Options*/
     if (options && !!options.constraints)
