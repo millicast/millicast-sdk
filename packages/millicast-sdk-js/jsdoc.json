@@ -3,11 +3,15 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": "src",
+    "include": "src/MillicastMedia.js",
     "includePattern": ".+\\.js(doc|x)?$",
     "excludePattern": "(^|\\/|\\\\)_"
   },
-  "plugins": ["plugins/markdown"],
+  "plugins": [
+    "plugins/markdown",
+    "node_modules/@ckeditor/jsdoc-plugins/lib/validator/validator",
+    "node_modules/@ckeditor/jsdoc-plugins/lib/longname-fixer/longname-fixer"
+  ],
   "opts": {
     "template": "node_modules/docdash/",
     "encoding": "utf8",

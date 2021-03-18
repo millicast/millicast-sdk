@@ -1,9 +1,11 @@
 "use strict";
 
 /**
+ * @module
  * MillicastMedia class: it's in charge of the devices, their respective streams, and the states of those streams.
- * @param {Object} options - {constraints, }
- *
+ * @param {Object} options - {mediaStream, constraints}
+ * @example
+ * const MillicastMedia = new MillicastMedia()
  * @constructor
  */
 
@@ -40,7 +42,8 @@ export default class MillicastMedia {
 
   /**
    * Get active video device
-   *
+   * @example
+   * const videoInput = MillicastMedia.videoInput()
    * @returns {MediaStreamTrack}
    */
 
@@ -50,7 +53,8 @@ export default class MillicastMedia {
 
   /**
    * Get active audio device
-   *
+   * @example
+   * const audioInput = MillicastMedia.audioInput()
    * @returns {MediaStreamTrack}
    */
 
@@ -60,7 +64,8 @@ export default class MillicastMedia {
 
   /**
    * Get User Media
-   *
+   * @example
+   * const media = MillicastMedia.getMedia()
    * @returns {MediaStream}
    */
 
@@ -81,7 +86,8 @@ export default class MillicastMedia {
 
   /**
    * Get Enumerate Devices
-   *
+   * @example
+   * const devices = MillicastMedia.getMediaDevices()
    * @returns {Promise} devices - sorted object containing arrays audioin, videoin
    */
 
@@ -111,7 +117,8 @@ export default class MillicastMedia {
 
   /**
    * @param {String} id the id from the selected video device
-   *
+   * @example
+   * const media = MillicastMedia.changeVideo(id)
    * @returns {MediaStream} stream from the latest selected video device
    */
 
@@ -121,7 +128,8 @@ export default class MillicastMedia {
 
   /**
    * @param {String} id the id from the selected audio device
-   *
+   * @example
+   * const media = MillicastMedia.changeAudio(id)
    * @returns {MediaStream} stream from the latest selected audio device
    */
 
