@@ -4,8 +4,8 @@ import MillicastDirector from "./MillicastDirector.js";
 
 /**
  * @class MillicastPublish
- * @classdesc It's in charge of the broadcast
- * @example const MillicastPublish = new MillicastPublish()
+ * @classdesc It's in charge of the broadcast.
+ * @example const MillicastPublish = new MillicastPublish();
  * @constructor
  */
 
@@ -16,16 +16,16 @@ export default class MillicastPublish {
   }
 
   /**
-   * The actual broadcast component
-   * @param {Object} options - general broadcast options
-   * @param {String} options.token - user token for authentication
-   * @param {String} options.streamName - the name of the stream
-   * @param {mediaStream} options.mediaStream - the stream from the devices
-   * @param {Number} options.bandwith - the selected bandwith of the broadcast
-   * @param {Boolean} options.disableVideo - the selected status of the selected video device
-   * @param {Boolean} options.disableAudio - the selected status of the selected audio device
-   * @example const response = await MillicastPublish.broadcast(options)
-   * @returns - sets the SDP answer from the external peer in your own peer.remoteDescription
+   * Starts the broadcast
+   * @param {Object} options - general broadcast options.
+   * @param {String} options.token - user token for authentication.
+   * @param {String} options.streamName - the name of the stream.
+   * @param {mediaStream} options.mediaStream - the stream from the devices.
+   * @param {Number} options.bandwith - the selected bandwith of the broadcast.
+   * @param {Boolean} options.disableVideo - the selected status of the selected video device.
+   * @param {Boolean} options.disableAudio - the selected status of the selected audio device.
+   * @example const response = await MillicastPublish.broadcast(options);
+   * @returns - sets the SDP answer from the external peer in your own peer.remoteDescription.
    */
 
   broadcast(
@@ -99,8 +99,8 @@ export default class MillicastPublish {
   }
 
   /**
-   * It stops the broadcast
-   * @example MillicastPublish.stop()
+   * It stops the broadcast.
+   * @example MillicastPublish.stop();
    */
 
   stop() {
@@ -109,9 +109,9 @@ export default class MillicastPublish {
   }
 
   /**
-   * Checks broadcast status
-   * @example const isActive = MillicastPublish.isActive()
-   * @returns {Boolean} - true if connected, false if not
+   * Checks broadcast status.
+   * @example const isActive = MillicastPublish.isActive();
+   * @returns {Boolean} - true if connected, false if not.
    */
 
   isActive() {
