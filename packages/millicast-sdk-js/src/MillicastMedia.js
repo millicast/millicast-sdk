@@ -28,6 +28,12 @@ export default class MillicastMedia {
       Object.assign(this.constraints, options.constraints);
   }
 
+  /**
+   * Get Enumerate Devices.
+   * @example const devices = await MillicastMedia.getDevices;
+   * @returns {Promise} devices - sorted object containing arrays with audio devices and video devices.
+   */
+
   get getDevices() {
     return this.getMediaDevices();
   }
@@ -84,12 +90,6 @@ export default class MillicastMedia {
       throw error;
     }
   }
-
-  /**
-   * Get Enumerate Devices.
-   * @example const devices = await MillicastMedia.getMediaDevices();
-   * @returns {Promise} devices - sorted object containing arrays with audio devices and video devices.
-   */
 
   async getMediaDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)

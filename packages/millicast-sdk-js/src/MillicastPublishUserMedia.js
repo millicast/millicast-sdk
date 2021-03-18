@@ -7,6 +7,7 @@ import MillicastMedia from "./MillicastMedia";
  * @param {Object} options
  * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
  * @example
  * import MillicastPublishUserMedia from '';
  *
