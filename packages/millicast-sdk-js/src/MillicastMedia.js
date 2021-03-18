@@ -6,8 +6,7 @@
  * @param {Object} options
  * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls)
- * @example
- * const MillicastMedia = new MillicastMedia()
+ * @example const MillicastMedia = new MillicastMedia()
  * @constructor
  */
 
@@ -48,8 +47,7 @@ export default class MillicastMedia {
 
   /**
    * Get active video device
-   * @example
-   * const videoInput = MillicastMedia.videoInput()
+   * @example const videoInput = MillicastMedia.videoInput()
    * @returns {MediaStreamTrack}
    */
 
@@ -59,8 +57,7 @@ export default class MillicastMedia {
 
   /**
    * Get active audio device
-   * @example
-   * const audioInput = MillicastMedia.audioInput()
+   * @example const audioInput = MillicastMedia.audioInput()
    * @returns {MediaStreamTrack}
    */
 
@@ -70,8 +67,7 @@ export default class MillicastMedia {
 
   /**
    * Get User Media
-   * @example
-   * const media = MillicastMedia.getMedia()
+   * @example const media = await MillicastMedia.getMedia()
    * @returns {MediaStream}
    */
 
@@ -90,8 +86,7 @@ export default class MillicastMedia {
 
   /**
    * Get Enumerate Devices
-   * @example
-   * const devices = MillicastMedia.getMediaDevices()
+   * @example const devices = await MillicastMedia.getMediaDevices()
    * @returns {Promise} devices - sorted object containing arrays audioin, videoin
    */
 
@@ -121,8 +116,7 @@ export default class MillicastMedia {
 
   /**
    * @param {String} id the id from the selected video device
-   * @example
-   * const media = MillicastMedia.changeVideo(id)
+   * @example const media = await MillicastMedia.changeVideo(id)
    * @returns {MediaStream} stream from the latest selected video device
    */
 
@@ -132,8 +126,7 @@ export default class MillicastMedia {
 
   /**
    * @param {String} id the id from the selected audio device
-   * @example
-   * const media = MillicastMedia.changeAudio(id)
+   * @example const media = await MillicastMedia.changeAudio(id)
    * @returns {MediaStream} stream from the latest selected audio device
    */
 
@@ -155,7 +148,6 @@ export default class MillicastMedia {
 
   /**
    * @param {boolean} boo true or false depending of the state of the selected device stream
-   *
    * @returns {boolean} if mediaStream exists, returns false for setting the new video state
    */
 
@@ -172,7 +164,6 @@ export default class MillicastMedia {
 
   /**
    * @param {boolean} boo true or false depending of the state of the selected device stream
-   *
    * @returns {boolean} if mediaStream exists, returns false for setting the new audio state
    */
 
