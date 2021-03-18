@@ -76,6 +76,7 @@ export default class MillicastPublish {
       })
       .then((localsdp) => {
         this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
+        this.millicastSignaling.streamName = streamName
         return this.millicastSignaling.publish(localsdp);
       })
       .then((remotesdp) => {
