@@ -16,12 +16,10 @@ import MillicastMedia from "./MillicastMedia";
  *
  * //Set video source
  * const mediaStream = await millicastPublishUserMedia.getMediaStream();
- * console.log("GetMedia response:", mediaStream);
  * document.getElementById("millicast-media-video-test").srcObject = mediaStream;
  *
  * //Get devices
  * const devices = await millicastPublishUserMedia.devices;
- * console.log("GetDevices response:", devices);
  *
  * const audioInputSelect = document.getElementById("audio-input-select");
  * const audioOutputSelect = document.getElementById("audio-output-select");
@@ -59,13 +57,15 @@ import MillicastMedia from "./MillicastMedia";
  * const response = await millicastPublishUserMedia.broadcast(
  *   broadcastOptions
  * );
- * console.log("BROADCASTING!! Start response: ", response);
  *
  * //Create stream link
  * const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`;
- * console.log("Broadcast viewer link: ", viewLink);
  *
  * document.getElementById("broadcast-status-label").innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`;
+ *
+ * //Stop the stream
+ * millicastPublishUserMedia.stop();
+ * document.getElementById("broadcast-status-label").innerHTML = "READY!";
  *
  * @constructor
  */
