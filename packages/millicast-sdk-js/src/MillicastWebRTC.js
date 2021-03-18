@@ -102,7 +102,6 @@ export default class MillicastWebRTC {
             "useinbandfec=1; stereo=1"
           );
         }
-        console.log('getLocal sdp peer: ', this.peer)
         return this.peer.setLocalDescription(this.desc);
       })
       .then(() => {
@@ -130,7 +129,7 @@ export default class MillicastWebRTC {
    * @return {String} sdp - Mangled SDP
    */
   updateBandwidthRestriction(sdp, bitrate = 0) {
-    let offer = SemanticSDP.SDPInfo.process(sdp);
+    let offer = SemanticSDP.SDPInfo.parse(sdp);
     let videoOffer = offer.getMedia("video");
 
     if (bitrate < 1) {
@@ -150,21 +149,31 @@ export default class MillicastWebRTC {
     return sdp;
   }
 
-  updateBitrate(bitrate = 0) {
+  // updateBitrate(bitrate = 0) {
+  //   return this.getRTCPeer()
+  //     .then((pc) => {
+  //       this.peer = pc;
+  //       return this.getRTCLocalSDP(true, null);
+  //     })
+  //     .then( data => {
+  //       let sdp = this.updateBandwidthRestriction(
+  //         data,
+  //         bitrate
+  //       );
+  //       return this.setRTCRemoteSDP(sdp);
+  //     });
+  // }
+
+  updateBitrate(bitrate = 0){
     return this.getRTCPeer()
-      .then((pc) => {
+      .then((pc)=> {
         this.peer = pc;
         return this.getRTCLocalSDP(true, null);
       })
-      .then( data => {
-        console.log(data)
-        debugger
-        let sdp = this.updateBandwidthRestriction(
-          data,
-          bitrate
-        );
+      .then(() => {
+        let sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate);
         return this.setRTCRemoteSDP(sdp);
-      });
+      })
   }
 
   getRTCPeerStatus() {
