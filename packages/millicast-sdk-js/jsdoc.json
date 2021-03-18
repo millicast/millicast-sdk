@@ -3,7 +3,11 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": ["src/MillicastMedia.js", "src/MillicastPublish.js"],
+    "include": [
+      "src/MillicastMedia.js",
+      "src/MillicastPublish.js",
+      "src/MillicastPublishUserMedia.js"
+    ],
     "includePattern": ".+\\.js(doc|x)?$",
     "excludePattern": "(^|\\/|\\\\)_"
   },

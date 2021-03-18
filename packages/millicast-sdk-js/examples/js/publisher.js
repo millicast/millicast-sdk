@@ -5,7 +5,6 @@ const disableVideo = false
 const disableAudio = false
 const disableStereo = false
 const disableOrientation = true
-const videoWin = document.querySelector('video');
 let isBroadcasting = false
 let isVideoMuted   = false
 let isAudioMuted   = false
@@ -14,6 +13,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   $('.privy-popup-container, .privy-popup-content-wrap').click(e => {
     return false;
   })
+
+  const videoWin = document.querySelector('video');
 
   //check if mobile user.
   let isMobile = window.mobilecheck = function () {
