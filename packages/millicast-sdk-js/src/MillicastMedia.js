@@ -6,6 +6,7 @@
  * @param {Object} options
  * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
  * @example const MillicastMedia = new MillicastMedia();
  * @constructor
  */
@@ -47,7 +48,7 @@ export default class MillicastMedia {
 
   /**
    * Get active video device.
-   * @example const videoInput = MillicastMedia.videoInput();
+   * @example const videoInput = MillicastMedia.videoInput;
    * @returns {MediaStreamTrack}
    */
 
@@ -57,7 +58,7 @@ export default class MillicastMedia {
 
   /**
    * Get active audio device.
-   * @example const audioInput = MillicastMedia.audioInput();
+   * @example const audioInput = MillicastMedia.audioInput;
    * @returns {MediaStreamTrack}
    */
 

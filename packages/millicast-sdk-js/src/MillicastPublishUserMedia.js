@@ -7,7 +7,62 @@ import MillicastMedia from "./MillicastMedia";
  * @param {Object} options
  * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
- * @example const MillicastPublishUserMedia = new MillicastPublishUserMedia();
+ * @example
+ * import MillicastPublishUserMedia from '';
+ *
+ * //Create a new instance
+ * const millicastPublishUserMedia = await MillicastPublishUserMedia.build(options);
+ *
+ * //Set video source
+ * const mediaStream = await millicastPublishUserMedia.getMediaStream();
+ * console.log("GetMedia response:", mediaStream);
+ * document.getElementById("millicast-media-video-test").srcObject = mediaStream;
+ *
+ * //Get devices
+ * const devices = await millicastPublishUserMedia.devices;
+ * console.log("GetDevices response:", devices);
+ *
+ * const audioInputSelect = document.getElementById("audio-input-select");
+ * const audioOutputSelect = document.getElementById("audio-output-select");
+ * const videoSelect = document.getElementById("video-select");
+ *
+ * const fillSelectElement(selectElement, devices) => {
+ * selectElement.innerHTML = "";
+ * for (const device of devices) {
+ *   selectElement.add(new Option(device.label, device.deviceId));
+ * }
+ *
+ * //Set devices
+ * fillSelectElement(audioInputSelect, devices.audioinput);
+ * fillSelectElement(audioOutputSelect, devices.audiooutput);
+ * fillSelectElement(videoSelect, devices.videoinput);
+ *
+ * //Get bandwith from selection
+ * const bandwidth = Number.parseInt(
+ *    document.getElementById("bitrate-select").value
+ * );
+ *
+ * //Options
+ * const broadcastOptions = options ?? {
+ *    token: "", <- your publishing token
+ *    streamName: "",<- your stream name
+ *    bandwidth: bandwidth,
+ *    disableVideo: false,
+ *    disableAudio: false,
+ *  };
+ *
+ * //Start broadcast
+ * const response = await millicastPublishUserMedia.broadcast(
+ *   broadcastOptions
+ * );
+ * console.log("BROADCASTING!! Start response: ", response);
+ *
+ * //Create stream link
+ * const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`;
+ * console.log("Broadcast viewer link: ", viewLink);
+ *
+ * document.getElementById("broadcast-status-label").innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`;
+ *
  * @constructor
  */
 
