@@ -26,6 +26,10 @@ export default class MillicastMedia {
       Object.assign(this.constraints, options.constraints);
   }
 
+  get getDevices() {
+    return this.getMediaDevices()
+  }
+
   getInput(kind) {
     let input = null;
     if (!kind) return input;
@@ -74,13 +78,11 @@ export default class MillicastMedia {
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia(
         this.constraints
-      );
-      // if(omitDevices !== true)
-      //   return await this.getMediaDevices()
-      return this.mediaStream;
+      )
+      return this.mediaStream
     } catch (error) {
-      console.error("Could not get Media: ", error, this.constraints);
-      throw error;
+      console.error("Could not get Media: ", error, this.constraints)
+      throw error
     }
   }
 
@@ -95,19 +97,19 @@ export default class MillicastMedia {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
       throw new Error(
         "Could not get list of media devices!  This might not be supported by this browser."
-      );
+      )
 
     try {
-      const items = { audioinput: [], videoinput: [], audiooutput: [] };
-      const mediaDevices = await navigator.mediaDevices.enumerateDevices();
+      const items = { audioinput: [], videoinput: [], audiooutput: [] }
+      const mediaDevices = await navigator.mediaDevices.enumerateDevices()
       for (const device of mediaDevices)
-        this.addMediaDevicesToList(items, device);
-      this.devices = items;
+        this.addMediaDevicesToList(items, device)
+      this.devices = items
     } catch (error) {
-      console.error("Could not get Media: ", error);
-      this.devices = [];
+      console.error("Could not get Media: ", error)
+      this.devices = []
     }
-    return this.devices;
+    return this.devices
   }
 
   addMediaDevicesToList(items, device) {
