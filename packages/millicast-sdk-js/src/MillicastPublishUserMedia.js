@@ -5,7 +5,6 @@ import MillicastMedia from "./MillicastMedia";
  * @class MillicastPublishUserMedia
  * @classdesc A high level module for streaming.
  * @param {Object} options
- * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
  * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
  * @example
@@ -18,54 +17,17 @@ import MillicastMedia from "./MillicastMedia";
  * const mediaStream = await millicastPublishUserMedia.getMediaStream();
  * document.getElementById("millicast-media-video-test").srcObject = mediaStream;
  *
- * //Get devices
- * const devices = await millicastPublishUserMedia.devices;
- *
- * const audioInputSelect = document.getElementById("audio-input-select");
- * const audioOutputSelect = document.getElementById("audio-output-select");
- * const videoSelect = document.getElementById("video-select");
- *
- * const fillSelectElement(selectElement, devices) => {
- * selectElement.innerHTML = "";
- * for (const device of devices) {
- *   selectElement.add(new Option(device.label, device.deviceId));
- * }
- *
- * //Set devices
- * fillSelectElement(audioInputSelect, devices.audioinput);
- * fillSelectElement(audioOutputSelect, devices.audiooutput);
- * fillSelectElement(videoSelect, devices.videoinput);
- *
- * //Get bandwith from selection
- * const bandwidth = Number.parseInt(
- *    document.getElementById("bitrate-select").value
- * );
- *
- * //Account ID
- * const accountId = ""; <- Your account id
- *
  * //Options
  * const broadcastOptions = options ?? {
  *    token: "", <- your publishing token
- *    streamName: "",<- your stream name
- *    bandwidth: bandwidth,
- *    disableVideo: false,
- *    disableAudio: false,
+ *    streamName: "", <- your stream name
  *  };
  *
  * //Start broadcast
- * const response = await millicastPublishUserMedia.broadcast(
- *   broadcastOptions
- * );
- *
- * //Create stream link
- * const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`;
- *
- * document.getElementById("broadcast-status-label").innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`;
+ * const response = await millicastPublishUserMedia.broadcast(broadcastOptions);
  *
  * //Stop the stream
  * millicastPublishUserMedia.stop();
- * document.getElementById("broadcast-status-label").innerHTML = "READY!";
  *
  * @constructor
  */

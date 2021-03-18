@@ -24,7 +24,7 @@ export default class MillicastMedia {
       video: {
         height: 1080,
         width: 1920,
-      }
+      },
     };
     /*Apply Options*/
     if (options && !!options.constraints)
