@@ -75,7 +75,6 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
    * @param {Object} options - general broadcast options.
    * @param {String} options.token - user token for authentication.
    * @param {String} options.streamName - the name of the stream.
-   * @param {mediaStream} options.mediaStream - the stream from the devices.
    * @param {Number} options.bandwith - the selected bandwith of the broadcast.
    * @param {Boolean} options.disableVideo - the selected status of the selected video device.
    * @param {Boolean} options.disableAudio - the selected status of the selected audio device.
