@@ -9,8 +9,7 @@
   },
   "plugins": [
     "plugins/markdown",
-    "node_modules/@ckeditor/jsdoc-plugins/lib/validator/validator",
-    "node_modules/@ckeditor/jsdoc-plugins/lib/longname-fixer/longname-fixer"
+    "node_modules/jsdoc-export-default-interop/dist/index"
   ],
   "opts": {
     "template": "node_modules/docdash/",

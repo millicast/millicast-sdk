@@ -1,9 +1,11 @@
 "use strict";
 
 /**
- * @module
- * MillicastMedia class: it's in charge of the devices, their respective streams, and the states of those streams.
- * @param {Object} options - {mediaStream, constraints}
+ * @class MillicastMedia
+ * @classdesc It's in charge of the devices, their respective streams, and the states of those streams.
+ * @param {Object} options
+ * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices
+ * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls)
  * @example
  * const MillicastMedia = new MillicastMedia()
  * @constructor
@@ -27,7 +29,7 @@ export default class MillicastMedia {
   }
 
   get getDevices() {
-    return this.getMediaDevices()
+    return this.getMediaDevices();
   }
 
   getInput(kind) {
@@ -78,11 +80,11 @@ export default class MillicastMedia {
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia(
         this.constraints
-      )
-      return this.mediaStream
+      );
+      return this.mediaStream;
     } catch (error) {
-      console.error("Could not get Media: ", error, this.constraints)
-      throw error
+      console.error("Could not get Media: ", error, this.constraints);
+      throw error;
     }
   }
 
@@ -97,19 +99,19 @@ export default class MillicastMedia {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
       throw new Error(
         "Could not get list of media devices!  This might not be supported by this browser."
-      )
+      );
 
     try {
-      const items = { audioinput: [], videoinput: [], audiooutput: [] }
-      const mediaDevices = await navigator.mediaDevices.enumerateDevices()
+      const items = { audioinput: [], videoinput: [], audiooutput: [] };
+      const mediaDevices = await navigator.mediaDevices.enumerateDevices();
       for (const device of mediaDevices)
-        this.addMediaDevicesToList(items, device)
-      this.devices = items
+        this.addMediaDevicesToList(items, device);
+      this.devices = items;
     } catch (error) {
-      console.error("Could not get Media: ", error)
-      this.devices = []
+      console.error("Could not get Media: ", error);
+      this.devices = [];
     }
-    return this.devices
+    return this.devices;
   }
 
   addMediaDevicesToList(items, device) {
