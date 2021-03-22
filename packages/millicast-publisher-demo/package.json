@@ -2,13 +2,17 @@
   "name": "millicast-publisher-demo",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/publisher.cjs.js",
+  "module": "dist/publisher.esm.js",
+  "browser": "dist/publisher.umd.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c",
+    "start": "rollup -c -w"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "millicast-sdk-js": "^1.0.0"
+    "millicast-sdk-js": "^1.0.0",
+    "rollup": "^2.42.3"
   }
 }
