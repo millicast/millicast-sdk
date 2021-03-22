@@ -1,5 +1,5 @@
-import MillicastPublish from "./MillicastPublish";
-import MillicastMedia from "./MillicastMedia";
+import MillicastPublish from "millicast-sdk-js"   //"./MillicastPublish";
+import MillicastMedia from "millicast-sdk-js"  //"./MillicastMedia";
 
 /**
  * @class MillicastPublishUserMedia
