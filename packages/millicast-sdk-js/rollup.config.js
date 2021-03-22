@@ -1,8 +1,7 @@
 import pkg from "./package.json";
-import nodeResolve from "@rollup/plugin-node-resolve";
-import babel from '@rollup/plugin-babel';
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { babel } from '@rollup/plugin-babel';
 import commonjs from "@rollup/plugin-commonjs";
-import nodePolyfills from "rollup-plugin-node-polyfills";
 import { terser } from "rollup-plugin-terser";
 
 export default [
@@ -13,31 +12,34 @@ export default [
       name: "millicast",
       file: pkg.browser,
       format: "umd",
-      globals: {
-        events: 
-        "EventEmmiter",
-        "transaction-manager": "TransactionManager",
-      },
     },
     plugins: [
-      nodePolyfills(),
-      nodeResolve(),
-      commonjs(),
-      babel({ 
+      nodeResolve({ browser: true,  preferBuiltins: false }),
+      commonjs({
+        include: [/node_modules/, /src/],
+        transformMixedEsModules: true ,
+      }),
+      babel({
         babelHelpers: 'runtime',
         presets: ['@babel/preset-env'],
+        exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
       }),
       terser()
     ],
   },
-
   {
     input: "src/index.js",
     output: [
       { file: pkg.main, format: "cjs" },
       { file: pkg.module, format: "es" },
     ],
-    plugins: [nodePolyfills(), nodeResolve(), commonjs()],
+    plugins: [
+      nodeResolve({browser: true, preferBuiltins: false}),
+      commonjs({
+        include: [/node_modules/, /src/],
+        transformMixedEsModules: true ,
+      }),
+    ],
   },
 ];

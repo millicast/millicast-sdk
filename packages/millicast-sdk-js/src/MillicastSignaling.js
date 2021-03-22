@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import TransactionManager from "../utils/transaction-manager/index";
+import TransactionManager from "transaction-manager";
 
 export default class MillicastSignaling extends EventEmitter {
   constructor(options) {
