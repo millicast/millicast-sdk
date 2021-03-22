@@ -1,4 +1,7 @@
 import pkg from './package.json'
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+
 
 export default [
   {
@@ -10,14 +13,13 @@ export default [
       globals: {
         'millicast-sdk-js': 'millicastSdkJs'
       }
-    }
-  },
-
-  {
-    input: 'src/index.js',
-    output: [
-      {file: pkg.main, format: 'cjs'},
-      {file: pkg.module, format: 'es'},
+    },
+    plugins: [
+      nodeResolve({ preferBuiltins: false}),
+      commonjs({
+        include: [/node_modules/, /src/],
+        transformMixedEsModules: true ,
+      }),
     ]
   }
 ]
