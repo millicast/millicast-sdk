@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
-  "main": "dist/publisher.cjs.js",
-  "module": "dist/publisher.esm.js",
-  "browser": "dist/publisher.umd.js",
   "scripts": {
-    "build": "rollup -c",
+    "build": "mkdir dist & cp public dist & rollup -c",
     "start": "rollup -c -w"
   },
   "author": "",

@@ -6,7 +6,7 @@ import environment from './env'
 
 export default [
   {
-    input: 'src/index.js',
+    input: 'src/publisher.js',
     output: {
       name: "publisher",
       file: pkg.browser,

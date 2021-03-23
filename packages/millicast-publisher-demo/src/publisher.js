@@ -1,3 +1,5 @@
+import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
+
 const streamId = process.env.environment.STREAM_ID
 const accountId = process.env.environment.ACCOUNT_ID
 const publishToken = process.env.environment.PUBLISH_TOKEN
@@ -99,7 +101,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 
   /////////////////////////
-  const millicastPublishUserMedia = await publisher.MillicastPublishUserMedia.build()
+  const millicastPublishUserMedia = await  MillicastPublishUserMedia.build()
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
 
