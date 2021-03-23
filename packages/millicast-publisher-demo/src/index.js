@@ -1,4 +1,4 @@
-import MillicastPublishUserMedia from '../src/js/MillicastPublishUserMedia'
+import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
 
 export {
   MillicastPublishUserMedia

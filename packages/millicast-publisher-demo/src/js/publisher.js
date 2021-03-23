@@ -1,3 +1,5 @@
+// import MillicastPublishUserMedia from 'publisher.MillicastPublishUserMedia'
+
 const streamId = 'km0n0h1u'
 const accountId = 'tnJhvK'
 const publishToken = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
@@ -99,7 +101,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 
   /////////////////////////
-  const millicastPublishUserMedia = await millicast.MillicastPublishUserMedia.build()
+  const millicastPublishUserMedia = await publisher.MillicastPublishUserMedia.build()
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
 
