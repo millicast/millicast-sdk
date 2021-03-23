@@ -1,7 +1,8 @@
 import pkg from './package.json'
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
-
+import injectProcessEnv from 'rollup-plugin-inject-process-env';
+import environment from './env'
 
 export default [
   {
@@ -20,6 +21,9 @@ export default [
         include: [/node_modules/, /src/],
         transformMixedEsModules: true ,
       }),
+      injectProcessEnv({
+        environment
+    }),
     ]
   }
 ]

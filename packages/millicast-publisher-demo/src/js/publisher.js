@@ -1,8 +1,6 @@
-// import MillicastPublishUserMedia from 'publisher.MillicastPublishUserMedia'
-
-const streamId = 'km0n0h1u'
-const accountId = 'tnJhvK'
-const publishToken = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
+const streamId = process.env.environment.STREAM_ID
+const accountId = process.env.environment.ACCOUNT_ID
+const publishToken = process.env.environment.PUBLISH_TOKEN
 const disableVideo = false
 const disableAudio = false
 const disableStereo = false
