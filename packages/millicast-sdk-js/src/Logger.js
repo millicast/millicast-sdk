@@ -1,8 +1,8 @@
 import Logger from 'js-logger'
 Logger.useDefaults({
-    defaultLevel: Logger.INFO,
+    defaultLevel: Logger.DEBUG,
     formatter: function (messages, context) {
-        messages.unshift(`${new Date().toISOString()} -`)
+        messages.unshift(`[${context.name}] ${new Date().toISOString()} -`)
     }
 })
 
