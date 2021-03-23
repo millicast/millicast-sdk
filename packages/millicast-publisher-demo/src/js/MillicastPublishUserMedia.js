@@ -35,7 +35,7 @@ import {MillicastMedia} from "millicast-sdk-js"  //"./MillicastMedia";
 export default class MillicastPublishUserMedia extends MillicastPublish {
   constructor(options = undefined) {
     super();
-    this.mediaManager = new MillicastMedia(options);
+    this.mediaManager = new publisher.MillicastMedia(options);
   }
 
   /**

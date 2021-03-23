@@ -1,7 +1,5 @@
 "use strict";
 
-import logger from './Logger'
-
 /**
  * @class MillicastMedia
  * @classdesc It's in charge of the devices, their respective streams, and the states of those streams.
@@ -85,7 +83,6 @@ export default class MillicastMedia {
 
   async getMedia() {
     //gets user cam and mic
-    logger.info('Calling getMedia method.')
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia(
         this.constraints

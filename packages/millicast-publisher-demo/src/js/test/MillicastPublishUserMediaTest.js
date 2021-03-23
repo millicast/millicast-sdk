@@ -11,13 +11,13 @@ class MillicastPublishUserMediaTest {
           height: 1080,
           width: 1920
         },
-      } 
+      }
     }
     this.millicastPublishUserMedia = null
   }
 
   async init() {
-    this.millicastPublishUserMedia = await millicast.MillicastPublishUserMedia.build(
+    this.millicastPublishUserMedia = await publisher.MillicastPublishUserMedia.build(
       this.options
     );
     await this.setVideoSource();
