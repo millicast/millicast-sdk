@@ -1,4 +1,5 @@
-import logger from './Logger'
+import Logger from './Logger'
+const logger = Logger.get('MillicastPublish')
 import MillicastSignaling from "./MillicastSignaling";
 import MillicastWebRTC from "./MillicastWebRTC.js";
 import MillicastDirector from "./MillicastDirector.js";
@@ -88,14 +89,14 @@ export default class MillicastPublish {
       })
       .then((remotesdp) => {
         if (remotesdp && remotesdp.indexOf("\na=extmap-allow-mixed") !== -1) {
-          logger.info('Trimming SDP')
+          logger.debug('SDP before trimming: ', remotesdp)
           remotesdp = remotesdp
             .split("\n")
             .filter(function (line) {
               return line.trim() !== "a=extmap-allow-mixed";
             })
             .join("\n");
-          logger.info('SDP trimmed')
+          logger.debug('SDP trimmed result: ', remotesdp)
         }
         if (disableVideo === false && bandwidth > 0) {
           remotesdp = this.webRTCPeer.updateBandwidthRestriction(
@@ -125,7 +126,6 @@ export default class MillicastPublish {
    */
 
   isActive() {
-    logger.info('Checking active broadcast')
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus();
     logger.info("Broadcast status: ", rtcPeerState)
     return rtcPeerState === "connected";

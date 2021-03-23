@@ -6,5 +6,4 @@ Logger.useDefaults({
     }
 })
 
-const logger = Logger.get('MilliCast-sdk-js')
-export default logger
+export default Logger

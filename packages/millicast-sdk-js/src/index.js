@@ -1,3 +1,4 @@
+import Logger from "./Logger";
 import MillicastMedia from "./MillicastMedia";
 import MillicastWebRTC from "./MillicastWebRTC";
 import MillicastSignaling from "./MillicastSignaling";
@@ -7,6 +8,7 @@ import MillicastUtils from "./MillicastUtils";
 import MillicastDirector from "./MillicastDirector";
 
 export {
+  Logger,
   MillicastMedia,
   MillicastWebRTC,
   MillicastSignaling,

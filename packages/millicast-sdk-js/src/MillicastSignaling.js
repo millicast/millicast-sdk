@@ -1,4 +1,5 @@
-import logger from './Logger'
+import Logger from './Logger'
+const logger = Logger.get('MillicastSignaling')
 import EventEmitter from "events";
 import TransactionManager from "transaction-manager";
 
@@ -32,9 +33,8 @@ export default class MillicastSignaling extends EventEmitter {
       this.ws.onopen = () => {
         logger.info('WebSocket opened')
         if (this.ws.readyState !== WebSocket.OPEN) {
-          logger.error('WebSocket not connected')
-          logger.debug('WebSocket value: ', this.ws)
           let error = { state: this.ws.readyState };
+          logger.error('WebSocket not connected: ', error)
           this.emit("connection.error", error);
           return reject(error);
         }
@@ -72,8 +72,7 @@ export default class MillicastSignaling extends EventEmitter {
    * @return {String} sdp - Mangled SDP
    */
   async subscribe(sdp, streamId) {
-    logger.info('Subscribing')
-    logger.debug('streamId: ', streamId)
+    logger.info('Subscribing, streamId value: ', streamId)
     logger.debug('SDP: ', sdp)
 
     let data = {
@@ -101,8 +100,7 @@ export default class MillicastSignaling extends EventEmitter {
    * @param {String} sdp - The local sdp.
    */
   async publish(sdp) {
-    logger.info('Publishing ')
-    logger.debug('name: ', this.streamName)
+    logger.info('Publishing, streamName value: ', this.streamName)
     logger.debug('SDP: ', sdp)
 
     let data = {

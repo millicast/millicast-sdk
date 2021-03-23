@@ -1,4 +1,5 @@
-import logger from './Logger'
+import Logger from './Logger'
+const logger = Logger.get('MillicastWebRTC')
 import SemanticSDP from "semantic-sdp"
 import MillicastUtils from "./MillicastUtils.js"
 
@@ -167,8 +168,7 @@ export default class MillicastWebRTC {
    * @return {String} sdp - Mangled SDP
    */
   updateBandwidthRestriction(sdp, bitrate = 0) {
-    logger.info('Updating bandwith restriction')
-    logger.debug('Bitrate value: ', bitrate)
+    logger.info('Updating bandwith restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
 
     let offer = SemanticSDP.SDPInfo.parse(sdp)
@@ -188,6 +188,7 @@ export default class MillicastWebRTC {
         ) {
           logger.info('Updating SDP for firefox browser')
           sdp = sdp.replace("b=AS:", "b=TIAS:")
+          logger.debug('SDP updated for firefox: ', sdp)
         }
       }
     }
@@ -195,7 +196,7 @@ export default class MillicastWebRTC {
   }
 
   updateBitrate(bitrate = 0){
-    logger.info('Updating bitrate')
+    logger.info('Updating bitrate to value: ', bitrate)
     return this.getRTCPeer()
       .then((pc)=> {
         this.peer = pc

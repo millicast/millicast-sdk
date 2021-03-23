@@ -1,4 +1,5 @@
-import logger from './Logger'
+import Logger from './Logger'
+const logger = Logger.get('MillicastDirector')
 import MillicastUtils from "./MillicastUtils.js"
 
 export default class MillicastDirector {
