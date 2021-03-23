@@ -4,7 +4,8 @@
   "type": "module",
   "description": "",
   "scripts": {
-    "build": "mkdir dist & cp public dist & rollup -c",
+    "prepare": "rm -R dist && mkdir dist && cp -R public/* dist/",
+    "build": "rollup -c",
     "start": "rollup -c -w"
   },
   "author": "",
