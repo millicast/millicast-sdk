@@ -7,6 +7,6 @@ Logger.useDefaults({
 });
 
 const logger = Logger.get("MilliCast-sdk-js");
-logger.error("shit!");
-console.error("shit! 2");
+logger.error("logger");
+console.error("console");
 export default logger;
