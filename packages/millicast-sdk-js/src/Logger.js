@@ -1,10 +1,9 @@
 import Logger from 'js-logger'
 Logger.useDefaults({
-    defaultLevel: Logger.INFO,
+    defaultLevel: Logger.DEBUG,
     formatter: function (messages, context) {
-        messages.unshift(`${new Date().toISOString()} -`)
+        messages.unshift(`[${context.name}] ${new Date().toISOString()} -`)
     }
 })
 
-const logger = Logger.get('MilliCast-sdk-js')
-export default logger
+export default Logger

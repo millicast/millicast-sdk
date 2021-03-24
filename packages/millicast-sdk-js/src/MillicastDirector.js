@@ -1,7 +1,10 @@
-import MillicastUtils from "./MillicastUtils.js";
+import Logger from './Logger'
+const logger = Logger.get('MillicastDirector')
+import MillicastUtils from "./MillicastUtils.js"
 
 export default class MillicastDirector {
   static async getPublisher(token, streamName) {
+    logger.info('Getting publisher')
     let payload = { streamName };
     let response;
     try {
@@ -11,8 +14,11 @@ export default class MillicastDirector {
         token,
         payload
       );
+      logger.info('Publisher geted')
+      logger.debug('Get publisher response: ', response.data)
       return response.data;
     } catch (e) {
+      logger.error('Error getting publisher: ', e)
       throw e;
     }
   }
@@ -22,6 +28,7 @@ export default class MillicastDirector {
     streamName,
     unauthorizedSubscribe = true
   ) {
+    logger.info('Getting subscriber')
     let payload = { streamAccountId, streamName, unauthorizedSubscribe };
     const token = null;
     let response;
@@ -32,9 +39,11 @@ export default class MillicastDirector {
         token,
         payload
       );
-      console.log(response.data);
+      logger.info('Subscriber geted')
+      logger.debug('Get subscriber response: ', response.data)
       return response.data;
     } catch (e) {
+      logger.error('Error getting subscriber: ', e)
       throw e;
     }
   }
