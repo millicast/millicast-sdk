@@ -1,14 +1,9 @@
-import Logger from "js-logger";
-import sentry from "../sentry";
-
+import Logger from 'js-logger'
 Logger.useDefaults({
-  defaultLevel: Logger.INFO,
-  formatter: function (messages, context) {
-    messages.unshift(`${new Date().toISOString()} -`);
-    sentry.captureMessage(messages, context.level);
-  },
-});
+    defaultLevel: Logger.DEBUG,
+    formatter: function (messages, context) {
+        messages.unshift(`[${context.name}] ${new Date().toISOString()} -`)
+    }
+})
 
-const logger = Logger.get("MilliCast-sdk-js");
-
-export default logger;
+export default Logger
