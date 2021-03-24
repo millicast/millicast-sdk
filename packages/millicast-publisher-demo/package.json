@@ -1,7 +1,6 @@
 {
   "name": "millicast-publisher-demo",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
   "scripts": {
     "prepare": "rm -R dist && mkdir dist && cp -R public/* dist/",
