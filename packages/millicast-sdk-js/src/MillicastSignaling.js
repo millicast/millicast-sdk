@@ -1,7 +1,11 @@
-import Logger from './Logger'
-const logger = Logger.get('MillicastSignaling')
+import Logger from "./Logger";
+const logger = Logger.get("MillicastSignaling");
 import EventEmitter from "events";
 import TransactionManager from "transaction-manager";
+
+/**
+ * @class MillicastSignaling
+ */
 
 export default class MillicastSignaling extends EventEmitter {
   constructor(options) {
@@ -19,10 +23,10 @@ export default class MillicastSignaling extends EventEmitter {
    */
 
   async connect(url) {
-    logger.info('Connecting to Millicast')
+    logger.info("Connecting to Millicast");
     if (!!this.tm && !!this.ws && this.ws.readyState === WebSocket.OPEN) {
-      logger.info('Connection successful')
-      logger.debug('WebSocket value: ', this.ws)
+      logger.info("Connection successful");
+      logger.debug("WebSocket value: ", this.ws);
       this.emit("connection.success", { ws: this.ws, tm: this.tm });
       return Promise.resolve(this.ws);
     }
@@ -31,26 +35,26 @@ export default class MillicastSignaling extends EventEmitter {
       this.ws = new WebSocket(url);
       this.tm = new TransactionManager(this.ws);
       this.ws.onopen = () => {
-        logger.info('WebSocket opened')
+        logger.info("WebSocket opened");
         if (this.ws.readyState !== WebSocket.OPEN) {
           let error = { state: this.ws.readyState };
-          logger.error('WebSocket not connected: ', error)
+          logger.error("WebSocket not connected: ", error);
           this.emit("connection.error", error);
           return reject(error);
         }
         this.tm.on("event", (evt) => {
           this.emit("event", evt);
         });
-        logger.info('Connection successful')
-        logger.debug('WebSocket value: ', this.ws)
+        logger.info("Connection successful");
+        logger.debug("WebSocket value: ", this.ws);
         this.emit("connection.success", {});
         resolve(this.ws);
       };
       this.ws.onclose = () => {
         this.ws = null;
         this.tm = null;
-        logger.info('WebSocket closed')
-        logger.debug('WebSocket value: ', this.ws)
+        logger.info("WebSocket closed");
+        logger.debug("WebSocket value: ", this.ws);
         this.emit("connection.close", {});
       };
     });
@@ -61,7 +65,7 @@ export default class MillicastSignaling extends EventEmitter {
    *
    */
   async close() {
-    logger.info('Closing WebSocket')
+    logger.info("Closing WebSocket");
     if (this.ws) this.ws.close();
   }
 
@@ -72,26 +76,26 @@ export default class MillicastSignaling extends EventEmitter {
    * @return {String} sdp - Mangled SDP
    */
   async subscribe(sdp, streamId) {
-    logger.info('Subscribing, streamId value: ', streamId)
-    logger.debug('SDP: ', sdp)
+    logger.info("Subscribing, streamId value: ", streamId);
+    logger.debug("SDP: ", sdp);
 
     let data = {
       sdp,
       streamId,
-    }
+    };
 
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
-      await this.connect(this.wsUrl)
+      await this.connect(this.wsUrl);
 
     try {
-      logger.info('Sending view command')
-      const result = await this.tm.cmd("view", data)
-      logger.info('Command sent')
-      logger.debug('Command result: ', result)
-      return result.sdp
+      logger.info("Sending view command");
+      const result = await this.tm.cmd("view", data);
+      logger.info("Command sent");
+      logger.debug("Command result: ", result);
+      return result.sdp;
     } catch (e) {
-      logger.error('Error sending view command, error: ', e)
-      throw e
+      logger.error("Error sending view command, error: ", e);
+      throw e;
     }
   }
 
@@ -100,26 +104,26 @@ export default class MillicastSignaling extends EventEmitter {
    * @param {String} sdp - The local sdp.
    */
   async publish(sdp) {
-    logger.info('Publishing, streamName value: ', this.streamName)
-    logger.debug('SDP: ', sdp)
+    logger.info("Publishing, streamName value: ", this.streamName);
+    logger.debug("SDP: ", sdp);
 
     let data = {
       name: this.streamName,
       sdp,
       codec: "h264",
-    }
+    };
 
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
-      await this.connect(this.wsUrl)
-    
+      await this.connect(this.wsUrl);
+
     try {
-      logger.info('Sending publish command')
+      logger.info("Sending publish command");
       const result = await this.tm.cmd("publish", data);
-      logger.info('Command sent')
-      logger.debug('Command result: ', result)
+      logger.info("Command sent");
+      logger.debug("Command result: ", result);
       return result.sdp;
     } catch (e) {
-      logger.error('Error sending publish command, error: ', e)
+      logger.error("Error sending publish command, error: ", e);
       throw e;
     }
   }
