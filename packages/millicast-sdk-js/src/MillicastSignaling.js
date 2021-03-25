@@ -5,6 +5,9 @@ import TransactionManager from "transaction-manager";
 
 /**
  * @class MillicastSignaling
+ * @classdesc Starts the webSocket and manages the messages between peers.
+ * @example const MillicastSignaling = new MillicastSignaling();
+ * @constructor
  */
 
 export default class MillicastSignaling extends EventEmitter {
@@ -17,9 +20,10 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Establish MillicastStream Connection.
-   * @param {String} url - WebSocket url.
-   * @return {Promise}
+   * Starts a connection.
+   * @param {String} url - the websocket url (the url it's given as a response from our API, check the MillicastDirector documentation for more information).
+   * @example const response = await MillicastSignaling.connect(url);
+   * @returns {Promise} - when fullfilled it returns the webSocket connection.
    */
 
   async connect(url) {
@@ -61,20 +65,23 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Destroy MillicastStream Connection.
-   *
+   * Destroys the connection.
+   * @example MillicastSignaling.close();
    */
+
   async close() {
     logger.info("Closing WebSocket");
     if (this.ws) this.ws.close();
   }
 
   /**
-   * Subscribe MillicastStream.
-   * @param {String} sdp - The sdp.
-   * @param {String} streamId  - The streamId.'
-   * @return {String} sdp - Mangled SDP
+   * Subscribe to a stream.
+   * @param {String} sdp - The local sdp.
+   * @param {String} streamId  - The streamId that you want to subscribe to.
+   * @example const response = await MillicastSignaling.subscribe(sdp, streamId);
+   * @return {String} - The response sdp.
    */
+
   async subscribe(sdp, streamId) {
     logger.info("Subscribing, streamId value: ", streamId);
     logger.debug("SDP: ", sdp);
@@ -84,8 +91,9 @@ export default class MillicastSignaling extends EventEmitter {
       streamId,
     };
 
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       await this.connect(this.wsUrl);
+    }
 
     try {
       logger.info("Sending view command");
@@ -100,9 +108,12 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Publish MillicastStream.
+   * Publish a stream.
    * @param {String} sdp - The local sdp.
+   * @example const response = await MillicastSignaling.publish(sdp);
+   * @return {String} - The response sdp.
    */
+
   async publish(sdp) {
     logger.info("Publishing, streamName value: ", this.streamName);
     logger.debug("SDP: ", sdp);
