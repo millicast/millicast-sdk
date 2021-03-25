@@ -1,3 +1,5 @@
+import Logger from './Logger'
+const logger = Logger.get('MillicastPublish')
 import MillicastSignaling from "./MillicastSignaling";
 import MillicastWebRTC from "./MillicastWebRTC.js";
 import MillicastDirector from "./MillicastDirector.js";
@@ -38,6 +40,8 @@ export default class MillicastPublish {
       disableAudio: false,
     }
   ) {
+    logger.info('Broadcasting')
+    logger.debug('Broadcast option values: ', options)
     let bandwidth = options.bandwidth;
     let disableVideo = options.disableVideo,
       disableAudio = options.disableAudio;
@@ -46,16 +50,20 @@ export default class MillicastPublish {
     let streamName = options.streamName;
     let director = null;
     if (!token) {
-      return Promise.reject("Token required");
+      logger.error('Error while broadcasting. Token required')
+      return Promise.reject('Token required')
     }
     if (!streamName) {
-      return Promise.reject("Streamname required");
+      logger.error('Error while broadcasting. Stream name required')
+      return Promise.reject("Streamname required")
     }
     if (!options.mediaStream) {
-      return Promise.reject("MediaStream required");
+      logger.error('Error while broadcasting. MediaStream required')
+      return Promise.reject("MediaStream required")
     }
     if (this.isActive()) {
-      return Promise.reject("Broadcast currently working");
+      logger.warn('Broadcast currently working')
+      return Promise.reject('Broadcast currently working')
     }
 
     return MillicastDirector.getPublisher(token, streamName)
@@ -81,13 +89,14 @@ export default class MillicastPublish {
       })
       .then((remotesdp) => {
         if (remotesdp && remotesdp.indexOf("\na=extmap-allow-mixed") !== -1) {
+          logger.debug('SDP before trimming: ', remotesdp)
           remotesdp = remotesdp
             .split("\n")
             .filter(function (line) {
               return line.trim() !== "a=extmap-allow-mixed";
             })
             .join("\n");
-          console.log("trimed a=extmap-allow-mixed - sdp \n", remotesdp);
+          logger.debug('SDP trimmed result: ', remotesdp)
         }
         if (disableVideo === false && bandwidth > 0) {
           remotesdp = this.webRTCPeer.updateBandwidthRestriction(
@@ -105,6 +114,7 @@ export default class MillicastPublish {
    */
 
   stop() {
+    logger.info('Stopping broadcast')
     this.webRTCPeer.closeRTCPeer();
     this.millicastSignaling.close();
   }
@@ -117,7 +127,7 @@ export default class MillicastPublish {
 
   isActive() {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus();
-    console.log("RTCPeer status: ", rtcPeerState);
+    logger.info("Broadcast status: ", rtcPeerState)
     return rtcPeerState === "connected";
   }
 }

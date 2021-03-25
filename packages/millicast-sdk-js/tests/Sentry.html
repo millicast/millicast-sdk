@@ -1,0 +1,26 @@
+<script src="../dist/millicast.umd.js"></script>
+<script src="./SentryTest.js"></script>
+
+<div>
+  <h1>Sentry</h1>
+  <br />
+
+  <fieldset>
+    <label for="msg">Type a message</label>
+    <input id="msg" type="text" />
+
+    <label for="context">Select a logging context</label>
+    <select id="context">
+      <option value="debug">debug</option>
+      <option value="info">info</option>
+      <option value="warn">warning</option>
+      <option value="error">error</option>
+    </select>
+
+    <button onclick="sentryTest.testLogs()">Send Log</button>
+    <h3 id="return"></h3>
+
+    <label for="func">Call undefined function</label>
+    <button id="func" onclick="undef()">Call</button>
+  </fieldset>
+</div>
