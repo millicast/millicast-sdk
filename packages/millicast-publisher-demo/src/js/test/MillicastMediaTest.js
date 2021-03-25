@@ -5,7 +5,7 @@ class MillicastMediaTest {
       video: true
     }
     const constraintsToUse = constraints ? constraints : defaultConstraints
-    this.millicastMedia = new millicast.MillicastMedia(constraintsToUse)
+    this.millicastMedia = new publisher.MillicastMedia(constraintsToUse)
   }
 
   async testGetMedia() {

@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "milicastSdkJs": "1.0.0",
-    "milicastSdkNode": "1.0.0"
+    "millicast-sdk-js": "^1.0.0",
+    "millicast-sdk-node": "^1.0.0",
+    "millicast-publisher-demo": "^1.0.0"
   }
 }
