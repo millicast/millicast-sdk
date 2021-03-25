@@ -1,68 +1,91 @@
-//Get our url
-const href              = new URL(window.location.href);
-//Get or set Defaults
-const url               = (!!href.searchParams.get('url')) ? href.searchParams.get('url') : 'wss://turn.millicast.com/millisock';
-const streamId          = (!!href.searchParams.get('streamId')) ? href.searchParams.get('streamId') : 'demo';
+import { MillicastView } from "millicast-sdk-js";
 
-const disableVideo  = (href.searchParams.get('disableVideo') === 'true');
-const disableAudio  = (href.searchParams.get('disableAudio') === 'true');
-const muted         = (href.searchParams.get('muted') === 'true' || href.searchParams.get('muted') === null);
-const autoplay      = (href.searchParams.get('autoplay') === 'true' || href.searchParams.get('autoplay') === null);
-const autoReconnect = (href.searchParams.get('autoReconnect') === 'true' || href.searchParams.get('autoReconnect') === null);
+//Get our url
+const href = new URL(window.location.href);
+//Get or set Defaults
+const url = !!href.searchParams.get("url")
+  ? href.searchParams.get("url")
+  : "wss://turn.millicast.com/millisock";
+const streamId = !!href.searchParams.get("streamId")
+  ? href.searchParams.get("streamId")
+  : "km0n0h1u";
+const streamAccountId = !!href.searchParams.get("streamAccountId")
+  ? href.searchParams.get("streamAccountId")
+  : "tnJhvK";
+
+const disableVideo = href.searchParams.get("disableVideo") === "true";
+const disableAudio = href.searchParams.get("disableAudio") === "true";
+const muted =
+  href.searchParams.get("muted") === "true" ||
+  href.searchParams.get("muted") === null;
+const autoplay =
+  href.searchParams.get("autoplay") === "true" ||
+  href.searchParams.get("autoplay") === null;
+const autoReconnect =
+  href.searchParams.get("autoReconnect") === "true" ||
+  href.searchParams.get("autoReconnect") === null;
 
 //console.log(disableVideo, disableAudio, muted, autoplay, autoReconnect);
-const disableControls = (href.searchParams.get('disableControls') === 'true' && href.searchParams.get('disableControls') !== null);
-const disableVolume = (href.searchParams.get('disableVolume') === 'true' && href.searchParams.get('disableVolume') !== null) || disableControls;
-const disablePlay = (href.searchParams.get('disablePlay') === 'true' && href.searchParams.get('disablePlay') !== null) || disableControls;
-const disableFull = (href.searchParams.get('disableFull') === 'true' && href.searchParams.get('disableFull') !== null) || disableControls;
+const disableControls =
+  href.searchParams.get("disableControls") === "true" &&
+  href.searchParams.get("disableControls") !== null;
+const disableVolume =
+  (href.searchParams.get("disableVolume") === "true" &&
+    href.searchParams.get("disableVolume") !== null) ||
+  disableControls;
+const disablePlay =
+  (href.searchParams.get("disablePlay") === "true" &&
+    href.searchParams.get("disablePlay") !== null) ||
+  disableControls;
+const disableFull =
+  (href.searchParams.get("disableFull") === "true" &&
+    href.searchParams.get("disableFull") !== null) ||
+  disableControls;
 
 //console.log(disableVolume, disablePlay, disableFull);
 let millicastStream;
 let peer;
 let playing = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-
-  let mainView = document.querySelector('#mainView');
-  let fullBtn = document.querySelector('#fullBtn');
-  let muteBtn = document.querySelector('#muteBtn');
-  let playBtn = document.querySelector('#playBtn');
-  let video = document.querySelector('video');
+document.addEventListener("DOMContentLoaded", () => {
+  let mainView = document.querySelector("#mainView");
+  let fullBtn = document.querySelector("#fullBtn");
+  let muteBtn = document.querySelector("#muteBtn");
+  let playBtn = document.querySelector("#playBtn");
+  let video = document.querySelector("video");
 
   let int;
   let lastclientX, lastclientY;
 
-  const toggleFullscreen = ()=> {
+  const toggleFullscreen = () => {
     let fullIcon = fullBtn.children[0];
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      fullIcon.classList.remove('fa-compress');
-      fullIcon.classList.add('fa-expand');
+      fullIcon.classList.remove("fa-compress");
+      fullIcon.classList.add("fa-expand");
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
 
-        fullIcon.classList.remove('fa-expand');
-        fullIcon.classList.add('fa-compress');
+        fullIcon.classList.remove("fa-expand");
+        fullIcon.classList.add("fa-compress");
       }
     }
-
   };
-  const togglePlay = ()=>{
-    if(video.paused){
-      video.play()
-        .then(()=>{
+  const togglePlay = () => {
+    if (video.paused) {
+      video
+        .play()
+        .then(() => {
           togglePlayUI(true);
         })
-        .catch(()=>{
-
-        });
-    }else {
+        .catch(() => {});
+    } else {
       video.pause();
       togglePlayUI(false);
     }
   };
-  const togglePlayUI = (boolean)=> {
+  const togglePlayUI = (boolean) => {
     /*let playIcon = document.querySelector('#playBtn').children[0];
     //console.log('togglePlay',boolean ,  playIcon.classList.contains('fa-pause'));
 
@@ -74,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playIcon.classList.add('fa-play');
     }*/
   };
-  const toggleMute = ()=>{
+  const toggleMute = () => {
     /*let muteIcon = muteBtn.children[0];
     if(video.muted){
       muteIcon.classList.remove('fa-volume-mute');
@@ -86,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     video.muted = !video.muted;*/
   };
-  const displayUI = ()=>{
+  const displayUI = () => {
     /*mainView.classList.remove('nocursor');
     fullBtn.classList.remove('hidden');
     muteBtn.classList.remove('hidden');
@@ -96,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     muteBtn.classList.add('visible');
     playBtn.classList.add('visible');*/
   };
-  const hideUI = ()=>{
+  const hideUI = () => {
     /*mainView.classList.add('nocursor');
     fullBtn.classList.add('hidden');
     muteBtn.classList.add('hidden');
@@ -106,18 +129,18 @@ document.addEventListener('DOMContentLoaded', () => {
     muteBtn.classList.remove('visible');
     playBtn.classList.remove('visible');*/
   };
-  const enableUI = ()=>{
+  const enableUI = () => {
     /*fullBtn.classList.remove('not-allowed');
     muteBtn.classList.remove('not-allowed');
     playBtn.classList.remove('not-allowed');*/
   };
   let hasListeners = false;
-  const addListeners = ()=>{
+  const addListeners = () => {
     /*muteBtn.addEventListener('click', toggleMute);
     playBtn.addEventListener('click', togglePlay);
     hasListeners = true;*/
   };
-  const removeListeners = ()=>{
+  const removeListeners = () => {
     /*if (muteBtn.removeEventListener) {                   // For all major browsers, except IE 8 and earlier
       muteBtn.removeEventListener('click', toggleMute);
     } else if (x.detachEvent) {                    // For IE 8 and earlier versions
@@ -130,55 +153,54 @@ document.addEventListener('DOMContentLoaded', () => {
       playBtn.detachEvent('click', toggleMute);
     }*/
   };
-  const startInt = (evt)=> {
-    if(int)clearInterval(int);
-    int = setInterval(()=>{
+  const startInt = (evt) => {
+    if (int) clearInterval(int);
+    int = setInterval(() => {
       let clientX = evt.clientX;
       let clientY = evt.clientY;
-      if(clientX === lastclientX && clientY === lastclientY){
+      if (clientX === lastclientX && clientY === lastclientY) {
         hideUI();
         clearInterval(int);
-      }else{
+      } else {
         lastclientX = clientX;
         lastclientY = clientY;
       }
-    }, 1000)
+    }, 1000);
   };
-  const addStream = (stream)=> {
+  const addStream = (stream) => {
     //Create new video element
     playing = true;
-    const audio = document.querySelector('audio');
+    const audio = document.querySelector("audio");
 
-    if(disableVideo){
-      if(audio)audio.srcObject = stream;
-      if(video)video.parentNode.removeChild(video);
+    if (disableVideo) {
+      if (audio) audio.srcObject = stream;
+      if (video) video.parentNode.removeChild(video);
       togglePlay();
-    }else{
+    } else {
       //Set same id
       video.id = stream.id;
       //Set src stream
       //console.log('addStream');
-      if(!muted){
+      if (!muted) {
         toggleMute();
-        video.removeAttribute('muted');
+        video.removeAttribute("muted");
       }
-      if(!autoplay){
+      if (!autoplay) {
         video.autoplay = false;
         playing = false;
         togglePlayUI(false);
-        video.removeAttribute('autoplay');
+        video.removeAttribute("autoplay");
       }
 
       video.srcObject = stream;
       enableUI();
       togglePlayUI(playing);
-      if(!hasListeners)addListeners();
+      if (!hasListeners) addListeners();
 
-      if(audio)audio.parentNode.removeChild(audio);
+      if (audio) audio.parentNode.removeChild(audio);
     }
   };
-  const initUI = ()=>{
-
+  const initUI = () => {
     /*if(disableVolume){
       muteBtn.classList.add('d-none');
     }
@@ -194,86 +216,72 @@ document.addEventListener('DOMContentLoaded', () => {
     displayUI();*/
   };
 
+  const subscribe = async () => {
+    const millicastView = new MillicastView();
+    millicastView.on("event", (event) => {
+      if (!autoReconnect) return;
 
-  const subscribe = ()=>{
-    millicastStream = new MillicastStream({url});
-    millicastWebRTCClient = new MillicastWebRTC();
-    millicastStream.on('event', (event) => {
-      if(!autoReconnect)return;
-
-      let layers = event.data['layers'] !== null ? event.data['layers'] : {};
-      if(event.name === 'layers' && Object.keys(layers).length <= 0){
+      let layers = event.data["layers"] !== null ? event.data["layers"] : {};
+      if (event.name === "layers" && Object.keys(layers).length <= 0) {
         //call play logic or being reconnect interval
-        close()
-          .then(()=>{
-            subscribe();
-          });
-        console.error('Feed no longer found.')
+        close().then(() => {
+          subscribe();
+        });
+        console.error("Feed no longer found.");
       }
     });
 
-    const close = ()=>{
+    millicastView.on("new.track", (event) => {
+      if (!playing) addStream(event.streams[0]);
+    });
+
+    const close = () => {
       togglePlayUI(false);
       video.srcObject = null;
       playing = false;
-      millicastStream.close();
+      millicastView.millicastSignaling.close();
       removeListeners();
       return Promise.resolve({});
     };
 
-    millicastWebRTCClient.getRTCConfiguration()
-      .then((config) => {
-        return millicastWebRTCClient.getRTCPeer(config);
-      })
-      .then((pc) => {
-        peer         = pc;
-        peer.ontrack = (event) => {
-          if(!playing)addStream(event.streams[0]);
-          //console.log('ontrack', event.receiver.track.kind);
-        };
-        return millicastWebRTCClient.getRTCLocalSDP(!disableVideo, !disableAudio);
-      })
-      .then((desc) => {
-        return millicastStream.subscribe(desc.sdp, streamId);
-      })
-      .then((response) => {
-        if (response.sdp) {
-          return millicastWebRTCClient.setRTCRemoteSDP(response.sdp);
-        }
+    try {
+      const options = {
+        streamAccountId: streamAccountId,
+        streamName: streamId,
+        disableVideo: disableVideo,
+        disableAudio: disableAudio,
+      };
+      await millicastView.connect(options);
+    } catch (error) {
+      if (!autoReconnect) return;
 
-        return Promise.reject(response);
-      })
-      .then(() => {
-        //console.log('setRemoteDescription success');
-      })
-      .catch((error) => {
-        if(!autoReconnect)return;
-
-        close()
-          .then(()=>{
-            subscribe();
-          });
-
-        console.error(error);
+      close().then(() => {
+        subscribe();
       });
+      console.error(error);
+    }
   };
 
-  if(fullBtn)fullBtn.onclick = toggleFullscreen;
+  if (fullBtn) fullBtn.onclick = toggleFullscreen;
 
-  video.onmousemove = (evt)=> {
+  video.onmousemove = (evt) => {
     startInt(evt);
     displayUI();
   };
-  video.addEventListener('touchstart', (evt)=> {
-    startInt(evt);
-    displayUI();
-  }, false);
+  video.addEventListener(
+    "touchstart",
+    (evt) => {
+      startInt(evt);
+      displayUI();
+    },
+    false
+  );
 
-  window.onmouseout = (evt)=> {
-    if(!evt.relatedTarget)hideUI();
+  window.onmouseout = (evt) => {
+    if (!evt.relatedTarget) hideUI();
   };
 
-  int = setInterval(()=>{
+  int = setInterval(() => {
     hideUI();
     clearInterval(int);
   }, 2000);
