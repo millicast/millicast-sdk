@@ -8,12 +8,17 @@ export default class MillicastDirector {
     let payload = { streamName };
     let response;
     try {
-      response = await MillicastUtils.request(
-        "https://director.millicast.com/api/director/publish",
-        "POST",
+      // response = await MillicastUtils.request(
+      //   "https://director.millicast.com/api/director/publish",
+      //   "POST",
+      //   token,
+      //   payload
+      // );
+      response = MillicastUtils.director(
+        'https://director.millicast.com/api/director/publish',
         token,
         payload
-      );
+      )
       logger.info('Publisher geted')
       logger.debug('Get publisher response: ', response.data)
       return response.data;
