@@ -4,6 +4,7 @@ import MillicastSignaling from "./MillicastSignaling";
 import MillicastPublish from "./MillicastPublish";
 import MillicastUtils from "./MillicastUtils";
 import MillicastDirector from "./MillicastDirector";
+import MillicastView from "./MillicastView"
 
 export {
   Logger,
@@ -12,4 +13,5 @@ export {
   MillicastPublish,
   MillicastUtils,
   MillicastDirector,
+  MillicastView,
 };
