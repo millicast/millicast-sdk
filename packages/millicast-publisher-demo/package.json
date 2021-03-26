@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "prepare": "rm -R dist && mkdir dist && cp -R public/* dist/",
+    "prepare": "node prepare.js",
     "build": "rollup -c",
     "start": "rollup -c -w"
   },
