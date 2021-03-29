@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
     "buffer": "^6.0.3",
     "docdash": "^1.2.0",
     "events": "^3.3.0",

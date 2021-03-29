@@ -1,6 +1,6 @@
-import Logger from './Logger'
+import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
-import MillicastUtils from './MillicastUtils.js'
+import Logger from './Logger'
 const logger = Logger.get('MillicastWebRTC')
 
 export default class MillicastWebRTC {
@@ -62,14 +62,15 @@ export default class MillicastWebRTC {
   getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
     logger.debug('Request location: ', location)
+
     return new Promise((resolve, reject) => {
       const a = []
-      MillicastUtils.request(location, 'PUT')
-        .then((result) => {
-          logger.debug('RTC ICE servers response: ', result)
-          if (result.s === 'ok') {
+      axios.put(location)
+        .then(({ data }) => {
+          logger.debug('RTC ICE servers response: ', data)
+          if (data.s === 'ok') {
             logger.info('RTC ICE servers successfully geted')
-            const list = result.v.iceServers
+            const list = data.v.iceServers
             // call returns old format, this updates URL to URLS in credentials path.
             list.forEach((cred) => {
               const v = cred.url
@@ -83,7 +84,7 @@ export default class MillicastWebRTC {
           resolve(a)
         })
         .catch((error) => {
-          logger.error('Error while getting RTC ICE servers: ', error)
+          logger.error('Error while getting RTC ICE servers: ', error.response.data)
           resolve(a)
         })
     })

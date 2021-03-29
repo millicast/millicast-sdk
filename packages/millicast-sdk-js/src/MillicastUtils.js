@@ -1,3 +1,4 @@
+// TODO: Delete me with MillicastDirector
 export default class MillicastUtils {
   static request (url, method, token, payload) {
     return new Promise((resolve, reject) => {
