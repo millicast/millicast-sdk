@@ -84,6 +84,7 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
 
   broadcast(
     options = {
+      publisherData: null,
       token: null,
       streamName: null,
       bandwidth: 0,

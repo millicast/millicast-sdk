@@ -1,7 +1,6 @@
 import Logger from './Logger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
-import MillicastDirector from './MillicastDirector.js'
 const logger = Logger.get('MillicastPublish')
 
 /**
@@ -32,6 +31,7 @@ export default class MillicastPublish {
 
   broadcast (
     options = {
+      publisherData: null,
       token: null,
       streamName: null,
       mediaStream: null,
@@ -46,7 +46,6 @@ export default class MillicastPublish {
     const disableVideo = options.disableVideo
     const token = options.token
     const streamName = options.streamName
-    let director = null
     if (!token) {
       logger.error('Error while broadcasting. Token required')
       throw new Error('Token required')
@@ -64,11 +63,7 @@ export default class MillicastPublish {
       throw new Error('Broadcast currently working')
     }
 
-    return MillicastDirector.getPublisher(token, streamName)
-      .then((dir) => {
-        director = dir
-        return this.webRTCPeer.getRTCConfiguration()
-      })
+    return this.webRTCPeer.getRTCConfiguration()
       .then((config) => {
         return this.webRTCPeer.getRTCPeer(config)
       })
@@ -80,7 +75,7 @@ export default class MillicastPublish {
         return this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
       })
       .then((localsdp) => {
-        this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
+        this.millicastSignaling.wsUrl = `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
         this.millicastSignaling.streamName = streamName
         return this.millicastSignaling.publish(localsdp)
       })
