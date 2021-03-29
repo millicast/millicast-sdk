@@ -8,14 +8,9 @@ export default class MillicastDirector {
     const payload = { streamName }
     let response
     try {
-      // response = await MillicastUtils.request(
-      //   "https://director.millicast.com/api/director/publish",
-      //   "POST",
-      //   token,
-      //   payload
-      // );
-      response = MillicastUtils.director(
+      response = await MillicastUtils.request(
         'https://director.millicast.com/api/director/publish',
+        'POST',
         token,
         payload
       )

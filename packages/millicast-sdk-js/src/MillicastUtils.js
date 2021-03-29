@@ -1,55 +1,28 @@
-import axios from 'axios'
-
+// TODO: Delete me with MillicastDirector
 export default class MillicastUtils {
-  director (url, token, payload) {
-    return (dispatch) => {
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+  static request (url, method, token, payload) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.onreadystatechange = (evt) => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          const res = JSON.parse(xhr.responseText)
+          // console.log(res);
+          switch (xhr.status) {
+            case 200:
+              resolve(res)
+              break
+            default:
+              reject(res)
+              break
+          }
+        }
       }
-
-      axios.post(url, payload, headers).then(response => {
-        return response
-      })
-    }
-  }
-
-  turn (url, token, payload) {
-    return (dispatch) => {
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+      xhr.open(method, url, true)
+      xhr.setRequestHeader('Content-Type', 'application/json;')
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
       }
-
-      axios.put(url, payload, headers).then(response => {
-        return response
-      })
-    }
+      payload ? xhr.send(JSON.stringify(payload)) : xhr.send()
+    })
   }
 }
-
-// static request(url, method, token, payload) {
-//   return new Promise((resolve, reject) => {
-//     let xhr = new XMLHttpRequest();
-//     xhr.onreadystatechange = (evt) => {
-//       if (xhr.readyState === XMLHttpRequest.DONE) {
-//         let res = JSON.parse(xhr.responseText);
-//         //console.log(res);
-//         switch (xhr.status) {
-//           case 200:
-//             resolve(res);
-//             break;
-//           default:
-//             reject(res);
-//             break;
-//         }
-//       }
-//     };
-//     xhr.open(method, url, true);
-//     xhr.setRequestHeader("Content-Type", "application/json;");
-//     if (!!token) {
-//       xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-//     }
-//     !!payload ? xhr.send(JSON.stringify(payload)) : xhr.send();
-//   });
-// }
