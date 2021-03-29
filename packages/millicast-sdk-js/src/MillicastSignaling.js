@@ -28,7 +28,7 @@ export default class MillicastSignaling extends EventEmitter {
 
   async connect (url) {
     logger.info('Connecting to Millicast')
-    if (!!this.tm && !!this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.tm && this.ws?.readyState === WebSocket.OPEN) {
       logger.info('Connection successful')
       logger.debug('WebSocket value: ', this.ws)
       this.emit('connection.success', { ws: this.ws, tm: this.tm })
