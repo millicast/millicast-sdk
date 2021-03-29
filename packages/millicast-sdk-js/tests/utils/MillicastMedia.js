@@ -1,17 +1,5 @@
-/**
- * @class MillicastMedia
- * @classdesc It's in charge of the devices, their respective streams, and the states of those streams.
- * @param {Object} options
- * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
- * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
- * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
- * @example const millicastMedia = new MillicastMedia();
- * @constructor
- */
-
 class MillicastMedia {
   constructor (options) {
-    // constructor syntactic sugar
     this.mediaStream = null
 
     this.constraints = {
