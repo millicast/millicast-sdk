@@ -17,7 +17,6 @@ class MillicastViewTest {
 
   async subscribe () {
     const options = {
-      streamAccountId: this.streamAccountId,
       streamName: this.streamName,
       disableVideo: this.disableVideo,
       disableAudio: this.disableAudio

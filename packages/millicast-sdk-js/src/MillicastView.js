@@ -11,8 +11,8 @@ export default class MillicastView extends EventEmitter {
     this.millicastSignaling = new MillicastSignaling()
   }
 
-  async connect (options = { subscriberData: null, streamAccountId: null, streamName: null, disableVideo: false, disableAudio: false }) {
-    logger.info(`Connecting to publisher. Stream account: ${options.streamAccountId}, stream name: ${options.streamName}`)
+  async connect (options = { subscriberData: null, streamName: null, disableVideo: false, disableAudio: false }) {
+    logger.info(`Connecting to publisher. Stream name: ${options.streamName}`)
     logger.debug('All viewer connect options values: ', options)
     this.millicastSignaling.wsUrl = `${options.subscriberData.wsUrl}?token=${options.subscriberData.jwt}`
     const rtcConfiguration = await this.webRTCPeer.getRTCConfiguration()
