@@ -19,7 +19,6 @@ export default class MillicastPublish {
   /**
    * Starts the broadcast
    * @param {Object} options - general broadcast options.
-   * @param {String} options.token - user token for authentication.
    * @param {String} options.streamName - the name of the stream.
    * @param {mediaStream} options.mediaStream - the stream from the devices.
    * @param {Number} options.bandwith - the selected bandwith of the broadcast.
@@ -32,7 +31,6 @@ export default class MillicastPublish {
   broadcast (
     options = {
       publisherData: null,
-      token: null,
       streamName: null,
       mediaStream: null,
       bandwidth: 0,
@@ -44,12 +42,7 @@ export default class MillicastPublish {
     logger.debug('Broadcast option values: ', options)
     const bandwidth = options.bandwidth
     const disableVideo = options.disableVideo
-    const token = options.token
     const streamName = options.streamName
-    if (!token) {
-      logger.error('Error while broadcasting. Token required')
-      throw new Error('Token required')
-    }
     if (!streamName) {
       logger.error('Error while broadcasting. Stream name required')
       throw new Error('Streamname required')

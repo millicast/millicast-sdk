@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   const BroadcastMillicastStream = async () => {
     try{
       const getPublisherResponse = await MillicastDirector.getPublisher(publishToken, streamId)
-      await millicastPublishUserMedia.broadcast({ publisherData: getPublisherResponse, token: publishToken, streamName: streamId, bandwidth })
+      await millicastPublishUserMedia.broadcast({ publisherData: getPublisherResponse, streamName: streamId, bandwidth })
       isBroadcasting = true;
       broadcastHandler();
     }

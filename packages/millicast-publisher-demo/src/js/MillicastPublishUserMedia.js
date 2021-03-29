@@ -19,7 +19,6 @@ import MillicastMedia from "./MillicastMedia"  //"./MillicastMedia";
  *
  * //Options
  * const broadcastOptions = options ?? {
- *    token: "", <- your publishing token
  *    streamName: "", <- your stream name
  *  };
  *
@@ -73,7 +72,6 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
   /**
    * Starts the stream.
    * @param {Object} options - general broadcast options.
-   * @param {String} options.token - user token for authentication.
    * @param {String} options.streamName - the name of the stream.
    * @param {Number} options.bandwith - the selected bandwith of the broadcast.
    * @param {Boolean} options.disableVideo - the selected status of the selected video device.
@@ -85,7 +83,6 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
   broadcast(
     options = {
       publisherData: null,
-      token: null,
       streamName: null,
       bandwidth: 0,
       disableVideo: false,
