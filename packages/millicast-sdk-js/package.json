@@ -14,9 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
-    "@sentry/browser": "^6.2.3",
-    "@sentry/integrations": "^6.2.3",
-    "@sentry/tracing": "^6.2.3",
     "buffer": "^6.0.3",
     "docdash": "^1.2.0",
     "events": "^3.3.0",
