@@ -2,7 +2,6 @@ import Logger from './Logger'
 import EventEmitter from 'events'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
-import MillicastDirector from './MillicastDirector.js'
 const logger = Logger.get('MillicastView')
 
 export default class MillicastView extends EventEmitter {
@@ -12,11 +11,10 @@ export default class MillicastView extends EventEmitter {
     this.millicastSignaling = new MillicastSignaling()
   }
 
-  async connect (options = { streamAccountId: null, streamName: null, disableVideo: false, disableAudio: false }) {
-    logger.info(`Connecting to publisher. Stream account: ${options.streamAccountId}, stream name: ${options.streamName}`)
+  async connect (options = { subscriberData: null, streamName: null, disableVideo: false, disableAudio: false }) {
+    logger.info(`Connecting to publisher. Stream name: ${options.streamName}`)
     logger.debug('All viewer connect options values: ', options)
-    const directorResponse = await MillicastDirector.getSubscriber(options.streamAccountId, options.streamName)
-    this.millicastSignaling.wsUrl = `${directorResponse.wsUrl}?token=${directorResponse.jwt}`
+    this.millicastSignaling.wsUrl = `${options.subscriberData.wsUrl}?token=${options.subscriberData.jwt}`
     const rtcConfiguration = await this.webRTCPeer.getRTCConfiguration()
     const peer = await this.webRTCPeer.getRTCPeer(rtcConfiguration)
     peer.ontrack = (event) => {

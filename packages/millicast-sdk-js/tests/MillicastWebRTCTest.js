@@ -1,5 +1,6 @@
 
 const millicast = window.millicast
+const millicastDirector = window.millicastDirector
 
 class MillicastWebRTCTest {
   constructor () {
@@ -9,13 +10,7 @@ class MillicastWebRTCTest {
     this.streamAccountId = 'tnJhvK'
     this.millicastWebRTC = new millicast.MillicastWebRTC()
     this.millicastSignaling = new millicast.MillicastSignaling()
-
-    const defaultConstraints = {
-      audio: true,
-      video: true
-    }
-    const constraintsToUse = defaultConstraints
-    this.millicastMedia = new millicast.MillicastMedia(constraintsToUse)
+    this.millicastMedia = window.millicastMedia
   }
 
   async testGetRTCPeer () {
@@ -55,7 +50,7 @@ class MillicastWebRTCTest {
 
   async testSetRTCRemoteSDP () {
     const mediaStream = await this.millicastMedia.getMedia()
-    const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
+    const director = await millicastDirector.getPublisher(this.token, this.streamName)
     const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, mediaStream)
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
     const remotesdp = await this.millicastSignaling.publish(localsdp)

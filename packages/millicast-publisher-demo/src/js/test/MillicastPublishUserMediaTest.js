@@ -56,7 +56,6 @@ class MillicastPublishUserMediaTest {
     );
 
     const broadcastOptions = options ?? {
-      token: "9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849",
       streamName: "km0n0h1u",
       bandwidth: bandwidth,
       disableVideo: false,

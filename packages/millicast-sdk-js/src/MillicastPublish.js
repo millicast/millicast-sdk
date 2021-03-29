@@ -1,7 +1,6 @@
 import Logger from './Logger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
-import MillicastDirector from './MillicastDirector.js'
 const logger = Logger.get('MillicastPublish')
 
 /**
@@ -20,7 +19,6 @@ export default class MillicastPublish {
   /**
    * Starts the broadcast
    * @param {Object} options - general broadcast options.
-   * @param {String} options.token - user token for authentication.
    * @param {String} options.streamName - the name of the stream.
    * @param {mediaStream} options.mediaStream - the stream from the devices.
    * @param {Number} options.bandwith - the selected bandwith of the broadcast.
@@ -32,7 +30,7 @@ export default class MillicastPublish {
 
   broadcast (
     options = {
-      token: null,
+      publisherData: null,
       streamName: null,
       mediaStream: null,
       bandwidth: 0,
@@ -44,13 +42,7 @@ export default class MillicastPublish {
     logger.debug('Broadcast option values: ', options)
     const bandwidth = options.bandwidth
     const disableVideo = options.disableVideo
-    const token = options.token
     const streamName = options.streamName
-    let director = null
-    if (!token) {
-      logger.error('Error while broadcasting. Token required')
-      throw new Error('Token required')
-    }
     if (!streamName) {
       logger.error('Error while broadcasting. Stream name required')
       throw new Error('Streamname required')
@@ -64,11 +56,7 @@ export default class MillicastPublish {
       throw new Error('Broadcast currently working')
     }
 
-    return MillicastDirector.getPublisher(token, streamName)
-      .then((dir) => {
-        director = dir
-        return this.webRTCPeer.getRTCConfiguration()
-      })
+    return this.webRTCPeer.getRTCConfiguration()
       .then((config) => {
         return this.webRTCPeer.getRTCPeer(config)
       })
@@ -80,7 +68,7 @@ export default class MillicastPublish {
         return this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
       })
       .then((localsdp) => {
-        this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
+        this.millicastSignaling.wsUrl = `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
         this.millicastSignaling.streamName = streamName
         return this.millicastSignaling.publish(localsdp)
       })

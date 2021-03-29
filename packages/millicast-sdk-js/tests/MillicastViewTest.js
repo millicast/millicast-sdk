@@ -1,4 +1,5 @@
 const millicast = window.millicast
+const millicastDirector = window.millicastDirector
 
 class MillicastViewTest {
   constructor () {
@@ -16,16 +17,17 @@ class MillicastViewTest {
   }
 
   async subscribe () {
-    const options = {
-      streamAccountId: this.streamAccountId,
-      streamName: this.streamName,
-      disableVideo: this.disableVideo,
-      disableAudio: this.disableAudio
-    }
     try {
       this.millicastView.on('new.track', (event) => {
         this.addStreamToVideoTag(event)
       })
+      const getSubscriberResponse = await millicastDirector.getSubscriber(this.streamAccountId, this.streamName)
+      const options = {
+        subscriberData: getSubscriberResponse,
+        streamName: this.streamName,
+        disableVideo: this.disableVideo,
+        disableAudio: this.disableAudio
+      }
       await this.millicastView.connect(options)
       console.log('Viewer connected!!')
     } catch (error) {

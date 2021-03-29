@@ -1,4 +1,5 @@
 import { MillicastView, Logger } from "millicast-sdk-js";
+import MillicastDirector from "./js/MillicastDirector";
 
 Logger.setLevel(Logger.OFF);
 
@@ -247,8 +248,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
+      const getViewerResponse = await MillicastDirector.getSubscriber(streamAccountId, streamId)
       const options = {
-        streamAccountId: streamAccountId,
+        subscriberData: getViewerResponse,
         streamName: streamId,
         disableVideo: disableVideo,
         disableAudio: disableAudio,

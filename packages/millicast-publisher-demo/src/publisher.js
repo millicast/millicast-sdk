@@ -1,4 +1,5 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
+import MillicastDirector from './js/MillicastDirector'
 
 const streamId = process.env.STREAM_ID
 const accountId = process.env.ACCOUNT_ID
@@ -107,7 +108,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   const BroadcastMillicastStream = async () => {
     try{
-      await millicastPublishUserMedia.broadcast({token: publishToken, streamName: streamId, bandwidth})
+      const getPublisherResponse = await MillicastDirector.getPublisher(publishToken, streamId)
+      await millicastPublishUserMedia.broadcast({ publisherData: getPublisherResponse, streamName: streamId, bandwidth })
       isBroadcasting = true;
       broadcastHandler();
     }

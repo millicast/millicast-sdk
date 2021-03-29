@@ -1,5 +1,20 @@
-// TODO: Delete me with MillicastDirector
-export default class MillicastUtils {
+export default class MillicastDirector {
+  static async getPublisher (token, streamName) {
+    const payload = { streamName }
+    let response
+    try {
+      response = await this.request(
+        'https://director.millicast.com/api/director/publish',
+        'POST',
+        token,
+        payload
+      )
+      return response.data
+    } catch (e) {
+      throw e
+    }
+  }
+
   static request (url, method, token, payload) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
