@@ -2,19 +2,20 @@ module.exports = {
   env: {
     browser: true,
     node: true,
-    jest: true,
+    jest: true
   },
-  plugins: ["jest"],
+  plugins: ['jest'],
   parserOptions: {
     ecmaFeatures: {
-      experimentalObjectRestSpread: true,
+      experimentalObjectRestSpread: true
     },
     ecmaVersion: 2020,
-    sourceType: "module",
+    sourceType: 'module'
   },
   settings: {
     jest: {
-      version: 24,
-    },
+      version: 24
+    }
   },
-};
+  extends: 'standard'
+}

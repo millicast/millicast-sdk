@@ -1,10 +1,12 @@
 
+const millicast = window.millicast
+
 class MillicastWebRTCTest {
-  constructor() {
+  constructor () {
     this.token =
-      "5159e188181e7fea4b21bd4af7a04e1c634af11995d421431a2472c134b59f31";
-    this.streamName = "kmc1vt0c";
-    this.streamAccountId = "tnJhvK";
+      '5159e188181e7fea4b21bd4af7a04e1c634af11995d421431a2472c134b59f31'
+    this.streamName = 'kmc1vt0c'
+    this.streamAccountId = 'tnJhvK'
     this.millicastWebRTC = new millicast.MillicastWebRTC()
     this.millicastSignaling = new millicast.MillicastSignaling()
 
@@ -16,20 +18,20 @@ class MillicastWebRTCTest {
     this.millicastMedia = new millicast.MillicastMedia(constraintsToUse)
   }
 
-  async testGetRTCPeer() {
+  async testGetRTCPeer () {
     const response = await this.millicastWebRTC.getRTCPeer()
     console.log('getRTCPeer response: ', response)
     return response
   }
 
-  async testCloseRTCPeer() {
+  async testCloseRTCPeer () {
     await this.millicastWebRTC.getRTCPeer()
     const response = await this.millicastWebRTC.closeRTCPeer()
     console.log('closeRTCPeer response: ', response)
     return response
   }
 
-  async testGetRTCConfiguration() {
+  async testGetRTCConfiguration () {
     try {
       const response = await this.millicastWebRTC.getRTCConfiguration()
       console.log('getRTCConfiguration response: ', response)
@@ -40,7 +42,7 @@ class MillicastWebRTCTest {
     }
   }
 
-  async testGetRTCIceServers() {
+  async testGetRTCIceServers () {
     try {
       const response = await this.millicastWebRTC.getRTCIceServers()
       console.log('getRTCIceServers response: ', response)
@@ -51,19 +53,19 @@ class MillicastWebRTCTest {
     }
   }
 
-  async testSetRTCRemoteSDP() {
+  async testSetRTCRemoteSDP () {
     const mediaStream = await this.millicastMedia.getMedia()
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
     const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, mediaStream)
-    this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
-    let remotesdp = await this.millicastSignaling.publish(localsdp)
+    this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
+    const remotesdp = await this.millicastSignaling.publish(localsdp)
 
     const response = await this.millicastWebRTC.setRTCRemoteSDP(remotesdp)
     console.log('setRTCRemoteSDP result: ', this.millicastWebRTC.peer.remoteDescription)
     return response
   }
 
-  async testGetRTCLocalSDP() {
+  async testGetRTCLocalSDP () {
     await this.millicastWebRTC.getRTCPeer()
     try {
       const response = await this.millicastWebRTC.getRTCLocalSDP(true, null)
@@ -75,21 +77,21 @@ class MillicastWebRTCTest {
     }
   }
 
-  async testResolveLocalSDP() {
+  async testResolveLocalSDP () {
     const response = await this.millicastWebRTC.resolveLocalSDP(false, null)
     console.log('resolveLocalSDP response: ', response)
     return response
   }
 
-  async testUpdateBandwidthRestriction() {
+  async testUpdateBandwidthRestriction () {
     const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, null)
     const response = this.millicastWebRTC.updateBandwidthRestriction(localsdp, 500)
     console.log('updateBandwidhRestriction response: ', response)
-    console.log('oldsdp == newsdp? ', localsdp == response)
+    console.log('oldsdp == newsdp? ', localsdp === response)
     return response
   }
 
-  async testUpdateBitrate() {
+  async testUpdateBitrate () {
     const response = await this.millicastWebRTC.updateBitrate(500)
     console.log('updateBitrate response: ', response)
     return response
@@ -102,4 +104,4 @@ class MillicastWebRTCTest {
   }
 }
 
-const millicastWebRTCTest = new MillicastWebRTCTest()
+window.millicastWebRTCTest = new MillicastWebRTCTest()

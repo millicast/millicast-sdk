@@ -1,8 +1,8 @@
 import Logger from './Logger'
+import MillicastSignaling from './MillicastSignaling'
+import MillicastWebRTC from './MillicastWebRTC.js'
+import MillicastDirector from './MillicastDirector.js'
 const logger = Logger.get('MillicastPublish')
-import MillicastSignaling from "./MillicastSignaling";
-import MillicastWebRTC from "./MillicastWebRTC.js";
-import MillicastDirector from "./MillicastDirector.js";
 
 /**
  * @class MillicastPublish
@@ -12,9 +12,9 @@ import MillicastDirector from "./MillicastDirector.js";
  */
 
 export default class MillicastPublish {
-  constructor() {
-    this.webRTCPeer = new MillicastWebRTC();
-    this.millicastSignaling = new MillicastSignaling();
+  constructor () {
+    this.webRTCPeer = new MillicastWebRTC()
+    this.millicastSignaling = new MillicastSignaling()
   }
 
   /**
@@ -30,82 +30,79 @@ export default class MillicastPublish {
    * @returns - sets the SDP answer from the external peer in your own peer.remoteDescription.
    */
 
-  broadcast(
+  broadcast (
     options = {
       token: null,
       streamName: null,
       mediaStream: null,
       bandwidth: 0,
       disableVideo: false,
-      disableAudio: false,
+      disableAudio: false
     }
   ) {
     logger.info('Broadcasting')
     logger.debug('Broadcast option values: ', options)
-    let bandwidth = options.bandwidth;
-    let disableVideo = options.disableVideo,
-      disableAudio = options.disableAudio;
-    let pc = null;
-    let token = options.token;
-    let streamName = options.streamName;
-    let director = null;
+    const bandwidth = options.bandwidth
+    const disableVideo = options.disableVideo
+    const token = options.token
+    const streamName = options.streamName
+    let director = null
     if (!token) {
       logger.error('Error while broadcasting. Token required')
-      return Promise.reject('Token required')
+      throw new Error('Token required')
     }
     if (!streamName) {
       logger.error('Error while broadcasting. Stream name required')
-      return Promise.reject("Streamname required")
+      throw new Error('Streamname required')
     }
     if (!options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
-      return Promise.reject("MediaStream required")
+      throw new Error('MediaStream required')
     }
     if (this.isActive()) {
       logger.warn('Broadcast currently working')
-      return Promise.reject('Broadcast currently working')
+      throw new Error('Broadcast currently working')
     }
 
     return MillicastDirector.getPublisher(token, streamName)
       .then((dir) => {
-        director = dir;
-        return this.webRTCPeer.getRTCConfiguration();
+        director = dir
+        return this.webRTCPeer.getRTCConfiguration()
       })
       .then((config) => {
-        return this.webRTCPeer.getRTCPeer(config);
+        return this.webRTCPeer.getRTCPeer(config)
       })
       .then((peer) => {
-        pc = peer;
         this.webRTCPeer.RTCOfferOptions = {
           offerToReceiveVideo: !options.disableVideo,
-          offerToReceiveAudio: !options.disableAudio,
-        };
-        return this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream);
+          offerToReceiveAudio: !options.disableAudio
+        }
+        return this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
       })
       .then((localsdp) => {
-        this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`;
+        this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
         this.millicastSignaling.streamName = streamName
-        return this.millicastSignaling.publish(localsdp);
+        return this.millicastSignaling.publish(localsdp)
       })
       .then((remotesdp) => {
-        if (remotesdp && remotesdp.indexOf("\na=extmap-allow-mixed") !== -1) {
+        if (remotesdp && remotesdp.indexOf('\na=extmap-allow-mixed') !== -1) {
           logger.debug('SDP before trimming: ', remotesdp)
           remotesdp = remotesdp
-            .split("\n")
+            .split('\n')
             .filter(function (line) {
-              return line.trim() !== "a=extmap-allow-mixed";
+              return line.trim() !== 'a=extmap-allow-mixed'
             })
-            .join("\n");
+            .join('\n')
           logger.debug('SDP trimmed result: ', remotesdp)
         }
         if (disableVideo === false && bandwidth > 0) {
           remotesdp = this.webRTCPeer.updateBandwidthRestriction(
             remotesdp,
             bandwidth
-          );
+          )
         }
-        return this.webRTCPeer.setRTCRemoteSDP(remotesdp);
-      });
+        return this.webRTCPeer.setRTCRemoteSDP(remotesdp)
+      })
   }
 
   /**
@@ -113,10 +110,10 @@ export default class MillicastPublish {
    * @example MillicastPublish.stop();
    */
 
-  stop() {
+  stop () {
     logger.info('Stopping broadcast')
-    this.webRTCPeer.closeRTCPeer();
-    this.millicastSignaling.close();
+    this.webRTCPeer.closeRTCPeer()
+    this.millicastSignaling.close()
   }
 
   /**
@@ -125,9 +122,9 @@ export default class MillicastPublish {
    * @returns {Boolean} - true if connected, false if not.
    */
 
-  isActive() {
-    const rtcPeerState = this.webRTCPeer.getRTCPeerStatus();
-    logger.info("Broadcast status: ", rtcPeerState)
-    return rtcPeerState === "connected";
+  isActive () {
+    const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
+    logger.info('Broadcast status: ', rtcPeerState)
+    return rtcPeerState === 'connected'
   }
 }
