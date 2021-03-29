@@ -1,6 +1,6 @@
 {
   "eslint.alwaysShowStatus": true,
-  "eslint.workingDirectories": ["packages/millicast-sdk-js/"],
+  "eslint.workingDirectories": ["packages/millicast-sdk-js"],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
