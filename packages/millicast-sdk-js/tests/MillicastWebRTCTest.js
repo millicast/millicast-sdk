@@ -1,5 +1,6 @@
 
 const millicast = window.millicast
+const millicastDirector = window.millicastDirector
 
 class MillicastWebRTCTest {
   constructor () {
@@ -9,13 +10,7 @@ class MillicastWebRTCTest {
     this.streamAccountId = 'tnJhvK'
     this.millicastWebRTC = new millicast.MillicastWebRTC()
     this.millicastSignaling = new millicast.MillicastSignaling()
-
-    const defaultConstraints = {
-      audio: true,
-      video: true
-    }
-    const constraintsToUse = defaultConstraints
-    this.millicastMedia = new millicast.MillicastMedia(constraintsToUse)
+    this.millicastMedia = window.millicastMedia
   }
 
   async testGetRTCPeer () {
@@ -55,7 +50,7 @@ class MillicastWebRTCTest {
 
   async testSetRTCRemoteSDP () {
     const mediaStream = await this.millicastMedia.getMedia()
-    const director = await this.getPublisher(this.token, this.streamName)
+    const director = await millicastDirector.getPublisher(this.token, this.streamName)
     const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, mediaStream)
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
     const remotesdp = await this.millicastSignaling.publish(localsdp)
@@ -101,43 +96,6 @@ class MillicastWebRTCTest {
     const response = this.millicastWebRTC.getRTCPeerStatus()
     console.log('getRTCPeerStatus response: ', response)
     return response
-  }
-
-  async getPublisher (token, streamName) {
-    const payload = { streamName }
-    const response = await this.request(
-      'https://director.millicast.com/api/director/publish',
-      'POST',
-      token,
-      payload
-    )
-    return response.data
-  }
-
-  request (url, method, token, payload) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.onreadystatechange = (evt) => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          const res = JSON.parse(xhr.responseText)
-          // console.log(res);
-          switch (xhr.status) {
-            case 200:
-              resolve(res)
-              break
-            default:
-              reject(res)
-              break
-          }
-        }
-      }
-      xhr.open(method, url, true)
-      xhr.setRequestHeader('Content-Type', 'application/json;')
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-      }
-      payload ? xhr.send(JSON.stringify(payload)) : xhr.send()
-    })
   }
 }
 

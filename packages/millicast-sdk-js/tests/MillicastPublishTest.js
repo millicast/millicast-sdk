@@ -1,4 +1,5 @@
 const millicast = window.millicast
+const millicastDirector = window.millicastDirector
 
 class MillicastPublishTest {
   constructor () {
@@ -6,7 +7,7 @@ class MillicastPublishTest {
   }
 
   async init () {
-    this.millicastMedia = new millicast.MillicastMedia({ audio: true, video: true })
+    this.millicastMedia = window.millicastMedia
     const mediaStream = await this.millicastMedia.getMedia()
     console.log('GetMedia response:', mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = mediaStream
@@ -15,16 +16,18 @@ class MillicastPublishTest {
   async testStart (options = undefined) {
     const accountId = 'tnJhvK'
     const bandwidth = Number.parseInt(document.getElementById('bitrate-select').value)
-
-    const broadcastOptions = options ?? {
-      token: '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849',
-      streamName: 'km0n0h1u',
-      mediaStream: this.millicastMedia.mediaStream,
-      bandwidth: bandwidth,
-      disableVideo: false,
-      disableAudio: false
-    }
+    const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
+    const streamName = 'km0n0h1u'
     try {
+      const getPublisherResponse = await millicastDirector.getPublisher(token, streamName)
+      const broadcastOptions = options ?? {
+        publisherData: getPublisherResponse,
+        streamName: streamName,
+        mediaStream: this.millicastMedia.mediaStream,
+        bandwidth: bandwidth,
+        disableVideo: false,
+        disableAudio: false
+      }
       const response = await this.millicastPublish.broadcast(broadcastOptions)
       console.log('BROADCASTING!! Start response: ', response)
       const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`

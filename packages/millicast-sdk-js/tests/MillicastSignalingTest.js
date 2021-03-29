@@ -1,4 +1,5 @@
 const millicast = window.millicast
+const millicastDirector = window.millicastDirector
 
 class MillicastSignalingTest {
   constructor () {
@@ -11,7 +12,7 @@ class MillicastSignalingTest {
   }
 
   async testConnect () {
-    return this.getPublisher(
+    return millicastDirector.getPublisher(
       this.token,
       this.streamName
     ).then((res) => {
@@ -38,7 +39,7 @@ class MillicastSignalingTest {
   ) {
     let director = null
 
-    return this.getSubscriber(
+    return millicastDirector.getSubscriber(
       this.streamAccountId,
       this.streamName,
       true
@@ -60,7 +61,7 @@ class MillicastSignalingTest {
   async testPublish () {
     let director = null
 
-    return this.getPublisher(
+    return millicastDirector.getPublisher(
       this.token,
       this.streamName
     ).then((dir) => {
@@ -76,59 +77,6 @@ class MillicastSignalingTest {
               return publishSdp
             })
         })
-    })
-  }
-
-  async getPublisher (token, streamName) {
-    const payload = { streamName }
-    const response = await this.request(
-      'https://director.millicast.com/api/director/publish',
-      'POST',
-      token,
-      payload
-    )
-    return response.data
-  }
-
-  async getSubscriber (
-    streamAccountId,
-    streamName,
-    unauthorizedSubscribe = true
-  ) {
-    const payload = { streamAccountId, streamName, unauthorizedSubscribe }
-    const token = null
-    const response = await this.request(
-      'https://director.millicast.com/api/director/subscribe',
-      'POST',
-      token,
-      payload
-    )
-    return response.data
-  }
-
-  request (url, method, token, payload) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.onreadystatechange = (evt) => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          const res = JSON.parse(xhr.responseText)
-          // console.log(res);
-          switch (xhr.status) {
-            case 200:
-              resolve(res)
-              break
-            default:
-              reject(res)
-              break
-          }
-        }
-      }
-      xhr.open(method, url, true)
-      xhr.setRequestHeader('Content-Type', 'application/json;')
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-      }
-      payload ? xhr.send(JSON.stringify(payload)) : xhr.send()
     })
   }
 }
