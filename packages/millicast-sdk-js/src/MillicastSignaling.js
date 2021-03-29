@@ -5,7 +5,7 @@ const logger = Logger.get('MillicastSignaling')
 
 /**
  * @class MillicastSignaling
- * @classdesc Starts the webSocket and manages the messages between peers.
+ * @classdesc Starts webSocket connection and manages the messages between peers.
  * @example const MillicastSignaling = new MillicastSignaling();
  * @constructor
  */
@@ -21,7 +21,7 @@ export default class MillicastSignaling extends EventEmitter {
 
   /**
    * Starts a connection.
-   * @param {String} url - the websocket url (the url it's given as a response from our API, check the MillicastDirector documentation for more information).
+   * @param {String} url - the websocket url from Millicast API (/director/publisher or /director/subscriber).
    * @example const response = await MillicastSignaling.connect(url);
    * @returns {Promise} - when fullfilled it returns the webSocket connection.
    */
@@ -89,7 +89,9 @@ export default class MillicastSignaling extends EventEmitter {
       streamId
     }
 
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) { await this.connect(this.wsUrl) }
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      await this.connect(this.wsUrl)
+    }
 
     try {
       logger.info('Sending view command')
