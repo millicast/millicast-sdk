@@ -1,23 +1,23 @@
-import pkg from "./package.json";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
-import { babel } from '@rollup/plugin-babel';
-import commonjs from "@rollup/plugin-commonjs";
-import { terser } from "rollup-plugin-terser";
+import pkg from './package.json'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import { babel } from '@rollup/plugin-babel'
+import commonjs from '@rollup/plugin-commonjs'
+import { terser } from 'rollup-plugin-terser'
 
 export default [
   // browser-friendly UMD build
   {
-    input: "src/index.js",
+    input: 'src/index.js',
     output: {
-      name: "millicast",
+      name: 'millicast',
       file: pkg.browser,
-      format: "umd",
+      format: 'umd'
     },
     plugins: [
-      nodeResolve({ browser: true,  preferBuiltins: false }),
+      nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs({
         include: [/node_modules/, /src/],
-        transformMixedEsModules: true ,
+        transformMixedEsModules: true
       }),
       babel({
         babelHelpers: 'runtime',
@@ -26,20 +26,20 @@ export default [
         plugins: ['@babel/plugin-transform-runtime']
       }),
       terser()
-    ],
+    ]
   },
   {
-    input: "src/index.js",
+    input: 'src/index.js',
     output: [
-      { file: pkg.main, format: "cjs" },
-      { file: pkg.module, format: "es" },
+      { file: pkg.main, format: 'cjs' },
+      { file: pkg.module, format: 'es' }
     ],
     plugins: [
-      nodeResolve({browser: true, preferBuiltins: false}),
+      nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs({
         include: [/node_modules/, /src/],
-        transformMixedEsModules: true ,
-      }),
-    ],
-  },
-];
+        transformMixedEsModules: true
+      })
+    ]
+  }
+]

@@ -1,50 +1,50 @@
 import Logger from './Logger'
+import MillicastUtils from './MillicastUtils.js'
 const logger = Logger.get('MillicastDirector')
-import MillicastUtils from "./MillicastUtils.js"
 
 export default class MillicastDirector {
-  static async getPublisher(token, streamName) {
+  static async getPublisher (token, streamName) {
     logger.info('Getting publisher')
-    let payload = { streamName };
-    let response;
+    const payload = { streamName }
+    let response
     try {
       response = await MillicastUtils.request(
-        "https://director.millicast.com/api/director/publish",
-        "POST",
+        'https://director.millicast.com/api/director/publish',
+        'POST',
         token,
         payload
-      );
+      )
       logger.info('Publisher geted')
       logger.debug('Get publisher response: ', response.data)
-      return response.data;
+      return response.data
     } catch (e) {
       logger.error('Error getting publisher: ', e)
-      throw e;
+      throw e
     }
   }
 
-  static async getSubscriber(
+  static async getSubscriber (
     streamAccountId,
     streamName,
     unauthorizedSubscribe = true
   ) {
     logger.info('Getting subscriber')
-    let payload = { streamAccountId, streamName, unauthorizedSubscribe };
-    const token = null;
-    let response;
+    const payload = { streamAccountId, streamName, unauthorizedSubscribe }
+    const token = null
+    let response
     try {
       response = await MillicastUtils.request(
-        "https://director.millicast.com/api/director/subscribe",
-        "POST",
+        'https://director.millicast.com/api/director/subscribe',
+        'POST',
         token,
         payload
-      );
+      )
       logger.info('Subscriber geted')
       logger.debug('Get subscriber response: ', response.data)
-      return response.data;
+      return response.data
     } catch (e) {
       logger.error('Error getting subscriber: ', e)
-      throw e;
+      throw e
     }
   }
 }

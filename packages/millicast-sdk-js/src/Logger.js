@@ -1,11 +1,10 @@
-import Logger from "js-logger";
-import sentry from "../sentry";
+import Logger from 'js-logger'
 
 Logger.useDefaults({
   defaultLevel: Logger.DEBUG,
   formatter: function (messages, context) {
-    messages.unshift(`[${context.name}] ${new Date().toISOString()} -`);
-  },
-});
+    messages.unshift(`[${context.name}] ${new Date().toISOString()} -`)
+  }
+})
 
-export default Logger;
+export default Logger
