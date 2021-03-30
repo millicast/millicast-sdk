@@ -25,13 +25,13 @@ export default class MillicastPublish {
    * @param {Number} [options.bandwith = 0] - Broadcast bandwith. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable peer to let send video.
    * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
-   * @example const response = await MillicastPublish.broadcast(options);
    * @returns {Promise} Promise object which represents the result of [setting the peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
+   * @example const response = await millicastPublish.broadcast(options);
    * @example
    * import MillicastPublish from 'millicast-sdk-js';
    *
    * //Create a new instance
-   * const millicastPublish = MillicastPublish(options);
+   * const millicastPublish = MillicastPublish();
    *
    * //Get Millicast Publisher data
    * const publisherData = //response from Millicast Director API. https://director.millicast.com/api/director/publish
