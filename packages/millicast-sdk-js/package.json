@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "build-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
+    "build-docs": "jsdoc -c jsdoc.json"
   },
   "author": "",
   "license": "ISC",

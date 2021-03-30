@@ -5,8 +5,8 @@ const logger = Logger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
- * @classdesc It's in charge of the broadcast.
- * @example const MillicastPublish = new MillicastPublish();
+ * @classdesc Manages broadcasts.
+ * @example const millicastPublish = new MillicastPublish();
  * @constructor
  */
 
@@ -17,15 +17,16 @@ export default class MillicastPublish {
   }
 
   /**
-   * Starts the broadcast
-   * @param {Object} options - general broadcast options.
-   * @param {String} options.streamName - the name of the stream.
-   * @param {mediaStream} options.mediaStream - the stream from the devices.
-   * @param {Number} options.bandwith - the selected bandwith of the broadcast.
-   * @param {Boolean} options.disableVideo - the selected status of the selected video device.
-   * @param {Boolean} options.disableAudio - the selected status of the selected audio device.
+   * Starts broadcast
+   * @param {Object} options - General broadcast options.
+   * @param {Object} options.publisherData - Millicast get publisher response.
+   * @param {String} options.streamName - Millicast stream name.
+   * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
+   * @param {Number} [options.bandwith = 0] - Broadcast bandwith. 0 for unlimited.
+   * @param {Boolean} [options.disableVideo = false] - Disable peer to let send video.
+   * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
    * @example const response = await MillicastPublish.broadcast(options);
-   * @returns - sets the SDP answer from the external peer in your own peer.remoteDescription.
+   * @returns {Promise} Promise object which represents the result of [setting the peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
    */
 
   broadcast (
@@ -94,8 +95,8 @@ export default class MillicastPublish {
   }
 
   /**
-   * It stops the broadcast.
-   * @example MillicastPublish.stop();
+   * Stops started broadcast.
+   * @example millicastPublish.stop();
    */
 
   stop () {
@@ -105,9 +106,9 @@ export default class MillicastPublish {
   }
 
   /**
-   * Checks broadcast status.
-   * @example const isActive = MillicastPublish.isActive();
-   * @returns {Boolean} - true if connected, false if not.
+   * Checks broadcast is active.
+   * @example const isActive = millicastPublish.isActive();
+   * @returns {Boolean} - True if connected, false if not.
    */
 
   isActive () {
