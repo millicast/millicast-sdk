@@ -27,6 +27,30 @@ export default class MillicastPublish {
    * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
    * @example const response = await MillicastPublish.broadcast(options);
    * @returns {Promise} Promise object which represents the result of [setting the peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
+   * @example
+   * import MillicastPublish from 'millicast-sdk-js';
+   *
+   * //Create a new instance
+   * const millicastPublish = MillicastPublish(options);
+   *
+   * //Get Millicast Publisher data
+   * const publisherData = //response from Millicast Director API. https://director.millicast.com/api/director/publish
+   *
+   * //Get MediaStream
+   * const mediaStream = //Get MediaStream through MediaStream API.
+   *
+   * //Options
+   * const broadcastOptions = {
+   *    publisherData: publisherData,
+   *    streamName: "My Millicast Stream Name",
+   *    mediaStream: mediaStream,
+   *  };
+   *
+   * //Start broadcast
+   * const response = await millicastPublish.broadcast(broadcastOptions);
+   *
+   * //Stop broadcast
+   * millicastPublish.stop();
    */
 
   broadcast (
@@ -95,7 +119,7 @@ export default class MillicastPublish {
   }
 
   /**
-   * Stops started broadcast.
+   * Stops active broadcast.
    * @example millicastPublish.stop();
    */
 
