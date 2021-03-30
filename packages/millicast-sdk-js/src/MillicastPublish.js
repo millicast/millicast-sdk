@@ -1,6 +1,7 @@
 import Logger from './Logger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
+
 const logger = Logger.get('MillicastPublish')
 
 /**
@@ -55,7 +56,7 @@ export default class MillicastPublish {
    * const response = await millicastPublish.broadcast(broadcastOptions);
    */
 
-  broadcast (
+  async broadcast (
     options = {
       publisherData: null,
       streamName: null,
@@ -83,41 +84,34 @@ export default class MillicastPublish {
       throw new Error('Broadcast currently working')
     }
 
-    return this.webRTCPeer.getRTCConfiguration()
-      .then((config) => {
-        return this.webRTCPeer.getRTCPeer(config)
-      })
-      .then((peer) => {
-        this.webRTCPeer.RTCOfferOptions = {
-          offerToReceiveVideo: !options.disableVideo,
-          offerToReceiveAudio: !options.disableAudio
-        }
-        return this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
-      })
-      .then((localsdp) => {
-        this.millicastSignaling.wsUrl = `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
-        this.millicastSignaling.streamName = streamName
-        return this.millicastSignaling.publish(localsdp)
-      })
-      .then((remotesdp) => {
-        if (remotesdp && remotesdp.indexOf('\na=extmap-allow-mixed') !== -1) {
-          logger.debug('SDP before trimming: ', remotesdp)
-          remotesdp = remotesdp
-            .split('\n')
-            .filter(function (line) {
-              return line.trim() !== 'a=extmap-allow-mixed'
-            })
-            .join('\n')
-          logger.debug('SDP trimmed result: ', remotesdp)
-        }
-        if (disableVideo === false && bandwidth > 0) {
-          remotesdp = this.webRTCPeer.updateBandwidthRestriction(
-            remotesdp,
-            bandwidth
-          )
-        }
-        return this.webRTCPeer.setRTCRemoteSDP(remotesdp)
-      })
+    const config = await this.webRTCPeer.getRTCConfiguration()
+    await this.webRTCPeer.getRTCPeer(config)
+
+    this.webRTCPeer.RTCOfferOptions = {
+      offerToReceiveVideo: !options.disableVideo,
+      offerToReceiveAudio: !options.disableAudio
+    }
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
+
+    this.millicastSignaling.wsUrl = `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
+    this.millicastSignaling.streamName = streamName
+
+    let remoteSdp = await this.millicastSignaling.publish(localSdp)
+    if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
+      logger.debug('SDP before trimming: ', remoteSdp)
+      remoteSdp = remoteSdp
+        .split('\n')
+        .filter(function (line) {
+          return line.trim() !== 'a=extmap-allow-mixed'
+        })
+        .join('\n')
+      logger.debug('SDP trimmed result: ', remoteSdp)
+    }
+    if (!disableVideo && bandwidth > 0) {
+      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, bandwidth)
+    }
+
+    return this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
   }
 
   /**
