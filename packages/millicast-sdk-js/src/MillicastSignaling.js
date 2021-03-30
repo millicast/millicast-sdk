@@ -14,10 +14,10 @@ const logger = Logger.get('MillicastSignaling')
 export default class MillicastSignaling extends EventEmitter {
   constructor (options) {
     super()
-    this.webSocket = null // WebSocket
-    this.transactionManager = null // Transaction manager
+    this.webSocket = null
+    this.transactionManager = null
     this.streamName = null
-    this.wsUrl = options?.url || 'ws://localhost:8080/'
+    this.wsUrl = options?.url ?? 'ws://localhost:8080/'
   }
 
   /**

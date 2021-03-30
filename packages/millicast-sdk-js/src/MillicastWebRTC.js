@@ -166,7 +166,7 @@ export default class MillicastWebRTC {
       logger.info('Setting video bitrate')
       videoOffer.setBitrate(bitrate)
       sdp = offer.toString()
-      if (sdp.indexOf('b=AS:') > -1 && window.adapter?.browserDetails.browser === 'firefox') {
+      if (sdp.indexOf('b=AS:') > -1 && window.adapter?.browserDetails?.browser === 'firefox') {
         logger.info('Updating SDP for firefox browser')
         sdp = sdp.replace('b=AS:', 'b=TIAS:')
         logger.debug('SDP updated for firefox: ', sdp)
