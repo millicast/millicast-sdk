@@ -21,9 +21,9 @@ class MillicastWebRTCTest {
 
   async testCloseRTCPeer () {
     await this.millicastWebRTC.getRTCPeer()
-    const response = await this.millicastWebRTC.closeRTCPeer()
-    console.log('closeRTCPeer response: ', response)
-    return response
+    await this.millicastWebRTC.closeRTCPeer()
+    console.log('closeRTCPeer response: ', this.millicastWebRTC.peer)
+    return this.millicastWebRTC.peer
   }
 
   async testGetRTCConfiguration () {

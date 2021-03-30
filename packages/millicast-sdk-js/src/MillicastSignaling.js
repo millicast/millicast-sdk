@@ -23,7 +23,7 @@ export default class MillicastSignaling extends EventEmitter {
    * Starts a WebSocket connection.
    * @param {String} url - WebSocket URL from Millicast API (/director/publisher or /director/subscriber).
    * @example const response = await millicastSignaling.connect(url);
-   * @returns {Promise<Object>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API}.
+   * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API}.
    */
 
   async connect (url) {

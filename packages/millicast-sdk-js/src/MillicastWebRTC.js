@@ -3,6 +3,28 @@ import SemanticSDP from 'semantic-sdp'
 import Logger from './Logger'
 const logger = Logger.get('MillicastWebRTC')
 
+/**
+ * WebRTC Peer configuration.
+ * @typedef {Object} PeerConfig
+ * @property {String} rtcpMuxPolicy
+ * @property {String} bundlePolicy
+ * @property {Array<Object>} iceServers
+ */
+
+/**
+ * ICE Server object.
+ * @typedef {Object} IceServer
+ * @property {String} urls
+ * @property {String} credential
+ * @property {String} username
+ */
+
+/**
+ * @class MillicastWebRTC
+ * @classdesc
+ * @example const millicastWebRTC = new MillicastWebRTC();
+ * @constructor
+ */
 export default class MillicastWebRTC {
   constructor () {
     this.desc = null
@@ -13,6 +35,11 @@ export default class MillicastWebRTC {
     }
   }
 
+  /**
+   *
+   * @param {PeerConfig} config
+   * @returns {Promise<RTCPeerConnection>}
+   */
   async getRTCPeer (config) {
     logger.info('Getting RTC Peer')
     logger.debug('Config value: ', config)
@@ -31,19 +58,25 @@ export default class MillicastWebRTC {
     }
   }
 
+  /**
+   *
+   */
   async closeRTCPeer () {
     try {
       logger.info('Closing RTCPeerConnection')
       this.peer.close()
       this.peer = null
-      return this.peer
     } catch (e) {
       logger.error('Error while closing RTCPeerConnection: ', e)
       throw e
     }
   }
 
-  getRTCConfiguration () {
+  /**
+   *
+   * @returns {Promise<PeerConfig>}
+   */
+  async getRTCConfiguration () {
     logger.info('Getting RTC configuration')
     const config = {
       rtcpMuxPolicy: 'require',
@@ -59,7 +92,12 @@ export default class MillicastWebRTC {
       })
   }
 
-  getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
+  /**
+   *
+   * @param {String} location
+   * @returns {Promise<Array<IceServer>>}
+   */
+  async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
     logger.debug('Request location: ', location)
 
@@ -90,7 +128,12 @@ export default class MillicastWebRTC {
     })
   }
 
-  setRTCRemoteSDP (sdp) {
+  /**
+   *
+   * @param {String} sdp
+   * @returns {Promise<void>}
+   */
+  async setRTCRemoteSDP (sdp) {
     logger.info('Setting SDP to peer')
     logger.debug('SDP value: ', sdp)
     const answer = {
@@ -99,6 +142,7 @@ export default class MillicastWebRTC {
     }
     return new Promise((resolve, reject) => {
       this.peer.setRemoteDescription(answer).then((response) => {
+        logger.debug(response)
         logger.info('Remote description to peer sent')
         resolve(response)
       })
@@ -109,7 +153,13 @@ export default class MillicastWebRTC {
     })
   }
 
-  getRTCLocalSDP (stereo, mediaStream) {
+  /**
+   *
+   * @param {Boolean} stereo
+   * @param {MediaStream} mediaStream
+   * @returns {Promise<String>} sdp
+   */
+  async getRTCLocalSDP (stereo, mediaStream) {
     logger.info('Getting RTC Local SDP')
     logger.debug('Stereo value: ', stereo)
     logger.debug('mediaStream value: ', mediaStream)
@@ -151,6 +201,7 @@ export default class MillicastWebRTC {
       })
   }
 
+  // TODO: Review if it's been used
   resolveLocalSDP (stereo, mediaStream) {
     logger.info('Resolving local SDP')
     return this.getRTCConfiguration()
@@ -196,6 +247,11 @@ export default class MillicastWebRTC {
     return sdp
   }
 
+  /**
+   *
+   * @param {Number} bitrate
+   * @returns {Promise<void>}
+   */
   updateBitrate (bitrate = 0) {
     logger.info('Updating bitrate to value: ', bitrate)
     return this.getRTCPeer()
@@ -209,11 +265,17 @@ export default class MillicastWebRTC {
       })
   }
 
+  /**
+   *
+   * @returns {RTCPeerConnectionState?} state
+   */
   getRTCPeerStatus () {
     logger.info('Getting RTC peer status')
-    let state = 'not_established'
-    if (this.peer) { state = this.peer.connectionState }
-    logger.info('RTC peer status getted, value: ', state)
-    return state
+    if (!this.peer) {
+      return null
+    }
+    const { connectionState } = this.peer
+    logger.info('RTC peer status getted, value: ', connectionState)
+    return connectionState
   }
 }
