@@ -6,9 +6,11 @@ const logger = Logger.get('MillicastView')
 
 /**
  * @class MillicastView
- * @classdesc Manages connection to broadcasts.
- * @example const millicastView = new MillicastView();
- * @constructor
+ * @classdesc <p>Manages connection to broadcasts.</p>
+ * <p>Before you can view an active broadcast, you will need:
+ * <br>
+ * - Access to the Millicast Subscribe API. This will be used by the connect method so it can establish the connection. More information here: <a href="https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect">Subscribe</a>
+ * </p>
  */
 
 export default class MillicastView extends EventEmitter {
@@ -19,34 +21,35 @@ export default class MillicastView extends EventEmitter {
   }
 
   /**
-   * Connects to active broadcast
+   * Connects to active broadcast where addStreamToYourVideoTag and getYourSubscriberInformation is your own implementation.
    * @param {Object} options - General subscriber options.
    * @param {Object} options.subscriberData - Millicast get subscriber response.
-   * @param {String} options.streamName - Millicast stream name.
+   * @param {String} options.streamName - Millicast stream name where you want to connect.
    * @param {Boolean} [options.disableVideo = false] - Disable peer to let send video.
    * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
-   * @returns {String} SDP subscriber response from signaling connection.
+   * @returns {Promise<String>} Promise object which represents the SDP subscriber response from signaling connection.
    * @example const response = await millicastView.connect(options);
    * @example
    * import MillicastView from 'millicast-sdk-js';
    *
    * //Create a new instance
    * const millicastView = MillicastView();
+   * const streamName = "Millicast Stream Name where i want to connect"
    *
    * //Set new.track event handler.
-   * //Event is from the RTCPeerConnection ontrack event which contains the peer stream.
+   * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
    * //More information here: {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack}
    * millicastView.on('new.track', (event) => {
-   *   addStreamToVideoTag(event.streams[0])
+   *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
    * //Get Millicast Subscriber data
-   * const subscriberData = //response from Millicast Director API. https://director.millicast.com/api/director/subscribe
+   * const subscriberData = getYourSubscriberInformation(accountId, streamName)
    *
    * //Options
    * const options = {
    *    subscriberData: subscriberData,
-   *    streamName: "Millicast Stream Name",
+   *    streamName: streamName,
    *  };
    *
    * //Start connection to broadcast

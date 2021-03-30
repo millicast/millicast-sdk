@@ -5,9 +5,13 @@ const logger = Logger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
- * @classdesc Manages broadcasts.
- * @example const millicastPublish = new MillicastPublish();
- * @constructor
+ * @classdesc <p>Manages broadcasts.</p>
+ * <p>Before you can broadcast, you will need:
+ * <br>
+ * - Access to the Millicast Publish API. This will be used by the broadcast method so it can establish the connection. More information here: <a href="https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect">Publish</a>
+ * <br>
+ * - MediaStream which has the access to the user camera, microphone or screen. This will be used for stream the contained tracks. More information here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API">MediaStream</a>
+ * </p>
  */
 
 export default class MillicastPublish {
@@ -17,40 +21,38 @@ export default class MillicastPublish {
   }
 
   /**
-   * Starts broadcast
+   * Starts broadcast where getYourMediaStream and getYourPublisherInformation is your own implementation.
    * @param {Object} options - General broadcast options.
    * @param {Object} options.publisherData - Millicast get publisher response.
-   * @param {String} options.streamName - Millicast stream name.
+   * @param {String} options.streamName - Millicast existing stream name.
    * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
    * @param {Number} [options.bandwith = 0] - Broadcast bandwith. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable peer to let send video.
    * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
-   * @returns {Promise} Promise object which represents the result of [setting the peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
+   * @returns {Promise<Object>} Promise object which represents the result of [setting the peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
    * @example const response = await millicastPublish.broadcast(options);
    * @example
    * import MillicastPublish from 'millicast-sdk-js';
    *
    * //Create a new instance
-   * const millicastPublish = MillicastPublish();
-   *
-   * //Get Millicast Publisher data
-   * const publisherData = //response from Millicast Director API. https://director.millicast.com/api/director/publish
+   * const millicastPublish = new MillicastPublish();
+   * const streamName = "My Millicast Stream Name"
    *
    * //Get MediaStream
-   * const mediaStream = //Get MediaStream through MediaStream API.
+   * const mediaStream = getYourMediaStream()
+   *
+   * //Get Millicast Publisher data
+   * const publisherData = getYourPublisherInformation(streamName, token)
    *
    * //Options
    * const broadcastOptions = {
    *    publisherData: publisherData,
-   *    streamName: "My Millicast Stream Name",
+   *    streamName: streamName,
    *    mediaStream: mediaStream,
    *  };
    *
    * //Start broadcast
    * const response = await millicastPublish.broadcast(broadcastOptions);
-   *
-   * //Stop broadcast
-   * millicastPublish.stop();
    */
 
   broadcast (
