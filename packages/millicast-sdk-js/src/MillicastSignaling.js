@@ -5,8 +5,8 @@ const logger = Logger.get('MillicastSignaling')
 
 /**
  * @class MillicastSignaling
- * @classdesc Starts webSocket connection and manages the messages between peers.
- * @example const MillicastSignaling = new MillicastSignaling();
+ * @classdesc Starts WebSocket connection and manages the messages between peers.
+ * @example const millicastSignaling = new MillicastSignaling();
  * @constructor
  */
 
@@ -20,10 +20,10 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Starts a connection.
-   * @param {String} url - the websocket url from Millicast API (/director/publisher or /director/subscriber).
-   * @example const response = await MillicastSignaling.connect(url);
-   * @returns {Promise} - when fullfilled it returns the webSocket connection.
+   * Starts a WebSocket connection.
+   * @param {String} url - WebSocket URL from Millicast API (/director/publisher or /director/subscriber).
+   * @example const response = await millicastSignaling.connect(url);
+   * @returns {Promise} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API}.
    */
 
   async connect (url) {
@@ -65,8 +65,8 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Destroys the connection.
-   * @example MillicastSignaling.close();
+   * Destroys the WebSocket connection.
+   * @example millicastSignaling.close();
    */
   async close () {
     logger.info('Closing WebSocket')
@@ -74,11 +74,11 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Subscribe to a stream.
-   * @param {String} sdp - The local sdp.
-   * @param {String} streamId  - The streamId that you want to subscribe to.
-   * @example const response = await MillicastSignaling.subscribe(sdp, streamId);
-   * @return {String} - The response sdp.
+   * Initiates signaling as viewer role.
+   * @param {String} sdp - Local SDP.
+   * @param {String} streamId  - Millicast stream name you want to subscribe.
+   * @example const response = await millicastSignaling.subscribe(sdp, streamId);
+   * @return {String} SDP command response.
    */
   async subscribe (sdp, streamId) {
     logger.info('Subscribing, streamId value: ', streamId)
@@ -106,10 +106,10 @@ export default class MillicastSignaling extends EventEmitter {
   }
 
   /**
-   * Publish a stream.
-   * @param {String} sdp - The local sdp.
-   * @example const response = await MillicastSignaling.publish(sdp);
-   * @return {String} - The response sdp.
+   * Initiates signaling as publisher role.
+   * @param {String} sdp - Local SDP.
+   * @example const response = millicastSignaling.publish(sdp);
+   * @return {String} SDP command response.
    */
   async publish (sdp) {
     logger.info('Publishing, streamName value: ', this.streamName)
