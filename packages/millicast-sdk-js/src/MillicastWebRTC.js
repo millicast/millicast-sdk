@@ -22,7 +22,7 @@ const logger = Logger.get('MillicastWebRTC')
 
 /**
  * @class MillicastWebRTC
- * @classdesc
+ * @classdesc Manages all WebRTC and SDP related.
  * @example const millicastWebRTC = new MillicastWebRTC();
  * @constructor
  */
@@ -37,9 +37,9 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @param {PeerConfig} config
-   * @returns {Promise<RTCPeerConnection>}
+   * Get current RTC peer connection, creates a new connection if not.
+   * @param {PeerConfig} config - Peer configuration.
+   * @returns {Promise<RTCPeerConnection>} Promise object which represents the RTCPeerConnection.
    */
   async getRTCPeer (config) {
     logger.info('Getting RTC Peer')
@@ -61,7 +61,7 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
+   * Close RTC peer connection.
    */
   async closeRTCPeer () {
     try {
@@ -75,7 +75,7 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
+   * Get RTC configuration, including the RTC Ice servers.
    * @returns {Promise<PeerConfig>}
    */
   async getRTCConfiguration () {
@@ -90,9 +90,9 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @param {String} location
-   * @returns {Promise<Array<IceServer>>}
+   * Get Ice servers given by location.
+   * @param {String} [location = https://turn.millicast.com/webrtc/_turn] - URL where the Ice servers will be searched.
+   * @returns {Promise<Array<IceServer>>} Promise object which represents the Ice servers.
    */
   async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
@@ -122,8 +122,8 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @param {String} sdp
+   * Set remote description to peer.
+   * @param {String} sdp - SDP
    * @returns {Promise<void>}
    */
   async setRTCRemoteSDP (sdp) {
@@ -142,10 +142,10 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @param {Boolean} stereo
-   * @param {MediaStream} mediaStream
-   * @returns {Promise<String>} sdp
+   * Set and get local SDP.
+   * @param {Boolean} stereo - True will modify SDP for support stereo. False if don't want to support stereo.
+   * @param {MediaStream} mediaStream - MediaStream to offer in stream.
+   * @returns {Promise<String>} Promise object which represents the SDP resulted from the offer.
    */
   async getRTCLocalSDP (stereo, mediaStream) {
     logger.info('Getting RTC Local SDP')
@@ -199,8 +199,8 @@ export default class MillicastWebRTC {
   /**
    * Establish MillicastStream Update Bandwidth.
    * @param {String} sdp - Remote SDP.
-   * @param {Number} bitrate - Bitrate, 0 unlimited bitrate
-   * @return {String} sdp - Mangled SDP
+   * @param {Number} bitrate - Bitrate, 0 unlimited bitrate.
+   * @return {String} SDP - Mangled SDP.
    */
   updateBandwidthRestriction (sdp, bitrate = 0) {
     logger.info('Updating bandwith restriction, bitrate value: ', bitrate)
@@ -226,8 +226,8 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @param {Number} bitrate
+   * Update bitrate to peer.
+   * @param {Number} [bitrate = 0] - Bitrate value. 0 for unlimited.
    * @returns {Promise<void>}
    */
   async updateBitrate (bitrate = 0) {
@@ -241,8 +241,8 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @returns {RTCPeerConnectionState?} state
+   * Get peer connection state.
+   * @returns {RTCPeerConnectionState?} Promise object which represents the peer connection state.
    */
   getRTCPeerStatus () {
     logger.info('Getting RTC peer status')
