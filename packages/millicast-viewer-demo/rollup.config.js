@@ -4,6 +4,7 @@ import injectProcessEnv from 'rollup-plugin-inject-process-env'
 import dotenv from 'dotenv'
 import { terser } from 'rollup-plugin-terser'
 import { babel } from '@rollup/plugin-babel'
+import cleanup from 'rollup-plugin-cleanup'
 
 const environment = dotenv.config()
 
@@ -33,7 +34,11 @@ export default [
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
       }),
-      terser()
+      terser(),
+      cleanup({
+        comments: 'none',
+        sourcemap: false
+      })
     ]
   }
 ]
