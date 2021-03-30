@@ -4,22 +4,6 @@ import Logger from './Logger'
 const logger = Logger.get('MillicastWebRTC')
 
 /**
- * WebRTC Peer configuration.
- * @typedef {Object} PeerConfig
- * @property {String} rtcpMuxPolicy
- * @property {String} bundlePolicy
- * @property {Array<Object>} iceServers
- */
-
-/**
- * ICE Server object.
- * @typedef {Object} IceServer
- * @property {String} urls
- * @property {String} credential
- * @property {String} username
- */
-
-/**
  * @class MillicastWebRTC
  * @classdesc
  * @example const millicastWebRTC = new MillicastWebRTC();
@@ -37,7 +21,7 @@ export default class MillicastWebRTC {
 
   /**
    *
-   * @param {PeerConfig} config
+   * @param {RTCConfiguration} config
    * @returns {Promise<RTCPeerConnection>}
    */
   async getRTCPeer (config) {
@@ -74,7 +58,7 @@ export default class MillicastWebRTC {
 
   /**
    *
-   * @returns {Promise<PeerConfig>}
+   * @returns {Promise<RTCConfiguration>}
    */
   async getRTCConfiguration () {
     logger.info('Getting RTC configuration')
@@ -95,7 +79,7 @@ export default class MillicastWebRTC {
   /**
    *
    * @param {String} location
-   * @returns {Promise<Array<IceServer>>}
+   * @returns {Promise<Array<RTCIceServer>>}
    */
   async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
