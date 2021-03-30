@@ -26,7 +26,6 @@ export default class MillicastSignaling extends EventEmitter {
    * @example const response = await MillicastSignaling.connect(url);
    * @returns {Promise} - when fullfilled it returns the webSocket connection.
    */
-
   async connect (url) {
     logger.info('Connecting to Millicast')
     if (this.transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
@@ -69,7 +68,7 @@ export default class MillicastSignaling extends EventEmitter {
    * Destroys the connection.
    * @example MillicastSignaling.close();
    */
-  async close () {
+  close () {
     logger.info('Closing WebSocket')
     if (this.webSocket) {
       this.webSocket.close()
