@@ -1,17 +1,18 @@
 import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
 import Logger from './Logger'
+
 const logger = Logger.get('MillicastWebRTC')
 
 /**
  * @class MillicastWebRTC
- * @classdesc
+ * @classdesc Manages all WebRTC and SDP related.
  * @example const millicastWebRTC = new MillicastWebRTC();
  * @constructor
  */
 export default class MillicastWebRTC {
   constructor () {
-    this.desc = null
+    this.sessionDescription = null
     this.peer = null
     this.RTCOfferOptions = {
       offerToReceiveVideo: true,
@@ -20,30 +21,31 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
-   * @param {RTCConfiguration} config
-   * @returns {Promise<RTCPeerConnection>}
+   * Get current RTC peer connection, creates a new connection if not.
+   * @param {RTCConfiguration} config - Peer configuration.
+   * @returns {Promise<RTCPeerConnection>} Promise object which represents the RTCPeerConnection.
    */
   async getRTCPeer (config) {
     logger.info('Getting RTC Peer')
     logger.debug('Config value: ', config)
-    if (this.peer) {
-      logger.debug('Peer value: ', this.peer)
-      return this.peer
+    if (!this.peer) {
+      try {
+        if (config) {
+          config = await this.getRTCConfiguration()
+        }
+        this.peer = new RTCPeerConnection(config)
+      } catch (e) {
+        logger.error('Error while creating RTCPeerConnection: ', e)
+        throw e
+      }
     }
-    try {
-      if (config) config = await this.getRTCConfiguration()
-      this.peer = new RTCPeerConnection(config)
-      logger.debug('Peer value: ', this.peer)
-      return this.peer
-    } catch (e) {
-      logger.error('Error while creating RTCPeerConnection: ', e)
-      throw e
-    }
+
+    logger.debug('Peer value: ', this.peer)
+    return this.peer
   }
 
   /**
-   *
+   * Close RTC peer connection.
    */
   async closeRTCPeer () {
     try {
@@ -57,7 +59,7 @@ export default class MillicastWebRTC {
   }
 
   /**
-   *
+   * Get RTC configuration, including the RTC Ice servers.
    * @returns {Promise<RTCConfiguration>}
    */
   async getRTCConfiguration () {
@@ -66,82 +68,68 @@ export default class MillicastWebRTC {
       rtcpMuxPolicy: 'require',
       bundlePolicy: 'max-bundle'
     }
-    return this.getRTCIceServers()
-      .then((res) => {
-        config.iceServers = res
-        return Promise.resolve(config)
-      })
-      .catch(() => {
-        return Promise.resolve(config)
-      })
+
+    config.iceServers = await this.getRTCIceServers()
+    return config
   }
 
   /**
-   *
-   * @param {String} location
-   * @returns {Promise<Array<RTCIceServer>>}
+   * Get Ice servers given by location.
+   * @param {String} [location = https://turn.millicast.com/webrtc/_turn] - URL where the Ice servers will be searched.
+   * @returns {Promise<Array<IceServer>>} Promise object which represents the Ice servers.
    */
   async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
     logger.debug('Request location: ', location)
 
-    return new Promise((resolve, reject) => {
-      const a = []
-      axios.put(location)
-        .then(({ data }) => {
-          logger.debug('RTC ICE servers response: ', data)
-          if (data.s === 'ok') {
-            logger.info('RTC ICE servers successfully geted')
-            const list = data.v.iceServers
-            // call returns old format, this updates URL to URLS in credentials path.
-            list.forEach((cred) => {
-              const v = cred.url
-              if (v) {
-                cred.urls = v
-                delete cred.url
-              }
-              a.push(cred)
-            })
+    const iceServers = []
+    try {
+      const { data } = await axios.put(location)
+      logger.debug('RTC ICE servers response: ', data)
+      if (data.s === 'ok') {
+        logger.info('RTC ICE servers successfully geted')
+        // call returns old format, this updates URL to URLS in credentials path.
+        for (const credentials of data.v.iceServers) {
+          const url = credentials.url
+          if (url) {
+            credentials.urls = url
+            delete credentials.url
           }
-          resolve(a)
-        })
-        .catch((error) => {
-          logger.error('Error while getting RTC ICE servers: ', error.response.data)
-          resolve(a)
-        })
-    })
+          iceServers.push(credentials)
+        }
+      }
+    } catch (e) {
+      logger.error('Error while getting RTC ICE servers: ', e.response.data)
+    }
+
+    return iceServers
   }
 
   /**
-   *
-   * @param {String} sdp
+   * Set remote description to peer.
+   * @param {String} sdp - SDP
    * @returns {Promise<void>}
    */
   async setRTCRemoteSDP (sdp) {
     logger.info('Setting SDP to peer')
     logger.debug('SDP value: ', sdp)
-    const answer = {
-      type: 'answer',
-      sdp
+    const answer = { type: 'answer', sdp }
+
+    try {
+      const response = this.peer.setRemoteDescription(answer)
+      logger.info('Remote description to peer sent')
+      return response
+    } catch (e) {
+      logger.error('Error while setting remote description to peer: ', escape)
+      throw e
     }
-    return new Promise((resolve, reject) => {
-      this.peer.setRemoteDescription(answer).then((response) => {
-        logger.debug(response)
-        logger.info('Remote description to peer sent')
-        resolve(response)
-      })
-        .catch((error) => {
-          logger.error('Error while setting remote description to peer: ', error)
-          reject(error)
-        })
-    })
   }
 
   /**
-   *
-   * @param {Boolean} stereo
-   * @param {MediaStream} mediaStream
-   * @returns {Promise<String>} sdp
+   * Set and get local SDP.
+   * @param {Boolean} stereo - True will modify SDP for support stereo. False if don't want to support stereo.
+   * @param {MediaStream} mediaStream - MediaStream to offer in stream.
+   * @returns {Promise<String>} Promise object which represents the SDP resulted from the offer.
    */
   async getRTCLocalSDP (stereo, mediaStream) {
     logger.info('Getting RTC Local SDP')
@@ -150,58 +138,53 @@ export default class MillicastWebRTC {
     logger.debug('RTC offer options: ', this.RTCOfferOptions)
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
-      mediaStream.getTracks().forEach((track) => {
+      for (const track of mediaStream.getTracks()) {
         this.peer.addTrack(track, mediaStream)
-      })
+      }
       logger.info('Tracks added')
     }
 
     logger.info('Creating peer offer')
-    return this.peer
-      .createOffer(this.RTCOfferOptions)
-      .then((res) => {
-        logger.info('Perr offer created')
-        logger.debug('Perr offer response: ', res)
-        this.desc = res
-        if (stereo) {
-          logger.info('Replacing SDP response for support stereo')
-          this.desc.sdp = this.desc.sdp.replace(
-            'useinbandfec=1',
-            'useinbandfec=1; stereo=1'
-          )
-          logger.info('Replaced SDP response for support stereo')
-          logger.debug('New SDP value: ', this.desc.sdp)
-        }
-        logger.info('Setting peer local description')
-        return this.peer.setLocalDescription(this.desc)
-      })
-      .then(() => {
-        logger.info('Peer local description sent')
-        return Promise.resolve(this.desc.sdp)
-      })
-      .catch((err) => {
-        logger.info('Error while setting peer local description: ', err)
-        return Promise.reject(err)
-      })
+    try {
+      const response = await this.peer.createOffer(this.RTCOfferOptions)
+      logger.info('Perr offer created')
+      logger.debug('Perr offer response: ', response)
+
+      this.sessionDescription = response
+      if (stereo) {
+        logger.info('Replacing SDP response for support stereo')
+        this.sessionDescription.sdp = this.sessionDescription.sdp.replace(
+          'useinbandfec=1',
+          'useinbandfec=1; stereo=1'
+        )
+        logger.info('Replaced SDP response for support stereo')
+        logger.debug('New SDP value: ', this.sessionDescription.sdp)
+      }
+
+      logger.info('Setting peer local description')
+      await this.peer.setLocalDescription(this.sessionDescription)
+
+      return this.sessionDescription.sdp
+    } catch (e) {
+      logger.info('Error while setting peer local description: ', e)
+      throw e
+    }
   }
 
   // TODO: Review if it's been used
-  resolveLocalSDP (stereo, mediaStream) {
+  async resolveLocalSDP (stereo, mediaStream) {
     logger.info('Resolving local SDP')
-    return this.getRTCConfiguration()
-      .then((config) => {
-        return this.getRTCPeer(config)
-      })
-      .then(() => {
-        return this.getRTCLocalSDP(stereo, mediaStream)
-      })
+
+    const config = await this.getRTCConfiguration()
+    await this.getRTCPeer(config)
+    return this.getRTCLocalSDP(stereo, mediaStream)
   }
 
   /**
    * Establish MillicastStream Update Bandwidth.
    * @param {String} sdp - Remote SDP.
-   * @param {Number} bitrate - Bitrate, 0 unlimited bitrate
-   * @return {String} sdp - Mangled SDP
+   * @param {Number} bitrate - Bitrate, 0 unlimited bitrate.
+   * @return {String} SDP - Mangled SDP.
    */
   updateBandwidthRestriction (sdp, bitrate = 0) {
     logger.info('Updating bandwith restriction, bitrate value: ', bitrate)
@@ -217,41 +200,33 @@ export default class MillicastWebRTC {
       logger.info('Setting video bitrate')
       videoOffer.setBitrate(bitrate)
       sdp = offer.toString()
-      if (window.adapter) {
-        if (
-          sdp.indexOf('b=AS:') > -1 &&
-          window.adapter.browserDetails.browser === 'firefox'
-        ) {
-          logger.info('Updating SDP for firefox browser')
-          sdp = sdp.replace('b=AS:', 'b=TIAS:')
-          logger.debug('SDP updated for firefox: ', sdp)
-        }
+      if (sdp.indexOf('b=AS:') > -1 && window.adapter?.browserDetails?.browser === 'firefox') {
+        logger.info('Updating SDP for firefox browser')
+        sdp = sdp.replace('b=AS:', 'b=TIAS:')
+        logger.debug('SDP updated for firefox: ', sdp)
       }
     }
     return sdp
   }
 
   /**
-   *
-   * @param {Number} bitrate
+   * Update bitrate to peer.
+   * @param {Number} [bitrate = 0] - Bitrate value. 0 for unlimited.
    * @returns {Promise<void>}
    */
-  updateBitrate (bitrate = 0) {
+  async updateBitrate (bitrate = 0) {
     logger.info('Updating bitrate to value: ', bitrate)
-    return this.getRTCPeer()
-      .then((pc) => {
-        this.peer = pc
-        return this.getRTCLocalSDP(true, null)
-      })
-      .then(() => {
-        const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
-        return this.setRTCRemoteSDP(sdp)
-      })
+
+    this.peer = await this.getRTCPeer()
+    await this.getRTCLocalSDP(true, null)
+
+    const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
+    return this.setRTCRemoteSDP(sdp)
   }
 
   /**
-   *
-   * @returns {RTCPeerConnectionState?} state
+   * Get peer connection state.
+   * @returns {RTCPeerConnectionState?} Promise object which represents the peer connection state.
    */
   getRTCPeerStatus () {
     logger.info('Getting RTC peer status')
