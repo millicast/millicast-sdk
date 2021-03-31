@@ -1,9 +1,9 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import MillicastDirector from './js/MillicastDirector'
+import { MillicastDirector } from "millicast-sdk-js"
 
-const streamId = process.env.STREAM_ID
-const accountId = process.env.ACCOUNT_ID
-const publishToken = process.env.PUBLISH_TOKEN
+const streamId = process.env.MILLICAST_STREAM_ID
+const accountId = process.env.MILLICAST_ACCOUNT_ID
+const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
 const disableVideo = false
 const disableAudio = false
 const disableStereo = false
