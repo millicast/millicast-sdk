@@ -9,13 +9,9 @@ export default class MillicastDirector {
   static async getPublisher (token, streamName) {
     logger.info('Getting publisher connection data for stream name: ', streamName)
     const payload = { streamName }
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
+    const headers = { Authorization: `Bearer ${token}` }
     try {
-      const { data } = await axios.post(publisherLocation, payload, config)
+      const { data } = await axios.post(publisherLocation, payload, { headers })
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
