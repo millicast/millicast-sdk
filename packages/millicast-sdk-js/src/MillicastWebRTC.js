@@ -60,7 +60,7 @@ export default class MillicastWebRTC {
 
   /**
    * Get RTC configuration, including the RTC Ice servers.
-   * @returns {Promise<RTCConfiguration>}
+   * @returns {Promise<RTCConfiguration>} Promise object which represents the RTCPConfiguration.
    */
   async getRTCConfiguration () {
     logger.info('Getting RTC configuration')
@@ -75,8 +75,8 @@ export default class MillicastWebRTC {
 
   /**
    * Get Ice servers given by location.
-   * @param {String} [location = https://turn.millicast.com/webrtc/_turn] - URL where the Ice servers will be searched.
-   * @returns {Promise<Array<IceServer>>} Promise object which represents the Ice servers.
+   * @param {String} location - URL where the Ice servers will be searched.
+   * @returns {Promise<Array<IceServer>>} Promise object which represents a list of Ice servers.
    */
   async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
@@ -127,7 +127,7 @@ export default class MillicastWebRTC {
 
   /**
    * Set and get local SDP.
-   * @param {Boolean} stereo - True will modify SDP for support stereo. False if don't want to support stereo.
+   * @param {Boolean} stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {MediaStream} mediaStream - MediaStream to offer in stream.
    * @returns {Promise<String>} Promise object which represents the SDP resulted from the offer.
    */
@@ -211,7 +211,7 @@ export default class MillicastWebRTC {
 
   /**
    * Update bitrate to peer.
-   * @param {Number} [bitrate = 0] - Bitrate value. 0 for unlimited.
+   * @param {Number} bitrate - Bitrate value. 0 for unlimited.
    * @returns {Promise<void>}
    */
   async updateBitrate (bitrate = 0) {
