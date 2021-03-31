@@ -1,5 +1,4 @@
 const millicast = window.millicast
-const millicastDirector = window.millicastDirector
 
 class MillicastPublishTest {
   constructor () {
@@ -19,7 +18,7 @@ class MillicastPublishTest {
     const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
     const streamName = 'km0n0h1u'
     try {
-      const getPublisherResponse = await millicastDirector.getPublisher(token, streamName)
+      const getPublisherResponse = await millicast.MillicastDirector.getPublisher(token, streamName)
       const broadcastOptions = options ?? {
         publisherData: getPublisherResponse,
         streamName: streamName,

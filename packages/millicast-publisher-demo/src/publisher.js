@@ -1,5 +1,5 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import MillicastDirector from './js/MillicastDirector'
+import { MillicastDirector } from "millicast-sdk-js"
 
 const streamId = process.env.STREAM_ID
 const accountId = process.env.ACCOUNT_ID

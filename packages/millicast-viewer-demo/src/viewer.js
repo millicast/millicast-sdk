@@ -1,5 +1,4 @@
-import { MillicastView, Logger } from "millicast-sdk-js";
-import MillicastDirector from "./js/MillicastDirector";
+import { MillicastView, MillicastDirector, Logger } from "millicast-sdk-js";
 
 Logger.setLevel(Logger.OFF);
 

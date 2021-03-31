@@ -1,5 +1,4 @@
 const millicast = window.millicast
-const millicastDirector = window.millicastDirector
 
 class MillicastSignalingTest {
   constructor () {
@@ -12,7 +11,7 @@ class MillicastSignalingTest {
   }
 
   async testConnect () {
-    return millicastDirector.getPublisher(
+    return millicast.MillicastDirector.getPublisher(
       this.token,
       this.streamName
     ).then((res) => {
@@ -39,7 +38,7 @@ class MillicastSignalingTest {
   ) {
     let director = null
 
-    return millicastDirector.getSubscriber(
+    return millicast.MillicastDirector.getSubscriber(
       this.streamAccountId,
       this.streamName,
       true
@@ -61,7 +60,7 @@ class MillicastSignalingTest {
   async testPublish () {
     let director = null
 
-    return millicastDirector.getPublisher(
+    return millicast.MillicastDirector.getPublisher(
       this.token,
       this.streamName
     ).then((dir) => {
