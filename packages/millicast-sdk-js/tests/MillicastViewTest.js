@@ -1,5 +1,4 @@
 const millicast = window.millicast
-const millicastDirector = window.millicastDirector
 
 class MillicastViewTest {
   constructor () {
@@ -21,7 +20,7 @@ class MillicastViewTest {
       this.millicastView.on('new.track', (event) => {
         this.addStreamToVideoTag(event)
       })
-      const getSubscriberResponse = await millicastDirector.getSubscriber(this.streamAccountId, this.streamName)
+      const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName)
       const options = {
         subscriberData: getSubscriberResponse,
         streamName: this.streamName,
