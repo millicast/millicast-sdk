@@ -33,7 +33,7 @@ export default class MillicastView extends EventEmitter {
    * import MillicastView from 'millicast-sdk-js';
    *
    * //Create a new instance
-   * const millicastView = MillicastView();
+   * const millicastView = new MillicastView();
    * const streamName = "Millicast Stream Name where i want to connect"
    *
    * //Set new.track event handler.
