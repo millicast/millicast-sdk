@@ -1,11 +1,12 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import injectProcessEnv from 'rollup-plugin-inject-process-env'
-import dotenv from 'dotenv'
 import { terser } from 'rollup-plugin-terser'
 import { babel } from '@rollup/plugin-babel'
 
-const environment = dotenv.config()
+import getEnvironment from './env'
+
+const environment = getEnvironment()
 
 export default [
   {
@@ -25,7 +26,7 @@ export default [
         transformMixedEsModules: true
       }),
       injectProcessEnv({
-        ...environment.parsed
+        ...environment
       }),
       babel({
         babelHelpers: 'runtime',
