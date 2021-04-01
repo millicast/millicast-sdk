@@ -9,7 +9,7 @@ const subscriberLocation = 'https://director.millicast.com/api/director/subscrib
  * @typedef {Object} MillicastPublisherResponse
  * @property {Array<String>} urls - Web Socket URLs.
  * @property {String} wsUrl - Web Socket URL.
- * @property {String} jwt - Access token for initiate signaling.
+ * @property {String} jwt - Access token for signaling initialization.
  * @property {String} streamAccountId - Millicast publisher account identifier.
  * @property {Boolean} subscribeRequiresAuth - True if subscriber requires authentication, otherwise false.
  */
@@ -18,21 +18,22 @@ const subscriberLocation = 'https://director.millicast.com/api/director/subscrib
  * @typedef {Object} MillicastSubscriberResponse
  * @property {Array<String>} urls - Web Socket URLs.
  * @property {String} wsUrl - Web Socket URL.
- * @property {String} jwt - Access token for initiate signaling.
+ * @property {String} jwt - Access token for signaling initialization.
  * @property {String} streamAccountId - Millicast publisher account identifier.
  */
 
 /**
  * @class MillicastDirector
+ * @hideconstructor
  * @classdesc Manages get publisher and subscriber connection data.
  */
 
 export default class MillicastDirector {
 /**
    * Get publisher connection data.
-   * @param {String} token - Millicast publish token.
+   * @param {String} token - Millicast publishing token.
    * @param {String} streamName - Millicast stream name.
-   * @returns {Promise<MillicastPublisherResponse>} Promise object which represents the result of getting the publish connection data.
+   * @returns {Promise<MillicastPublisherResponse>} Promise object which represents the result of getting the publishing connection path.
    * @example const response = await MillicastDirector.getPublisher(token, streamName);
    * @example
    * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js';
@@ -40,12 +41,12 @@ export default class MillicastDirector {
    * //Create a new instance
    * const millicastPublish = new MillicastPublish();
    * const streamName = "My Millicast Stream Name"
-   * const token = "My Millicast publish token"
+   * const token = "My Millicast publishing token"
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStreamImplementation()
    *
-   * //Get Millicast Publisher data
+   * //Get Millicast publisher connection path
    * const publisherData = await MillicastDirector.getPublisher(token, streamName)
    *
    * //Options
@@ -75,7 +76,7 @@ export default class MillicastDirector {
 
   /**
    * Get subscriber connection data.
-   * @param {String} streamAccountId - Millicast publisher account identifier.
+   * @param {String} streamAccountId - Millicast account ID.
    * @param {String} streamName - Millicast publisher stream name.
    * @param {Boolean} unauthorizedSubscribe - True if it's a subscription without credentials. Otherwise false.
    * @returns {Promise<MillicastSubscriberResponse>} Promise object which represents the result of getting the subscribe connection data.
@@ -95,7 +96,7 @@ export default class MillicastDirector {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
-   * //Get Millicast Subscriber data
+   * //Get Millicast Subscriber connection path
    * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName)
    *
    * //Options

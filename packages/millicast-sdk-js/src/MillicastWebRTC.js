@@ -87,7 +87,7 @@ export default class MillicastWebRTC {
       const { data } = await axios.put(location)
       logger.debug('RTC ICE servers response: ', data)
       if (data.s === 'ok') {
-        logger.info('RTC ICE servers successfully geted')
+        logger.info('RTC ICE servers successfully obtained')
         // call returns old format, this updates URL to URLS in credentials path.
         for (const credentials of data.v.iceServers) {
           const url = credentials.url

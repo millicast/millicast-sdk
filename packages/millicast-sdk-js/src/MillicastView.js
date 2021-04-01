@@ -21,12 +21,12 @@ export default class MillicastView extends EventEmitter {
   }
 
   /**
-   * Connects to active broadcast where addStreamToYourVideoTag and getYourSubscriberInformation is your own implementation.
+   * Connects to an active stream as subscriber. In the example, addStreamToYourVideoTag and getYourSubscriberConnectionPath is your own implementation.
    * @param {Object} options - General subscriber options.
-   * @param {Object} options.subscriberData - Millicast get subscriber response.
+   * @param {MillicastSubscriberResponse} options.subscriberData - Millicast subscriber connection path.
    * @param {String} options.streamName - Millicast stream name where you want to connect.
-   * @param {Boolean} [options.disableVideo = false] - Disable peer to let send video.
-   * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
+   * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
+   * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<String>} Promise object which represents the SDP subscriber response from signaling connection.
    * @example const response = await millicastView.connect(options);
    * @example

@@ -9,9 +9,11 @@ const logger = Logger.get('MillicastPublish')
  * @classdesc <p>Manages broadcasts.</p>
  * <p>Before you can broadcast, you will need:
  * <br>
- * - Access to the Millicast Publish API. This will be used by the broadcast method so it can establish the connection. More information here: <a href="https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect">Publish</a>
+ * - Access to the Millicast Publish API. This will be used by the broadcast method so it can establish the connection. More information here: <a href="https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#pub-sub-api-sect">Publish</a>
  * <br>
  * - MediaStream which has the access to the user camera, microphone or screen. This will be used for stream the contained tracks. More information here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API">MediaStream</a>
+ * <br>
+ * - Connection path is required for broadcasting. You can use MillicastDirector module or your own implementation.
  * </p>
  */
 
@@ -22,15 +24,15 @@ export default class MillicastPublish {
   }
 
   /**
-   * Starts broadcast where getYourMediaStream and getYourPublisherInformation is your own implementation.
+   * Starts broadcast to an existing stream name. In the example, getYourMediaStream and getYourPublisherConnection is your own implementation.
    * @param {Object} options - General broadcast options.
-   * @param {Object} options.publisherData - Millicast get publisher response.
+   * @param {MillicastPublisherResponse} options.publisherData - Millicast publisher connection path.
    * @param {String} options.streamName - Millicast existing stream name.
    * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
    * @param {Number} [options.bandwith = 0] - Broadcast bandwith. 0 for unlimited.
-   * @param {Boolean} [options.disableVideo = false] - Disable peer to let send video.
-   * @param {Boolean} [options.disableAudio = false] - Disable peer to let send audio.
-   * @returns {Promise<void>} Promise object which represents the result of [setting the peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
+   * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
+   * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
+   * @returns {Promise<void>} Promise object which represents the result of setting the [peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
    * @example const response = await millicastPublish.broadcast(options);
    * @example
    * import MillicastPublish from 'millicast-sdk-js';
@@ -126,7 +128,7 @@ export default class MillicastPublish {
   }
 
   /**
-   * Checks broadcast is active.
+   * Get if the current broadcast is active.
    * @example const isActive = millicastPublish.isActive();
    * @returns {Boolean} - True if connected, false if not.
    */
