@@ -181,13 +181,13 @@ export default class MillicastWebRTC {
   }
 
   /**
-   * Establish MillicastStream Update Bandwidth.
+   * Update remote SDP information to restrict bandwidth.
    * @param {String} sdp - Remote SDP.
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @return {String} Updated SDP information with new bandwidth restriction.
    */
   updateBandwidthRestriction (sdp, bitrate = 0) {
-    logger.info('Updating bandwith restriction, bitrate value: ', bitrate)
+    logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
 
     const offer = SemanticSDP.SDPInfo.parse(sdp)

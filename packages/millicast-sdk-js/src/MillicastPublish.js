@@ -29,7 +29,7 @@ export default class MillicastPublish {
    * @param {MillicastPublisherResponse} options.publisherData - Millicast publisher connection path.
    * @param {String} options.streamName - Millicast existing stream name.
    * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
-   * @param {Number} [options.bandwith = 0] - Broadcast bandwith. 0 for unlimited.
+   * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @returns {Promise<void>} Promise object which represents the result of setting the [peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
