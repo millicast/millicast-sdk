@@ -4,10 +4,22 @@ import injectProcessEnv from 'rollup-plugin-inject-process-env'
 import { terser } from 'rollup-plugin-terser'
 import { babel } from '@rollup/plugin-babel'
 import cleanup from 'rollup-plugin-cleanup'
+import serve from 'rollup-plugin-serve'
 
 import getEnvironment from './env'
 
 const environment = getEnvironment()
+
+let watchPlugins = []
+if (process.env.ROLLUP_WATCH) {
+  watchPlugins = [
+    serve({
+      open: true,
+      contentBase: 'dist',
+      port: 10001
+    })
+  ]
+}
 
 export default [
   {
@@ -39,7 +51,8 @@ export default [
       cleanup({
         comments: 'none',
         sourcemap: false
-      })
+      }),
+      ...watchPlugins
     ]
   }
 ]
