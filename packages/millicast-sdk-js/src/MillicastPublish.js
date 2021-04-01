@@ -66,7 +66,6 @@ export default class MillicastPublish {
       disableAudio: false
     }
   ) {
-    console.log('VOY A BROADCASTEAR!!')
     logger.info('Broadcasting')
     logger.debug('Broadcast option values: ', options)
     const bandwidth = options.bandwidth
