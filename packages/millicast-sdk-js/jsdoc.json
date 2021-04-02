@@ -23,10 +23,9 @@
     "monospaceLinks": false
   },
   "docdash": {
-    "static": false, // Display the static members inside the navbar
-    "sort": true, // Sort the methods in the navbar
+    "static": false,
+    "sort": true,
     "sectionOrder": [
-      // Order the main section in the navbar (default order shown here)
       "Classes",
       "Modules",
       "Externals",
@@ -36,33 +35,29 @@
       "Tutorials",
       "Interfaces"
     ],
-    "disqus": "", // Shortname for your disqus (subdomain during site creation)
+    "disqus": "",
     "openGraph": {
-      // Open Graph options (mostly for Facebook and other sites to easily extract meta information)
-      "title": "", // Title of the website
-      "type": "website", // Type of the website
-      "image": "", // Main image/logo
-      "site_name": "", // Site name
-      "url": "" // Main canonical URL for the main page of the site
+      "title": "",
+      "type": "website",
+      "image": "",
+      "site_name": "",
+      "url": ""
     },
     "meta": {
-      // Meta information options (mostly for search engines that have not indexed your site yet)
-      "title": "", // Also will be used as postfix to actualy page title, prefixed with object/document name
-      "description": "", // Description of overal contents of your website
-      "keyword": "" // Keywords for search engines
+      "title": "",
+      "description": "",
+      "keyword": ""
     },
-    "search": true, // Display seach box above navigation which allows to search/filter navigation items
-    "collapse": true, // Collapse navigation by default except current object's navigation of the current page
-    "wrap": false, // Wrap long navigation names instead of trimming them
-    "typedefs": false, // Include typedefs in menu
-    "navLevel": 2, // depth level to show in navbar, starting at 0 (false or -1 to disable)
-    "private": false, // set to false to not show @private in navbar
-    "scripts": [], // Array of external (or relative local copied using templates.default.staticFiles.include) js or css files to inject into HTML,
+    "search": true,
+    "collapse": true,
+    "wrap": false,
+    "typedefs": false,
+    "navLevel": 2,
+    "private": false,
+    "scripts": [],
     "menu": {
-      // Adding additional menu items after Home
       "Project Website": {
-        // Menu item name
-        "href": "https://myproject.com", //the rest of HTML properties to add to manu item
+        "href": "https://myproject.com",
         "target": "_blank",
         "class": "menu-item",
         "id": "website_link"
@@ -74,8 +69,8 @@
         "id": "forum_link"
       }
     },
-    "scopeInOutputPath": true, // Add scope from package file (if present) to the output path, true by default.
-    "nameInOutputPath": true, // Add name from package file to the output path, true by default.
-    "versionInOutputPath": true // Add package version to the output path, true by default.
+    "scopeInOutputPath": true,
+    "nameInOutputPath": true,
+    "versionInOutputPath": true
   }
 }

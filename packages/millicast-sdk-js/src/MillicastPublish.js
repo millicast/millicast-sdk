@@ -6,15 +6,14 @@ const logger = Logger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
- * @classdesc <p>Manages broadcasts.</p>
- * <p>Before you can broadcast, you will need:
- * <br>
- * - Access to the Millicast Publish API. This will be used by the broadcast method so it can establish the connection. More information here: <a href="https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#pub-sub-api-sect">Publish</a>
- * <br>
- * - MediaStream which has the access to the user camera, microphone or screen. This will be used for stream the contained tracks. More information here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API">MediaStream</a>
- * <br>
- * - Connection path is required for broadcasting. You can use MillicastDirector module or your own implementation.
- * </p>
+ * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
+ * and establishes a WebRTC connection to broadcast a MediaStream.
+ *
+ * Before you can broadcast, you will need:
+ *
+ * - [MediaStream](https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API) which has at most one audio track and at most one video track. This will be used for stream the contained tracks.
+ *
+ * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  */
 
 export default class MillicastPublish {
@@ -24,10 +23,12 @@ export default class MillicastPublish {
   }
 
   /**
-   * Starts broadcast to an existing stream name. In the example, getYourMediaStream and getYourPublisherConnection is your own implementation.
+   * Starts broadcast to an existing stream name.
+   *
+   * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
    * @param {MillicastPublisherResponse} options.publisherData - Millicast publisher connection path.
-   * @param {String} options.streamName - Millicast existing stream name.
+   * @param {String} options.streamName - Millicast existing Stream Name.
    * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
@@ -52,7 +53,7 @@ export default class MillicastPublish {
    *    publisherData: publisherData,
    *    streamName: streamName,
    *    mediaStream: mediaStream,
-   *  };
+   *  }
    *
    * //Start broadcast
    * try {

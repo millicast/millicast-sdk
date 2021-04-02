@@ -17,7 +17,7 @@ class MillicastViewTest {
 
   async subscribe () {
     try {
-      this.millicastView.on('new.track', (event) => {
+      this.millicastView.on('newTrack', (event) => {
         this.addStreamToVideoTag(event)
       })
       const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName)

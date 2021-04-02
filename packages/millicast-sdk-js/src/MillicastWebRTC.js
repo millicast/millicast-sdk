@@ -6,7 +6,7 @@ const logger = Logger.get('MillicastWebRTC')
 
 /**
  * @class MillicastWebRTC
- * @classdesc Manage WebRTC connection and SDP information between peers.
+ * @classdesc Manages WebRTC connection and SDP information between peers.
  * @example const millicastWebRTC = new MillicastWebRTC()
  * @constructor
  */
