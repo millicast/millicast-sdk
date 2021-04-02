@@ -20,7 +20,7 @@ const logger = Logger.get('MillicastPublish')
 export default class MillicastPublish {
   constructor () {
     this.webRTCPeer = new MillicastWebRTC()
-    this.millicastSignaling = new MillicastSignaling()
+    this.millicastSignaling = null
   }
 
   /**
@@ -74,10 +74,7 @@ export default class MillicastPublish {
   ) {
     logger.info('Broadcasting')
     logger.debug('Broadcast option values: ', options)
-    const bandwidth = options.bandwidth
-    const disableVideo = options.disableVideo
-    const streamName = options.streamName
-    if (!streamName) {
+    if (!options.streamName) {
       logger.error('Error while broadcasting. Stream name required')
       throw new Error('Streamname required')
     }
@@ -90,6 +87,10 @@ export default class MillicastPublish {
       throw new Error('Broadcast currently working')
     }
 
+    this.millicastSignaling = new MillicastSignaling({
+      streamName: options.streamName,
+      url: `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
+    })
     const config = await this.webRTCPeer.getRTCConfiguration()
     await this.webRTCPeer.getRTCPeer(config)
 
@@ -98,10 +99,6 @@ export default class MillicastPublish {
       offerToReceiveAudio: !options.disableAudio
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
-
-    this.millicastSignaling.wsUrl = `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
-    this.millicastSignaling.streamName = streamName
-
     let remoteSdp = await this.millicastSignaling.publish(localSdp)
     if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
       logger.debug('SDP before trimming: ', remoteSdp)
@@ -113,8 +110,8 @@ export default class MillicastPublish {
         .join('\n')
       logger.debug('SDP trimmed result: ', remoteSdp)
     }
-    if (!disableVideo && bandwidth > 0) {
-      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, bandwidth)
+    if (!options.disableVideo && options.bandwidth > 0) {
+      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
     }
 
     return this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
@@ -128,7 +125,7 @@ export default class MillicastPublish {
   stop () {
     logger.info('Stopping broadcast')
     this.webRTCPeer.closeRTCPeer()
-    this.millicastSignaling.close()
+    this.millicastSignaling?.close()
   }
 
   /**
