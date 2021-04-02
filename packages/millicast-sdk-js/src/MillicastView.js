@@ -6,11 +6,13 @@ const logger = Logger.get('MillicastView')
 
 /**
  * @class MillicastView
- * @classdesc <p>Manages connection to broadcasts.</p>
- * <p>Before you can view an active broadcast, you will need:
- * <br>
- * - Access to the Millicast Subscribe API. This will be used by the connect method so it can establish the connection. More information here: <a href="https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect">Subscribe</a>
- * </p>
+ * @extends EventEmitter
+ * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
+ * and establishes a WebRTC connection to view a live stream.
+ *
+ * Before you can view an active broadcast, you will need:
+ *
+ * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  */
 
 export default class MillicastView extends EventEmitter {
@@ -21,10 +23,12 @@ export default class MillicastView extends EventEmitter {
   }
 
   /**
-   * Connects to an active stream as subscriber. In the example, addStreamToYourVideoTag and getYourSubscriberConnectionPath is your own implementation.
+   * Connects to an active stream as subscriber.
+   *
+   * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} options - General subscriber options.
    * @param {MillicastSubscriberResponse} options.subscriberData - Millicast subscriber connection path.
-   * @param {String} options.streamName - Millicast stream name where you want to connect.
+   * @param {String} options.streamName - Millicast existing Stream Name where you want to connect.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
@@ -50,7 +54,7 @@ export default class MillicastView extends EventEmitter {
    * const options = {
    *    subscriberData: subscriberData,
    *    streamName: streamName,
-   *  };
+   *  }
    *
    * //Start connection to broadcast
    * try {

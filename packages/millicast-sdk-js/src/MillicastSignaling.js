@@ -6,6 +6,7 @@ const logger = Logger.get('MillicastSignaling')
 
 /**
  * @class MillicastSignaling
+ * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
  * @example const millicastSignaling = new MillicastSignaling()
  * @constructor
