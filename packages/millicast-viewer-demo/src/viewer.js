@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    millicastView.on("new.track", (event) => {
+    millicastView.on("newTrack", (event) => {
       if (!playing) addStream(event.streams[0]);
     });
 

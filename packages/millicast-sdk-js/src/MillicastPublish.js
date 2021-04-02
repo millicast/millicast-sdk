@@ -6,9 +6,14 @@ const logger = Logger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
- * @classdesc It's in charge of the broadcast.
- * @example const MillicastPublish = new MillicastPublish();
- * @constructor
+ * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
+ * and establishes a WebRTC connection to broadcast a MediaStream.
+ *
+ * Before you can broadcast, you will need:
+ *
+ * - [MediaStream](https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API) which has at most one audio track and at most one video track. This will be used for stream the contained tracks.
+ *
+ * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  */
 
 export default class MillicastPublish {
@@ -18,15 +23,44 @@ export default class MillicastPublish {
   }
 
   /**
-   * Starts the broadcast
-   * @param {Object} options - general broadcast options.
-   * @param {String} options.streamName - the name of the stream.
-   * @param {mediaStream} options.mediaStream - the stream from the devices.
-   * @param {Number} options.bandwith - the selected bandwith of the broadcast.
-   * @param {Boolean} options.disableVideo - the selected status of the selected video device.
-   * @param {Boolean} options.disableAudio - the selected status of the selected audio device.
-   * @example const response = await MillicastPublish.broadcast(options);
-   * @returns - sets the SDP answer from the external peer in your own peer.remoteDescription.
+   * Starts broadcast to an existing stream name.
+   *
+   * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
+   * @param {Object} options - General broadcast options.
+   * @param {MillicastPublisherResponse} options.publisherData - Millicast publisher connection path.
+   * @param {String} options.streamName - Millicast existing Stream Name.
+   * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
+   * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
+   * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
+   * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
+   * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
+   * @example await millicastPublish.broadcast(options)
+   * @example
+   * import MillicastPublish from 'millicast-sdk-js'
+   *
+   * //Create a new instance
+   * const millicastPublish = new MillicastPublish()
+   * const streamName = "My Millicast Stream Name"
+   *
+   * //Get MediaStream
+   * const mediaStream = getYourMediaStream()
+   *
+   * //Get Millicast Publisher data
+   * const publisherData = getYourPublisherInformation(streamName, token)
+   *
+   * //Options
+   * const broadcastOptions = {
+   *    publisherData: publisherData,
+   *    streamName: streamName,
+   *    mediaStream: mediaStream,
+   *  }
+   *
+   * //Start broadcast
+   * try {
+   *  await millicastPublish.broadcast(broadcastOptions)
+   * } catch (e) {
+   *  console.log('Connection failed, handle error', e)
+   * }
    */
 
   async broadcast (
@@ -88,8 +122,8 @@ export default class MillicastPublish {
   }
 
   /**
-   * It stops the broadcast.
-   * @example MillicastPublish.stop();
+   * Stops active broadcast.
+   * @example millicastPublish.stop();
    */
 
   stop () {
@@ -99,9 +133,9 @@ export default class MillicastPublish {
   }
 
   /**
-   * Checks broadcast status.
-   * @example const isActive = MillicastPublish.isActive();
-   * @returns {Boolean} - true if connected, false if not.
+   * Get if the current broadcast is active.
+   * @example const isActive = millicastPublish.isActive();
+   * @returns {Boolean} - True if connected, false if not.
    */
 
   isActive () {
