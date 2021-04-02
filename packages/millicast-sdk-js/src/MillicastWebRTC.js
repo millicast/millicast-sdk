@@ -171,15 +171,6 @@ export default class MillicastWebRTC {
     }
   }
 
-  // TODO: Review if it's been used
-  async resolveLocalSDP (stereo, mediaStream) {
-    logger.info('Resolving local SDP')
-
-    const config = await this.getRTCConfiguration()
-    await this.getRTCPeer(config)
-    return this.getRTCLocalSDP(stereo, mediaStream)
-  }
-
   /**
    * Update remote SDP information to restrict bandwidth.
    * @param {String} sdp - Remote SDP.
