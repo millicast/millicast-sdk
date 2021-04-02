@@ -1,5 +1,5 @@
 import axios from 'axios'
-import Logger from './Logger'
+import Logger from './MillicastLogger'
 
 const logger = Logger.get('MillicastDirector')
 const publisherLocation = 'https://director.millicast.com/api/director/publish'

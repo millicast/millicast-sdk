@@ -1,6 +1,6 @@
 import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
-import Logger from './Logger'
+import Logger from './MillicastLogger'
 
 const logger = Logger.get('MillicastWebRTC')
 

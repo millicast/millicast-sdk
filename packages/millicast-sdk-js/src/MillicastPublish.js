@@ -1,4 +1,4 @@
-import Logger from './Logger'
+import Logger from './MillicastLogger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
 

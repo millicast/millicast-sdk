@@ -1,6 +1,4 @@
-import { MillicastView, MillicastDirector, Logger } from "millicast-sdk-js";
-
-Logger.setLevel(Logger.OFF);
+import { MillicastView, MillicastDirector } from "millicast-sdk-js";
 
 //Get our url
 const href = new URL(window.location.href);

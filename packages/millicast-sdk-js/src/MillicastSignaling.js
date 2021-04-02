@@ -1,4 +1,4 @@
-import Logger from './Logger'
+import Logger from './MillicastLogger'
 import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 
