@@ -20,9 +20,9 @@ class MillicastWebRTCTest {
 
   async testCloseRTCPeer () {
     await this.millicastWebRTC.getRTCPeer()
-    const response = await this.millicastWebRTC.closeRTCPeer()
-    console.log('closeRTCPeer response: ', response)
-    return response
+    await this.millicastWebRTC.closeRTCPeer()
+    console.log('closeRTCPeer response: ', this.millicastWebRTC.peer)
+    return this.millicastWebRTC.peer
   }
 
   async testGetRTCConfiguration () {
@@ -50,7 +50,9 @@ class MillicastWebRTCTest {
   async testSetRTCRemoteSDP () {
     const mediaStream = await this.millicastMedia.getMedia()
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
-    const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, mediaStream)
+    const config = await this.millicastWebRTC.getRTCConfiguration()
+    await this.millicastWebRTC.getRTCPeer(config)
+    const localsdp = await this.millicastWebRTC.getRTCLocalSDP(true, mediaStream)
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
     const remotesdp = await this.millicastSignaling.publish(localsdp)
 
@@ -72,13 +74,17 @@ class MillicastWebRTCTest {
   }
 
   async testResolveLocalSDP () {
-    const response = await this.millicastWebRTC.resolveLocalSDP(false, null)
+    const config = await this.millicastWebRTC.getRTCConfiguration()
+    await this.millicastWebRTC.getRTCPeer(config)
+    const response = await this.millicastWebRTC.getRTCLocalSDP(false, null)
     console.log('resolveLocalSDP response: ', response)
     return response
   }
 
   async testUpdateBandwidthRestriction () {
-    const localsdp = await this.millicastWebRTC.resolveLocalSDP(true, null)
+    const config = await this.millicastWebRTC.getRTCConfiguration()
+    await this.millicastWebRTC.getRTCPeer(config)
+    const localsdp = await this.millicastWebRTC.getRTCLocalSDP(true, null)
     const response = this.millicastWebRTC.updateBandwidthRestriction(localsdp, 500)
     console.log('updateBandwidhRestriction response: ', response)
     console.log('oldsdp == newsdp? ', localsdp === response)
