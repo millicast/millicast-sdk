@@ -8,17 +8,24 @@ const logger = Logger.get('MillicastSignaling')
  * @class MillicastSignaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
- * @example const millicastSignaling = new MillicastSignaling()
+ * @example const millicastSignaling = new MillicastSignaling(options)
  * @constructor
+ * @param {Object} options - General signaling options.
+ * @param {String} options.streamName - Millicast stream name to get subscribed.
+ * @param {String} options.url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
  */
 
 export default class MillicastSignaling extends EventEmitter {
-  constructor (options) {
+  constructor (options = {
+    streamName: null,
+    url: 'ws://localhost:8080/'
+  }
+  ) {
     super()
     this.webSocket = null
     this.transactionManager = null
-    this.streamName = null
-    this.wsUrl = options?.url ?? 'ws://localhost:8080/'
+    this.streamName = options.streamName
+    this.wsUrl = options.url
   }
 
   /**
@@ -112,15 +119,14 @@ export default class MillicastSignaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Subscriber role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {String} streamName - Millicast stream name to get subscribed.
-   * @example const response = await millicastSignaling.subscribe(sdp, streamId)
+   * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe (sdp, streamName) {
-    logger.info('Subscribing, streamName value: ', streamName)
+  async subscribe (sdp) {
+    logger.info('Subscribing, streamName value: ', this.streamName)
     logger.debug('SDP: ', sdp)
 
-    const data = { sdp, streamId: streamName }
+    const data = { sdp, streamId: this.streamName }
 
     try {
       if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {

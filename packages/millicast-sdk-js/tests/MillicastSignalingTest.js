@@ -41,7 +41,8 @@ class MillicastSignalingTest {
     await this.millicastWebRTC.getRTCPeer(config)
     const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, options.mediaStream)
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
-    const response = await this.millicastSignaling.subscribe(localSdp, this.streamAccountId)
+    this.millicastSignaling.streamName = this.streamAccountId
+    const response = await this.millicastSignaling.subscribe(localSdp)
     console.log('subscribe sdp: ', response)
   }
 

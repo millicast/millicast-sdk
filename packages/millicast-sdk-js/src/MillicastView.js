@@ -19,7 +19,7 @@ export default class MillicastView extends EventEmitter {
   constructor () {
     super()
     this.webRTCPeer = new MillicastWebRTC()
-    this.millicastSignaling = new MillicastSignaling()
+    this.millicastSignaling = null
   }
 
   /**
@@ -75,7 +75,10 @@ export default class MillicastView extends EventEmitter {
   ) {
     logger.info(`Connecting to publisher. Stream name: ${options.streamName}`)
     logger.debug('All viewer connect options values: ', options)
-    this.millicastSignaling.wsUrl = `${options.subscriberData.wsUrl}?token=${options.subscriberData.jwt}`
+    this.millicastSignaling = new MillicastSignaling({
+      streamName: options.streamName,
+      url: `${options.subscriberData.wsUrl}?token=${options.subscriberData.jwt}`
+    })
 
     const rtcConfiguration = await this.webRTCPeer.getRTCConfiguration()
     const peer = await this.webRTCPeer.getRTCPeer(rtcConfiguration)
@@ -97,7 +100,7 @@ export default class MillicastView extends EventEmitter {
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP(true, null)
 
-    const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp, options.streamName)
+    const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
     if (sdpSubscriber) {
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
     } else {
@@ -114,7 +117,7 @@ export default class MillicastView extends EventEmitter {
   stop () {
     logger.info('Stopping connection')
     this.webRTCPeer.closeRTCPeer()
-    this.millicastSignaling.close()
+    this.millicastSignaling?.close()
   }
 
   /**

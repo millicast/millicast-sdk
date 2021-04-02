@@ -241,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
       togglePlayUI(false);
       video.srcObject = null;
       playing = false;
-      millicastView.millicastSignaling.close();
+      millicastView.millicastSignaling?.close();
       removeListeners();
       return Promise.resolve({});
     };

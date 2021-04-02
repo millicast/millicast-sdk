@@ -57,6 +57,10 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //Bandwidth Video element
   let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item');
 
+  //demo timer
+  let tm;
+  let tmInt          = 300000;//300000 - 5min
+
   function handleOrientation() {
     let el  = document.querySelector(".turnDeviceNotification");
     let elW = document.querySelector(".turnDeviceNotification.notification-margin-top");
@@ -320,6 +324,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       //
       pubBtn.disabled               = true;
       selectedBandwidthBtn.disabled = false;
+      if (!tm) {
+        setTimer();
+      }
       //switch guides display.
       if(showGuide){
         showGuide('guide1', false);
@@ -350,6 +357,23 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     viewUrlEl.removeChild(viewUrlEl.firstChild);
     viewUrlEl.innerHTML = viewerUrl;
     view.classList.remove('d-none');
+  }
+
+  function endDemo() {
+    if (millicastPublishUserMedia) {
+      millicastPublishUserMedia.stop();
+    }
+    let pb = document.getElementById('publishView');
+    while (pb.firstChild) {
+      pb.removeChild(pb.firstChild);
+    }
+    let thx = document.getElementById('thanks');
+    thx.classList.remove('d-none');
+  }
+
+  function setTimer() {
+    console.log('timer start', tmInt);
+    tm = setTimeout(endDemo, tmInt);
   }
 
   /* UTILS */
