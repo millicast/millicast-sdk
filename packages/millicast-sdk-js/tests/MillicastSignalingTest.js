@@ -36,47 +36,23 @@ class MillicastSignalingTest {
       disableAudio: false
     }
   ) {
-    let director = null
-
-    return millicast.MillicastDirector.getSubscriber(
-      this.streamAccountId,
-      this.streamName,
-      true
-    ).then((dir) => {
-      director = dir
-      return this.millicastWebRTC
-        .resolveLocalSDP(false, options.mediaStream)
-        .then((localSdp) => {
-          this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
-          return this.millicastSignaling
-            .subscribe(localSdp, this.streamAccountId)
-            .then((response) => {
-              console.log('subscribe sdp: ', response)
-            })
-        })
-    })
+    const director = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName, true)
+    const config = await this.millicastWebRTC.getRTCConfiguration()
+    await this.millicastWebRTC.getRTCPeer(config)
+    const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, options.mediaStream)
+    this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
+    const response = await this.millicastSignaling.subscribe(localSdp, this.streamAccountId)
+    console.log('subscribe sdp: ', response)
   }
 
   async testPublish () {
-    let director = null
-
-    return millicast.MillicastDirector.getPublisher(
-      this.token,
-      this.streamName
-    ).then((dir) => {
-      director = dir
-      return this.millicastWebRTC
-        .resolveLocalSDP(true, null)
-        .then((localSdp) => {
-          this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
-          return this.millicastSignaling
-            .publish(localSdp)
-            .then((publishSdp) => {
-              console.log('publish sdp: ', publishSdp)
-              return publishSdp
-            })
-        })
-    })
+    const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
+    const config = await this.millicastWebRTC.getRTCConfiguration()
+    await this.millicastWebRTC.getRTCPeer(config)
+    const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, null)
+    this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
+    const response = await this.millicastSignaling.publish(localSdp)
+    console.log('publish sdp: ', response)
   }
 }
 
