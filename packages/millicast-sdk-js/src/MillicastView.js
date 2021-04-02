@@ -32,6 +32,7 @@ export default class MillicastView extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
+   * @fires MillicastView#newTrack
    * @example await millicastView.connect(options)
    * @example
    * import MillicastView from 'millicast-sdk-js'
@@ -43,7 +44,7 @@ export default class MillicastView extends EventEmitter {
    * //Set new.track event handler.
    * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
    * //More information here: {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack}
-   * millicastView.on('new.track', (event) => {
+   * millicastView.on('newTrack', (event) => {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
@@ -81,7 +82,13 @@ export default class MillicastView extends EventEmitter {
     peer.ontrack = (event) => {
       logger.info('New track from peer.')
       logger.debug('Track event value: ', event)
-      this.emit('new.track', event)
+      /**
+       * New track event.
+       *
+       * @event MillicastView#newTrack
+       * @type {RTCTrackEvent}
+       */
+      this.emit('newTrack', event)
     }
 
     this.webRTCPeer.RTCOfferOptions = {

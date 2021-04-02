@@ -89,14 +89,14 @@ export default class MillicastDirector {
    * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastView = new MillicastView();
+   * const millicastView = new MillicastView()
    * const streamName = "Millicast Stream Name where i want to connect"
    * const accountId = "Millicast Publisher account Id"
    *
    * //Set new.track event handler.
    * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
    * //More information here: {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack}
-   * millicastView.on('new.track', (event) => {
+   * millicastView.on('newTrack', (event) => {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
@@ -107,7 +107,7 @@ export default class MillicastDirector {
    * const options = {
    *    subscriberData: subscriberData,
    *    streamName: streamName,
-   *  };
+   *  }
    *
    * //Start connection to broadcast
    * await millicastView.connect(options)
