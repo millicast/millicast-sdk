@@ -32,13 +32,13 @@ export default class MillicastPublish {
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
-   * @returns {Promise<void>} Promise object which represents the result of setting the [peer remote description]{@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription}.
-   * @example const response = await millicastPublish.broadcast(options);
+   * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
+   * @example await millicastPublish.broadcast(options)
    * @example
-   * import MillicastPublish from 'millicast-sdk-js';
+   * import MillicastPublish from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastPublish = new MillicastPublish();
+   * const millicastPublish = new MillicastPublish()
    * const streamName = "My Millicast Stream Name"
    *
    * //Get MediaStream
@@ -55,7 +55,11 @@ export default class MillicastPublish {
    *  };
    *
    * //Start broadcast
-   * const response = await millicastPublish.broadcast(broadcastOptions);
+   * try {
+   *  await millicastPublish.broadcast(broadcastOptions)
+   * } catch (e) {
+   *  console.log('Connection failed, handle error', e)
+   * }
    */
 
   async broadcast (

@@ -7,7 +7,7 @@ const logger = Logger.get('MillicastSignaling')
 /**
  * @class MillicastSignaling
  * @classdesc Starts WebSocket connection and manages the messages between peers.
- * @example const millicastSignaling = new MillicastSignaling();
+ * @example const millicastSignaling = new MillicastSignaling()
  * @constructor
  */
 
@@ -23,7 +23,7 @@ export default class MillicastSignaling extends EventEmitter {
   /**
    * Starts a WebSocket connection with signaling server.
    * @param {String} url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
-   * @example const response = await millicastSignaling.connect(url);
+   * @example const response = await millicastSignaling.connect(url)
    * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API} of the establshed connection.
    */
   async connect (url) {
@@ -66,7 +66,7 @@ export default class MillicastSignaling extends EventEmitter {
 
   /**
    * Close WebSocket connection with Millicast server.
-   * @example millicastSignaling.close();
+   * @example millicastSignaling.close()
    */
   close () {
     logger.info('Closing WebSocket')
@@ -79,7 +79,7 @@ export default class MillicastSignaling extends EventEmitter {
    * Establish WebRTC connection with Millicast Server as Subscriber role.
    * @param {String} sdp - The SDP information created by your offer.
    * @param {String} streamName - Millicast stream name to get subscribed.
-   * @example const response = await millicastSignaling.subscribe(sdp, streamId);
+   * @example const response = await millicastSignaling.subscribe(sdp, streamId)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async subscribe (sdp, streamName) {
@@ -106,7 +106,7 @@ export default class MillicastSignaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @example const response = await millicastSignaling.publish(sdp);
+   * @example const response = await millicastSignaling.publish(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async publish (sdp) {

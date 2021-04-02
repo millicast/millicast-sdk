@@ -6,8 +6,8 @@ const logger = Logger.get('MillicastWebRTC')
 
 /**
  * @class MillicastWebRTC
- * @classdesc Manages all WebRTC and SDP related.
- * @example const millicastWebRTC = new MillicastWebRTC();
+ * @classdesc Manage WebRTC connection and SDP information between peers.
+ * @example const millicastWebRTC = new MillicastWebRTC()
  * @constructor
  */
 export default class MillicastWebRTC {
@@ -108,7 +108,7 @@ export default class MillicastWebRTC {
   /**
    * Set SDP information to remote peer.
    * @param {String} sdp - New SDP to be set in the remote peer.
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} Promise object which resolves when SDP information was successfully set.
    */
   async setRTCRemoteSDP (sdp) {
     logger.info('Setting SDP to peer')
@@ -212,7 +212,7 @@ export default class MillicastWebRTC {
   /**
    * Set SDP information to remote peer with bandwidth restriction.
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
    */
   async updateBitrate (bitrate = 0) {
     logger.info('Updating bitrate to value: ', bitrate)

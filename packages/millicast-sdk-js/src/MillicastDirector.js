@@ -34,12 +34,12 @@ export default class MillicastDirector {
    * @param {String} token - Millicast publishing token.
    * @param {String} streamName - Millicast stream name.
    * @returns {Promise<MillicastPublisherResponse>} Promise object which represents the result of getting the publishing connection path.
-   * @example const response = await MillicastDirector.getPublisher(token, streamName);
+   * @example const response = await MillicastDirector.getPublisher(token, streamName)
    * @example
-   * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js';
+   * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastPublish = new MillicastPublish();
+   * const millicastPublish = new MillicastPublish()
    * const streamName = "My Millicast Stream Name"
    * const token = "My Millicast publishing token"
    *
@@ -57,7 +57,7 @@ export default class MillicastDirector {
    *  };
    *
    * //Start broadcast
-   * const response = await millicastPublish.broadcast(broadcastOptions);
+   * await millicastPublish.broadcast(broadcastOptions)
    */
 
   static async getPublisher (token, streamName) {
@@ -80,9 +80,9 @@ export default class MillicastDirector {
    * @param {String} streamName - Millicast publisher stream name.
    * @param {Boolean} unauthorizedSubscribe - True if it's a subscription without credentials. Otherwise false.
    * @returns {Promise<MillicastSubscriberResponse>} Promise object which represents the result of getting the subscribe connection data.
-   * @example const response = await MillicastDirector.getSubscriber(streamAccountId, streamName);
+   * @example const response = await MillicastDirector.getSubscriber(streamAccountId, streamName)
    * @example
-   * import { MillicastView, MillicastDirector } from 'millicast-sdk-js';
+   * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
    * const millicastView = new MillicastView();
@@ -106,7 +106,7 @@ export default class MillicastDirector {
    *  };
    *
    * //Start connection to broadcast
-   * const response = await millicastView.connect(options);
+   * const response = await millicastView.connect(options)
    */
 
   static async getSubscriber (streamAccountId, streamName, unauthorizedSubscribe = true) {

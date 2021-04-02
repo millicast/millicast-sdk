@@ -27,13 +27,13 @@ export default class MillicastView extends EventEmitter {
    * @param {String} options.streamName - Millicast stream name where you want to connect.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
-   * @returns {Promise<String>} Promise object which represents the SDP subscriber response from signaling connection.
-   * @example const response = await millicastView.connect(options);
+   * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
+   * @example await millicastView.connect(options)
    * @example
-   * import MillicastView from 'millicast-sdk-js';
+   * import MillicastView from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastView = new MillicastView();
+   * const millicastView = new MillicastView()
    * const streamName = "Millicast Stream Name where i want to connect"
    *
    * //Set new.track event handler.
@@ -53,7 +53,11 @@ export default class MillicastView extends EventEmitter {
    *  };
    *
    * //Start connection to broadcast
-   * const response = await millicastView.connect(options);
+   * try {
+   * await millicastView.connect(options)
+   * } catch (e) {
+   *  console.log('Connection failed, handle error', e)
+   * }
    */
 
   async connect (
@@ -89,7 +93,28 @@ export default class MillicastView extends EventEmitter {
       logger.error('Failed to connect to publisher: ', sdpSubscriber)
       throw new Error('Failed to connect to publisher: ', sdpSubscriber)
     }
+  }
 
-    return sdpSubscriber
+  /**
+   * Stops active connection.
+   * @example millicastView.stop();
+   */
+
+  stop () {
+    logger.info('Stopping connection')
+    this.webRTCPeer.closeRTCPeer()
+    this.millicastSignaling.close()
+  }
+
+  /**
+   * Get if the current connection is active.
+   * @example const isActive = millicastView.isActive();
+   * @returns {Boolean} - True if connected, false if not.
+   */
+
+  isActive () {
+    const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
+    logger.info('Connection status: ', rtcPeerState)
+    return rtcPeerState === 'connected'
   }
 }
