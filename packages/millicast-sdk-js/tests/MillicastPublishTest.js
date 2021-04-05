@@ -48,6 +48,7 @@ class MillicastPublishTest {
     this.streamCount.close()
     console.log('Broadcast stopped')
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
+    document.getElementById('broadcast-viewers').innerHTML = ''
   }
 
   async testUpdateBitrate (selectObject) {

@@ -14,10 +14,10 @@ export default class MillicastStreamEvents extends EventEmitter {
     this.receivedHandshakeResponse = false
   }
 
-  initialiceHandshake (topicFunction) {
+  initializeHandshake (topicFunction) {
     logger.info('Starting handshake')
     this.webSocket = new WebSocket(eventsLocation)
-    this.webSocket.onopen = (event) => {
+    this.webSocket.onopen = () => {
       logger.info('WebSocket opened, beginning handshake')
       const handshakeRequest = {
         protocol: 'json',
@@ -58,9 +58,9 @@ export default class MillicastStreamEvents extends EventEmitter {
   }
 
   userCount (accountId, streamName) {
-    logger.info('Starting user count')
+    logger.info(`Starting user count. AccountId: ${accountId}, streamName: ${streamName}`)
     const streamId = `${accountId}/${streamName}`
-    this.initialiceHandshake(() => this.subscribeStreamCount(streamId))
+    this.initializeHandshake(() => this.subscribeStreamCount(streamId))
 
     this.webSocket.addEventListener('message', (event) => {
       try {
@@ -89,7 +89,12 @@ export default class MillicastStreamEvents extends EventEmitter {
 
   handleStreamCountResponse (response) {
     if (response.type === enums.REQUEST) {
-      this.emitStreamCounts(response.arguments)
+      for (const { streamId, count } of response.arguments) {
+        if (streamId) {
+          const countChange = { streamId, count }
+          this.emitStreamCounts(countChange)
+        }
+      }
     } else if (response.type === enums.RESPONSE && response.error) {
       const errorData = {
         error: response.error,
@@ -99,17 +104,15 @@ export default class MillicastStreamEvents extends EventEmitter {
       logger.error('SubscribeViewerCount viewerCountError: ', errorData)
       this.emit('viewerCountError', errorData)
     } else if (response.type === enums.RESPONSE) {
-      this.emitStreamCounts(Object.entries(response.result.streamIdCounts))
+      for (const [streamId, count] of Object.entries(response.result?.streamIdCounts)) {
+        const countChange = { streamId, count }
+        this.emitStreamCounts(countChange)
+      }
     }
   }
 
-  emitStreamCounts (response) {
-    for (const { streamId, count } of response) {
-      if (streamId) {
-        const countChange = { streamId, count }
-        logger.info('SubscribeViewerCount viewerCountChanged: ', countChange)
-        this.emit('viewerCountChanged', countChange)
-      }
-    }
+  emitStreamCounts (countChange) {
+    logger.info('SubscribeViewerCount viewerCountChanged: ', countChange)
+    this.emit('viewerCountChanged', countChange)
   }
 }
