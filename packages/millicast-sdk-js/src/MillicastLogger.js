@@ -1,9 +1,9 @@
 import Logger from 'js-logger'
 
-Logger.useDefaults({ defaultLevel: Logger.DEBUG })
+Logger.useDefaults({ defaultLevel: Logger.TRACE })
 
 const formatter = (messages, context) => {
-  messages.unshift(`[${context.name}] ${new Date().toISOString()} -`)
+  messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} -`)
 }
 const enabledFor = (level, loggerName) => {
   if (loggerName) {
@@ -16,10 +16,12 @@ const historyHandler = (messages, context) => {
   messages = Array.prototype.slice.call(messages)
   formatter(messages, context)
 
-  if (history.lenght === maxLogHistorySize) {
-    history = history.slice(1)
+  if (maxLogHistorySize !== 0) {
+    if (history.lenght === maxLogHistorySize) {
+      history = history.slice(1)
+    }
+    history.push(messages.join(' '))
   }
-  history.push(messages.join(' '))
 }
 
 const consoleHandler = Logger.createDefaultHandler({ formatter })
@@ -50,40 +52,78 @@ const customHandlers = []
  */
 
 /**
- * @class
- * @property {LogLevel} DEBUG
+ * Manages all log messages from SDK modules, you can use this logger to add your custom
+ * messages and set your custom log handlers to forward all messages to your own monitoring
+ * system.
+ *
+ * By default all loggers are set in level OFF (MillicastLogger.OFF), and there are available
+ * the following log levels.
+ *
+ * This module is based on [js-logger](https://github.com/jonnyreeves/js-logger) you can refer
+ * to its documentation or following our examples.
+ *
+ *
+ * @namespace
+ * @property {LogLevel} TRACE - MillicastLogger.TRACE
+ * @property {LogLevel} DEBUG - MillicastLogger.DEBUG
+ * @property {LogLevel} INFO  - MillicastLogger.INFO
+ * @property {LogLevel} TIME  - MillicastLogger.TIME
+ * @property {LogLevel} WARN  - MillicastLogger.WARN
+ * @property {LogLevel} ERROR - MillicastLogger.ERROR
+ * @property {LogLevel} OFF   - MillicastLogger.OFF
+ * @example
+ * // Log a message
+ * MillicastLogger.info('This is an info log', 445566)
+ * // [Global] 2021-04-05T15:58:44.893Z - This is an info log 445566
+ * @example
+ * // Create a named logger
+ * const myLogger = MillicastLogger.get('CustomLogger')
+ * myLogger.setLevel(MillicastLogger.WARN)
+ * myLogger.warn('This is a warning log')
+ * // [CustomLogger] 2021-04-05T15:59:53.377Z - This is a warning log
+ * @example
+ * // Profiling
+ * // Start timing something
+ * MillicastLogger.time('Timer name')
+ *
+ * // ... some time passes ...
+ *
+ * // Stop timing something.
+ * MillicastLogger.timeEnd('Timer name')
+ * // Timer name: 35282.997802734375 ms
  */
 const MillicastLogger = {
   ...Logger,
+  enabledFor,
   /**
-   * @member {LogLevel}
-   */
-  TRACE: Logger.TRACE,
-  /**
-   * @type {LogLevel}
-   */
-  DEBUG: Logger.DEBUG,
-  /**
-   * @type {LogLevel}
-   */
-  INFO: Logger.INFO,
-  TIME: Logger.TIME,
-  WARN: Logger.WARN,
-  ERROR: Logger.ERROR,
-  OFF: Logger.OFF,
-  /**
-   *
-   * @returns {Array<String>} All logs recollected from level DEBUG.
+   * Get all logs generated during a session.
+   * All logs are recollected besides the log level selected by the user.
+   * @returns {Array<String>} All logs recollected from level TRACE.
+   * @example MillicastLogger.getHistory()
+   * // Outupt
+   * // [
+   * //   "[MillicastDirector] 2021-04-05T14:09:26.625Z - Getting publisher connection data for stream name:  1xxx2",
+   * //   "[MillicastDirector] 2021-04-05T14:09:27.064Z - Getting publisher response",
+   * //   "[MillicastPublish]  2021-04-05T14:09:27.066Z - Broadcasting"
+   * // ]
    */
   getHistory: () => history,
   /**
-   *
+   * Set the maximum count of logs to preserve during a session.
+   * By default it is set to 10000.
    * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
+   * @example MillicastLogger.setHistoryMaxSize(100)
    */
   setHistoryMaxSize: maxSize => { maxLogHistorySize = maxSize },
   /**
    * Set log level to all loggers.
-   * @param {Object} level New log level to be set.
+   * @param {LogLevel} level - New log level to be set.
+   * @example
+   * // Global Level
+   * MillicastLogger.setLevel(MillicastLogger.DEBUG)
+   *
+   * // Module Level
+   * MillicastLogger.get('MillicastPublish').setLevel(MillicastLogger.DEBUG)
    */
   setLevel: level => {
     loggerLevel = level
@@ -92,20 +132,39 @@ const MillicastLogger = {
     }
   },
   /**
+   * Get global current logger level.
+   * Also you can get the level of any particular logger.
+   * @returns {LogLevel}
+   * @example
+   * // Global Level
+   * MillicastLogger.getLevel()
+   * // Output
+   * // {value: 2, name: 'DEBUG'}
    *
-   * @returns {Object}
+   * // Module Level
+   * MillicastLogger.get('MillicastPublish').getLevel()
+   * // Output
+   * // {value: 5, name: 'WARN'}
    */
   getLevel: () => loggerLevel,
   /**
-   *
-   * @param {Object} level - The log level of message.
-   * @param {String?} loggerName - The logger name of message.
-   */
-  enabledFor: (level, loggerName) => enabledFor(level, loggerName),
-  /**
-   *
+   * Gets or creates a named logger. Named loggers are used to group log messages
+   * that refers to a common context.
    * @param {String} name
-   * @returns {Object}
+   * @returns {Object} Logger object with same properties and functions as MillicastLogger except
+   * history and handlers related functions.
+   * @example
+   * const myLogger = MillicastLogger.get('MyLogger')
+   * // Set logger level
+   * myLogger.setLevel(MillicastLogger.DEBUG)
+   *
+   * myLogger.debug('This is a debug log')
+   * myLogger.info('This is a info log')
+   * myLogger.warn('This is a warning log')
+   *
+   * // Get logger level
+   * myLogger.getLevel()
+   * // {value: 3, name: 'INFO'}
    */
   get: name => {
     if (!namedLoggerLevels[name]) {
@@ -117,18 +176,32 @@ const MillicastLogger = {
     return logger
   },
   /**
-   * Callback which handles the log messages.
+   * Callback which handles log messages.
    *
    * @callback loggerHandler
-   * @param {Any[]} messages - Arguments object with the supplied log messages.
+   * @param {Any[]} messages         - Arguments object with the supplied log messages.
    * @param {Object} context
-   * @param {Object} context.level - The currrent log level.
-   * @param {String?} context.name - The optional current logger name.
+   * @param {LogLevel} context.level - The currrent log level.
+   * @param {String?} context.name   - The optional current logger name.
    */
   /**
+   * Add your custom log handler to Millicast Logger at the specified level.
+   * @param {loggerHandler} handler  - Your custom log handler function.
+   * @param {LogLevel} level         - Log level to filter messages.
+   * @example
+   * const myHandler = (messages, context) => {
+   *  // You can filter by logger
+   *  if (context.name === 'MillicastPublish') {
+   *    sendToMyLogger(messages[0])
+   *  }
    *
-   * @param {loggerHandler} handler
-   * @param {Object} level
+   *  // You can filter by logger level
+   *  if (context.level.value >= MillicastLogger.INFO.value) {
+   *    sendToMyLogger(messages[0])
+   *  }
+   * }
+   *
+   * MillicastLogger.setHandler(myHandler, MillicastLogger.INFO)
    */
   setHandler: (handler, level) => { customHandlers.push({ handler, level }) }
 }
