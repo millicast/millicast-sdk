@@ -75,12 +75,13 @@ export default class MillicastSignaling extends EventEmitter {
         }
         this.transactionManager.on('event', (evt) => {
           /**
-           * Passthrough of all TransactionManager events.
+           * Passthrough of all broadcast events.
+           * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
            *
            * @event MillicastSignaling#event
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {String} name - Event name.
+           * @property {String} name - Event name. Could be active, inactive, or stopped.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit('event', evt)

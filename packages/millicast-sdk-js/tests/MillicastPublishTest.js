@@ -27,8 +27,9 @@ class MillicastPublishTest {
         disableVideo: false,
         disableAudio: false
       }
-      const response = await this.millicastPublish.broadcast(broadcastOptions)
-      console.log('BROADCASTING!! Start response: ', response)
+
+      this.millicastPublish.on('broadcasting', () => console.log('Event executed. Broadcasting!'))
+      await this.millicastPublish.broadcast(broadcastOptions)
       const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`
       console.log('Broadcast viewer link: ', viewLink)
       document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`

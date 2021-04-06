@@ -19,6 +19,7 @@
     "docdash": "^1.2.0",
     "events": "^3.3.0",
     "js-logger": "^1.6.1",
+    "re-emitter": "^1.1.4",
     "semantic-sdp": "^3.21.0",
     "transaction-manager": "^2.1.3"
   },

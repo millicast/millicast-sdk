@@ -1,17 +1,20 @@
 import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
+import EventEmitter from 'events'
 import Logger from './Logger'
 
 const logger = Logger.get('MillicastWebRTC')
 
 /**
  * @class MillicastWebRTC
+ * @extends EventEmitter
  * @classdesc Manages WebRTC connection and SDP information between peers.
  * @example const millicastWebRTC = new MillicastWebRTC()
  * @constructor
  */
-export default class MillicastWebRTC {
+export default class MillicastWebRTC extends EventEmitter {
   constructor () {
+    super()
     this.sessionDescription = null
     this.peer = null
     this.RTCOfferOptions = {
@@ -33,7 +36,7 @@ export default class MillicastWebRTC {
         if (config) {
           config = await this.getRTCConfiguration()
         }
-        this.peer = new RTCPeerConnection(config)
+        this.peer = instanceRTCPeerConnection(this, config)
       } catch (e) {
         logger.error('Error while creating RTCPeerConnection: ', e)
         throw e
@@ -227,5 +230,31 @@ export default class MillicastWebRTC {
     const { connectionState } = this.peer
     logger.info('RTC peer status getted, value: ', connectionState)
     return connectionState
+  }
+}
+
+const instanceRTCPeerConnection = (instanceClass, config) => {
+  const instance = new RTCPeerConnection(config)
+  addPeerEvents(instanceClass, instance)
+  return instance
+}
+
+/**
+ * Emits peer events.
+ * @param {MillicastWebRTC} instanceClass - MillicastWebRTC instance.
+ * @param {RTCPeerConnection} peer - Peer instance.
+ * @fires MillicastWebRTC#newTrack
+ */
+const addPeerEvents = (instanceClass, peer) => {
+  peer.ontrack = (event) => {
+    logger.info('New track from peer.')
+    logger.debug('Track event value: ', event)
+    /**
+     * New track event.
+     *
+     * @event MillicastWebRTC#newTrack
+     * @type {RTCTrackEvent}
+     */
+    instanceClass.emit('newTrack', event)
   }
 }

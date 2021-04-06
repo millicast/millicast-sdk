@@ -1,5 +1,6 @@
 import Logger from './Logger'
 import EventEmitter from 'events'
+import reemit from 're-emitter'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
 const logger = Logger.get('MillicastView')
@@ -32,7 +33,9 @@ export default class MillicastView extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
-   * @fires MillicastView#newTrack
+   * @fires MillicastWebRTC#newTrack
+   * @fires MillicastView#subscribed
+   * @fires MillicastSignaling#event
    * @example await millicastView.connect(options)
    * @example
    * import MillicastView from 'millicast-sdk-js'
@@ -81,19 +84,8 @@ export default class MillicastView extends EventEmitter {
     })
 
     const rtcConfiguration = await this.webRTCPeer.getRTCConfiguration()
-    const peer = await this.webRTCPeer.getRTCPeer(rtcConfiguration)
-    peer.ontrack = (event) => {
-      logger.info('New track from peer.')
-      logger.debug('Track event value: ', event)
-      /**
-       * New track event.
-       *
-       * @event MillicastView#newTrack
-       * @type {RTCTrackEvent}
-       */
-      this.emit('newTrack', event)
-    }
-
+    await this.webRTCPeer.getRTCPeer(rtcConfiguration)
+    reemit(this.webRTCPeer, this, ['newTrack'])
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
@@ -102,7 +94,14 @@ export default class MillicastView extends EventEmitter {
 
     const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
     if (sdpSubscriber) {
+      reemit(this.millicastSignaling, this, ['event'])
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
+      /**
+       * Subscribed to Broadcast.
+       *
+       * @event MillicastView#subscribed
+       */
+      this.emit('subscribed')
     } else {
       logger.error('Failed to connect to publisher: ', sdpSubscriber)
       throw new Error('Failed to connect to publisher: ', sdpSubscriber)
