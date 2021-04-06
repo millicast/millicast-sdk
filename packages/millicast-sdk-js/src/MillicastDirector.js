@@ -1,7 +1,7 @@
 import axios from 'axios'
-import Logger from './Logger'
+import MillicastLogger from './MillicastLogger'
 
-const logger = Logger.get('MillicastDirector')
+const logger = MillicastLogger.get('MillicastDirector')
 const publisherLocation = 'https://director.millicast.com/api/director/publish'
 const subscriberLocation = 'https://director.millicast.com/api/director/subscribe'
 
@@ -15,13 +15,12 @@ const subscriberLocation = 'https://director.millicast.com/api/director/subscrib
  */
 
 /**
- * @class MillicastDirector
- * @hideconstructor
- * @classdesc Simplify API calls to find the best server and region to publish and subscribe to.
+ * Simplify API calls to find the best server and region to publish and subscribe to.
  * For security reasosn all calls will return a [JWT](https://jwt.io) token forn authentication including the required
  * socket path to connect with.
  *
  * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://dash.millicast.com/docs.html?pg=managing-your-tokens).
+ * @namespace
  */
 
 export default class MillicastDirector {
@@ -57,7 +56,7 @@ export default class MillicastDirector {
    */
 
   static async getPublisher (token, streamName) {
-    logger.info('Getting publisher connection data for stream name: ', streamName)
+    logger.info('Getting publisher connection path for stream name: ', streamName)
     const payload = { streamName }
     const headers = { Authorization: `Bearer ${token}` }
     try {
@@ -65,7 +64,7 @@ export default class MillicastDirector {
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting publisher connection data: ', e.response.data)
+      logger.error('Error while getting publisher connection path: ', e.response.data)
       throw e
     }
   }
@@ -106,14 +105,14 @@ export default class MillicastDirector {
    */
 
   static async getSubscriber (streamAccountId, streamName, unauthorizedSubscribe = true) {
-    logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
+    logger.info(`Getting subscriber connection path for stream name: ${streamName} and account id: ${streamAccountId}`)
     const payload = { streamAccountId, streamName, unauthorizedSubscribe }
     try {
       const { data } = await axios.post(subscriberLocation, payload)
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting subscriber connection data: ', e.response.data)
+      logger.error('Error while getting subscriber connection path: ', e.response.data)
       throw e
     }
   }
