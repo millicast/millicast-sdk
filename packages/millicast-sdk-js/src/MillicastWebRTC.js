@@ -1,8 +1,8 @@
 import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
-import Logger from './MillicastLogger'
+import MillicastLogger from './MillicastLogger'
 
-const logger = Logger.get('MillicastWebRTC')
+const logger = MillicastLogger.get('MillicastWebRTC')
 
 /**
  * @class MillicastWebRTC
@@ -25,12 +25,13 @@ export default class MillicastWebRTC {
    * @param {RTCConfiguration} config - Peer configuration.
    * @returns {Promise<RTCPeerConnection>} Promise object which represents the RTCPeerConnection.
    */
-  async getRTCPeer (config) {
+  async getRTCPeer (config = null) {
     logger.info('Getting RTC Peer')
-    logger.debug('Config value: ', config)
+    logger.debug('RTC configuration provided by user: ', config)
     if (!this.peer) {
       try {
-        if (config) {
+        if (!config) {
+          logger.info('RTC configuration not provided by user.')
           config = await this.getRTCConfiguration()
         }
         this.peer = new RTCPeerConnection(config)
@@ -40,7 +41,8 @@ export default class MillicastWebRTC {
       }
     }
 
-    logger.debug('Peer value: ', this.peer)
+    const { connectionState, currentLocalDescription, currentRemoteDescription } = this.peer
+    logger.debug('getRTCPeer return: ', { connectionState, currentLocalDescription, currentRemoteDescription })
     return this.peer
   }
 
@@ -80,14 +82,13 @@ export default class MillicastWebRTC {
    */
   async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
     logger.info('Getting RTC ICE servers')
-    logger.debug('Request location: ', location)
+    logger.debug('RTC ICE servers request location: ', location)
 
     const iceServers = []
     try {
       const { data } = await axios.put(location)
       logger.debug('RTC ICE servers response: ', data)
       if (data.s === 'ok') {
-        logger.info('RTC ICE servers successfully obtained')
         // call returns old format, this updates URL to URLS in credentials path.
         for (const credentials of data.v.iceServers) {
           const url = credentials.url
@@ -97,6 +98,7 @@ export default class MillicastWebRTC {
           }
           iceServers.push(credentials)
         }
+        logger.info('RTC ICE servers successfully obtained.')
       }
     } catch (e) {
       logger.error('Error while getting RTC ICE servers: ', e.response.data)
@@ -111,16 +113,15 @@ export default class MillicastWebRTC {
    * @returns {Promise<void>} Promise object which resolves when SDP information was successfully set.
    */
   async setRTCRemoteSDP (sdp) {
-    logger.info('Setting SDP to peer')
-    logger.debug('SDP value: ', sdp)
+    logger.info('Setting RTC Remote SDP')
     const answer = { type: 'answer', sdp }
 
     try {
-      const response = this.peer.setRemoteDescription(answer)
-      logger.info('Remote description to peer sent')
-      return response
+      await this.peer.setRemoteDescription(answer)
+      logger.info('RTC Remote SDP was set successfully.')
+      logger.debug('RTC Remote SDP new value: ', sdp)
     } catch (e) {
-      logger.error('Error while setting remote description to peer: ', escape)
+      logger.error('Error while setting RTC Remote SDP: ', escape)
       throw e
     }
   }
@@ -134,21 +135,20 @@ export default class MillicastWebRTC {
   async getRTCLocalSDP (stereo, mediaStream) {
     logger.info('Getting RTC Local SDP')
     logger.debug('Stereo value: ', stereo)
-    logger.debug('mediaStream value: ', mediaStream)
     logger.debug('RTC offer options: ', this.RTCOfferOptions)
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
       for (const track of mediaStream.getTracks()) {
         this.peer.addTrack(track, mediaStream)
+        logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
       }
-      logger.info('Tracks added')
     }
 
     logger.info('Creating peer offer')
     try {
       const response = await this.peer.createOffer(this.RTCOfferOptions)
-      logger.info('Perr offer created')
-      logger.debug('Perr offer response: ', response)
+      logger.info('Peer offer created')
+      logger.debug('Peer offer response: ', response.sdp)
 
       this.sessionDescription = response
       if (stereo) {
@@ -161,8 +161,8 @@ export default class MillicastWebRTC {
         logger.debug('New SDP value: ', this.sessionDescription.sdp)
       }
 
-      logger.info('Setting peer local description')
       await this.peer.setLocalDescription(this.sessionDescription)
+      logger.info('Peer local description set')
 
       return this.sessionDescription.sdp
     } catch (e) {
@@ -185,7 +185,7 @@ export default class MillicastWebRTC {
     const videoOffer = offer.getMedia('video')
 
     if (bitrate < 1) {
-      logger.info('Changing SDP to remove bitrate restrictions')
+      logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
       logger.info('Setting video bitrate')
@@ -212,7 +212,8 @@ export default class MillicastWebRTC {
     await this.getRTCLocalSDP(true, null)
 
     const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
-    return this.setRTCRemoteSDP(sdp)
+    await this.setRTCRemoteSDP(sdp)
+    logger.info('Bitrate restirctions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
   }
 
   /**

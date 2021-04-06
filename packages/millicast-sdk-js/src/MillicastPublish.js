@@ -1,8 +1,8 @@
-import Logger from './MillicastLogger'
+import MillicastLogger from './MillicastLogger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
 
-const logger = Logger.get('MillicastPublish')
+const logger = MillicastLogger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
@@ -73,7 +73,6 @@ export default class MillicastPublish {
       disableAudio: false
     }
   ) {
-    logger.info('Broadcasting')
     logger.debug('Broadcast option values: ', options)
     if (!options.streamName) {
       logger.error('Error while broadcasting. Stream name required')
@@ -92,8 +91,8 @@ export default class MillicastPublish {
       streamName: options.streamName,
       url: `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
     })
-    const config = await this.webRTCPeer.getRTCConfiguration()
-    await this.webRTCPeer.getRTCPeer(config)
+
+    await this.webRTCPeer.getRTCPeer()
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
@@ -115,7 +114,8 @@ export default class MillicastPublish {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
     }
 
-    return this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+    await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+    logger.info('Broadcasting to streamName: ', options.streamName)
   }
 
   /**
@@ -137,7 +137,7 @@ export default class MillicastPublish {
 
   isActive () {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
-    logger.info('Broadcast status: ', rtcPeerState)
+    logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
   }
 }

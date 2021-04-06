@@ -3,7 +3,7 @@ import Logger from 'js-logger'
 Logger.useDefaults({ defaultLevel: Logger.TRACE })
 
 const formatter = (messages, context) => {
-  messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} -`)
+  messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} - ${context.level.name} -`)
 }
 const enabledFor = (level, loggerName) => {
   if (loggerName) {
@@ -14,6 +14,7 @@ const enabledFor = (level, loggerName) => {
 
 const historyHandler = (messages, context) => {
   messages = Array.prototype.slice.call(messages)
+  messages = messages.map((m) => typeof m === 'object' ? JSON.stringify(m) : m)
   formatter(messages, context)
 
   if (maxLogHistorySize !== 0) {

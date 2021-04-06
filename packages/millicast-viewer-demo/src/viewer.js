@@ -1,4 +1,6 @@
-import { MillicastView, MillicastDirector } from "millicast-sdk-js";
+import { MillicastView, MillicastDirector, MillicastLogger } from "millicast-sdk-js";
+
+window.MillicastLogger = MillicastLogger
 
 //Get our url
 const href = new URL(window.location.href);
