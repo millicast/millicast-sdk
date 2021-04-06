@@ -73,7 +73,7 @@ export default class MillicastDirector {
    * Get subscriber connection data.
    * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} streamName - Millicast publisher Stream Name.
-   * @param {Boolean} unauthorizedSubscribe - True if it's a subscription without credentials. Otherwise false.
+   * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
    * @example const response = await MillicastDirector.getSubscriber(streamAccountId, streamName)
    * @example
@@ -91,8 +91,11 @@ export default class MillicastDirector {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
-   * //Get Millicast Subscriber connection path
+   * //Get Millicast Subscriber connection path for an unsecure stream
    * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName)
+   *
+   * //... or for an secure stream
+   * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName , '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744')
    *
    * //Options
    * const options = {
@@ -104,11 +107,16 @@ export default class MillicastDirector {
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (streamAccountId, streamName, unauthorizedSubscribe = true) {
-    logger.info(`Getting subscriber connection path for stream name: ${streamName} and account id: ${streamAccountId}`)
-    const payload = { streamAccountId, streamName, unauthorizedSubscribe }
+  static async getSubscriber (streamAccountId, streamName, subscriberToken = null) {
+    logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
+    const payload = { streamAccountId, streamName }
+    let headers = {}
+    if (subscriberToken) {
+      delete payload.unauthorizedSubscribe
+      headers = { Authorization: `Bearer ${subscriberToken}` }
+    }
     try {
-      const { data } = await axios.post(subscriberLocation, payload)
+      const { data } = await axios.post(subscriberLocation, payload, { headers })
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
