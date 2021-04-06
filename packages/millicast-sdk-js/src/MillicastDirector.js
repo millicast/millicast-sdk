@@ -6,20 +6,12 @@ const publisherLocation = 'https://director.millicast.com/api/director/publish'
 const subscriberLocation = 'https://director.millicast.com/api/director/subscribe'
 
 /**
- * @typedef {Object} MillicastPublisherResponse
- * @property {Array<String>} urls - WebSocket URLs.
- * @property {String} wsUrl - WebSocket URL.
+ * @typedef {Object} MillicastDirectorResponse
+ * @property {Array<String>} urls - WebSocket available URLs.
+ * @property {String} wsUrl - Deprecated: You should use the first url in `urls`.
  * @property {String} jwt - Access token for signaling initialization.
  * @property {String} streamAccountId - Millicast publisher Account ID.
- * @property {Boolean} subscribeRequiresAuth - True if subscriber requires authentication, otherwise false.
- */
-
-/**
- * @typedef {Object} MillicastSubscriberResponse
- * @property {Array<String>} urls - WebSocket URLs.
- * @property {String} wsUrl - WebSocket URL.
- * @property {String} jwt - Access token for signaling initialization.
- * @property {String} streamAccountId - Millicast publisher Account ID.
+ * @property {Boolean} [subscribeRequiresAuth] - True if subscriber requires authentication, otherwise false.
  */
 
 /**
@@ -36,7 +28,7 @@ export default class MillicastDirector {
    * Get publisher connection data.
    * @param {String} token - Millicast Publishing Token.
    * @param {String} streamName - Millicast Stream Name.
-   * @returns {Promise<MillicastPublisherResponse>} Promise object which represents the result of getting the publishing connection path.
+   * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
    * @example const response = await MillicastDirector.getPublisher(token, streamName)
    * @example
    * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js'
@@ -82,7 +74,7 @@ export default class MillicastDirector {
    * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} streamName - Millicast publisher Stream Name.
    * @param {Boolean} unauthorizedSubscribe - True if it's a subscription without credentials. Otherwise false.
-   * @returns {Promise<MillicastSubscriberResponse>} Promise object which represents the result of getting the subscribe connection data.
+   * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
    * @example const response = await MillicastDirector.getSubscriber(streamAccountId, streamName)
    * @example
    * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'

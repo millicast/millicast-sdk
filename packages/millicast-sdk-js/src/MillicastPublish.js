@@ -27,7 +27,7 @@ export default class MillicastPublish {
    *
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
-   * @param {MillicastPublisherResponse} options.publisherData - Millicast publisher connection path.
+   * @param {MillicastDirectorResponse} options.publisherData - Millicast publisher connection path.
    * @param {String} options.streamName - Millicast existing Stream Name.
    * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
@@ -89,7 +89,7 @@ export default class MillicastPublish {
 
     this.millicastSignaling = new MillicastSignaling({
       streamName: options.streamName,
-      url: `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
+      url: `${options.publisherData.urls[0]}?token=${options.publisherData.jwt}`
     })
 
     await this.webRTCPeer.getRTCPeer()

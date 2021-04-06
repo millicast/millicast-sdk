@@ -26,7 +26,7 @@ export default class MillicastView extends EventEmitter {
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} options - General subscriber options.
-   * @param {MillicastSubscriberResponse} options.subscriberData - Millicast subscriber connection path.
+   * @param {MillicastDirectorResponse} options.subscriberData - Millicast subscriber connection path.
    * @param {String} options.streamName - Millicast existing Stream Name where you want to connect.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
@@ -75,7 +75,7 @@ export default class MillicastView extends EventEmitter {
     logger.debug('Viewer connect options values: ', options)
     this.millicastSignaling = new MillicastSignaling({
       streamName: options.streamName,
-      url: `${options.subscriberData.wsUrl}?token=${options.subscriberData.jwt}`
+      url: `${options.subscriberData.urls[0]}?token=${options.subscriberData.jwt}`
     })
     const peer = await this.webRTCPeer.getRTCPeer()
     peer.ontrack = (event) => {
