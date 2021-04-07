@@ -1,5 +1,5 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { MillicastDirector } from "millicast-sdk-js"
+import { MillicastDirector, MillicastStreamEvents } from "millicast-sdk-js"
 
 const streamId = process.env.MILLICAST_STREAM_ID
 const accountId = process.env.MILLICAST_ACCOUNT_ID
@@ -63,6 +63,16 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //demo timer
   let tm;
   let tmInt          = 300000;//300000 - 5min
+
+  //////
+
+  // Add UserCount event listener
+  const events = await MillicastStreamEvents.init()
+  events.onUserCount(accountId, streamId, ({count}, _) => {
+    userCount.innerHTML = count
+  })
+  
+  //////
 
   function handleOrientation() {
     let el  = document.querySelector(".turnDeviceNotification");
