@@ -1,8 +1,10 @@
 import Logger from './Logger'
 import MillicastEventSubscriber from './utils/MillicastEventSubscriber'
 
+const USER_COUNT_TARGET = 'SubscribeViewerCount'
+
 const logger = Logger.get('MillicastStreamEvents')
-const enums = { REQUEST: 1, RESPONSE: 3 }
+const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
 export default class MillicastStreamEvents {
@@ -30,7 +32,7 @@ export default class MillicastStreamEvents {
       arguments: [[streamId]],
       invocationId: (invocationId++).toString(),
       streamIds: [],
-      target: 'SubscribeViewerCount',
+      target: USER_COUNT_TARGET,
       type: 1
     }
     this.millicastEventSubscriber.subscribe(userCountRequest)
@@ -39,32 +41,38 @@ export default class MillicastStreamEvents {
     })
   }
 
-  close () {
+  stop () {
     this.millicastEventSubscriber.close()
   }
 }
 
 const handleStreamCountResponse = (streamIdConstraint, response, callback) => {
-  if (response.type === enums.REQUEST) {
-    for (const { streamId, count } of response.arguments) {
-      if (streamId && streamId === streamIdConstraint) {
-        const countChange = { streamId, count }
-        callback(countChange)
+  switch (response.type) {
+    case messageType.REQUEST:
+      if (response.target !== USER_COUNT_TARGET) {
+        for (const { streamId, count } of response.arguments) {
+          if (streamId === streamIdConstraint) {
+            const countChange = { streamId, count }
+            logger.debug('User count changed: ', countChange)
+            callback(countChange)
+          }
+        }
       }
-    }
-  } else if (response.type === enums.RESPONSE && response.error && response.arguments.streamId === streamIdConstraint) {
-    const countData = {
-      error: response.error,
-      streamId: response.arguments.streamId,
-      count: response.arguments?.count
-    }
-    callback(countData, response.error)
-  } else if (response.type === enums.RESPONSE) {
-    for (const [streamId, count] of Object.entries(response.result?.streamIdCounts)) {
-      if (streamId === streamIdConstraint) {
-        const countChange = { streamId, count }
-        callback(countChange)
+      break
+
+    case messageType.RESPONSE:
+      if (response.error && response.arguments.streamId === streamIdConstraint) {
+        const countData = {
+          error: response.error,
+          streamId: response.arguments.streamId,
+          count: response.arguments?.count
+        }
+        logger.error('User count error: ', response.error)
+        callback(countData, response.error)
       }
-    }
+      break
+
+    default:
+      break
   }
 }

@@ -19,11 +19,10 @@ export default class MillicastEventSubscriber extends EventEmitter {
   }
 
   subscribe (topicRequest) {
-    logger.info('Subscribing incoming topic')
-    logger.debug('TopicRequest value: ', topicRequest)
+    logger.info('Subscribing to event topic')
+    logger.debug('Topic request value: ', topicRequest)
     topicRequest = JSON.stringify(topicRequest) + recordSeparator
     this.webSocket.onmessage = (event) => {
-      logger.debug('New message from WebSocket: ', event)
       const responses = event.data?.split(recordSeparator)
       for (const response of responses) {
         if (response) {
@@ -44,10 +43,10 @@ export default class MillicastEventSubscriber extends EventEmitter {
    */
   initializeHandshake () {
     return new Promise((resolve, reject) => {
-      logger.info('Starting handshake')
+      logger.info('Starting events WebSocket handshake.')
       this.webSocket = new WebSocket(eventsLocation)
       this.webSocket.onopen = () => {
-        logger.info('WebSocket opened, beginning handshake')
+        logger.info('Connection established with events WebSocket.')
         const handshakeRequest = {
           protocol: 'json',
           version: 1
@@ -57,10 +56,11 @@ export default class MillicastEventSubscriber extends EventEmitter {
 
       this.webSocket.onmessage = (event) => {
         if (!this.receivedHandshakeResponse) {
-          logger.info('Handshake message response from WebSocket: ', event)
           this.receivedHandshakeResponse = true
           try {
-            this.handleHandshakeResponse(event.data)
+            const parsedResponse = this.handleHandshakeResponse(event.data)
+            logger.info('Successful handshake with events WebSocket. Waiting for subscriptions...')
+            logger.debug('WebSocket handsake message: ', parsedResponse)
             resolve()
           } catch (error) {
             reject(error)
@@ -78,9 +78,10 @@ export default class MillicastEventSubscriber extends EventEmitter {
   handleHandshakeResponse (message) {
     const handshakeResponse = this.parseSignalRMessage(message)
     if (handshakeResponse.error) {
-      logger.error('There was an error in WebSocket handshake: ', handshakeResponse.error)
+      logger.error('There was an error with events WebSocket handshake: ', handshakeResponse.error)
       throw new Error(handshakeResponse.error)
     }
+    return handshakeResponse
   }
 
   /**
@@ -99,8 +100,10 @@ export default class MillicastEventSubscriber extends EventEmitter {
    * @example streamCount.close()
    */
   close () {
-    logger.info('Closing WebSocket')
     this.webSocket?.close()
-    this.webSocket = null
+    this.webSocket.onclose = () => {
+      logger.info('Events WebSocket closed')
+      this.webSocket = null
+    }
   }
 }

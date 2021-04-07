@@ -46,7 +46,7 @@ class MillicastPublishTest {
 
   testStop () {
     this.millicastPublish.stop()
-    this.streamCount.close()
+    this.streamCount.stop()
     console.log('Broadcast stopped')
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
     document.getElementById('broadcast-viewers').innerHTML = ''
