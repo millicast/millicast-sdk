@@ -8,6 +8,27 @@ const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
 /**
+ * @typedef {Object} onUserCountCallbackData
+ * @property {String} streamId - Account Id concatenated with Stream name.
+ * @property {Number} count - Total views.
+ */
+
+/**
+ * @typedef {Object} onUserCountCallbackError
+ * @property {String} streamId - Account Id concatenated with Stream name.
+ * @property {Number} count - Total views.
+ * @property {String} error - Error message.
+ */
+
+/**
+ * Callback invoke when new message is available.
+ *
+ * @callback onUserCountCallback
+ * @param {onUserCountCallbackData} data
+ * @param {onUserCountCallbackError} error
+ */
+
+/**
  * @class MillicastStreamEvents
  * @hideconstructor
  * @classdesc Lets you to subscribe and close Millicast stream events.
@@ -34,7 +55,7 @@ export default class MillicastStreamEvents {
    * Subscribes to User Count event and invokes the callback once a new message is available.
    * @param {String} accountId - Millicast Account Id.
    * @param {String} streamName - Millicast Stream Name.
-   * @param {function} callback - Callback function executed when a new message is available.
+   * @param {onUserCountCallback} callback - Callback function executed when a new message is available.
    * @example
    * import MillicastStreamEvents from 'millicast-sdk-js'
    *
