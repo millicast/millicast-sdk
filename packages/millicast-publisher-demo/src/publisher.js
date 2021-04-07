@@ -39,7 +39,10 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //GUI ELEMENTS Refs
   //video overlay
   let viewUrlEl   = document.getElementById('viewerURL');
-  let onAirFlag   = document.getElementById('airIndicator');
+  let readyFlag   = document.getElementById('readyBadge');
+  let onAirFlag   = document.getElementById('liveBadge');
+  let userCount   = document.getElementById('userCount');
+
   //publish button
   let pubBtn      = document.getElementById('publishBtn');
   //Cam elements
@@ -315,12 +318,10 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   }
 
   function broadcastHandler(b) {
-    let list = onAirFlag.classList;
     if (isBroadcasting) {
       showViewerUrl();
-      onAirFlag.innerHTML = 'LIVE';
-      list.remove('badge-light');
-      list.add('badge-danger');
+      onAirFlag.classList.remove('hidden')
+      readyFlag.classList.add('hidden')
       //
       pubBtn.disabled               = true;
       selectedBandwidthBtn.disabled = false;
@@ -333,9 +334,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         showGuide('guide2', true);
       }
     } else {
-      onAirFlag.innerHTML = 'READY';
-      list.remove('badge-danger');
-      list.add('badge-light');
+      onAirFlag.classList.add('hidden')
+      readyFlag.classList.remove('hidden')
       //
       pubBtn.disabled               = false;
     }
