@@ -18,6 +18,12 @@ export default class MillicastEventSubscriber extends EventEmitter {
     this.receivedHandshakeResponse = false
   }
 
+  /**
+   * Subscribe to Millicast Stream Event
+   *
+   * @param {Object} topicRequest - Object that represents the event topic you want to subscribe.
+   * @fires MillicastEventSubscriber#message
+   */
   subscribe (topicRequest) {
     logger.info('Subscribing to event topic')
     logger.debug('Topic request value: ', topicRequest)
@@ -27,6 +33,12 @@ export default class MillicastEventSubscriber extends EventEmitter {
       for (const response of responses) {
         if (response) {
           const responseParsed = this.parseSignalRMessage(response)
+          /**
+           * New WebSocket event message.
+           *
+           * @event MillicastEventSubscriber#message
+           * @type {Object}
+           */
           this.emit('message', responseParsed)
         }
       }
@@ -35,11 +47,9 @@ export default class MillicastEventSubscriber extends EventEmitter {
   }
 
   /**
-   * Initializes the connection with the Millicast event WebSocket and invoke the topicFunction method if the handshake response was received.
+   * Initializes the connection with the Millicast event WebSocket.
    *
-   * @param {function} topicFunction - Callback function executed when the handshake was successfully made.
-   * This is used for send the event topic throught WebSocket.
-   * See an example of use here: [userCount]{@link MillicastStreamEvents#userCount}.
+   * @returns {Promise<void>} Promise which represents the handshake finalization.
    */
   initializeHandshake () {
     return new Promise((resolve, reject) => {
@@ -74,6 +84,7 @@ export default class MillicastEventSubscriber extends EventEmitter {
    * Receives the event data response from the WebSocket and throw error if the response has an error.
    *
    * @param {String} message - WebSocket event data response from the handshake initialization.
+   * @returns {Object} Returns incoming message into an Object.
    */
   handleHandshakeResponse (message) {
     const handshakeResponse = this.parseSignalRMessage(message)
@@ -97,7 +108,6 @@ export default class MillicastEventSubscriber extends EventEmitter {
 
   /**
    * Close WebSocket connection with Millicast stream events server.
-   * @example streamCount.close()
    */
   close () {
     this.webSocket?.close()
