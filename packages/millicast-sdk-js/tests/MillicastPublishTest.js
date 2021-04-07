@@ -3,7 +3,7 @@ const millicast = window.millicast
 class MillicastPublishTest {
   constructor () {
     this.millicastPublish = new millicast.MillicastPublish()
-    this.streamCount = new millicast.MillicastStreamEvents()
+    this.streamCount = null
   }
 
   async init () {
@@ -34,9 +34,10 @@ class MillicastPublishTest {
       console.log('Broadcast viewer link: ', viewLink)
       document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
 
-      this.streamCount.userCount(accountId, streamName)
-      this.streamCount.on('viewerCountChanged', (event) => {
-        document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${event.count}`
+      // Subscribing to User Count Event.
+      this.streamCount = await millicast.MillicastStreamEvents.init()
+      this.streamCount.onUserCount(accountId, streamName, (data, error) => {
+        document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
       })
     } catch (error) {
       console.log('There was an error while trying to broadcast: ', error)
