@@ -12,65 +12,25 @@
     "node_modules/jsdoc-export-default-interop/dist/index"
   ],
   "opts": {
-    "template": "node_modules/docdash/",
+    "template": "node_modules/clean-jsdoc-theme",
     "encoding": "utf8",
     "destination": "docs/",
     "recurse": true,
-    "verbose": true
+    "verbose": true,
+    "theme_opts": {
+      "title": "Millicast Realtime Broadcast SDK",
+      "theme": "light",
+      "menu": [
+        {
+          "title": "GitHub",
+          "link": "https://github.com/millicast/realtime-broadcast-sdk",
+          "target": "_blank"
+        }
+      ]
+    }
   },
   "templates": {
     "cleverLinks": false,
     "monospaceLinks": false
-  },
-  "docdash": {
-    "static": false,
-    "sort": true,
-    "sectionOrder": [
-      "Classes",
-      "Modules",
-      "Externals",
-      "Events",
-      "Namespaces",
-      "Mixins",
-      "Tutorials",
-      "Interfaces"
-    ],
-    "disqus": "",
-    "openGraph": {
-      "title": "",
-      "type": "website",
-      "image": "",
-      "site_name": "",
-      "url": ""
-    },
-    "meta": {
-      "title": "",
-      "description": "",
-      "keyword": ""
-    },
-    "search": true,
-    "collapse": true,
-    "wrap": false,
-    "typedefs": false,
-    "navLevel": 2,
-    "private": false,
-    "scripts": [],
-    "menu": {
-      "Project Website": {
-        "href": "https://myproject.com",
-        "target": "_blank",
-        "class": "menu-item",
-        "id": "website_link"
-      },
-      "Forum": {
-        "href": "https://myproject.com.forum",
-        "target": "_blank",
-        "class": "menu-item",
-        "id": "forum_link"
-      }
-    },
-    "scopeInOutputPath": true,
-    "nameInOutputPath": true,
-    "versionInOutputPath": true
   }
 }

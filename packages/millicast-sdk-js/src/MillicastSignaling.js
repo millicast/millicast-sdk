@@ -1,8 +1,8 @@
-import Logger from './Logger'
 import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
+import MillicastLogger from './MillicastLogger'
 
-const logger = Logger.get('MillicastSignaling')
+const logger = MillicastLogger.get('MillicastSignaling')
 
 /**
  * @class MillicastSignaling
@@ -39,10 +39,16 @@ export default class MillicastSignaling extends EventEmitter {
    * @fires MillicastSignaling#event
    */
   async connect (url) {
-    logger.info('Connecting to Millicast')
+    logger.info('Connecting to Signaling Server')
     if (this.transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
-      logger.info('Connection successful')
-      logger.debug('WebSocket value: ', this.webSocket)
+      logger.info('Connected to server: ', this.webSocket.url)
+      logger.debug('WebSocket value: ', {
+        url: this.webSocket.url,
+        protocol: this.webSocket.protocol,
+        readyState: this.webSocket.readyState,
+        binaryType: this.webSocket.binaryType,
+        extensions: this.webSocket.extensions
+      })
       /**
        * WebSocket connection was successfully established with signaling server.
        *
@@ -61,7 +67,7 @@ export default class MillicastSignaling extends EventEmitter {
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
         if (this.webSocket.readyState !== WebSocket.OPEN) {
-          const error = { state: this.webSocket.readyState }
+          const error = { state: this.webSocket.readyState, url: this.webSocket.url }
           logger.error('WebSocket not connected: ', error)
           /**
            * WebSocket connection failed.
@@ -86,16 +92,21 @@ export default class MillicastSignaling extends EventEmitter {
            */
           this.emit('event', evt)
         })
-        logger.info('Connection successful')
-        logger.debug('WebSocket value: ', this.webSocket)
+        logger.info('Connected to server: ', this.webSocket.url)
+        logger.debug('WebSocket value: ', {
+          url: this.webSocket.url,
+          protocol: this.webSocket.protocol,
+          readyState: this.webSocket.readyState,
+          binaryType: this.webSocket.binaryType,
+          extensions: this.webSocket.extensions
+        })
         this.emit('connectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
         resolve(this.webSocket)
       }
       this.webSocket.onclose = () => {
         this.webSocket = null
         this.transactionManager = null
-        logger.info('WebSocket closed')
-        logger.debug('WebSocket value: ', this.webSocket)
+        logger.info('Connection closed with Signaling Server.')
         /**
          * WebSocket connection was successfully closed.
          *
@@ -111,7 +122,7 @@ export default class MillicastSignaling extends EventEmitter {
    * @example millicastSignaling.close()
    */
   close () {
-    logger.info('Closing WebSocket')
+    logger.info('Closing connection with Signaling Server.')
     if (this.webSocket) {
       this.webSocket.close()
     }
@@ -124,8 +135,8 @@ export default class MillicastSignaling extends EventEmitter {
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async subscribe (sdp) {
-    logger.info('Subscribing, streamName value: ', this.streamName)
-    logger.debug('SDP: ', sdp)
+    logger.info('Starting subscription to streamName: ', this.streamName)
+    logger.debug('Subcription local description: ', sdp)
 
     const data = { sdp, streamId: this.streamName }
 
@@ -135,7 +146,7 @@ export default class MillicastSignaling extends EventEmitter {
       }
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
-      logger.info('Command sent')
+      logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
       return result.sdp
     } catch (e) {
@@ -151,8 +162,8 @@ export default class MillicastSignaling extends EventEmitter {
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async publish (sdp) {
-    logger.info('Publishing, streamName value: ', this.streamName)
-    logger.debug('SDP: ', sdp)
+    logger.info('Starting publishing to streamName: ', this.streamName)
+    logger.debug('Publishing local description: ', sdp)
 
     const data = {
       name: this.streamName,
@@ -166,7 +177,7 @@ export default class MillicastSignaling extends EventEmitter {
       }
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
-      logger.info('Command sent')
+      logger.info('Command sent, publisherId: ', result.publisherId)
       logger.debug('Command result: ', result)
       return result.sdp
     } catch (e) {

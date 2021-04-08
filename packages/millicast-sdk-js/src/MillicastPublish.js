@@ -1,9 +1,9 @@
-import Logger from './Logger'
 import EventEmitter from 'events'
+import MillicastLogger from './MillicastLogger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
 
-const logger = Logger.get('MillicastPublish')
+const logger = MillicastLogger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
@@ -30,7 +30,7 @@ export default class MillicastPublish extends EventEmitter {
    *
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
-   * @param {MillicastPublisherResponse} options.publisherData - Millicast publisher connection path.
+   * @param {MillicastDirectorResponse} options.publisherData - Millicast publisher connection path.
    * @param {String} options.streamName - Millicast existing Stream Name.
    * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
@@ -77,7 +77,6 @@ export default class MillicastPublish extends EventEmitter {
       disableAudio: false
     }
   ) {
-    logger.info('Broadcasting')
     logger.debug('Broadcast option values: ', options)
     if (!options.streamName) {
       logger.error('Error while broadcasting. Stream name required')
@@ -94,10 +93,10 @@ export default class MillicastPublish extends EventEmitter {
 
     this.millicastSignaling = new MillicastSignaling({
       streamName: options.streamName,
-      url: `${options.publisherData.wsUrl}?token=${options.publisherData.jwt}`
+      url: `${options.publisherData.urls[0]}?token=${options.publisherData.jwt}`
     })
-    const config = await this.webRTCPeer.getRTCConfiguration()
-    await this.webRTCPeer.getRTCPeer(config)
+
+    await this.webRTCPeer.getRTCPeer()
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
@@ -120,6 +119,7 @@ export default class MillicastPublish extends EventEmitter {
     }
 
     await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+    logger.info('Broadcasting to streamName: ', options.streamName)
     /**
     * Broadcast started.
     *
@@ -147,7 +147,7 @@ export default class MillicastPublish extends EventEmitter {
 
   isActive () {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
-    logger.info('Broadcast status: ', rtcPeerState)
+    logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
   }
 }
