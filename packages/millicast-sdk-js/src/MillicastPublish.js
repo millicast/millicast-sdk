@@ -41,6 +41,7 @@ export default class MillicastPublish extends EventEmitter {
    * @fires MillicastWebRTC#peerConnecting
    * @fires MillicastWebRTC#peerConnected
    * @fires MillicastWebRTC#peerClosed
+   * @fires MillicastWebRTC#peerDisconnected
    * @fires MillicastWebRTC#peerFailed
    * @example await millicastPublish.broadcast(options)
    * @example
@@ -101,7 +102,7 @@ export default class MillicastPublish extends EventEmitter {
     })
 
     await this.webRTCPeer.getRTCPeer()
-    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnecting, webRTCEvents.peerConnected, webRTCEvents.peerClosed, webRTCEvents.peerFailed])
+    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnecting, webRTCEvents.peerConnected, webRTCEvents.peerClosed, webRTCEvents.peerDisconnected, webRTCEvents.peerFailed])
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,

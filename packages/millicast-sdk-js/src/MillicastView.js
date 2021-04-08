@@ -37,6 +37,7 @@ export default class MillicastView extends EventEmitter {
    * @fires MillicastWebRTC#peerConnecting
    * @fires MillicastWebRTC#peerConnected
    * @fires MillicastWebRTC#peerClosed
+   * @fires MillicastWebRTC#peerDisconnected
    * @fires MillicastWebRTC#peerFailed
    * @example await millicastView.connect(options)
    * @example

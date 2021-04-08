@@ -10,6 +10,7 @@ export const webRTCEvents = {
   peerConnecting: 'peerConnecting',
   peerConnected: 'peerConnected',
   peerClosed: 'peerClosed',
+  peerDisconnected: 'peerDisconnected',
   peerFailed: 'peerFailed'
 }
 
@@ -261,6 +262,7 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
  * @fires MillicastWebRTC#newTrack
  * @fires MillicastWebRTC#peerConnecting
  * @fires MillicastWebRTC#peerConnected
+ * @fires MillicastWebRTC#peerDisconnected
  * @fires MillicastWebRTC#peerFailed
  */
 const addPeerEvents = (instanceClass, peer) => {
@@ -278,27 +280,41 @@ const addPeerEvents = (instanceClass, peer) => {
   peer.onconnectionstatechange = (event) => {
     logger.info('Peer connection state change.')
     logger.debug('Connection state value: ', peer.connectionState)
-    if (peer.connectionState === 'connecting') {
-    /**
-     * Peer connecting state change.
-     *
-     * @event MillicastWebRTC#peerConnecting
-     */
-      instanceClass.emit(webRTCEvents.peerConnecting)
-    } else if (peer.connectionState === 'connected') {
-    /**
-     * Peer connected state change.
-     *
-     * @event MillicastWebRTC#peerConnected
-     */
-      instanceClass.emit(webRTCEvents.peerConnected)
-    } else if (peer.connectionState === 'failed') {
-    /**
-     * Peer failed connection state change.
-     *
-     * @event MillicastWebRTC#peerFailed
-     */
-      instanceClass.emit(webRTCEvents.peerFailed)
+    switch (peer.connectionState) {
+      case 'connecting':
+        /**
+         * Peer connecting state change.
+         *
+         * @event MillicastWebRTC#peerConnecting
+         */
+        instanceClass.emit(webRTCEvents.peerConnecting)
+        break
+      case 'connected':
+        /**
+         * Peer connected state change.
+         *
+         * In this state the Publisher begins to transfer content and the Subscriber begins to receive media content.
+         *
+         * @event MillicastWebRTC#peerConnected
+         */
+        instanceClass.emit(webRTCEvents.peerConnected)
+        break
+      case 'disconnected':
+        /**
+         * Peer disconnected connection state change.
+         *
+         * @event MillicastWebRTC#peerDisconnected
+         */
+        instanceClass.emit(webRTCEvents.peerDisconnected)
+        break
+      case 'failed':
+        /**
+         * Peer failed connection state change.
+         *
+         * @event MillicastWebRTC#peerFailed
+         */
+        instanceClass.emit(webRTCEvents.peerFailed)
+        break
     }
   }
 }
