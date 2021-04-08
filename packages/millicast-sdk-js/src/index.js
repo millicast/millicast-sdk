@@ -4,6 +4,7 @@ import MillicastSignaling from './MillicastSignaling'
 import MillicastDirector from './MillicastDirector'
 import MillicastPublish from './MillicastPublish'
 import MillicastView from './MillicastView'
+import MillicastStreamEvents from './MillicastStreamEvents'
 
 export {
   MillicastLogger,
@@ -11,5 +12,6 @@ export {
   MillicastSignaling,
   MillicastDirector,
   MillicastPublish,
-  MillicastView
+  MillicastView,
+  MillicastStreamEvents
 }
