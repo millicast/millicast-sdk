@@ -34,7 +34,9 @@ export default class MillicastView extends EventEmitter {
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires MillicastWebRTC#newTrack
    * @fires MillicastView#subscribed
-   * @fires MillicastSignaling#event
+   * @fires MillicastSignaling#broadcastEvent
+   * @fires MillicastWebRTC#peerConnectionstatechange
+   * @fires MillicastWebRTC#dataChannelReady
    * @example await millicastView.connect(options)
    * @example
    * import MillicastView from 'millicast-sdk-js'
@@ -82,7 +84,7 @@ export default class MillicastView extends EventEmitter {
     })
 
     await this.webRTCPeer.getRTCPeer()
-    reemit(this.webRTCPeer, this, ['newTrack'])
+    reemit(this.webRTCPeer, this, ['newTrack', 'peerConnectionstatechange', 'dataChannelReady'])
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
@@ -92,7 +94,7 @@ export default class MillicastView extends EventEmitter {
 
     const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
     if (sdpSubscriber) {
-      reemit(this.millicastSignaling, this, ['event'])
+      reemit(this.millicastSignaling, this, ['broadcastEvent'])
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
       logger.info('Connected to streamName: ', options.streamName)
       /**

@@ -245,6 +245,8 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
  * @param {MillicastWebRTC} instanceClass - MillicastWebRTC instance.
  * @param {RTCPeerConnection} peer - Peer instance.
  * @fires MillicastWebRTC#newTrack
+ * @fires MillicastWebRTC#peerConnectionstatechange
+ * @fires MillicastWebRTC#dataChannelReady
  */
 const addPeerEvents = (instanceClass, peer) => {
   peer.ontrack = (event) => {
@@ -257,5 +259,28 @@ const addPeerEvents = (instanceClass, peer) => {
      * @type {RTCTrackEvent}
      */
     instanceClass.emit('newTrack', event)
+  }
+  peer.onconnectionstatechange = (event) => {
+    logger.info('Peer connection state change.')
+    logger.debug('Connection state value: ', peer.connectionState)
+    /**
+     * Peer connection state change.
+     *
+     * @event MillicastWebRTC#peerConnectionstatechange
+     * @type {RTCPeerConnectionState}
+     */
+    instanceClass.emit('peerConnectionstatechange', peer.connectionState)
+  }
+  peer.ondatachannel = (event) => {
+    logger.info('Data channel created')
+    event.channel.onopen = () => {
+      logger.info('Data channel is open and ready to be used.')
+      /**
+      * Data channel is created and ready to be used.
+      *
+      * @event MillicastWebRTC#dataChannelReady
+      */
+      instanceClass.emit('dataChannelReady')
+    }
   }
 }
