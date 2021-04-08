@@ -5,9 +5,6 @@ import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 
 const logger = MillicastLogger.get('MillicastPublish')
-const publishEvents = {
-  broadcasting: 'broadcasting'
-}
 
 /**
  * @class MillicastPublish
@@ -41,7 +38,6 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
-   * @fires MillicastPublish#broadcasting
    * @fires MillicastWebRTC#peerConnectionstatechange
    * @fires MillicastWebRTC#dataChannelReady
    * @example await millicastPublish.broadcast(options)
@@ -127,12 +123,6 @@ export default class MillicastPublish extends EventEmitter {
 
     await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
     logger.info('Broadcasting to streamName: ', options.streamName)
-    /**
-    * Broadcast started.
-    *
-    * @event MillicastPublish#broadcasting
-    */
-    this.emit(publishEvents.broadcasting)
   }
 
   /**
