@@ -36,7 +36,7 @@ export default class MillicastSignaling extends EventEmitter {
    * @fires MillicastSignaling#connectionSuccess
    * @fires MillicastSignaling#connectionError
    * @fires MillicastSignaling#connectionClose
-   * @fires MillicastSignaling#event
+   * @fires MillicastSignaling#broadcastEvent
    */
   async connect (url) {
     logger.info('Connecting to Signaling Server')
@@ -81,16 +81,19 @@ export default class MillicastSignaling extends EventEmitter {
         }
         this.transactionManager.on('event', (evt) => {
           /**
-           * Passthrough of all broadcast events.
+           * Passthrough of available Millicast broadcast events.
+           * Active - Fires when the live stream is, or has started broadcasting.
+           * Inactive - Fires when the stream has stopped broadcasting, but is still available.
+           * Stopped - Fires when the live stream has been disconnected and is no longer available.
            * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
            *
-           * @event MillicastSignaling#event
+           * @event MillicastSignaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
            * @property {("active" | "inactive" | "stopped")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
-          this.emit('event', evt)
+          this.emit('broadcastEvent', evt)
         })
         logger.info('Connected to server: ', this.webSocket.url)
         logger.debug('WebSocket value: ', {

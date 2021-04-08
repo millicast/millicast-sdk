@@ -20,7 +20,7 @@ class MillicastViewTest {
       this.millicastView.on('newTrack', (event) => {
         this.addStreamToVideoTag(event)
       })
-      this.millicastView.on('event', (event) => {
+      this.millicastView.on('broadcastEvent', (event) => {
         console.log('Event from MillicastView: ', event)
       })
 

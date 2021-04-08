@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const subscribe = async () => {
     const millicastView = new MillicastView();
-    millicastView.on("event", (event) => {
+    millicastView.on("broadcastEvent", (event) => {
       if (!autoReconnect) return;
 
       let layers = event.data["layers"] !== null ? event.data["layers"] : {};
