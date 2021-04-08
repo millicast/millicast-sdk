@@ -31,8 +31,10 @@ class MillicastViewTest {
         disableVideo: this.disableVideo,
         disableAudio: this.disableAudio
       }
-      await this.millicastView.connect(options)
-      console.log('Viewer connected!!')
+      this.millicastView.on('peerConnected', () => {
+        console.log('Viewer connected!!')
+      })
+      this.millicastView.connect(options)
     } catch (error) {
       console.log('There was an error while trying to connect with the publisher: ', error)
     }

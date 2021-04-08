@@ -4,9 +4,6 @@ import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { signalingEvents } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 const logger = MillicastLogger.get('MillicastView')
-const viewEvents = {
-  subscribed: 'subscribed'
-}
 
 /**
  * @class MillicastView
@@ -36,10 +33,11 @@ export default class MillicastView extends EventEmitter {
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires MillicastWebRTC#newTrack
-   * @fires MillicastView#subscribed
    * @fires MillicastSignaling#broadcastEvent
-   * @fires MillicastWebRTC#peerConnectionstatechange
-   * @fires MillicastWebRTC#dataChannelReady
+   * @fires MillicastWebRTC#peerConnecting
+   * @fires MillicastWebRTC#peerConnected
+   * @fires MillicastWebRTC#peerClosed
+   * @fires MillicastWebRTC#peerFailed
    * @example await millicastView.connect(options)
    * @example
    * import MillicastView from 'millicast-sdk-js'
@@ -100,12 +98,6 @@ export default class MillicastView extends EventEmitter {
       reemit(this.millicastSignaling, this, [signalingEvents.broadcastEvent])
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
       logger.info('Connected to streamName: ', options.streamName)
-      /**
-       * Subscribed to stream.
-       *
-       * @event MillicastView#subscribed
-       */
-      this.emit(viewEvents.subscribed)
     } else {
       logger.error('Failed to connect to publisher: ', sdpSubscriber)
       throw new Error('Failed to connect to publisher: ', sdpSubscriber)

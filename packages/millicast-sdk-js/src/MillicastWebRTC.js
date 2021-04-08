@@ -7,8 +7,10 @@ const logger = MillicastLogger.get('MillicastWebRTC')
 
 export const webRTCEvents = {
   newTrack: 'newTrack',
-  peerConnectionstatechange: 'peerConnectionstatechange',
-  dataChannelReady: 'dataChannelReady'
+  peerConnecting: 'peerConnecting',
+  peerConnected: 'peerConnected',
+  peerClosed: 'peerClosed',
+  peerFailed: 'peerFailed'
 }
 
 /**
@@ -63,6 +65,12 @@ export default class MillicastWebRTC extends EventEmitter {
       logger.info('Closing RTCPeerConnection')
       this.peer.close()
       this.peer = null
+      /**
+       * Peer closed connection state change.
+       *
+       * @event MillicastWebRTC#peerClosed
+       */
+      this.emit(webRTCEvents.peerClosed)
     } catch (e) {
       logger.error('Error while closing RTCPeerConnection: ', e)
       throw e
@@ -251,8 +259,9 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
  * @param {MillicastWebRTC} instanceClass - MillicastWebRTC instance.
  * @param {RTCPeerConnection} peer - Peer instance.
  * @fires MillicastWebRTC#newTrack
- * @fires MillicastWebRTC#peerConnectionstatechange
- * @fires MillicastWebRTC#dataChannelReady
+ * @fires MillicastWebRTC#peerConnecting
+ * @fires MillicastWebRTC#peerConnected
+ * @fires MillicastWebRTC#peerFailed
  */
 const addPeerEvents = (instanceClass, peer) => {
   peer.ontrack = (event) => {
@@ -269,24 +278,27 @@ const addPeerEvents = (instanceClass, peer) => {
   peer.onconnectionstatechange = (event) => {
     logger.info('Peer connection state change.')
     logger.debug('Connection state value: ', peer.connectionState)
+    if (peer.connectionState === 'connecting') {
     /**
-     * Peer connection state change.
+     * Peer connecting state change.
      *
-     * @event MillicastWebRTC#peerConnectionstatechange
-     * @type {RTCPeerConnectionState}
+     * @event MillicastWebRTC#peerConnecting
      */
-    instanceClass.emit(webRTCEvents.peerConnectionstatechange, peer.connectionState)
-  }
-  peer.ondatachannel = (event) => {
-    logger.info('Data channel created')
-    event.channel.onopen = () => {
-      logger.info('Data channel is open and ready to be used.')
-      /**
-      * Data channel is created and ready to be used.
-      *
-      * @event MillicastWebRTC#dataChannelReady
-      */
-      instanceClass.emit(webRTCEvents.dataChannelReady)
+      instanceClass.emit(webRTCEvents.peerConnecting)
+    } else if (peer.connectionState === 'connected') {
+    /**
+     * Peer connected state change.
+     *
+     * @event MillicastWebRTC#peerConnected
+     */
+      instanceClass.emit(webRTCEvents.peerConnected)
+    } else if (peer.connectionState === 'failed') {
+    /**
+     * Peer failed connection state change.
+     *
+     * @event MillicastWebRTC#peerFailed
+     */
+      instanceClass.emit(webRTCEvents.peerFailed)
     }
   }
 }

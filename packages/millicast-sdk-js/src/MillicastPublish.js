@@ -38,8 +38,10 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
-   * @fires MillicastWebRTC#peerConnectionstatechange
-   * @fires MillicastWebRTC#dataChannelReady
+   * @fires MillicastWebRTC#peerConnecting
+   * @fires MillicastWebRTC#peerConnected
+   * @fires MillicastWebRTC#peerClosed
+   * @fires MillicastWebRTC#peerFailed
    * @example await millicastPublish.broadcast(options)
    * @example
    * import MillicastPublish from 'millicast-sdk-js'
@@ -99,7 +101,7 @@ export default class MillicastPublish extends EventEmitter {
     })
 
     await this.webRTCPeer.getRTCPeer()
-    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnectionstatechange, webRTCEvents.dataChannelReady])
+    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnecting, webRTCEvents.peerConnected, webRTCEvents.peerClosed, webRTCEvents.peerFailed])
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
