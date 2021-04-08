@@ -2,9 +2,12 @@ import EventEmitter from 'events'
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling from './MillicastSignaling'
-import MillicastWebRTC from './MillicastWebRTC.js'
+import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 
 const logger = MillicastLogger.get('MillicastPublish')
+const publishEvents = {
+  broadcasting: 'broadcasting'
+}
 
 /**
  * @class MillicastPublish
@@ -100,7 +103,7 @@ export default class MillicastPublish extends EventEmitter {
     })
 
     await this.webRTCPeer.getRTCPeer()
-    reemit(this.webRTCPeer, this, ['peerConnectionstatechange', 'dataChannelReady'])
+    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnectionstatechange, webRTCEvents.dataChannelReady])
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
@@ -129,7 +132,7 @@ export default class MillicastPublish extends EventEmitter {
     *
     * @event MillicastPublish#broadcasting
     */
-    this.emit('broadcasting')
+    this.emit(publishEvents.broadcasting)
   }
 
   /**

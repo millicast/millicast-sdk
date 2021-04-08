@@ -1,9 +1,12 @@
 import EventEmitter from 'events'
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import MillicastSignaling from './MillicastSignaling'
-import MillicastWebRTC from './MillicastWebRTC.js'
+import MillicastSignaling, { signalingEvents } from './MillicastSignaling'
+import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 const logger = MillicastLogger.get('MillicastView')
+const viewEvents = {
+  subscribed: 'subscribed'
+}
 
 /**
  * @class MillicastView
@@ -84,7 +87,7 @@ export default class MillicastView extends EventEmitter {
     })
 
     await this.webRTCPeer.getRTCPeer()
-    reemit(this.webRTCPeer, this, ['newTrack', 'peerConnectionstatechange', 'dataChannelReady'])
+    reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
@@ -94,7 +97,7 @@ export default class MillicastView extends EventEmitter {
 
     const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
     if (sdpSubscriber) {
-      reemit(this.millicastSignaling, this, ['broadcastEvent'])
+      reemit(this.millicastSignaling, this, [signalingEvents.broadcastEvent])
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
       logger.info('Connected to streamName: ', options.streamName)
       /**
@@ -102,7 +105,7 @@ export default class MillicastView extends EventEmitter {
        *
        * @event MillicastView#subscribed
        */
-      this.emit('subscribed')
+      this.emit(viewEvents.subscribed)
     } else {
       logger.error('Failed to connect to publisher: ', sdpSubscriber)
       throw new Error('Failed to connect to publisher: ', sdpSubscriber)

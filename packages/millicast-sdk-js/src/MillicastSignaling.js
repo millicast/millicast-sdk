@@ -4,6 +4,13 @@ import MillicastLogger from './MillicastLogger'
 
 const logger = MillicastLogger.get('MillicastSignaling')
 
+export const signalingEvents = {
+  connectionSuccess: 'connectionSuccess',
+  connectionError: 'connectionError',
+  connectionClose: 'connectionClose',
+  broadcastEvent: 'broadcastEvent'
+}
+
 /**
  * @class MillicastSignaling
  * @extends EventEmitter
@@ -57,7 +64,7 @@ export default class MillicastSignaling extends EventEmitter {
        * @property {WebSocket} ws - WebSocket object which represents active connection.
        * @property {TransactionManager} tm - [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands.
        */
-      this.emit('connectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
+      this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
       return this.webSocket
     }
 
@@ -76,7 +83,7 @@ export default class MillicastSignaling extends EventEmitter {
            * @type {Object}
            * @property {Number} state - WebSocket ready state. Could be WebSocket.CLOSED | WebSocket.CLOSING | WebSocket.CONNECTING.
            */
-          this.emit('connectionError', error)
+          this.emit(signalingEvents.connectionError, error)
           reject(error)
         }
         this.transactionManager.on('event', (evt) => {
@@ -93,7 +100,7 @@ export default class MillicastSignaling extends EventEmitter {
            * @property {("active" | "inactive" | "stopped")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
-          this.emit('broadcastEvent', evt)
+          this.emit(signalingEvents.broadcastEvent, evt)
         })
         logger.info('Connected to server: ', this.webSocket.url)
         logger.debug('WebSocket value: ', {
@@ -103,7 +110,7 @@ export default class MillicastSignaling extends EventEmitter {
           binaryType: this.webSocket.binaryType,
           extensions: this.webSocket.extensions
         })
-        this.emit('connectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
+        this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
         resolve(this.webSocket)
       }
       this.webSocket.onclose = () => {
@@ -115,7 +122,7 @@ export default class MillicastSignaling extends EventEmitter {
          *
          * @event MillicastSignaling#connectionClose
          */
-        this.emit('connectionClose')
+        this.emit(signalingEvents.connectionClose)
       }
     })
   }

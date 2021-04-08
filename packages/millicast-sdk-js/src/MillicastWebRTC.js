@@ -5,6 +5,12 @@ import MillicastLogger from './MillicastLogger'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
+export const webRTCEvents = {
+  newTrack: 'newTrack',
+  peerConnectionstatechange: 'peerConnectionstatechange',
+  dataChannelReady: 'dataChannelReady'
+}
+
 /**
  * @class MillicastWebRTC
  * @extends EventEmitter
@@ -258,7 +264,7 @@ const addPeerEvents = (instanceClass, peer) => {
      * @event MillicastWebRTC#newTrack
      * @type {RTCTrackEvent}
      */
-    instanceClass.emit('newTrack', event)
+    instanceClass.emit(webRTCEvents.newTrack, event)
   }
   peer.onconnectionstatechange = (event) => {
     logger.info('Peer connection state change.')
@@ -269,7 +275,7 @@ const addPeerEvents = (instanceClass, peer) => {
      * @event MillicastWebRTC#peerConnectionstatechange
      * @type {RTCPeerConnectionState}
      */
-    instanceClass.emit('peerConnectionstatechange', peer.connectionState)
+    instanceClass.emit(webRTCEvents.peerConnectionstatechange, peer.connectionState)
   }
   peer.ondatachannel = (event) => {
     logger.info('Data channel created')
@@ -280,7 +286,7 @@ const addPeerEvents = (instanceClass, peer) => {
       *
       * @event MillicastWebRTC#dataChannelReady
       */
-      instanceClass.emit('dataChannelReady')
+      instanceClass.emit(webRTCEvents.dataChannelReady)
     }
   }
 }
