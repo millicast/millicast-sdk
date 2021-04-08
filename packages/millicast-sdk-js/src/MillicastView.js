@@ -1,8 +1,8 @@
-import Logger from './Logger'
 import EventEmitter from 'events'
+import MillicastLogger from './MillicastLogger'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastWebRTC from './MillicastWebRTC.js'
-const logger = Logger.get('MillicastView')
+const logger = MillicastLogger.get('MillicastView')
 
 /**
  * @class MillicastView
@@ -14,7 +14,6 @@ const logger = Logger.get('MillicastView')
  *
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  */
-
 export default class MillicastView extends EventEmitter {
   constructor () {
     super()
@@ -27,7 +26,7 @@ export default class MillicastView extends EventEmitter {
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} options - General subscriber options.
-   * @param {MillicastSubscriberResponse} options.subscriberData - Millicast subscriber connection path.
+   * @param {MillicastDirectorResponse} options.subscriberData - Millicast subscriber connection path.
    * @param {String} options.streamName - Millicast existing Stream Name where you want to connect.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
@@ -73,18 +72,16 @@ export default class MillicastView extends EventEmitter {
       disableAudio: false
     }
   ) {
-    logger.info(`Connecting to publisher. Stream name: ${options.streamName}`)
-    logger.debug('All viewer connect options values: ', options)
+    logger.debug('Viewer connect options values: ', options)
     this.millicastSignaling = new MillicastSignaling({
       streamName: options.streamName,
-      url: `${options.subscriberData.wsUrl}?token=${options.subscriberData.jwt}`
+      url: `${options.subscriberData.urls[0]}?token=${options.subscriberData.jwt}`
     })
-
-    const rtcConfiguration = await this.webRTCPeer.getRTCConfiguration()
-    const peer = await this.webRTCPeer.getRTCPeer(rtcConfiguration)
+    const peer = await this.webRTCPeer.getRTCPeer()
     peer.ontrack = (event) => {
-      logger.info('New track from peer.')
-      logger.debug('Track event value: ', event)
+      const { kind, id, readyState } = event.track
+      logger.info(`New ${kind} track from peer.`)
+      logger.debug('Track event value: ', { kind, id, readyState })
       /**
        * New track event.
        *
@@ -103,6 +100,7 @@ export default class MillicastView extends EventEmitter {
     const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
     if (sdpSubscriber) {
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
+      logger.info('Connected to streamName: ', options.streamName)
     } else {
       logger.error('Failed to connect to publisher: ', sdpSubscriber)
       throw new Error('Failed to connect to publisher: ', sdpSubscriber)
@@ -128,7 +126,7 @@ export default class MillicastView extends EventEmitter {
 
   isActive () {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
-    logger.info('Connection status: ', rtcPeerState)
+    logger.info('Connection status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
   }
 }

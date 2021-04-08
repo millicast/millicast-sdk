@@ -1,4 +1,4 @@
-import Logger from './Logger'
+import MillicastLogger from './MillicastLogger'
 import MillicastWebRTC from './MillicastWebRTC'
 import MillicastSignaling from './MillicastSignaling'
 import MillicastDirector from './MillicastDirector'
@@ -7,7 +7,7 @@ import MillicastView from './MillicastView'
 import MillicastStreamEvents from './MillicastStreamEvents'
 
 export {
-  Logger,
+  MillicastLogger,
   MillicastWebRTC,
   MillicastSignaling,
   MillicastDirector,
