@@ -8,30 +8,21 @@ const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
 /**
- * @typedef {Object} onUserCountCallbackData
- * @property {String} streamId - Account Id concatenated with Stream name.
- * @property {Number} count - Total views.
- */
-
-/**
- * @typedef {Object} onUserCountCallbackError
- * @property {String} streamId - Account Id concatenated with Stream name.
- * @property {Number} count - Total views.
- * @property {String} error - Error message.
- */
-
-/**
- * Callback invoke when new message is available.
+ * Callback invoke when new user count is received.
  *
  * @callback onUserCountCallback
- * @param {onUserCountCallbackData} data
- * @param {onUserCountCallbackError} error
+ * @param {Object} data
+ * @param {String} data.streamId - Stream identifier with the following format `accountId/streamName`.
+ * @param {Number} data.count    - Current amount of viewers of the stream.
+ * @param {String} [data.error]  - Error message.
  */
 
 /**
  * @class MillicastStreamEvents
+ * @classdesc Lets you to subscribe to stream events like receive the amount of viewers of a stream.
+ *
+ * This events are handled via a WebSocket with Millicast server.
  * @hideconstructor
- * @classdesc Lets you to subscribe and close Millicast stream events.
  */
 export default class MillicastStreamEvents {
   constructor () {
@@ -40,8 +31,9 @@ export default class MillicastStreamEvents {
 
   /**
    * Initializes the connection with Millicast Stream Event.
-   * @returns {Promise<MillicastStreamEvents>} Promise object which represents the MillicastStreamEvents instance once the connection with the Millicast stream events is done.
-   * @example const millicastStreamEvents = await MillicastStreamEvents.init()
+   * @returns {Promise<MillicastStreamEvents>} Promise object which represents the MillicastStreamEvents instance
+   * once the connection with the Millicast stream events is done.
+   * @example const streamEvents = await MillicastStreamEvents.init()
    */
   static async init () {
     const instance = new MillicastStreamEvents()
@@ -60,13 +52,13 @@ export default class MillicastStreamEvents {
    * import MillicastStreamEvents from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const streamCount = await MillicastStreamEvents.init()
+   * const streamEvents = await MillicastStreamEvents.init()
    * const accountId = "Publisher account ID"
    * const streamName = "Stream Name"
    *
    * //Initializes the user count event
-   * this.streamCount.onUserCount(accountId, streamName, (data, error) => {
-   *  if (error) {
+   * streamEvents.onUserCount(accountId, streamName, (data) => {
+   *  if (data.error) {
    *    console.error("Handle error: ", error)
    *  }
    *  else {
@@ -96,8 +88,8 @@ export default class MillicastStreamEvents {
   }
 
   /**
-   * Stops connection with Millicast stream events.
-   * @example streamCount.stop()
+   * Stop listening to stream events connected.
+   * @example streamEvents.stop()
    */
   stop () {
     this.millicastEventSubscriber.close()
@@ -126,7 +118,7 @@ const handleStreamCountResponse = (streamIdConstraint, response, callback) => {
           count: response.arguments?.count
         }
         logger.error('User count error: ', response.error)
-        callback(countData, response.error)
+        callback(countData)
       }
       break
 

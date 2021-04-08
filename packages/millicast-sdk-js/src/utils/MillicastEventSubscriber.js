@@ -4,13 +4,7 @@ import EventEmitter from 'events'
 const logger = Logger.get('MillicastEventSubscriber')
 const eventsLocation = 'wss://streamevents.millicast.com/ws'
 const recordSeparator = '\x1E'
-/**
- * @class MillicastEventSubscriber
- * @extends EventEmitter
- * @classdesc Manages connection via a WebSocket protocol called SingalR Hub Protocol to handle Millicast stream events.
- *
- * For more information about the protocol you can read more here: [SignalR Hub Protocol](https://github.com/dotnet/aspnetcore/blob/master/src/SignalR/docs/specs/HubProtocol.md).
- */
+
 export default class MillicastEventSubscriber extends EventEmitter {
   constructor () {
     super()
@@ -22,7 +16,6 @@ export default class MillicastEventSubscriber extends EventEmitter {
    * Subscribe to Millicast Stream Event
    *
    * @param {Object} topicRequest - Object that represents the event topic you want to subscribe.
-   * @fires MillicastEventSubscriber#message
    */
   subscribe (topicRequest) {
     logger.info('Subscribing to event topic')
@@ -33,12 +26,6 @@ export default class MillicastEventSubscriber extends EventEmitter {
       for (const response of responses) {
         if (response) {
           const responseParsed = this.parseSignalRMessage(response)
-          /**
-           * New WebSocket event message.
-           *
-           * @event MillicastEventSubscriber#message
-           * @type {Object}
-           */
           this.emit('message', responseParsed)
         }
       }

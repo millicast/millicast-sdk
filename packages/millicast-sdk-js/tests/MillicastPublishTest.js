@@ -36,7 +36,7 @@ class MillicastPublishTest {
 
       // Subscribing to User Count Event.
       this.streamCount = await millicast.MillicastStreamEvents.init()
-      this.streamCount.onUserCount(accountId, streamName, (data, error) => {
+      this.streamCount.onUserCount(accountId, streamName, data => {
         document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
       })
     } catch (error) {
