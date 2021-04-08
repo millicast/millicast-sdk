@@ -71,8 +71,14 @@
             <div id="topFade" class="fixed-top vid-fade blk-fade-top-bottom"></div>
             <div id="btmFade" class="fixed-bottom vid-fade blk-fade-bottom-top"></div>
 
-            <div id="airIndicatorView" class="w-100 d-flex justify-content-center">
-              <span id="airIndicator" class="badge ignore-mouse p-2 badge-light"> READY </span>
+            <div id="airIndicatorView" class="w-100 d-flex justify-content-start">
+              <div id="readyBadge" class="badges btn-group" role="group">
+                <span class="btn btn-sm btn-light ignore-mouse"> READY </span>
+              </div>
+              <div id="liveBadge" class="badges btn-group hidden" role="group">
+                <span class="btn btn-sm btn-danger ignore-mouse"> LIVE </span>
+                <span class="btn btn-sm btn-light ignore-mouse"><i class="fas fa-eye"></i> <span id="userCount"> 0 </span></span>
+              </div>
             </div>
 
             <div class="dropdown" style="z-index: 20; right: 20px; top: 20px; position: absolute;">
