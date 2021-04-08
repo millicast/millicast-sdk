@@ -81,7 +81,7 @@ export default class MillicastSignaling extends EventEmitter {
            * @event MillicastSignaling#event
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {String} name - Event name. Could be active, inactive, or stopped.
+           * @property {("active" | "inactive" | "stopped")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit('event', evt)

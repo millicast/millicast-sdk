@@ -97,7 +97,7 @@ export default class MillicastView extends EventEmitter {
       reemit(this.millicastSignaling, this, ['event'])
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
       /**
-       * Subscribed to Broadcast.
+       * Subscribed to stream.
        *
        * @event MillicastView#subscribed
        */
