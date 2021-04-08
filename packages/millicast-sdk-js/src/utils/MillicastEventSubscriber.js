@@ -1,7 +1,7 @@
-import Logger from '../Logger'
+import MillicastLogger from '../MillicastLogger'
 import EventEmitter from 'events'
 
-const logger = Logger.get('MillicastEventSubscriber')
+const logger = MillicastLogger.get('MillicastEventSubscriber')
 const eventsLocation = 'wss://streamevents.millicast.com/ws'
 const recordSeparator = '\x1E'
 

@@ -1,9 +1,9 @@
-import Logger from './Logger'
+import MillicastLogger from './MillicastLogger'
 import MillicastEventSubscriber from './utils/MillicastEventSubscriber'
 
 const USER_COUNT_TARGET = 'SubscribeViewerCount'
 
-const logger = Logger.get('MillicastStreamEvents')
+const logger = MillicastLogger.get('MillicastStreamEvents')
 const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
