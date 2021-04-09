@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   // Add UserCount event listener
   const events = await MillicastStreamEvents.init()
-  events.onUserCount(accountId, streamId, ({count}, _) => {
+  events.onUserCount(accountId, streamId, ({count}) => {
     userCount.innerHTML = count
   })
   
