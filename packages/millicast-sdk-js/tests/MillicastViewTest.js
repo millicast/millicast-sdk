@@ -18,10 +18,11 @@ class MillicastViewTest {
   async subscribe () {
     try {
       this.millicastView.on('newTrack', (event) => {
+        console.log('Event from newTrack: ', event)
         this.addStreamToVideoTag(event)
       })
       this.millicastView.on('broadcastEvent', (event) => {
-        console.log('Event from MillicastView: ', event)
+        console.log('Event from broadcastEvent: ', event)
       })
 
       const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName)
@@ -32,7 +33,7 @@ class MillicastViewTest {
         disableAudio: this.disableAudio
       }
       this.millicastView.on('peerConnected', () => {
-        console.log('Viewer connected!!')
+        console.log('Event from peerConnected')
       })
       this.millicastView.connect(options)
     } catch (error) {
