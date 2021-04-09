@@ -6,5 +6,6 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
 - [MillicastLogger](/MillicastLogger)
 - [MillicastPublish](/MillicastPublish)
 - [MillicastSignaling](/MillicastSignaling)
+- [MillicastStreamEvents](/MillicastStreamEvents)
 - [MillicastView](/MillicastView)
 - [MillicastWebRTC](/MillicastWebRTC)
