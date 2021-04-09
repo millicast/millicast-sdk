@@ -89,9 +89,13 @@ export default class MillicastSignaling extends EventEmitter {
         this.transactionManager.on('event', (evt) => {
           /**
            * Passthrough of available Millicast broadcast events.
+           *
            * Active - Fires when the live stream is, or has started broadcasting.
+           *
            * Inactive - Fires when the stream has stopped broadcasting, but is still available.
+           *
            * Stopped - Fires when the live stream has been disconnected and is no longer available.
+           *
            * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
            *
            * @event MillicastSignaling#broadcastEvent
