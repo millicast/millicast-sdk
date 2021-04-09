@@ -50,6 +50,9 @@ class MillicastWebRTCTest {
   async testSetRTCRemoteSDP () {
     const mediaStream = await this.millicastMedia.getMedia()
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
+    await this.millicastWebRTC.closeRTCPeer()
+    await this.millicastSignaling?.close()
+
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
     const localsdp = await this.millicastWebRTC.getRTCLocalSDP(true, mediaStream)
@@ -92,6 +95,7 @@ class MillicastWebRTCTest {
   }
 
   async testUpdateBitrate () {
+    await this.testSetRTCRemoteSDP()
     const response = await this.millicastWebRTC.updateBitrate(500)
     console.log('updateBitrate response: ', response)
     return response

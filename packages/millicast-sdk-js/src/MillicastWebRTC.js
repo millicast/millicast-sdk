@@ -64,7 +64,7 @@ export default class MillicastWebRTC extends EventEmitter {
   async closeRTCPeer () {
     try {
       logger.info('Closing RTCPeerConnection')
-      this.peer.close()
+      this.peer?.close()
       this.peer = null
       /**
        * Peer closed connection state change.

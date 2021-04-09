@@ -137,9 +137,7 @@ export default class MillicastSignaling extends EventEmitter {
    */
   close () {
     logger.info('Closing connection with Signaling Server.')
-    if (this.webSocket) {
-      this.webSocket.close()
-    }
+    this.webSocket?.close()
   }
 
   /**
