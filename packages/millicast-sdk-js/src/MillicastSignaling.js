@@ -5,9 +5,9 @@ import MillicastLogger from './MillicastLogger'
 const logger = MillicastLogger.get('MillicastSignaling')
 
 export const signalingEvents = {
-  connectionSuccess: 'connectionSuccess',
-  connectionError: 'connectionError',
-  connectionClose: 'connectionClose',
+  connectionSuccess: 'wsConnectionSuccess',
+  connectionError: 'wsConnectionError',
+  connectionClose: 'wsConnectionClose',
   broadcastEvent: 'broadcastEvent'
 }
 
@@ -40,9 +40,9 @@ export default class MillicastSignaling extends EventEmitter {
    * @param {String} url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
    * @example const response = await millicastSignaling.connect(url)
    * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API} of the establshed connection.
-   * @fires MillicastSignaling#connectionSuccess
-   * @fires MillicastSignaling#connectionError
-   * @fires MillicastSignaling#connectionClose
+   * @fires MillicastSignaling#wsConnectionSuccess
+   * @fires MillicastSignaling#wsConnectionError
+   * @fires MillicastSignaling#wsConnectionClose
    * @fires MillicastSignaling#broadcastEvent
    */
   async connect (url) {
@@ -59,7 +59,7 @@ export default class MillicastSignaling extends EventEmitter {
       /**
        * WebSocket connection was successfully established with signaling server.
        *
-       * @event MillicastSignaling#connectionSuccess
+       * @event MillicastSignaling#wsConnectionSuccess
        * @type {Object}
        * @property {WebSocket} ws - WebSocket object which represents active connection.
        * @property {TransactionManager} tm - [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands.
@@ -77,9 +77,9 @@ export default class MillicastSignaling extends EventEmitter {
           const error = { state: this.webSocket.readyState, url: this.webSocket.url }
           logger.error('WebSocket not connected: ', error)
           /**
-           * WebSocket connection failed.
+           * WebSocket connection failed with signaling server.
            *
-           * @event MillicastSignaling#connectionError
+           * @event MillicastSignaling#wsConnectionError
            * @type {Object}
            * @property {Number} state - WebSocket ready state. Could be WebSocket.CLOSED | WebSocket.CLOSING | WebSocket.CONNECTING.
            */
@@ -118,9 +118,9 @@ export default class MillicastSignaling extends EventEmitter {
         this.transactionManager = null
         logger.info('Connection closed with Signaling Server.')
         /**
-         * WebSocket connection was successfully closed.
+         * WebSocket connection with signaling server was successfully closed.
          *
-         * @event MillicastSignaling#connectionClose
+         * @event MillicastSignaling#wsConnectionClose
          */
         this.emit(signalingEvents.connectionClose)
       }
