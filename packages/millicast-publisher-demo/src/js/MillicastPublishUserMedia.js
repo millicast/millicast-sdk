@@ -42,7 +42,7 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
       disableAudio: false,
     }
   ) {
-    return super.broadcast({
+    super.broadcast({
       ...options,
       mediaStream: this.mediaManager.mediaStream,
     });

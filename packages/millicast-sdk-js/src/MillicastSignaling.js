@@ -1,8 +1,15 @@
-import Logger from './Logger'
 import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
+import MillicastLogger from './MillicastLogger'
 
-const logger = Logger.get('MillicastSignaling')
+const logger = MillicastLogger.get('MillicastSignaling')
+
+export const signalingEvents = {
+  connectionSuccess: 'wsConnectionSuccess',
+  connectionError: 'wsConnectionError',
+  connectionClose: 'wsConnectionClose',
+  broadcastEvent: 'broadcastEvent'
+}
 
 /**
  * @class MillicastSignaling
@@ -33,25 +40,31 @@ export default class MillicastSignaling extends EventEmitter {
    * @param {String} url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
    * @example const response = await millicastSignaling.connect(url)
    * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API} of the establshed connection.
-   * @fires MillicastSignaling#connectionSuccess
-   * @fires MillicastSignaling#connectionError
-   * @fires MillicastSignaling#connectionClose
-   * @fires MillicastSignaling#event
+   * @fires MillicastSignaling#wsConnectionSuccess
+   * @fires MillicastSignaling#wsConnectionError
+   * @fires MillicastSignaling#wsConnectionClose
+   * @fires MillicastSignaling#broadcastEvent
    */
   async connect (url) {
-    logger.info('Connecting to Millicast')
+    logger.info('Connecting to Signaling Server')
     if (this.transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
-      logger.info('Connection successful')
-      logger.debug('WebSocket value: ', this.webSocket)
+      logger.info('Connected to server: ', this.webSocket.url)
+      logger.debug('WebSocket value: ', {
+        url: this.webSocket.url,
+        protocol: this.webSocket.protocol,
+        readyState: this.webSocket.readyState,
+        binaryType: this.webSocket.binaryType,
+        extensions: this.webSocket.extensions
+      })
       /**
        * WebSocket connection was successfully established with signaling server.
        *
-       * @event MillicastSignaling#connectionSuccess
+       * @event MillicastSignaling#wsConnectionSuccess
        * @type {Object}
        * @property {WebSocket} ws - WebSocket object which represents active connection.
        * @property {TransactionManager} tm - [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands.
        */
-      this.emit('connectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
+      this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
       return this.webSocket
     }
 
@@ -61,46 +74,59 @@ export default class MillicastSignaling extends EventEmitter {
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
         if (this.webSocket.readyState !== WebSocket.OPEN) {
-          const error = { state: this.webSocket.readyState }
+          const error = { state: this.webSocket.readyState, url: this.webSocket.url }
           logger.error('WebSocket not connected: ', error)
           /**
-           * WebSocket connection failed.
+           * WebSocket connection failed with signaling server.
            *
-           * @event MillicastSignaling#connectionError
+           * @event MillicastSignaling#wsConnectionError
            * @type {Object}
            * @property {Number} state - WebSocket ready state. Could be WebSocket.CLOSED | WebSocket.CLOSING | WebSocket.CONNECTING.
            */
-          this.emit('connectionError', error)
+          this.emit(signalingEvents.connectionError, error)
           reject(error)
         }
         this.transactionManager.on('event', (evt) => {
           /**
-           * Passthrough of all TransactionManager events.
+           * Passthrough of available Millicast broadcast events.
            *
-           * @event MillicastSignaling#event
+           * Active - Fires when the live stream is, or has started broadcasting.
+           *
+           * Inactive - Fires when the stream has stopped broadcasting, but is still available.
+           *
+           * Stopped - Fires when the live stream has been disconnected and is no longer available.
+           *
+           * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
+           *
+           * @event MillicastSignaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {String} name - Event name.
+           * @property {("active" | "inactive" | "stopped")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
-          this.emit('event', evt)
+          this.emit(signalingEvents.broadcastEvent, evt)
         })
-        logger.info('Connection successful')
-        logger.debug('WebSocket value: ', this.webSocket)
-        this.emit('connectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
+        logger.info('Connected to server: ', this.webSocket.url)
+        logger.debug('WebSocket value: ', {
+          url: this.webSocket.url,
+          protocol: this.webSocket.protocol,
+          readyState: this.webSocket.readyState,
+          binaryType: this.webSocket.binaryType,
+          extensions: this.webSocket.extensions
+        })
+        this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
         resolve(this.webSocket)
       }
       this.webSocket.onclose = () => {
         this.webSocket = null
         this.transactionManager = null
-        logger.info('WebSocket closed')
-        logger.debug('WebSocket value: ', this.webSocket)
+        logger.info('Connection closed with Signaling Server.')
         /**
-         * WebSocket connection was successfully closed.
+         * WebSocket connection with signaling server was successfully closed.
          *
-         * @event MillicastSignaling#connectionClose
+         * @event MillicastSignaling#wsConnectionClose
          */
-        this.emit('connectionClose')
+        this.emit(signalingEvents.connectionClose)
       }
     })
   }
@@ -110,7 +136,7 @@ export default class MillicastSignaling extends EventEmitter {
    * @example millicastSignaling.close()
    */
   close () {
-    logger.info('Closing WebSocket')
+    logger.info('Closing connection with Signaling Server.')
     if (this.webSocket) {
       this.webSocket.close()
     }
@@ -123,8 +149,8 @@ export default class MillicastSignaling extends EventEmitter {
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async subscribe (sdp) {
-    logger.info('Subscribing, streamName value: ', this.streamName)
-    logger.debug('SDP: ', sdp)
+    logger.info('Starting subscription to streamName: ', this.streamName)
+    logger.debug('Subcription local description: ', sdp)
 
     const data = { sdp, streamId: this.streamName }
 
@@ -134,7 +160,7 @@ export default class MillicastSignaling extends EventEmitter {
       }
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
-      logger.info('Command sent')
+      logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
       return result.sdp
     } catch (e) {
@@ -150,8 +176,8 @@ export default class MillicastSignaling extends EventEmitter {
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async publish (sdp) {
-    logger.info('Publishing, streamName value: ', this.streamName)
-    logger.debug('SDP: ', sdp)
+    logger.info('Starting publishing to streamName: ', this.streamName)
+    logger.debug('Publishing local description: ', sdp)
 
     const data = {
       name: this.streamName,
@@ -165,7 +191,7 @@ export default class MillicastSignaling extends EventEmitter {
       }
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
-      logger.info('Command sent')
+      logger.info('Command sent, publisherId: ', result.publisherId)
       logger.debug('Command result: ', result)
       return result.sdp
     } catch (e) {

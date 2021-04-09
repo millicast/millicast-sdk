@@ -1,6 +1,6 @@
-import { MillicastView, MillicastDirector, Logger } from "millicast-sdk-js";
+import { MillicastView, MillicastDirector, MillicastLogger } from "millicast-sdk-js";
 
-Logger.setLevel(Logger.OFF);
+window.MillicastLogger = MillicastLogger
 
 //Get our url
 const href = new URL(window.location.href);
@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const subscribe = async () => {
     const millicastView = new MillicastView();
-    millicastView.on("event", (event) => {
+    millicastView.on("broadcastEvent", (event) => {
       if (!autoReconnect) return;
 
       let layers = event.data["layers"] !== null ? event.data["layers"] : {};

@@ -59,13 +59,9 @@ Black faded bars in control display for video.
   height: 200px;
 }
 
-
-#controlDisplay #airIndicator {
-  position: absolute;
+.badges span {
   font-weight: bold;
-  font-size: 15px;
-  left: 20px;
-  top: 20px;
+  font-size: 13px;
 }
 
 #controlDisplay #overlayLogo, #guides .guide-view {
@@ -254,10 +250,6 @@ Black faded bars in control display for video.
 
 /* Settings */
 
-#controlDisplay #airIndicator.badge {
-  font-size: 13px;
-}
-
 #controlDisplay #topFade {
   z-index: 12;
 }
@@ -266,7 +258,10 @@ Black faded bars in control display for video.
   z-index: 13;
 }
 
-#controlDisplay #airIndicator {
+.badges {
+  position: absolute;
+  top: 20px;
+  left: 20px;
   z-index: 16;
 }
 

@@ -18,8 +18,13 @@ class MillicastViewTest {
   async subscribe () {
     try {
       this.millicastView.on('newTrack', (event) => {
+        console.log('Event from newTrack: ', event)
         this.addStreamToVideoTag(event)
       })
+      this.millicastView.on('broadcastEvent', (event) => {
+        console.log('Event from broadcastEvent: ', event)
+      })
+
       const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName)
       const options = {
         subscriberData: getSubscriberResponse,
@@ -27,8 +32,10 @@ class MillicastViewTest {
         disableVideo: this.disableVideo,
         disableAudio: this.disableAudio
       }
-      await this.millicastView.connect(options)
-      console.log('Viewer connected!!')
+      this.millicastView.on('peerConnected', () => {
+        console.log('Event from peerConnected')
+      })
+      this.millicastView.connect(options)
     } catch (error) {
       console.log('There was an error while trying to connect with the publisher: ', error)
     }

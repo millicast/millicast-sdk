@@ -1,35 +1,27 @@
 import axios from 'axios'
-import Logger from './Logger'
+import MillicastLogger from './MillicastLogger'
 
-const logger = Logger.get('MillicastDirector')
+const logger = MillicastLogger.get('MillicastDirector')
 const publisherLocation = 'https://director.millicast.com/api/director/publish'
 const subscriberLocation = 'https://director.millicast.com/api/director/subscribe'
+const streamTypes = {
+  WEBRTC: 'WebRtc',
+  RTMP: 'Rtmp'
+}
 
 /**
- * @typedef {Object} MillicastPublisherResponse
- * @property {Array<String>} urls - WebSocket URLs.
- * @property {String} wsUrl - WebSocket URL.
+ * @typedef {Object} MillicastDirectorResponse
+ * @property {Array<String>} urls - WebSocket available URLs.
  * @property {String} jwt - Access token for signaling initialization.
- * @property {String} streamAccountId - Millicast publisher Account ID.
- * @property {Boolean} subscribeRequiresAuth - True if subscriber requires authentication, otherwise false.
  */
 
 /**
- * @typedef {Object} MillicastSubscriberResponse
- * @property {Array<String>} urls - WebSocket URLs.
- * @property {String} wsUrl - WebSocket URL.
- * @property {String} jwt - Access token for signaling initialization.
- * @property {String} streamAccountId - Millicast publisher Account ID.
- */
-
-/**
- * @class MillicastDirector
- * @hideconstructor
- * @classdesc Simplify API calls to find the best server and region to publish and subscribe to.
+ * Simplify API calls to find the best server and region to publish and subscribe to.
  * For security reasosn all calls will return a [JWT](https://jwt.io) token forn authentication including the required
  * socket path to connect with.
  *
  * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://dash.millicast.com/docs.html?pg=managing-your-tokens).
+ * @namespace
  */
 
 export default class MillicastDirector {
@@ -37,7 +29,8 @@ export default class MillicastDirector {
    * Get publisher connection data.
    * @param {String} token - Millicast Publishing Token.
    * @param {String} streamName - Millicast Stream Name.
-   * @returns {Promise<MillicastPublisherResponse>} Promise object which represents the result of getting the publishing connection path.
+   * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
+   * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
    * @example const response = await MillicastDirector.getPublisher(token, streamName)
    * @example
    * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js'
@@ -64,16 +57,16 @@ export default class MillicastDirector {
    * await millicastPublish.broadcast(broadcastOptions)
    */
 
-  static async getPublisher (token, streamName) {
-    logger.info('Getting publisher connection data for stream name: ', streamName)
-    const payload = { streamName }
+  static async getPublisher (token, streamName, streamType = streamTypes.WEBRTC) {
+    logger.info('Getting publisher connection path for stream name: ', streamName)
+    const payload = { streamName, streamType }
     const headers = { Authorization: `Bearer ${token}` }
     try {
       const { data } = await axios.post(publisherLocation, payload, { headers })
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting publisher connection data: ', e.response.data)
+      logger.error('Error while getting publisher connection path: ', e.response.data)
       throw e
     }
   }
@@ -82,8 +75,9 @@ export default class MillicastDirector {
    * Get subscriber connection data.
    * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} streamName - Millicast publisher Stream Name.
-   * @param {Boolean} unauthorizedSubscribe - True if it's a subscription without credentials. Otherwise false.
-   * @returns {Promise<MillicastSubscriberResponse>} Promise object which represents the result of getting the subscribe connection data.
+   * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
+   * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
+   * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
    * @example const response = await MillicastDirector.getSubscriber(streamAccountId, streamName)
    * @example
    * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
@@ -100,8 +94,11 @@ export default class MillicastDirector {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
-   * //Get Millicast Subscriber connection path
+   * //Get Millicast Subscriber connection path for an unsecure stream
    * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName)
+   *
+   * //... or for an secure stream
+   * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName , '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744')
    *
    * //Options
    * const options = {
@@ -113,15 +110,19 @@ export default class MillicastDirector {
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (streamAccountId, streamName, unauthorizedSubscribe = true) {
+  static async getSubscriber (streamAccountId, streamName, subscriberToken = null, streamType = streamTypes.WEBRTC) {
     logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
-    const payload = { streamAccountId, streamName, unauthorizedSubscribe }
+    const payload = { streamAccountId, streamName, streamType }
+    let headers = {}
+    if (subscriberToken) {
+      headers = { Authorization: `Bearer ${subscriberToken}` }
+    }
     try {
-      const { data } = await axios.post(subscriberLocation, payload)
+      const { data } = await axios.post(subscriberLocation, payload, { headers })
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting subscriber connection data: ', e.response.data)
+      logger.error('Error while getting subscriber connection path: ', e.response.data)
       throw e
     }
   }
