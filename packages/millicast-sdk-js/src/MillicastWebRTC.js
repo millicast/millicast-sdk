@@ -1,17 +1,29 @@
 import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
+import EventEmitter from 'events'
 import MillicastLogger from './MillicastLogger'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
+export const webRTCEvents = {
+  newTrack: 'newTrack',
+  peerConnecting: 'peerConnecting',
+  peerConnected: 'peerConnected',
+  peerClosed: 'peerClosed',
+  peerDisconnected: 'peerDisconnected',
+  peerFailed: 'peerFailed'
+}
+
 /**
  * @class MillicastWebRTC
+ * @extends EventEmitter
  * @classdesc Manages WebRTC connection and SDP information between peers.
  * @example const millicastWebRTC = new MillicastWebRTC()
  * @constructor
  */
-export default class MillicastWebRTC {
+export default class MillicastWebRTC extends EventEmitter {
   constructor () {
+    super()
     this.sessionDescription = null
     this.peer = null
     this.RTCOfferOptions = {
@@ -34,7 +46,7 @@ export default class MillicastWebRTC {
           logger.info('RTC configuration not provided by user.')
           config = await this.getRTCConfiguration()
         }
-        this.peer = new RTCPeerConnection(config)
+        this.peer = instanceRTCPeerConnection(this, config)
       } catch (e) {
         logger.error('Error while creating RTCPeerConnection: ', e)
         throw e
@@ -54,6 +66,12 @@ export default class MillicastWebRTC {
       logger.info('Closing RTCPeerConnection')
       this.peer.close()
       this.peer = null
+      /**
+       * Peer closed connection state change.
+       *
+       * @event MillicastWebRTC#peerClosed
+       */
+      this.emit(webRTCEvents.peerClosed)
     } catch (e) {
       logger.error('Error while closing RTCPeerConnection: ', e)
       throw e
@@ -228,5 +246,75 @@ export default class MillicastWebRTC {
     const { connectionState } = this.peer
     logger.info('RTC peer status getted, value: ', connectionState)
     return connectionState
+  }
+}
+
+const instanceRTCPeerConnection = (instanceClass, config) => {
+  const instance = new RTCPeerConnection(config)
+  addPeerEvents(instanceClass, instance)
+  return instance
+}
+
+/**
+ * Emits peer events.
+ * @param {MillicastWebRTC} instanceClass - MillicastWebRTC instance.
+ * @param {RTCPeerConnection} peer - Peer instance.
+ * @fires MillicastWebRTC#newTrack
+ * @fires MillicastWebRTC#peerConnecting
+ * @fires MillicastWebRTC#peerConnected
+ * @fires MillicastWebRTC#peerDisconnected
+ * @fires MillicastWebRTC#peerFailed
+ */
+const addPeerEvents = (instanceClass, peer) => {
+  peer.ontrack = (event) => {
+    logger.info('New track from peer.')
+    logger.debug('Track event value: ', event)
+    /**
+     * New track event.
+     *
+     * @event MillicastWebRTC#newTrack
+     * @type {RTCTrackEvent}
+     */
+    instanceClass.emit(webRTCEvents.newTrack, event)
+  }
+  peer.onconnectionstatechange = (event) => {
+    logger.info('Peer connection state change.')
+    logger.debug('Connection state value: ', peer.connectionState)
+    switch (peer.connectionState) {
+      case 'connecting':
+        /**
+         * Peer connecting state change.
+         *
+         * @event MillicastWebRTC#peerConnecting
+         */
+        instanceClass.emit(webRTCEvents.peerConnecting)
+        break
+      case 'connected':
+        /**
+         * Peer connected state change.
+         *
+         * In this state the Publisher begins to transfer content and the Subscriber begins to receive media content.
+         *
+         * @event MillicastWebRTC#peerConnected
+         */
+        instanceClass.emit(webRTCEvents.peerConnected)
+        break
+      case 'disconnected':
+        /**
+         * Peer disconnected connection state change.
+         *
+         * @event MillicastWebRTC#peerDisconnected
+         */
+        instanceClass.emit(webRTCEvents.peerDisconnected)
+        break
+      case 'failed':
+        /**
+         * Peer failed connection state change.
+         *
+         * @event MillicastWebRTC#peerFailed
+         */
+        instanceClass.emit(webRTCEvents.peerFailed)
+        break
+    }
   }
 }

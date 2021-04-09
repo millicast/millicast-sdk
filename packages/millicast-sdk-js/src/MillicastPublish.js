@@ -1,11 +1,14 @@
+import EventEmitter from 'events'
+import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling from './MillicastSignaling'
-import MillicastWebRTC from './MillicastWebRTC.js'
+import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 
 const logger = MillicastLogger.get('MillicastPublish')
 
 /**
  * @class MillicastPublish
+ * @extends EventEmitter
  * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
  * and establishes a WebRTC connection to broadcast a MediaStream.
  *
@@ -16,8 +19,9 @@ const logger = MillicastLogger.get('MillicastPublish')
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  */
 
-export default class MillicastPublish {
+export default class MillicastPublish extends EventEmitter {
   constructor () {
+    super()
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
   }
@@ -34,6 +38,11 @@ export default class MillicastPublish {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
+   * @fires MillicastWebRTC#peerConnecting
+   * @fires MillicastWebRTC#peerConnected
+   * @fires MillicastWebRTC#peerClosed
+   * @fires MillicastWebRTC#peerDisconnected
+   * @fires MillicastWebRTC#peerFailed
    * @example await millicastPublish.broadcast(options)
    * @example
    * import MillicastPublish from 'millicast-sdk-js'
@@ -93,6 +102,7 @@ export default class MillicastPublish {
     })
 
     await this.webRTCPeer.getRTCPeer()
+    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnecting, webRTCEvents.peerConnected, webRTCEvents.peerClosed, webRTCEvents.peerDisconnected, webRTCEvents.peerFailed])
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,

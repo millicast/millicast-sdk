@@ -28,11 +28,12 @@ class MillicastPublishTest {
         disableVideo: false,
         disableAudio: false
       }
-      const response = await this.millicastPublish.broadcast(broadcastOptions)
-      console.log('BROADCASTING!! Start response: ', response)
-      const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`
-      console.log('Broadcast viewer link: ', viewLink)
-      document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
+      this.millicastPublish.on('peerConnected', () => {
+        const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`
+        console.log('Broadcast viewer link: ', viewLink)
+        document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
+      })
+      this.millicastPublish.broadcast(broadcastOptions)
 
       // Subscribing to User Count Event.
       this.streamCount = await millicast.MillicastStreamEvents.init()
