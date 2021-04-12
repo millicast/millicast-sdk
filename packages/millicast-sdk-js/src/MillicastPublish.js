@@ -150,4 +150,8 @@ export default class MillicastPublish extends EventEmitter {
     logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
   }
+
+  changeTrack (newTrack) {
+    this.webRTCPeer.changeTrack(newTrack)
+  }
 }

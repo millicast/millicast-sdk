@@ -8,9 +8,9 @@ class MillicastPublishTest {
 
   async init () {
     this.millicastMedia = window.millicastMedia
-    const mediaStream = await this.millicastMedia.getMedia()
-    console.log('GetMedia response:', mediaStream)
-    document.getElementById('millicast-media-video-test').srcObject = mediaStream
+    this.mediaStream = await this.millicastMedia.getMedia()
+    console.log('GetMedia response:', this.mediaStream)
+    document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
 
   async testStart (options = undefined) {
@@ -30,6 +30,7 @@ class MillicastPublishTest {
       }
       this.millicastPublish.on('peerConnected', () => {
         const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`
+        document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=640 style="border:none;"></iframe>`
         console.log('Broadcast viewer link: ', viewLink)
         document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
       })
@@ -51,6 +52,7 @@ class MillicastPublishTest {
     console.log('Broadcast stopped')
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
     document.getElementById('broadcast-viewers').innerHTML = ''
+    document.getElementById('viewer').innerHTML = '<div style="height: 480px; width: 640px;"></div>'
   }
 
   async testUpdateBitrate (selectObject) {
@@ -69,6 +71,24 @@ class MillicastPublishTest {
   testMuteVideo (checkboxObject) {
     const muted = this.millicastMedia.muteVideo(checkboxObject.checked)
     console.log('MuteVideo response:', muted)
+  }
+
+  async testChangeVideo () {
+    const currentVideoDevice = (this.mediaStream.getVideoTracks()[0]).getSettings().deviceId
+
+    const deviceList = await this.millicastMedia.getMediaDevices()
+    console.log(deviceList.videoinput)
+    const newDevice = deviceList.videoinput.find(vi => vi.deviceId !== currentVideoDevice)
+    console.log(newDevice)
+
+    const newStream = await this.millicastMedia.changeVideo(newDevice.deviceId)
+    const video = newStream.getVideoTracks()[0]
+
+    console.log(video)
+
+    this.millicastPublish.changeTrack(video)
+    this.mediaStream = newStream
+    document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
 }
 

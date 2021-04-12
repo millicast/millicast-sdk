@@ -247,6 +247,12 @@ export default class MillicastWebRTC extends EventEmitter {
     logger.info('RTC peer status getted, value: ', connectionState)
     return connectionState
   }
+
+  changeTrack (mediaStreamTrack) {
+    const currentSender = this.peer.getSenders().find(s => s.track.kind === mediaStreamTrack.kind)
+
+    currentSender.replaceTrack(mediaStreamTrack)
+  }
 }
 
 const instanceRTCPeerConnection = (instanceClass, config) => {
