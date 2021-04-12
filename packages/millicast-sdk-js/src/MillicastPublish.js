@@ -96,10 +96,7 @@ export default class MillicastPublish extends EventEmitter {
       throw new Error('Broadcast currently working')
     }
 
-    this.millicastSignaling = new MillicastSignaling({
-      streamName: options.streamName,
-      url: `${options.publisherData.urls[0]}?token=${options.publisherData.jwt}`
-    })
+    this.millicastSignaling = new MillicastSignaling(options.streamName, `${options.publisherData.urls[0]}?token=${options.publisherData.jwt}`)
 
     await this.webRTCPeer.getRTCPeer()
     reemit(this.webRTCPeer, this, [webRTCEvents.peerConnecting, webRTCEvents.peerConnected, webRTCEvents.peerClosed, webRTCEvents.peerDisconnected, webRTCEvents.peerFailed])
