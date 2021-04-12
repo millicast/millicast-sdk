@@ -14,6 +14,9 @@ export const webRTCEvents = {
   peerFailed: 'peerFailed'
 }
 
+const isMediaStreamValid = mediaStream =>
+  mediaStream?.getAudioTracks().length === 1 || mediaStream?.getVideoTracks().length === 1
+
 /**
  * @class MillicastWebRTC
  * @extends EventEmitter
@@ -147,19 +150,23 @@ export default class MillicastWebRTC extends EventEmitter {
   /**
    * Set SDP information to local peer.
    * @param {Boolean} stereo - True to modify SDP for support stereo. Otherwise False.
-   * @param {MediaStream} mediaStream - MediaStream to offer in a stream.
+   * @param {MediaStream} mediaStream - MediaStream to offer in a stream. This object must have
+   * 1 audio track and 1 video track, or at least one of them.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (stereo, mediaStream) {
     logger.info('Getting RTC Local SDP')
     logger.debug('Stereo value: ', stereo)
     logger.debug('RTC offer options: ', this.RTCOfferOptions)
-    if (mediaStream) {
-      logger.info('Adding mediaStream tracks to RTCPeerConnection')
-      for (const track of mediaStream.getTracks()) {
-        this.peer.addTrack(track, mediaStream)
-        logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
-      }
+    if (!isMediaStreamValid(mediaStream)) {
+      logger.error('MediaStream object must have 1 audio track and 1 video track, or at least one of them.')
+      throw new Error('MediaStream object must have 1 audio track and 1 video track, or at least one of them.')
+    }
+
+    logger.info('Adding mediaStream tracks to RTCPeerConnection')
+    for (const track of mediaStream.getTracks()) {
+      this.peer.addTrack(track, mediaStream)
+      logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
     }
 
     logger.info('Creating peer offer')
