@@ -30,6 +30,7 @@ class MillicastPublishTest {
       }
       this.millicastPublish.on('peerConnected', () => {
         const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${broadcastOptions.streamName}`
+        document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=640 style="border:none;"></iframe>`
         console.log('Broadcast viewer link: ', viewLink)
         document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
       })
@@ -51,6 +52,7 @@ class MillicastPublishTest {
     console.log('Broadcast stopped')
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
     document.getElementById('broadcast-viewers').innerHTML = ''
+    document.getElementById('viewer').innerHTML = '<div style="height: 480px; width: 640px;"></div>'
   }
 
   async testUpdateBitrate (selectObject) {
