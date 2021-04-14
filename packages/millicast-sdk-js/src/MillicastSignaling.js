@@ -15,17 +15,22 @@ export const signalingEvents = {
  * @class MillicastSignaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
- * @example const millicastSignaling = new MillicastSignaling('hk31ch', 'ws://some-location')
+ * @example const millicastSignaling = new MillicastSignaling(options)
  * @constructor
- * @param {String} streamName - Millicast stream name to get subscribed.
- * @param {String} signalingUrl - WebSocket URL to signal Millicast server and establish a WebRTC connection.
+ * @param {Object} options - General signaling options.
+ * @param {String} options.streamName - Millicast stream name to get subscribed.
+ * @param {String} options.url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
  */
 
 export default class MillicastSignaling extends EventEmitter {
-  constructor (streamName, signalingUrl = 'ws://localhost:8080/') {
+  constructor (options = {
+    streamName: null,
+    url: 'ws://localhost:8080/'
+  }
+  ) {
     super()
-    this.streamName = streamName
-    this.wsUrl = signalingUrl
+    this.streamName = options.streamName
+    this.wsUrl = options.url
     this.webSocket = null
     this.transactionManager = null
   }

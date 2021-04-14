@@ -80,7 +80,10 @@ export default class MillicastView extends EventEmitter {
     }
   ) {
     logger.debug('Viewer connect options values: ', options)
-    this.millicastSignaling = new MillicastSignaling(options.streamName, `${options.subscriberData.urls[0]}?token=${options.subscriberData.jwt}`)
+    this.millicastSignaling = new MillicastSignaling({
+      streamName: options.streamName,
+      url: `${options.subscriberData.urls[0]}?token=${options.subscriberData.jwt}`
+    })
 
     await this.webRTCPeer.getRTCPeer()
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))

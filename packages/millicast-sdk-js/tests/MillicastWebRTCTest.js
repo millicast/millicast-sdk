@@ -8,7 +8,7 @@ class MillicastWebRTCTest {
     this.streamName = 'kmc1vt0c'
     this.streamAccountId = 'tnJhvK'
     this.millicastWebRTC = new millicast.MillicastWebRTC()
-    this.millicastSignaling = new millicast.MillicastSignaling()
+    this.millicastSignaling = new millicast.MillicastSignaling({ streamName: this.streamName })
     this.millicastMedia = window.millicastMedia
   }
 
