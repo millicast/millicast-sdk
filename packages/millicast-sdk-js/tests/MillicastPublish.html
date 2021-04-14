@@ -6,7 +6,20 @@
   <h1>MillicastPublish</h1>
   <br />
   <h3 id="broadcast-status-label">READY!</h3> <h3 id="broadcast-viewers"></h3>
-  <video muted autoplay controls id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
+  <table>
+    <tr>
+      <th>Publisher</th>
+      <th>Viewer</th>
+    </tr>
+    <tr>
+      <td>
+        <video muted autoplay controls width="640" height="480" id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
+      </td>
+      <td id="viewer">
+        <div style="height: 480px; width: 640px;"></div>
+      </td>
+    </tr>
+  </table>
   <br />
   <fieldset>
     Bitrate: <select id='bitrate-select' onchange="millicastPublishTest.testUpdateBitrate(this)">
