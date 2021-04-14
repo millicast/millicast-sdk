@@ -1,6 +1,6 @@
-const path = require('path')
-const puppeteer = require('puppeteer')
-const { loadFeature, defineFeature } = require('jest-cucumber')
+import path from 'path'
+import puppeteer from 'puppeteer'
+import { loadFeature, defineFeature } from 'jest-cucumber'
 const feature = loadFeature('../MillicastPuppeteer.feature', { loadRelativePath: true, errors: true })
 
 // Variables used for testing

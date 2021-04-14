@@ -4,6 +4,7 @@ import { babel } from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
+import rollupJson from 'rollup-plugin-json'
 
 export default [
   // browser-friendly UMD build
@@ -40,7 +41,8 @@ export default [
       { file: pkg.module, format: 'es' }
     ],
     plugins: [
-      nodeResolve({ browser: true, preferBuiltins: false }),
+      nodeResolve({ browser: false, preferBuiltins: true }),
+      rollupJson(),
       commonjs({
         include: [/node_modules/, /src/],
         transformMixedEsModules: true
