@@ -5,10 +5,6 @@ const feature = loadFeature('../MillicastDirector.feature', { loadRelativePath: 
 
 jest.mock('axios')
 
-afterEach(async () => {
-  axios.post.mockReset()
-})
-
 defineFeature(feature, test => {
   test('Publish with existing stream and valid token', ({ given, when, then }) => {
     let token
