@@ -33,7 +33,8 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Object} options - General broadcast options.
    * @param {MillicastDirectorResponse} options.publisherData - Millicast publisher connection path.
    * @param {String} options.streamName - Millicast existing Stream Name.
-   * @param {MediaStream} options.mediaStream - [MediaStream]{@link https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API} object.
+   * @param {MediaStream} options.mediaStream - MediaStream to offer in a stream. This object must have
+   * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
@@ -108,7 +109,7 @@ export default class MillicastPublish extends EventEmitter {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
     }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP(null, options.mediaStream)
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream })
     let remoteSdp = await this.millicastSignaling.publish(localSdp)
     if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
       logger.debug('SDP before trimming: ', remoteSdp)

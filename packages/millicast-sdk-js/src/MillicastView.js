@@ -92,7 +92,7 @@ export default class MillicastView extends EventEmitter {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
     }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP(true, null)
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ stereo: true })
 
     const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
     if (sdpSubscriber) {

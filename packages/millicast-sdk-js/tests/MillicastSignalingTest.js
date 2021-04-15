@@ -39,7 +39,7 @@ class MillicastSignalingTest {
     const director = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName, true)
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, options.mediaStream)
+    const localSdp = await this.millicastWebRTC.getRTCLocalSDP({ mediaStream: options.mediaStream })
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
     this.millicastSignaling.streamName = this.streamAccountId
     const response = await this.millicastSignaling.subscribe(localSdp)
@@ -50,7 +50,7 @@ class MillicastSignalingTest {
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, null)
+    const localSdp = await this.millicastWebRTC.getRTCLocalSDP()
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
     const response = await this.millicastSignaling.publish(localSdp)
     console.log('publish sdp: ', response)
