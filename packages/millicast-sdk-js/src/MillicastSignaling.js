@@ -29,23 +29,22 @@ export default class MillicastSignaling extends EventEmitter {
   }
   ) {
     super()
-    this.webSocket = null
-    this.transactionManager = null
     this.streamName = options.streamName
     this.wsUrl = options.url
+    this.webSocket = null
+    this.transactionManager = null
   }
 
   /**
    * Starts a WebSocket connection with signaling server.
-   * @param {String} url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
-   * @example const response = await millicastSignaling.connect(url)
+   * @example const response = await millicastSignaling.connect()
    * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API} of the establshed connection.
    * @fires MillicastSignaling#wsConnectionSuccess
    * @fires MillicastSignaling#wsConnectionError
    * @fires MillicastSignaling#wsConnectionClose
    * @fires MillicastSignaling#broadcastEvent
    */
-  async connect (url) {
+  async connect () {
     logger.info('Connecting to Signaling Server')
     if (this.transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
       logger.info('Connected to server: ', this.webSocket.url)
@@ -69,7 +68,7 @@ export default class MillicastSignaling extends EventEmitter {
     }
 
     return new Promise((resolve, reject) => {
-      this.webSocket = new WebSocket(url)
+      this.webSocket = new WebSocket(this.wsUrl)
       this.transactionManager = new TransactionManager(this.webSocket)
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
@@ -154,7 +153,7 @@ export default class MillicastSignaling extends EventEmitter {
 
     try {
       if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
-        await this.connect(this.wsUrl)
+        await this.connect()
       }
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
@@ -185,7 +184,7 @@ export default class MillicastSignaling extends EventEmitter {
 
     try {
       if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
-        await this.connect(this.wsUrl)
+        await this.connect()
       }
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)

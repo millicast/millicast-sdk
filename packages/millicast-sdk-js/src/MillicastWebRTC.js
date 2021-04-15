@@ -311,8 +311,7 @@ const addPeerEvents = (instanceClass, peer) => {
     instanceClass.emit(webRTCEvents.newTrack, event)
   }
   peer.onconnectionstatechange = (event) => {
-    logger.info('Peer connection state change.')
-    logger.debug('Connection state value: ', peer.connectionState)
+    logger.info('Peer connection state change: ', peer.connectionState)
     switch (peer.connectionState) {
       case 'connecting':
         /**
