@@ -44,6 +44,11 @@ export default [
       commonjs({
         include: [/node_modules/, /src/],
         transformMixedEsModules: true
+      }),
+      babel({
+        babelHelpers: 'bundled',
+        presets: [['@babel/preset-env', { targets: { node: 6 } }]],
+        exclude: ['/node_modules/**']
       })
     ]
   }
