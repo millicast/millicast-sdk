@@ -25,7 +25,7 @@ class MillicastViewTest {
         console.log('Event from broadcastEvent: ', event)
       })
 
-      const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName)
+      const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
       const options = {
         subscriberData: getSubscriberResponse,
         streamName: this.streamName,
