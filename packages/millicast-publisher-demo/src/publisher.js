@@ -62,6 +62,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //Bandwidth Video element
   let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item');
 
+  // Publish & share sections
+  let publishSection    = document.getElementById('publishSection'),
+      shareSection      = document.getElementById('shareSection');
   //demo timer
   let tm;
   let tmInt          = 300000;//300000 - 5min
@@ -214,10 +217,6 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
     //
     camsList.addEventListener('click', async (e) => {
-      if (isBroadcasting) {
-        alert('You must stop broadcasting first in order to update your media.');
-        return;
-      }
       try{
         let target = e.target;
         videoWin.srcObject = await millicastPublishUserMedia.updateMediaStream('video',target.id)
@@ -238,13 +237,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     //
 
     micsList.addEventListener('click', async (e) => {
-      if (isBroadcasting) {
-        alert('You must stop broadcasting first in order to update your media.');
-        return;
-      }
       try{
         let target = e.target;
-        console.log(target.id);
         videoWin.srcObject = await millicastPublishUserMedia.updateMediaStream('audio', target.id)
         displayActiveDevice('mic');
       }
@@ -354,7 +348,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   }
 
   function showViewerUrl() {
-    ctrl.classList.add('d-none');
+    publishSection.classList.add('d-none');
     let href = (location.href).split('?')[0];
     if (href.indexOf('htm') > -1) {
       href = href.substring(0, href.lastIndexOf('/') + 1);
@@ -368,7 +362,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
     viewUrlEl.removeChild(viewUrlEl.firstChild);
     viewUrlEl.innerHTML = viewerUrl;
-    view.classList.remove('d-none');
+    shareSection.classList.remove('d-none');
   }
 
   function endDemo() {

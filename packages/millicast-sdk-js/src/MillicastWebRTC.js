@@ -248,10 +248,22 @@ export default class MillicastWebRTC extends EventEmitter {
     return connectionState
   }
 
-  changeTrack (mediaStreamTrack) {
+  /**
+   * Replace current audio or video track that is being broadcasted.
+   * @param {MediaStreamTrack} mediaStreamTrack - New audio or video track to replace the current one.
+   */
+  replaceTrack (mediaStreamTrack) {
+    if (!this.peer) {
+      logger.error('Could not change track if there is not an active connection.')
+    }
+
     const currentSender = this.peer.getSenders().find(s => s.track.kind === mediaStreamTrack.kind)
 
-    currentSender.replaceTrack(mediaStreamTrack)
+    if (currentSender) {
+      currentSender.replaceTrack(mediaStreamTrack)
+    } else {
+      logger.error(`There is no ${mediaStreamTrack.kind} track in active broadcast.`)
+    }
   }
 }
 
