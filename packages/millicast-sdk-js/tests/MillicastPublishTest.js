@@ -86,7 +86,7 @@ class MillicastPublishTest {
 
     console.log(video)
 
-    this.millicastPublish.changeTrack(video)
+    this.millicastPublish.webRTCPeer.replaceTrack(video)
     this.mediaStream = newStream
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
