@@ -67,6 +67,9 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
           .changeAudio(id)
           .then((stream) => {
             this.mediaManager.mediaStream = stream;
+            if (this.isActive()) {
+              this.webRTCPeer.replaceTrack(stream.getAudioTracks()[0])
+            }
             resolve(stream);
           })
           .catch((error) => {
@@ -80,6 +83,9 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
           .changeVideo(id)
           .then((stream) => {
             this.mediaManager.mediaStream = stream;
+            if (this.isActive()) {
+              this.webRTCPeer.replaceTrack(stream.getVideoTracks()[0])
+            }
             resolve(stream);
           })
           .catch((error) => {

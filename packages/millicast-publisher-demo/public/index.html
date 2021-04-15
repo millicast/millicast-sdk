@@ -212,8 +212,14 @@
                 </div>
             </div>
             <!-- PUBLISH BUTTON -->
-            <div class="col-4 col-xl-4 px-1 px-sm-3">
+            <div id="publishSection" class="col-4 col-xl-4 px-1 px-sm-3">
                 <button id="publishBtn" type="button" class="btn btn-success btn-lg btn-block">Start</button>
+            </div>
+            <div id="shareSection" class="col-4 col-xl-4 px-1 px-sm-3 d-none">
+                <div class="btn-group btn-block" role="group" aria-label="Viewer Path">
+                    <button id="viewerURL" type="button" class="btn btn-block px-3">https://</button>
+                    <button id="copyBtn" type="button" class="btn btn-secondary px-3">copy</button><!-- <i class="fas fa-copy ignore-mouse"></i> -->
+                </div>
             </div>
             <!-- CAMERA CONTROL -->
             <div class="col-4 col-xl-3">
@@ -242,15 +248,6 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-        <!-- VIEWER URL -->
-        <div id="shareView" class="row w-100 no-gutters d-none">
-            <div class="col-12 col-md-6 offset-md-3">
-                <div class="btn-group btn-block" role="group" aria-label="Viewer Path">
-                    <button id="viewerURL" type="button" class="btn btn-block px-3">https://</button>
-                    <button id="copyBtn" type="button" class="btn btn-secondary px-3">copy</button><!-- <i class="fas fa-copy ignore-mouse"></i> -->
-                </div>
             </div>
         </div>
     </section>

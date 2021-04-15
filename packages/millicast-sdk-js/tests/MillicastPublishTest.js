@@ -8,9 +8,9 @@ class MillicastPublishTest {
 
   async init () {
     this.millicastMedia = window.millicastMedia
-    const mediaStream = await this.millicastMedia.getMedia()
-    console.log('GetMedia response:', mediaStream)
-    document.getElementById('millicast-media-video-test').srcObject = mediaStream
+    this.mediaStream = await this.millicastMedia.getMedia()
+    console.log('GetMedia response:', this.mediaStream)
+    document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
 
   async testStart (options = undefined) {
@@ -71,6 +71,24 @@ class MillicastPublishTest {
   testMuteVideo (checkboxObject) {
     const muted = this.millicastMedia.muteVideo(checkboxObject.checked)
     console.log('MuteVideo response:', muted)
+  }
+
+  async testChangeVideo () {
+    const currentVideoDevice = (this.mediaStream.getVideoTracks()[0]).getSettings().deviceId
+
+    const deviceList = await this.millicastMedia.getMediaDevices()
+    console.log(deviceList.videoinput)
+    const newDevice = deviceList.videoinput.find(vi => vi.deviceId !== currentVideoDevice)
+    console.log(newDevice)
+
+    const newStream = await this.millicastMedia.changeVideo(newDevice.deviceId)
+    const video = newStream.getVideoTracks()[0]
+
+    console.log(video)
+
+    this.millicastPublish.webRTCPeer.replaceTrack(video)
+    this.mediaStream = newStream
+    document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
 }
 
