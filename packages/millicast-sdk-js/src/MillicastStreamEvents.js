@@ -7,6 +7,8 @@ const logger = MillicastLogger.get('MillicastStreamEvents')
 const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
+const errorMsg = 'You need to initialize stream event with MillicastStreamEvents.init()'
+
 /**
  * Callback invoke when new user count is received.
  *
@@ -68,8 +70,8 @@ export default class MillicastStreamEvents {
    */
   onUserCount (accountId, streamName, callback) {
     if (!this.millicastEventSubscriber) {
-      logger.error('You need to initialize stream event with MillicastStreamEvents.init()')
-      return
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
     }
 
     logger.info(`Starting user count. AccountId: ${accountId}, streamName: ${streamName}`)
