@@ -33,7 +33,7 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Object} options - General broadcast options.
    * @param {MillicastDirectorResponse} options.publisherData - Millicast publisher connection path.
    * @param {String} options.streamName - Millicast existing Stream Name.
-   * @param {MediaStream} options.mediaStream - MediaStream to offer in a stream. This object must have
+   * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
