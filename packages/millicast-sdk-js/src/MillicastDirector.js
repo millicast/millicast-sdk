@@ -73,12 +73,12 @@ export default class MillicastDirector {
 
   /**
    * Get subscriber connection data.
-   * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} streamName - Millicast publisher Stream Name.
+   * @param {String} [streamAccountId] - Millicast Account ID. If you are subscribing to an secure stream, you can omit this param.
    * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
-   * @example const response = await MillicastDirector.getSubscriber(streamAccountId, streamName)
+   * @example const response = await MillicastDirector.getSubscriber(streamName, streamAccountId)
    * @example
    * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
    *
@@ -95,10 +95,10 @@ export default class MillicastDirector {
    * })
    *
    * //Get Millicast Subscriber connection path for an unsecure stream
-   * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName)
+   * const subscriberData = await MillicastDirector.getSubscriber(streamName, accountId)
    *
    * //... or for an secure stream
-   * const subscriberData = await MillicastDirector.getSubscriber(accountId, streamName , '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744')
+   * const subscriberData = await MillicastDirector.getSubscriber(streamName, accountId, '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744')
    *
    * //Options
    * const options = {
@@ -110,7 +110,7 @@ export default class MillicastDirector {
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (streamAccountId, streamName, subscriberToken = null, streamType = streamTypes.WEBRTC) {
+  static async getSubscriber (streamName, streamAccountId = null, subscriberToken = null, streamType = streamTypes.WEBRTC) {
     logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
     const payload = { streamAccountId, streamName, streamType }
     let headers = {}

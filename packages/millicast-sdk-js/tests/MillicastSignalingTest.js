@@ -37,7 +37,7 @@ class MillicastSignalingTest {
       disableAudio: false
     }
   ) {
-    const director = await millicast.MillicastDirector.getSubscriber(this.streamAccountId, this.streamName)
+    const director = await millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
     const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, options.mediaStream)
