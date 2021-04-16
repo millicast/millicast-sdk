@@ -33,7 +33,7 @@ Logger.setHandler((messages, context) => {
   }
 
   for (const { handler, level } of customHandlers) {
-    if (context.level >= level.value) {
+    if (context.level.value >= level.value) {
       handler(messages, context)
     }
   }
