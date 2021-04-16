@@ -1,31 +1,31 @@
-Feature: As a user i want to publish/subscribe to a Millicast Stream so i can get a connection path
+Feature: As a user I want to publish/subscribe to a Millicast Stream so I can get a connection path
 
-  Scenario: Publish with existing stream and valid token
-    Given i have a valid token and a existing stream name
-    When i get the publish connection path
-    Then returns the connection path
+  Scenario: Publish with an existing stream name and valid token
+    Given I have a valid token and an existing stream name
+    When I request a connection path to Director API
+    Then I get the publish connection path
 
-  Scenario: Publish with unexisting stream and valid token
-    Given i have a valid token and a unexisting stream name
-    When i get the publish connection path
-    Then throw an error saying invalid stream name
+  Scenario: Publish with an unexisting stream name and valid token
+    Given I have a valid token and an unexisting stream name
+    When I request a connection path to Director API
+    Then throws an error with "invalid stream name" message
 
-  Scenario: Publish with existing stream and invalid token
-    Given i have a invalid token and a existing stream name
-    When i get the publish connection path
-    Then throw an error saying invalid token
+  Scenario: Publish with an existing stream name and invalid token
+    Given I have an invalid token and an existing stream name
+    When I request a connection path to Director API
+    Then throws an error with "invalid token" message
 
   Scenario: Subscribe to an existing unrestricted stream, valid accountId and no token
-    Given i have a existing stream name, accountId and no token
-    When i get the subscriber connection path
-    Then returns the connection path
+    Given I have an existing stream name, accountId and no token
+    When I request a connection path to Director API
+    Then I get the subscriber connection path
 
   Scenario: Subscribe to an existing restricted stream and valid token
-    Given i have a existing stream name and valid token
-    When i get the subscriber connection path
-    Then returns the connection path
-  
+    Given I have an existing stream name and valid token
+    When I request a connection path to Director API
+    Then I get the subscriber connection path
+
   Scenario: Subscribe to an existing unrestricted stream, invalid accountId and no token
-    Given i have a existing stream name, invalid accountId and no token
-    When i get the subscriber connection path
-    Then throw an error saying stream not found
+    Given I have an existing stream name, invalid accountId and no token
+    When I request a connection path to Director API
+    Then throws an error with "stream not found" message
