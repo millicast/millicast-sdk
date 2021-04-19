@@ -40,7 +40,7 @@ class MillicastSignalingTest {
     const director = await millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, options.mediaStream)
+    const localSdp = await this.millicastWebRTC.getRTCLocalSDP()
     this.millicastSignaling = new millicast.MillicastSignaling({
       streamName: this.streamName,
       url: `${director.wsUrl}?token=${director.jwt}`
@@ -53,7 +53,8 @@ class MillicastSignalingTest {
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const localSdp = await this.millicastWebRTC.getRTCLocalSDP(null, null)
+    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    const localSdp = await this.millicastWebRTC.getRTCLocalSDP({ mediaStream })
     this.millicastSignaling = new millicast.MillicastSignaling({
       streamName: this.streamName,
       url: `${director.wsUrl}?token=${director.jwt}`
