@@ -59,6 +59,10 @@ Black faded bars in control display for video.
   height: 200px;
 }
 
+#shareSection .btn {
+  height: 50px;
+}
+
 .badges span {
   font-weight: bold;
   font-size: 13px;

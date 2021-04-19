@@ -8,7 +8,7 @@ class MillicastWebRTCTest {
     this.streamName = 'kmc1vt0c'
     this.streamAccountId = 'tnJhvK'
     this.millicastWebRTC = new millicast.MillicastWebRTC()
-    this.millicastSignaling = new millicast.MillicastSignaling()
+    this.millicastSignaling = new millicast.MillicastSignaling({ streamName: this.streamName })
     this.millicastMedia = window.millicastMedia
   }
 
@@ -50,9 +50,12 @@ class MillicastWebRTCTest {
   async testSetRTCRemoteSDP () {
     const mediaStream = await this.millicastMedia.getMedia()
     const director = await millicast.MillicastDirector.getPublisher(this.token, this.streamName)
+    await this.millicastWebRTC.closeRTCPeer()
+    await this.millicastSignaling?.close()
+
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const localsdp = await this.millicastWebRTC.getRTCLocalSDP(true, mediaStream)
+    const localsdp = await this.millicastWebRTC.getRTCLocalSDP({ stereo: true, mediaStream })
     this.millicastSignaling.wsUrl = `${director.wsUrl}?token=${director.jwt}`
     const remotesdp = await this.millicastSignaling.publish(localsdp)
 
@@ -64,7 +67,7 @@ class MillicastWebRTCTest {
   async testGetRTCLocalSDP () {
     await this.millicastWebRTC.getRTCPeer()
     try {
-      const response = await this.millicastWebRTC.getRTCLocalSDP(true, null)
+      const response = await this.millicastWebRTC.getRTCLocalSDP({ stereo: true })
       console.log('getRTCLocalSDP response: ', response)
       return response
     } catch (error) {
@@ -76,7 +79,7 @@ class MillicastWebRTCTest {
   async testResolveLocalSDP () {
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const response = await this.millicastWebRTC.getRTCLocalSDP(false, null)
+    const response = await this.millicastWebRTC.getRTCLocalSDP({ stereo: false })
     console.log('resolveLocalSDP response: ', response)
     return response
   }
@@ -84,7 +87,7 @@ class MillicastWebRTCTest {
   async testUpdateBandwidthRestriction () {
     const config = await this.millicastWebRTC.getRTCConfiguration()
     await this.millicastWebRTC.getRTCPeer(config)
-    const localsdp = await this.millicastWebRTC.getRTCLocalSDP(true, null)
+    const localsdp = await this.millicastWebRTC.getRTCLocalSDP({ stereo: true })
     const response = this.millicastWebRTC.updateBandwidthRestriction(localsdp, 500)
     console.log('updateBandwidhRestriction response: ', response)
     console.log('oldsdp == newsdp? ', localsdp === response)
@@ -92,6 +95,7 @@ class MillicastWebRTCTest {
   }
 
   async testUpdateBitrate () {
+    await this.testSetRTCRemoteSDP()
     const response = await this.millicastWebRTC.updateBitrate(500)
     console.log('updateBitrate response: ', response)
     return response

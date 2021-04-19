@@ -110,6 +110,11 @@ const MillicastLogger = {
    */
   getHistory: () => history,
   /**
+   * Get the maximum count of logs preserved during a session.
+   * @example MillicastLogger.getHistoryMaxSize()
+   */
+  getHistoryMaxSize: () => maxLogHistorySize,
+  /**
    * Set the maximum count of logs to preserve during a session.
    * By default it is set to 10000.
    * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.

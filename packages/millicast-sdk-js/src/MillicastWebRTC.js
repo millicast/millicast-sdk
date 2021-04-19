@@ -64,7 +64,7 @@ export default class MillicastWebRTC extends EventEmitter {
   async closeRTCPeer () {
     try {
       logger.info('Closing RTCPeerConnection')
-      this.peer.close()
+      this.peer?.close()
       this.peer = null
       /**
        * Peer closed connection state change.
@@ -146,14 +146,21 @@ export default class MillicastWebRTC extends EventEmitter {
 
   /**
    * Set SDP information to local peer.
-   * @param {Boolean} stereo - True to modify SDP for support stereo. Otherwise False.
-   * @param {MediaStream} mediaStream - MediaStream to offer in a stream.
+   * @param {Object} options
+   * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
+   * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
+   * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
-  async getRTCLocalSDP (stereo, mediaStream) {
+  async getRTCLocalSDP (options = {
+    stereo: false,
+    mediaStream: null
+  }) {
     logger.info('Getting RTC Local SDP')
-    logger.debug('Stereo value: ', stereo)
+    logger.debug('Stereo value: ', options.stereo)
     logger.debug('RTC offer options: ', this.RTCOfferOptions)
+
+    const mediaStream = getValidMediaStream(options.mediaStream)
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
       for (const track of mediaStream.getTracks()) {
@@ -169,7 +176,7 @@ export default class MillicastWebRTC extends EventEmitter {
       logger.debug('Peer offer response: ', response.sdp)
 
       this.sessionDescription = response
-      if (stereo) {
+      if (options.stereo) {
         logger.info('Replacing SDP response for support stereo')
         this.sessionDescription.sdp = this.sessionDescription.sdp.replace(
           'useinbandfec=1',
@@ -247,6 +254,50 @@ export default class MillicastWebRTC extends EventEmitter {
     logger.info('RTC peer status getted, value: ', connectionState)
     return connectionState
   }
+
+  /**
+   * Replace current audio or video track that is being broadcasted.
+   * @param {MediaStreamTrack} mediaStreamTrack - New audio or video track to replace the current one.
+   */
+  replaceTrack (mediaStreamTrack) {
+    if (!this.peer) {
+      logger.error('Could not change track if there is not an active connection.')
+    }
+
+    const currentSender = this.peer.getSenders().find(s => s.track.kind === mediaStreamTrack.kind)
+
+    if (currentSender) {
+      currentSender.replaceTrack(mediaStreamTrack)
+    } else {
+      logger.error(`There is no ${mediaStreamTrack.kind} track in active broadcast.`)
+    }
+  }
+}
+
+const isMediaStreamValid = mediaStream =>
+  mediaStream?.getAudioTracks().length === 1 || mediaStream?.getVideoTracks().length === 1
+
+const getValidMediaStream = (mediaStream) => {
+  if (!mediaStream) {
+    return null
+  }
+
+  if (mediaStream instanceof MediaStream && isMediaStreamValid(mediaStream)) {
+    return mediaStream
+  } else {
+    logger.info('Creating MediaStream to add received tracks.')
+    const stream = new MediaStream()
+    for (const track of mediaStream) {
+      stream.addTrack(track)
+    }
+
+    if (isMediaStreamValid(stream)) {
+      return stream
+    }
+  }
+
+  logger.error('MediaStream must have 1 audio track and 1 video track, or at least one of them.')
+  throw new Error('MediaStream must have 1 audio track and 1 video track, or at least one of them.')
 }
 
 const instanceRTCPeerConnection = (instanceClass, config) => {
@@ -278,8 +329,7 @@ const addPeerEvents = (instanceClass, peer) => {
     instanceClass.emit(webRTCEvents.newTrack, event)
   }
   peer.onconnectionstatechange = (event) => {
-    logger.info('Peer connection state change.')
-    logger.debug('Connection state value: ', peer.connectionState)
+    logger.info('Peer connection state change: ', peer.connectionState)
     switch (peer.connectionState) {
       case 'connecting':
         /**

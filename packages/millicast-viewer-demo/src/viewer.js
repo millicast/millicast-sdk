@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
-      const getViewerResponse = await MillicastDirector.getSubscriber(streamAccountId, streamId)
+      const getViewerResponse = await MillicastDirector.getSubscriber(streamId, streamAccountId)
       const options = {
         subscriberData: getViewerResponse,
         streamName: streamId,
