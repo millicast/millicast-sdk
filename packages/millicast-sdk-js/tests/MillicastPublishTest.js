@@ -2,7 +2,7 @@ const millicast = window.millicast
 
 class MillicastPublishTest {
   constructor () {
-    this.millicastPublish = new millicast.MillicastPublish()
+    this.millicastPublish = null
     this.streamCount = null
   }
 
@@ -18,11 +18,12 @@ class MillicastPublishTest {
     const bandwidth = Number.parseInt(document.getElementById('bitrate-select').value)
     const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
     const streamName = 'km0n0h1u'
+
+    this.millicastPublish = new millicast.MillicastPublish(streamName)
     try {
       const getPublisherResponse = await millicast.MillicastDirector.getPublisher(token, streamName)
       const broadcastOptions = options ?? {
         publisherData: getPublisherResponse,
-        streamName: streamName,
         mediaStream: this.millicastMedia.mediaStream,
         bandwidth: bandwidth,
         disableVideo: false,

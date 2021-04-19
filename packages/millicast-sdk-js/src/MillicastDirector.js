@@ -36,9 +36,9 @@ export default class MillicastDirector {
    * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastPublish = new MillicastPublish()
    * const streamName = "My Millicast Stream Name"
    * const token = "My Millicast publishing token"
+   * const millicastPublish = new MillicastPublish(streamName)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStreamImplementation()
@@ -49,8 +49,7 @@ export default class MillicastDirector {
    * //Options
    * const broadcastOptions = {
    *    publisherData: publisherData,
-   *    streamName: streamName,
-   *    mediaStream: mediaStream,
+   *    mediaStream: mediaStream
    *  }
    *
    * //Start broadcast

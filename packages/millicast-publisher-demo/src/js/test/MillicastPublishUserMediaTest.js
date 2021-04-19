@@ -2,6 +2,7 @@ class MillicastPublishUserMediaTest {
   constructor() {
     this.mediaStream = null;
     this.options = {
+      streamName: 'km0n0h1u',
       constraints: {
         audio: {
           echoCancellation: true,
@@ -56,7 +57,6 @@ class MillicastPublishUserMediaTest {
     );
 
     const broadcastOptions = options ?? {
-      streamName: "km0n0h1u",
       bandwidth: bandwidth,
       disableVideo: false,
       disableAudio: false,
