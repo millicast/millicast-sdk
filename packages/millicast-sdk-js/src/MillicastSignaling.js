@@ -152,9 +152,7 @@ export default class MillicastSignaling extends EventEmitter {
     const data = { sdp, streamId: this.streamName }
 
     try {
-      if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
-        await this.connect()
-      }
+      await this.connect()
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
       logger.info('Command sent, subscriberId: ', result.subscriberId)
@@ -183,9 +181,7 @@ export default class MillicastSignaling extends EventEmitter {
     }
 
     try {
-      if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
-        await this.connect()
-      }
+      await this.connect()
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
       logger.info('Command sent, publisherId: ', result.publisherId)
