@@ -8,7 +8,7 @@ class MillicastViewTest {
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false
-    this.millicastView = new millicast.MillicastView()
+    this.millicastView = new millicast.MillicastView(this.streamName)
   }
 
   async init () {
@@ -28,7 +28,6 @@ class MillicastViewTest {
       const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
       const options = {
         subscriberData: getSubscriberResponse,
-        streamName: this.streamName,
         disableVideo: this.disableVideo,
         disableAudio: this.disableAudio
       }

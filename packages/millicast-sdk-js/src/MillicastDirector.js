@@ -82,9 +82,9 @@ export default class MillicastDirector {
    * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastView = new MillicastView()
    * const streamName = "Millicast Stream Name where i want to connect"
    * const accountId = "Millicast Publisher account Id"
+   * const millicastView = new MillicastView(streamName)
    *
    * //Set new.track event handler.
    * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
@@ -101,8 +101,7 @@ export default class MillicastDirector {
    *
    * //Options
    * const options = {
-   *    subscriberData: subscriberData,
-   *    streamName: streamName,
+   *    subscriberData: subscriberData
    *  }
    *
    * //Start connection to broadcast
