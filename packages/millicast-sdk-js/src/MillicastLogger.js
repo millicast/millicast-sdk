@@ -18,10 +18,12 @@ const historyHandler = (messages, context) => {
   formatter(messages, context)
 
   if (maxLogHistorySize !== 0) {
-    if (history.lenght === maxLogHistorySize) {
-      history = history.slice(1)
-    }
     history.push(messages.join(' '))
+    if (history.length >= maxLogHistorySize) {
+      history = history.slice(-maxLogHistorySize)
+    }
+  } else {
+    history = []
   }
 }
 
