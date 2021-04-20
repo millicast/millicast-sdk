@@ -14,12 +14,19 @@ const logger = MillicastLogger.get('MillicastView')
  * Before you can view an active broadcast, you will need:
  *
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
+ * @constructor
+ * @param {String} streamName - Millicast existing Stream Name where you want to connect.
  */
 export default class MillicastView extends EventEmitter {
-  constructor () {
+  constructor (streamName) {
     super()
+    if (!streamName) {
+      logger.error('Stream Name is required to construct a viewer.')
+      throw new Error('Stream Name is required to construct a viewer.')
+    }
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
+    this.streamName = streamName
   }
 
   /**
@@ -28,7 +35,6 @@ export default class MillicastView extends EventEmitter {
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} options - General subscriber options.
    * @param {MillicastDirectorResponse} options.subscriberData - Millicast subscriber connection path.
-   * @param {String} options.streamName - Millicast existing Stream Name where you want to connect.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
@@ -44,8 +50,8 @@ export default class MillicastView extends EventEmitter {
    * import MillicastView from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastView = new MillicastView()
    * const streamName = "Millicast Stream Name where i want to connect"
+   * const millicastView = new MillicastView(streamName)
    *
    * //Set new.track event handler.
    * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
@@ -59,8 +65,7 @@ export default class MillicastView extends EventEmitter {
    *
    * //Options
    * const options = {
-   *    subscriberData: subscriberData,
-   *    streamName: streamName,
+   *    subscriberData: subscriberData
    *  }
    *
    * //Start connection to broadcast
@@ -74,14 +79,22 @@ export default class MillicastView extends EventEmitter {
   async connect (
     options = {
       subscriberData: null,
-      streamName: null,
       disableVideo: false,
       disableAudio: false
     }
   ) {
     logger.debug('Viewer connect options values: ', options)
+    if (!options.subscriberData) {
+      logger.error('Error while subscribing. Subscriber data required')
+      throw new Error('Subscriber data required')
+    }
+    if (this.isActive()) {
+      logger.warn('Viewer currently subscriber')
+      throw new Error('Viewer currently subscriber')
+    }
+
     this.millicastSignaling = new MillicastSignaling({
-      streamName: options.streamName,
+      streamName: this.streamName,
       url: `${options.subscriberData.urls[0]}?token=${options.subscriberData.jwt}`
     })
 
@@ -98,7 +111,7 @@ export default class MillicastView extends EventEmitter {
     if (sdpSubscriber) {
       reemit(this.millicastSignaling, this, [signalingEvents.broadcastEvent])
       await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
-      logger.info('Connected to streamName: ', options.streamName)
+      logger.info('Connected to streamName: ', this.streamName)
     } else {
       logger.error('Failed to connect to publisher: ', sdpSubscriber)
       throw new Error('Failed to connect to publisher: ', sdpSubscriber)

@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const subscribe = async () => {
-    const millicastView = new MillicastView();
+    const millicastView = new MillicastView(streamId);
     millicastView.on("broadcastEvent", (event) => {
       if (!autoReconnect) return;
 
@@ -250,7 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const getViewerResponse = await MillicastDirector.getSubscriber(streamId, streamAccountId)
       const options = {
         subscriberData: getViewerResponse,
-        streamName: streamId,
         disableVideo: disableVideo,
         disableAudio: disableAudio,
       };

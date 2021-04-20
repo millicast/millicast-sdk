@@ -124,14 +124,14 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 
   /////////////////////////
-  const millicastPublishUserMedia = await  MillicastPublishUserMedia.build()
+  const millicastPublishUserMedia = await MillicastPublishUserMedia.build({ streamName: streamId })
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
 
   const BroadcastMillicastStream = async () => {
     try{
       const getPublisherResponse = await MillicastDirector.getPublisher(publishToken, streamId)
-      await millicastPublishUserMedia.broadcast({ publisherData: getPublisherResponse, streamName: streamId, bandwidth })
+      await millicastPublishUserMedia.broadcast({ publisherData: getPublisherResponse, bandwidth })
       isBroadcasting = true;
       broadcastHandler();
     }
