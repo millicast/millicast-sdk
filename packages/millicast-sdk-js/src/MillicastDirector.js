@@ -73,7 +73,7 @@ export default class MillicastDirector {
   /**
    * Get subscriber connection data.
    * @param {String} streamName - Millicast publisher Stream Name.
-   * @param {String} [streamAccountId] - Millicast Account ID. If you are subscribing to an secure stream, you can omit this param.
+   * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
@@ -108,7 +108,7 @@ export default class MillicastDirector {
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (streamName, streamAccountId = null, subscriberToken = null, streamType = streamTypes.WEBRTC) {
+  static async getSubscriber (streamName, streamAccountId, subscriberToken = null, streamType = streamTypes.WEBRTC) {
     logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
     const payload = { streamAccountId, streamName, streamType }
     let headers = {}
