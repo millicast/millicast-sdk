@@ -85,6 +85,7 @@ defineFeature(feature, test => {
 
     then('fires a broadcastEvent event', () => {
       expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith({ name: 'active', data: { streamId: 'streamId' }, namespace: undefined })
     })
   })
 
