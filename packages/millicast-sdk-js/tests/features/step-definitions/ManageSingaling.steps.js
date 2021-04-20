@@ -19,15 +19,13 @@ defineFeature(feature, test => {
   })
 
   afterEach(async () => {
-    WS?.clean()
-    jest.restoreAllMocks()
+    WS.clean()
     server = null
     millicastSignaling = null
   })
 
   test('Connect to existing server with no errors', ({ given, when, then }) => {
-    given('I have no previous connection to server', async () => {
-    })
+    given('I have no previous connection to server', () => null)
 
     when('I want to connect to server', async () => {
       millicastSignaling.on('wsConnectionSuccess', handler)
@@ -57,9 +55,7 @@ defineFeature(feature, test => {
   })
 
   test('Connect to existing server with network errors', ({ given, when, then }) => {
-    given('I have no previous connection to server', () => {
-
-    })
+    given('I have no previous connection to server', () => null)
 
     when('I want to connect to no responding server', async () => {
       server.on('connection', () => server.error())
@@ -109,8 +105,7 @@ defineFeature(feature, test => {
   })
 
   test('Close unexisting server connection', ({ given, when, then }) => {
-    given('I am not connected to server', () => {
-    })
+    given('I am not connected to server', () => null)
 
     when('I want to close connection', () => {
       millicastSignaling.close()

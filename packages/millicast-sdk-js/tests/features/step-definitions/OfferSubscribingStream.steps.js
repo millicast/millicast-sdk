@@ -33,8 +33,7 @@ defineFeature(feature, test => {
   })
 
   afterEach(async () => {
-    WS?.clean()
-    jest.restoreAllMocks()
+    WS.clean()
     server.close()
     server = null
   })
