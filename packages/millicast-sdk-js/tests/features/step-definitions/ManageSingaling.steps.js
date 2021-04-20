@@ -1,6 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-// import TransactionManager from 'transaction-manager'
 import MillicastSignaling from '../../../src/MillicastSignaling'
 const feature = loadFeature('../ManageSignaling.feature', { loadRelativePath: true, errors: true })
 

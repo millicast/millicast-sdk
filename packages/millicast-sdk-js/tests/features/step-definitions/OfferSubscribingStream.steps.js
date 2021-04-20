@@ -2,7 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
 import TransactionManager from 'transaction-manager'
 import MillicastSignaling from '../../../src/MillicastSignaling'
-const feature = loadFeature('../OfferPublishingStream.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../OfferSubscribingStream.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
   const publishWebSocketLocation = 'ws://localhost:8080'
@@ -81,7 +81,7 @@ defineFeature(feature, test => {
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp)
+      response = await millicastSignaling.subscribe(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -134,7 +134,7 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local spd', async () => {
-      response = await millicastSignaling.publish(localSdp)
+      response = await millicastSignaling.subscribe(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -158,7 +158,7 @@ defineFeature(feature, test => {
         url: publishWebSocketLocation
       })
       try {
-        await millicastSignaling.publish(localSdp)
+        await millicastSignaling.subscribe(localSdp)
       } catch (error) {
         response = error
       }
@@ -187,7 +187,7 @@ defineFeature(feature, test => {
 
     when('I offer a null sdp', async () => {
       try {
-        await millicastSignaling.publish(localSdp)
+        await millicastSignaling.subscribe(localSdp)
       } catch (error) {
         response = error
       }
@@ -238,42 +238,12 @@ defineFeature(feature, test => {
 
     when('I offer my local spd and an unexistent stream name', async () => {
       const millicastSignaling = new MillicastSignaling()
-      response = await millicastSignaling.publish(localSdp)
+      response = await millicastSignaling.subscribe(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
       expect(response).toBe(offerSdp)
-    })
-  })
-
-  test('Offer SDP without stream with no previous connection', ({ given, when, then }) => {
-    const errorMessage = 'No stream found on sdp'
-    let localSdp
-    let response
-
-    given('I have not previous connection to server', async () => {
-      localSdp = `v=0
-      o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-      s=
-      c=IN IP4 host.anywhere.com
-      t=0 0
-    `
-      jest.spyOn(TransactionManager.prototype, 'cmd').mockRejectedValue(errorMessage)
-    })
-
-    when('I offer a sdp without stream', async () => {
-      try {
-        const millicastSignaling = new MillicastSignaling()
-        response = await millicastSignaling.publish(localSdp)
-      } catch (error) {
-        response = error
-      }
-    })
-
-    then('throws no stream found error', async () => {
-      expect(response).toBeDefined()
-      expect(response).toBe(errorMessage)
     })
   })
 })

@@ -4,7 +4,7 @@ class MillicastSignalingTest {
   constructor () {
     this.token =
       '5159e188181e7fea4b21bd4af7a04e1c634af11995d421431a2472c134b59f31'
-    this.streamName = 'kmc1vt0c'
+    this.streamName = 'km0n0h1u'
     this.streamAccountId = 'tnJhvK'
     this.millicastSignaling = new millicast.MillicastSignaling({ streamName: this.streamName })
     this.millicastWebRTC = new millicast.MillicastWebRTC()
