@@ -23,7 +23,7 @@ Feature: As a developer I want to manage signaling to Millicast Server so I can 
   Scenario: Close existing server connection
     Given I am connected to server
     When I want to close connection
-    Then the connection closes and fires a connectionClose event
+    Then the connection closes
 
   Scenario: Close unexisting server connection
     Given I am not connected to server

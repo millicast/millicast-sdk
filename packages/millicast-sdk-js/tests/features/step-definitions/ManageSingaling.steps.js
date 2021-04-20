@@ -97,16 +97,14 @@ defineFeature(feature, test => {
       await millicastSignaling.connect()
     })
 
-    when('I want to close connection', () => {
+    when('I want to close connection', async () => {
       millicastSignaling.close()
     })
 
-    then('the connection closes and fires a connectionClose event', () => {
-      millicastSignaling.on('wsConnectionClose', () => {
-        // expect(millicastSignaling.webSocket).toBe(null)
-      })
-      // expect(millicastSignaling.webSocket).toBe(null)
-      // expect(handler).toBeCalledTimes(1)
+    then('the connection closes', async () => {
+      expect(millicastSignaling.webSocket.readyState).not.toBe(WebSocket.OPEN)
+      expect(millicastSignaling.webSocket.readyState).not.toBe(WebSocket.CONNECTING)
+      expect(millicastSignaling.webSocket.readyState === WebSocket.CLOSING || millicastSignaling.webSocket.readyState === WebSocket.CLOSED).toBeTruthy()
     })
   })
 
