@@ -63,6 +63,7 @@ export default class MillicastEventSubscriber extends EventEmitter {
             reject(error)
           }
         }
+        resolve(event)
       }
     })
   }
@@ -98,9 +99,18 @@ export default class MillicastEventSubscriber extends EventEmitter {
    */
   close () {
     this.webSocket?.close()
+    this.receivedHandshakeResponse = false
     this.webSocket.onclose = () => {
       logger.info('Events WebSocket closed')
       this.webSocket = null
     }
+  }
+
+  static getEventsLocation () {
+    return eventsLocation
+  }
+
+  static getRecordSeparator () {
+    return recordSeparator
   }
 }
