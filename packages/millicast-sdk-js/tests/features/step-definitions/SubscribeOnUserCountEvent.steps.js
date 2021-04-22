@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-import MillicastEventSubscriber from '../../../src/utils/MillicastEventSubscriber'
+import { eventsLocation, recordSeparator } from '../../../src/utils/MillicastEventSubscriber'
 
 let MillicastStreamEvents
 beforeEach(() => {
@@ -12,8 +12,6 @@ beforeEach(() => {
 const feature = loadFeature('../SubscribeOnUserCountEvent.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  const eventsLocation = MillicastEventSubscriber.getEventsLocation()
-  const recordSeparator = MillicastEventSubscriber.getRecordSeparator()
   let server = null
   const handler = jest.fn()
 
@@ -40,7 +38,7 @@ defineFeature(feature, test => {
     then('the connection handshake is completed', () => {
       expect(millicastStreamEvents).toBeDefined()
       expect(millicastStreamEvents.millicastEventSubscriber).toBeDefined()
-      expect(millicastStreamEvents.millicastEventSubscriber.receivedHandshakeResponse).toBeTruthy()
+      expect(millicastStreamEvents.millicastEventSubscriber.webSocket.readyState).toBe(WebSocket.OPEN)
     })
   })
 
@@ -279,31 +277,28 @@ defineFeature(feature, test => {
       millicastStreamEvents.stop()
     })
 
-    then('the connection closes', () => {
-      expect(millicastStreamEvents.millicastEventSubscriber.webSocket.readyState).not.toBe(WebSocket.OPEN)
-      expect(millicastStreamEvents.millicastEventSubscriber.webSocket.readyState).not.toBe(WebSocket.CONNECTING)
-      expect(millicastStreamEvents.millicastEventSubscriber.webSocket.readyState === WebSocket.CLOSING || millicastStreamEvents.millicastEventSubscriber.webSocket.readyState === WebSocket.CLOSED).toBeTruthy()
+    then('the connection closes', async () => {
+      await server.closed
+      expect(millicastStreamEvents.millicastEventSubscriber.webSocket).toBeNull()
     })
   })
 
   test('Force connection to server', ({ given, when, then }) => {
     let millicastStreamEvents
-    let response
+    let currentWebSocket
 
     given('I am connected to server', async () => {
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       millicastStreamEvents = await MillicastStreamEvents.init()
+      currentWebSocket = millicastStreamEvents.millicastEventSubscriber.webSocket
     })
 
     when('I want to reconnect', async () => {
-      WS.clean()
-      server = new WS(eventsLocation)
-      server.on('connection', () => server.send(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"AccountID/StreamName"}]}${recordSeparator}`))
-      response = await millicastStreamEvents.millicastEventSubscriber.initializeHandshake()
+      await millicastStreamEvents.millicastEventSubscriber.initializeHandshake()
     })
 
     then('reconnection is ignored', () => {
-      expect(response.data).toBe(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"AccountID/StreamName"}]}${recordSeparator}`)
+      expect(currentWebSocket).toMatchObject(millicastStreamEvents.millicastEventSubscriber.webSocket)
     })
   })
 })
