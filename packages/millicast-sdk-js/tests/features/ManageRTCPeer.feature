@@ -50,4 +50,72 @@ Feature: As a user I want to manage the peer connection so I can connect to the 
     When I set the remote description and peer returns an error
     Then throws an error
 
-#getRTCLocalSDP
+  Scenario: Get RTC Local SDP as subscriber role
+    Given I do not have options
+    When I want to get the RTC Local SDP
+    Then returns the SDP
+
+  Scenario: Get RTC Local SDP as publisher role with valid MediaStream
+    Given I have a MediaStream with 1 audio track and 1 video track and I want support stereo
+    When I want to get the RTC Local SDP
+    Then returns the SDP
+
+  Scenario: Get RTC Local SDP as publisher role with invalid MediaStream
+    Given I have a MediaStream with 2 video tracks and no audio track
+    When I want to get the RTC Local SDP
+    Then throw invalid MediaStream error
+
+  Scenario: Get RTC Local SDP as publisher role with valid list of tracks
+    Given I have a list of tracks with 1 audio track and 1 video track
+    When I want to get the RTC Local SDP
+    Then returns the SDP
+
+  Scenario: Get RTC Local SDP as publisher role with invalid list of tracks
+    Given I have a list of tracks with 3 audio tracks and 1 video track
+    When I want to get the RTC Local SDP
+    Then throw invalid MediaStream error
+
+  Scenario: Error getting RTC Local SDP
+    Given I do not have options
+    When I want to get the RTC Local SDP and creating offer gives an error
+    Then throw error setting Local SDP
+
+  Scenario: Update bitrate with restrictions
+    Given I have a peer connected
+    When I want to update the bitrate to 1000 kbps
+    Then the bitrate is updated
+
+  Scenario: Update bitrate with no restrictions
+    Given I have a peer connected
+    When I want to update the bitrate to unlimited
+    Then the bitrate is updated
+
+  Scenario: Update bitrate with restrictions in Firefox
+    Given I am using Firefox and I have a peer connected
+    When I want to update the bitrate to 1000 kbps
+    Then the bitrate is updated
+
+  Scenario: Get existing RTC peer status
+    Given I have a peer connected
+    When I want to get the peer connection state
+    Then returns the connection state
+
+  Scenario: Get unexisting RTC peer status
+    Given I do not have a peer connected
+    When I want to get the peer connection state
+    Then returns no value
+
+  Scenario: Replace track to existing peer
+    Given I have a peer connected
+    When I want to change current audio track
+    Then the track is changed
+
+  Scenario: Replace track to unexisting peer
+    Given I do not have a peer connected
+    When I want to change the audio track
+    Then the track is not changed
+
+  Scenario: Replace unexisting track to peer
+    Given I have a peer connected
+    When I want to change the audio track and peer does not have any audio track
+    Then the track is not changed

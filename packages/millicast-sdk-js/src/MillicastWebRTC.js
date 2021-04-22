@@ -275,7 +275,7 @@ export default class MillicastWebRTC extends EventEmitter {
 }
 
 const isMediaStreamValid = mediaStream =>
-  mediaStream?.getAudioTracks().length === 1 || mediaStream?.getVideoTracks().length === 1
+  mediaStream?.getAudioTracks().length <= 1 && mediaStream?.getVideoTracks().length <= 1
 
 const getValidMediaStream = (mediaStream) => {
   if (!mediaStream) {
