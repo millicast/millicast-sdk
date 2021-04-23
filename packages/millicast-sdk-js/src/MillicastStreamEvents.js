@@ -80,7 +80,7 @@ export default class MillicastStreamEvents {
     const requestInvocationId = invocationId++
     const userCountRequest = {
       arguments: [[streamId]],
-      invocationId: (requestInvocationId).toString(),
+      invocationId: requestInvocationId.toString(),
       streamIds: [],
       target: USER_COUNT_TARGET,
       type: 1
