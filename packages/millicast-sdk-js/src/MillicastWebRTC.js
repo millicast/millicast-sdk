@@ -41,16 +41,11 @@ export default class MillicastWebRTC extends EventEmitter {
     logger.info('Getting RTC Peer')
     logger.debug('RTC configuration provided by user: ', config)
     if (!this.peer) {
-      try {
-        if (!config) {
-          logger.info('RTC configuration not provided by user.')
-          config = await this.getRTCConfiguration()
-        }
-        this.peer = instanceRTCPeerConnection(this, config)
-      } catch (e) {
-        logger.error('Error while creating RTCPeerConnection: ', e)
-        throw e
+      if (!config) {
+        logger.info('RTC configuration not provided by user.')
+        config = await this.getRTCConfiguration()
       }
+      this.peer = instanceRTCPeerConnection(this, config)
     }
 
     const { connectionState, currentLocalDescription, currentRemoteDescription } = this.peer
