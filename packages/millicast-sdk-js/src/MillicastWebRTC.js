@@ -160,30 +160,25 @@ export default class MillicastWebRTC extends EventEmitter {
     }
 
     logger.info('Creating peer offer')
-    try {
-      const response = await this.peer.createOffer(this.RTCOfferOptions)
-      logger.info('Peer offer created')
-      logger.debug('Peer offer response: ', response.sdp)
+    const response = await this.peer.createOffer(this.RTCOfferOptions)
+    logger.info('Peer offer created')
+    logger.debug('Peer offer response: ', response.sdp)
 
-      this.sessionDescription = response
-      if (options.stereo) {
-        logger.info('Replacing SDP response for support stereo')
-        this.sessionDescription.sdp = this.sessionDescription.sdp.replace(
-          'useinbandfec=1',
-          'useinbandfec=1; stereo=1'
-        )
-        logger.info('Replaced SDP response for support stereo')
-        logger.debug('New SDP value: ', this.sessionDescription.sdp)
-      }
-
-      await this.peer.setLocalDescription(this.sessionDescription)
-      logger.info('Peer local description set')
-
-      return this.sessionDescription.sdp
-    } catch (e) {
-      logger.info('Error while setting peer local description: ', e)
-      throw e
+    this.sessionDescription = response
+    if (options.stereo) {
+      logger.info('Replacing SDP response for support stereo')
+      this.sessionDescription.sdp = this.sessionDescription.sdp.replace(
+        'useinbandfec=1',
+        'useinbandfec=1; stereo=1'
+      )
+      logger.info('Replaced SDP response for support stereo')
+      logger.debug('New SDP value: ', this.sessionDescription.sdp)
     }
+
+    await this.peer.setLocalDescription(this.sessionDescription)
+    logger.info('Peer local description set')
+
+    return this.sessionDescription.sdp
   }
 
   /**
@@ -192,10 +187,9 @@ export default class MillicastWebRTC extends EventEmitter {
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @return {String} Updated SDP information with new bandwidth restriction.
    */
-  updateBandwidthRestriction (sdp, bitrate = 0) {
+  updateBandwidthRestriction (sdp, bitrate) {
     logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
-
     const offer = SemanticSDP.SDPInfo.parse(sdp)
     const videoOffer = offer.getMedia('video')
 
@@ -274,7 +268,7 @@ const getValidMediaStream = (mediaStream) => {
 
   if (mediaStream instanceof MediaStream && isMediaStreamValid(mediaStream)) {
     return mediaStream
-  } else {
+  } else if (!(mediaStream instanceof MediaStream)) {
     logger.info('Creating MediaStream to add received tracks.')
     const stream = new MediaStream()
     for (const track of mediaStream) {

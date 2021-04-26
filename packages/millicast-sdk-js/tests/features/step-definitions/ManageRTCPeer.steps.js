@@ -2,6 +2,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
+import './__mocks__/MockMediaStream'
+import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../ManageRTCPeer.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
@@ -9,6 +11,7 @@ jest.mock('axios')
 defineFeature(feature, test => {
   afterEach(async () => {
     jest.restoreAllMocks()
+    changeBrowserMock('Chrome')
   })
 
   test('Get RTC peer without configuration', ({ given, when, then }) => {
@@ -287,6 +290,207 @@ defineFeature(feature, test => {
 
     then('throws an error', async () => {
       expect(responseError.message).toBe('Invalid answer')
+    })
+  })
+
+  test('Get RTC Local SDP as subscriber role', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let sdp
+
+    given('I do not have options', async () => {
+      await millicastWebRTC.getRTCPeer()
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await millicastWebRTC.getRTCLocalSDP()
+    })
+
+    then('returns the SDP', async () => {
+      expect(millicastWebRTC.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role with valid MediaStream', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let sdp
+    let mediaStream
+    let stereo
+
+    given('I have a MediaStream with 1 audio track and 1 video track and I want support stereo', async () => {
+      await millicastWebRTC.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      stereo = true
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await millicastWebRTC.getRTCLocalSDP({ mediaStream, stereo })
+    })
+
+    then('returns the SDP', async () => {
+      expect(millicastWebRTC.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role with invalid MediaStream', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let errorResponse
+    let mediaStream
+    let stereo
+
+    given('I have a MediaStream with 2 video tracks and no audio track', async () => {
+      await millicastWebRTC.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'video', label: 'Video1' }, { id: 2, kind: 'video', label: 'Video2' }]
+      mediaStream = new MediaStream(tracks)
+      stereo = true
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      try {
+        await millicastWebRTC.getRTCLocalSDP({ mediaStream, stereo })
+      } catch (error) {
+        errorResponse = error
+      }
+    })
+
+    then('throw invalid MediaStream error', async () => {
+      expect(errorResponse.message).toBe('MediaStream must have 1 audio track and 1 video track, or at least one of them.')
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role with valid list of tracks', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let sdp
+    let tracks
+
+    given('I have a list of tracks with 1 audio track and 1 video track', async () => {
+      await millicastWebRTC.getRTCPeer()
+      tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await millicastWebRTC.getRTCLocalSDP({ mediaStream: tracks })
+    })
+
+    then('returns the SDP', async () => {
+      expect(millicastWebRTC.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role with invalid list of tracks', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let errorResponse
+    let tracks
+
+    given('I have a list of tracks with 3 audio tracks and 1 video track', async () => {
+      await millicastWebRTC.getRTCPeer()
+      tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' },
+        { id: 3, kind: 'audio', label: 'Audio2' }, { id: 4, kind: 'audio', label: 'Audio3' }]
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      try {
+        await millicastWebRTC.getRTCLocalSDP({ mediaStream: tracks })
+      } catch (error) {
+        errorResponse = error
+      }
+    })
+
+    then('throw invalid MediaStream error', async () => {
+      expect(errorResponse.message).toBe('MediaStream must have 1 audio track and 1 video track, or at least one of them.')
+    })
+  })
+
+  test('Update bitrate with restrictions', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const sdp = 'My default SDP'
+
+    given('I have a peer connected', async () => {
+      await millicastWebRTC.getRTCPeer()
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      expect(millicastWebRTC.peer.currentRemoteDescription.sdp).toBe(sdp)
+    })
+
+    when('I want to update the bitrate to 1000 kbps', async () => {
+      await millicastWebRTC.updateBitrate(1000)
+    })
+
+    then('the bitrate is updated', async () => {
+      expect(millicastWebRTC.peer.currentRemoteDescription.sdp).not.toBe(sdp)
+    })
+  })
+
+  test('Update bitrate with no restrictions', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const sdp = 'My default SDP'
+
+    given('I have a peer connected', async () => {
+      await millicastWebRTC.getRTCPeer()
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      expect(millicastWebRTC.peer.currentRemoteDescription.sdp).toBe(sdp)
+    })
+
+    when('I want to update the bitrate to unlimited', async () => {
+      await millicastWebRTC.updateBitrate()
+    })
+
+    then('the bitrate is updated', async () => {
+      expect(millicastWebRTC.peer.currentRemoteDescription.sdp).not.toBe(sdp)
+    })
+  })
+
+  test('Update bitrate with restrictions in Firefox', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const sdp = 'My default SDP'
+
+    given('I am using Firefox and I have a peer connected', async () => {
+      changeBrowserMock('firefox')
+      await millicastWebRTC.getRTCPeer()
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      expect(millicastWebRTC.peer.currentRemoteDescription.sdp).toBe(sdp)
+    })
+
+    when('I want to update the bitrate to 1000 kbps', async () => {
+      await millicastWebRTC.updateBitrate(1000)
+    })
+
+    then('the bitrate is updated', async () => {
+      expect(millicastWebRTC.peer.currentRemoteDescription.sdp).not.toBe(sdp)
+    })
+  })
+
+  test('Get existing RTC peer status', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let status
+
+    given('I have a peer instanced', async () => {
+      await millicastWebRTC.getRTCPeer()
+    })
+
+    when('I want to get the peer connection state', () => {
+      status = millicastWebRTC.getRTCPeerStatus()
+    })
+
+    then('returns the connection state', async () => {
+      expect(status).toBe('new')
+    })
+  })
+
+  test('Get unexisting RTC peer status', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let status
+
+    given('I do not have a peer connected', async () => {})
+
+    when('I want to get the peer connection state', () => {
+      status = millicastWebRTC.getRTCPeerStatus()
+    })
+
+    then('returns no value', async () => {
+      expect(status).toBeNull()
     })
   })
 })
