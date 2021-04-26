@@ -72,19 +72,6 @@ export default class MillicastSignaling extends EventEmitter {
       this.transactionManager = new TransactionManager(this.webSocket)
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
-        if (this.webSocket.readyState !== WebSocket.OPEN) {
-          const error = { state: this.webSocket.readyState, url: this.webSocket.url }
-          logger.error('WebSocket not connected: ', error)
-          /**
-           * WebSocket connection failed with signaling server.
-           *
-           * @event MillicastSignaling#wsConnectionError
-           * @type {Object}
-           * @property {Number} state - WebSocket ready state. Could be WebSocket.CLOSED | WebSocket.CLOSING | WebSocket.CONNECTING.
-           */
-          this.emit(signalingEvents.connectionError, error)
-          reject(error)
-        }
         this.transactionManager.on('event', (evt) => {
           /**
            * Passthrough of available Millicast broadcast events.
@@ -115,6 +102,17 @@ export default class MillicastSignaling extends EventEmitter {
         })
         this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
         resolve(this.webSocket)
+      }
+      this.webSocket.onerror = () => {
+        logger.error('WebSocket not connected: ', this.webSocket.url)
+        /**
+           * WebSocket connection failed with signaling server.
+           *
+           * @event MillicastSignaling#wsConnectionError
+           * @type {String} url - WebSocket location
+           */
+        this.emit(signalingEvents.connectionError, this.webSocket.url)
+        reject(this.webSocket.url)
       }
       this.webSocket.onclose = () => {
         this.webSocket = null
@@ -152,9 +150,7 @@ export default class MillicastSignaling extends EventEmitter {
     const data = { sdp, streamId: this.streamName }
 
     try {
-      if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
-        await this.connect()
-      }
+      await this.connect()
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
       logger.info('Command sent, subscriberId: ', result.subscriberId)
@@ -183,9 +179,7 @@ export default class MillicastSignaling extends EventEmitter {
     }
 
     try {
-      if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
-        await this.connect()
-      }
+      await this.connect()
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
       logger.info('Command sent, publisherId: ', result.publisherId)

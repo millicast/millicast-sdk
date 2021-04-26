@@ -3,7 +3,7 @@ import MillicastMedia from "./MillicastMedia"
 
 export default class MillicastPublishUserMedia extends MillicastPublish {
   constructor(options = undefined) {
-    super();
+    super(options.streamName);
     this.mediaManager = new MillicastMedia(options);
   }
 
@@ -36,7 +36,6 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
   broadcast(
     options = {
       publisherData: null,
-      streamName: null,
       bandwidth: 0,
       disableVideo: false,
       disableAudio: false,

@@ -36,9 +36,9 @@ export default class MillicastDirector {
    * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastPublish = new MillicastPublish()
    * const streamName = "My Millicast Stream Name"
    * const token = "My Millicast publishing token"
+   * const millicastPublish = new MillicastPublish(streamName)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStreamImplementation()
@@ -49,8 +49,7 @@ export default class MillicastDirector {
    * //Options
    * const broadcastOptions = {
    *    publisherData: publisherData,
-   *    streamName: streamName,
-   *    mediaStream: mediaStream,
+   *    mediaStream: mediaStream
    *  }
    *
    * //Start broadcast
@@ -74,7 +73,7 @@ export default class MillicastDirector {
   /**
    * Get subscriber connection data.
    * @param {String} streamName - Millicast publisher Stream Name.
-   * @param {String} [streamAccountId] - Millicast Account ID. If you are subscribing to an secure stream, you can omit this param.
+   * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
@@ -83,9 +82,9 @@ export default class MillicastDirector {
    * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const millicastView = new MillicastView()
    * const streamName = "Millicast Stream Name where i want to connect"
    * const accountId = "Millicast Publisher account Id"
+   * const millicastView = new MillicastView(streamName)
    *
    * //Set new.track event handler.
    * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
@@ -102,15 +101,14 @@ export default class MillicastDirector {
    *
    * //Options
    * const options = {
-   *    subscriberData: subscriberData,
-   *    streamName: streamName,
+   *    subscriberData: subscriberData
    *  }
    *
    * //Start connection to broadcast
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (streamName, streamAccountId = null, subscriberToken = null, streamType = streamTypes.WEBRTC) {
+  static async getSubscriber (streamName, streamAccountId, subscriberToken = null, streamType = streamTypes.WEBRTC) {
     logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
     const payload = { streamAccountId, streamName, streamType }
     let headers = {}

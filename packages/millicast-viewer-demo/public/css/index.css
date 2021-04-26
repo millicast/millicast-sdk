@@ -9,6 +9,12 @@ html{
   overflow-x: hidden;
 }
 
+google-cast-launcher {
+  position: relative;
+  z-index: 20;
+  width: 2rem;
+}
+
 .fs-15px{
   font-size: 15px;
 }

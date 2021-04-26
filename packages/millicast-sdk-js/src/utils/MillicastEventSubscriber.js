@@ -2,14 +2,13 @@ import MillicastLogger from '../MillicastLogger'
 import EventEmitter from 'events'
 
 const logger = MillicastLogger.get('MillicastEventSubscriber')
-const eventsLocation = 'wss://streamevents.millicast.com/ws'
-const recordSeparator = '\x1E'
+export const eventsLocation = 'wss://streamevents.millicast.com/ws'
+export const recordSeparator = '\x1E'
 
 export default class MillicastEventSubscriber extends EventEmitter {
   constructor () {
     super()
     this.webSocket = null
-    this.receivedHandshakeResponse = false
   }
 
   /**
@@ -38,33 +37,33 @@ export default class MillicastEventSubscriber extends EventEmitter {
    *
    * @returns {Promise<void>} Promise which represents the handshake finalization.
    */
-  initializeHandshake () {
-    return new Promise((resolve, reject) => {
-      logger.info('Starting events WebSocket handshake.')
-      this.webSocket = new WebSocket(eventsLocation)
-      this.webSocket.onopen = () => {
-        logger.info('Connection established with events WebSocket.')
-        const handshakeRequest = {
-          protocol: 'json',
-          version: 1
+  async initializeHandshake () {
+    if (this.webSocket?.readyState !== WebSocket.CONNECTING && this.webSocket?.readyState !== WebSocket.OPEN) {
+      return new Promise((resolve, reject) => {
+        logger.info('Starting events WebSocket handshake.')
+        this.webSocket = new WebSocket(eventsLocation)
+        this.webSocket.onopen = () => {
+          logger.info('Connection established with events WebSocket.')
+          const handshakeRequest = {
+            protocol: 'json',
+            version: 1
+          }
+          this.webSocket.send(JSON.stringify(handshakeRequest) + recordSeparator)
         }
-        this.webSocket.send(JSON.stringify(handshakeRequest) + recordSeparator)
-      }
 
-      this.webSocket.onmessage = (event) => {
-        if (!this.receivedHandshakeResponse) {
-          this.receivedHandshakeResponse = true
+        this.webSocket.onmessage = (event) => {
           try {
             const parsedResponse = this.handleHandshakeResponse(event.data)
             logger.info('Successful handshake with events WebSocket. Waiting for subscriptions...')
-            logger.debug('WebSocket handsake message: ', parsedResponse)
+            logger.debug('WebSocket handshake message: ', parsedResponse)
             resolve()
           } catch (error) {
+            this.close()
             reject(error)
           }
         }
-      }
-    })
+      })
+    }
   }
 
   /**
