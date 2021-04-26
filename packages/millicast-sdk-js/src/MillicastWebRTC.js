@@ -246,6 +246,7 @@ export default class MillicastWebRTC extends EventEmitter {
   replaceTrack (mediaStreamTrack) {
     if (!this.peer) {
       logger.error('Could not change track if there is not an active connection.')
+      return
     }
 
     const currentSender = this.peer.getSenders().find(s => s.track.kind === mediaStreamTrack.kind)

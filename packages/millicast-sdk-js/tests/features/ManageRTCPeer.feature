@@ -105,17 +105,17 @@ Feature: As a user I want to manage the peer connection so I can connect to the 
     When I want to get the peer connection state
     Then returns no value
 
-  # Scenario: Replace track to existing peer
-  #   Given I have a peer connected
-  #   When I want to change current audio track
-  #   Then the track is changed
+  Scenario: Replace track to existing peer
+    Given I have a peer connected
+    When I want to change current audio track
+    Then the track is changed
 
-  # Scenario: Replace track to unexisting peer
-  #   Given I do not have a peer connected
-  #   When I want to change the audio track
-  #   Then the track is not changed
+  Scenario: Replace track to unexisting peer
+    Given I do not have a peer connected
+    When I want to change the audio track
+    Then the track is not changed
 
-  # Scenario: Replace unexisting track to peer
-  #   Given I have a peer connected
-  #   When I want to change the audio track and peer does not have any audio track
-  #   Then the track is not changed
+  Scenario: Replace unexisting track to peer
+    Given I have a peer connected with video track
+    When I want to change the audio track
+    Then the track is not changed

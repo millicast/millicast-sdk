@@ -19,6 +19,7 @@ class MockRTCPeerConnection {
     this.currentRemoteDescription = null
     this.currentLocalDescription = null
     this.connectionState = 'new'
+    this.senders = []
   }
 
   getConfiguration () {
@@ -43,7 +44,22 @@ class MockRTCPeerConnection {
     this.currentLocalDescription = sessionDescription
   }
 
-  addTrack (track, mediaStream) {}
+  addTrack (track, mediaStream) {
+    this.senders.push({
+      track,
+      replaceTrack: (newTrack) => {
+        for (const sender of this.senders) {
+          if (sender.track.kind === newTrack.kind) {
+            sender.track = newTrack
+          }
+        }
+      }
+    })
+  }
+
+  getSenders () {
+    return this.senders
+  }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection
