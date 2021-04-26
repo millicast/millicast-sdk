@@ -1,6 +1,6 @@
-# Millicast Realtime Broadcast SDK for Node.js
+# Millicast Realtime Broadcast SDK for JavaScript
 <!-- TODO: Add badges: NPM, build, tests, etc. -->
-This Software Development Kit (SDK) for Node.js allows developers to simplify Millicast services integration into their own web apps. You can find the latest, most up to date, SDK documentation at our [doc site](https://link-to-docs.com).
+This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps. You can find the latest, most up to date, SDK documentation at our [doc site](https://link-to-docs.com).
 
 
 <!-- ## Installation
@@ -16,6 +16,7 @@ This project is built with [Lerna](https://lerna.js.org/) and contains the follo
 - `millicast-sdk-js`: The SDK itself.
 - `millicast-publisher-demo`: Publisher demo page using SDK. You can try this demo [here](https://demo.millicast.com/?codec=h264&nosimulcast).
 - `millicast-viewer-demo`: Viewer demo page using SDK.
+- `millicast-chromecast-receiver`: Example of Google Cast receiver for demo.
 
 ## Development
 Asumming that you have Node 12.10.x or newer and `npm` installed, install the required dependencies running:
