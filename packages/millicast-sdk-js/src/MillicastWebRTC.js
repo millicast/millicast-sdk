@@ -57,20 +57,15 @@ export default class MillicastWebRTC extends EventEmitter {
    * Close RTC peer connection.
    */
   async closeRTCPeer () {
-    try {
-      logger.info('Closing RTCPeerConnection')
-      this.peer?.close()
-      this.peer = null
-      /**
-       * Peer closed connection state change.
-       *
-       * @event MillicastWebRTC#peerClosed
-       */
-      this.emit(webRTCEvents.peerClosed)
-    } catch (e) {
-      logger.error('Error while closing RTCPeerConnection: ', e)
-      throw e
-    }
+    logger.info('Closing RTCPeerConnection')
+    this.peer?.close()
+    this.peer = null
+    /**
+     * Peer closed connection state change.
+     *
+     * @event MillicastWebRTC#peerClosed
+     */
+    this.emit(webRTCEvents.peerClosed)
   }
 
   /**
@@ -134,7 +129,7 @@ export default class MillicastWebRTC extends EventEmitter {
       logger.info('RTC Remote SDP was set successfully.')
       logger.debug('RTC Remote SDP new value: ', sdp)
     } catch (e) {
-      logger.error('Error while setting RTC Remote SDP: ', escape)
+      logger.error('Error while setting RTC Remote SDP: ', e)
       throw e
     }
   }
