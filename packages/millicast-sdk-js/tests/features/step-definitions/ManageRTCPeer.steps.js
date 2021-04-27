@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
-import MillicastWebRTC from '../../../src/MillicastWebRTC'
+import MillicastWebRTC, { webRTCEvents } from '../../../src/MillicastWebRTC'
 import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
@@ -560,6 +560,113 @@ defineFeature(feature, test => {
           })
         ])
       )
+    })
+  })
+
+  test('Receive new track from peer', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const handler = jest.fn()
+    const sdp = 'My default SDP'
+
+    given('I have a peer connected', async () => {
+      await millicastWebRTC.getRTCPeer()
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+    })
+
+    when('peer returns new track', async () => {
+      millicastWebRTC.on(webRTCEvents.newTrack, handler)
+      millicastWebRTC.peer.emitMockEvent('ontrack', { streams: ['new stream incoming'] })
+    })
+
+    then('new track event is fired', async () => {
+      expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith({ streams: ['new stream incoming'] })
+    })
+  })
+
+  test('Get connecting status from peer', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const handler = jest.fn()
+    const sdp = 'My default SDP'
+
+    given('I have a peer', async () => {
+      await millicastWebRTC.getRTCPeer()
+    })
+
+    when('peer starts to connect', async () => {
+      millicastWebRTC.on(webRTCEvents.peerConnecting, handler)
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      millicastWebRTC.peer.connectionState = 'connecting'
+      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+    })
+
+    then('peer connecting event is fired', async () => {
+      expect(handler).toBeCalledTimes(1)
+    })
+  })
+
+  test('Get connected status from peer', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const handler = jest.fn()
+    const sdp = 'My default SDP'
+
+    given('I have a peer', async () => {
+      await millicastWebRTC.getRTCPeer()
+    })
+
+    when('peer connects', async () => {
+      millicastWebRTC.on(webRTCEvents.peerConnected, handler)
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      millicastWebRTC.peer.connectionState = 'connected'
+      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+    })
+
+    then('peer connected event is fired', async () => {
+      expect(handler).toBeCalledTimes(1)
+    })
+  })
+
+  test('Get disconnected status from peer', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const handler = jest.fn()
+    const sdp = 'My default SDP'
+
+    given('I have a peer connected', async () => {
+      await millicastWebRTC.getRTCPeer()
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      millicastWebRTC.peer.connectionState = 'connected'
+    })
+
+    when('peer disconnects', async () => {
+      millicastWebRTC.on(webRTCEvents.peerDisconnected, handler)
+      millicastWebRTC.peer.connectionState = 'disconnected'
+      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+    })
+
+    then('peer disconnected event is fired', async () => {
+      expect(handler).toBeCalledTimes(1)
+    })
+  })
+
+  test('Get failed status from peer', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const handler = jest.fn()
+    const sdp = 'My default SDP'
+
+    given('I have a peer connected', async () => {
+      await millicastWebRTC.getRTCPeer()
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      millicastWebRTC.peer.connectionState = 'connected'
+    })
+
+    when('peer have a connection error', async () => {
+      millicastWebRTC.on(webRTCEvents.peerFailed, handler)
+      millicastWebRTC.peer.connectionState = 'failed'
+      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+    })
+
+    then('peer failed event is fired', async () => {
+      expect(handler).toBeCalledTimes(1)
     })
   })
 })

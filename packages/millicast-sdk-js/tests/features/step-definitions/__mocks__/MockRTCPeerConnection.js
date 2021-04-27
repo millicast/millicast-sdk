@@ -60,6 +60,20 @@ class MockRTCPeerConnection {
   getSenders () {
     return this.senders
   }
+
+  ontrack (event) {}
+
+  onconnectionstatechange (state) {
+    this.connectionState = state
+  }
+
+  emitMockEvent (eventName, data) {
+    if (eventName === 'ontrack') {
+      this.ontrack(data)
+    } else if (eventName === 'onconnectionstatechange') {
+      this.onconnectionstatechange(data)
+    }
+  }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection

@@ -119,3 +119,28 @@ Feature: As a user I want to manage the peer connection so I can connect to the 
     Given I have a peer connected with video track
     When I want to change the audio track
     Then the track is not changed
+
+  Scenario: Receive new track from peer
+    Given I have a peer connected
+    When peer returns new track
+    Then new track event is fired
+
+  Scenario: Get connecting status from peer
+    Given I have a peer
+    When peer starts to connect
+    Then peer connecting event is fired
+
+  Scenario: Get connected status from peer
+    Given I have a peer
+    When peer connects
+    Then peer connected event is fired
+
+  Scenario: Get disconnected status from peer
+    Given I have a peer connected
+    When peer disconnects
+    Then peer disconnected event is fired
+  
+  Scenario: Get failed status from peer
+    Given I have a peer connected
+    When peer have a connection error
+    Then peer failed event is fired
