@@ -192,17 +192,24 @@ export default class MillicastSignaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
+   * @param {MillicastVideoCodecs} codec - Codec for publish stream.
    * @example const response = await millicastSignaling.publish(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish (sdp) {
-    logger.info('Starting publishing to streamName: ', this.streamName)
+  async publish (sdp, codec) {
+    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${codec}`)
     logger.debug('Publishing local description: ', sdp)
+
+    const videoCodecs = Object.values(MillicastVideoCodecs)
+    if (videoCodecs.indexOf(codec) === -1) {
+      logger.error('Invalid codec. Possible values are: ', videoCodecs)
+      throw new Error(`Invalid codec. Possible values are: ${videoCodecs}`)
+    }
 
     const data = {
       name: this.streamName,
       sdp,
-      codec: 'h264'
+      codec
     }
 
     try {
