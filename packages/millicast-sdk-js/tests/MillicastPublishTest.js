@@ -29,11 +29,13 @@ class MillicastPublishTest {
         disableVideo: false,
         disableAudio: false
       }
-      this.millicastPublish.on('peerConnected', () => {
-        const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamName}`
-        document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=640 style="border:none;"></iframe>`
-        console.log('Broadcast viewer link: ', viewLink)
-        document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
+      this.millicastPublish.on('connectionStateChange', (state) => {
+        if (state === 'connected') {
+          const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamName}`
+          document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=640 style="border:none;"></iframe>`
+          console.log('Broadcast viewer link: ', viewLink)
+          document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
+        }
       })
       this.millicastPublish.broadcast(broadcastOptions)
 

@@ -67,7 +67,7 @@ const newViewer = () => {
     }
   });
   
-  millicastView.on("newTrack", (event) => {
+  millicastView.on("track", (event) => {
     if (!playing) addStream(event.streams[0]);
   });
 
