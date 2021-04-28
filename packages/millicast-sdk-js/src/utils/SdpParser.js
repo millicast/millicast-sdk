@@ -4,7 +4,19 @@ import MillicastLogger from '../MillicastLogger'
 
 const logger = MillicastLogger.get('SdpParser')
 
+/**
+ * Simplify SDP parser.
+ *
+ * @namespace
+ */
 export default class SdpParser {
+  /**
+   * Parse SDP for support simulcast.
+   * @param {String} sdp - Current SDP.
+   * @param {String} codec - Codec.
+   * @returns {String} SDP parsed with simulcast support.
+   * @example SdpParser.setSimulcast(sdp, 'h264')
+   */
   static setSimulcast (sdp, codec) {
     logger.info('Setting simulcast. Codec: ', codec)
     const browserData = new UAParser(window.navigator.userAgent).getBrowser()
@@ -64,6 +76,12 @@ export default class SdpParser {
     }
   }
 
+  /**
+   * Parse SDP for support stereo.
+   * @param {String} sdp - Current SDP.
+   * @returns {String} SDP parsed with stereo support.
+   * @example SdpParser.setStereo(sdp)
+   */
   static setStereo (sdp) {
     logger.info('Replacing SDP response for support stereo')
     sdp = sdp.replace(
@@ -75,6 +93,13 @@ export default class SdpParser {
     return sdp
   }
 
+  /**
+   * Parse SDP for desired bitrate.
+   * @param {String} sdp - Current SDP.
+   * @param {Number} bitrate - Bitrate value in kbps or 0 for unlimited bitrate.
+   * @returns {String} SDP parsed with desired bitrate.
+   * @example SdpParser.setVideoBitrate(sdp, 1000)
+   */
   static setVideoBitrate (sdp, bitrate) {
     if (bitrate < 1) {
       logger.info('Remove bitrate restrictions')
@@ -96,15 +121,22 @@ export default class SdpParser {
     return sdp
   }
 
-  static removeSdpLine (remoteSdp, sdpLine) {
-    logger.debug('SDP before trimming: ', remoteSdp)
-    remoteSdp = remoteSdp
+  /**
+   * Remove SDP line.
+   * @param {String} sdp - Current SDP.
+   * @param {String} sdpLine - SDP line to remove.
+   * @returns {String} SDP without the line.
+   * @example SdpParser.removeSdpLine(sdp, 'custom line')
+   */
+  static removeSdpLine (sdp, sdpLine) {
+    logger.debug('SDP before trimming: ', sdp)
+    sdp = sdp
       .split('\n')
       .filter((line) => {
         return line.trim() !== sdpLine
       })
       .join('\n')
-    logger.debug('SDP trimmed result: ', remoteSdp)
-    return remoteSdp
+    logger.debug('SDP trimmed result: ', sdp)
+    return sdp
   }
 }
