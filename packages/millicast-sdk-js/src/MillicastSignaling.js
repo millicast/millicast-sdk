@@ -193,7 +193,7 @@ export default class MillicastSignaling extends EventEmitter {
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
    * @param {MillicastVideoCodecs} codec - Codec for publish stream.
-   * @example const response = await millicastSignaling.publish(sdp)
+   * @example const response = await millicastSignaling.publish(sdp, 'h264')
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async publish (sdp, codec) {
