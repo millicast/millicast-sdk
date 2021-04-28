@@ -12,6 +12,32 @@ export const signalingEvents = {
 }
 
 /**
+ * Enum of Millicast supported Video codecs
+ * @readonly
+ * @enum {String}
+ * @property {String} VP8
+ * @property {String} VP9
+ * @property {String} H264
+ * @property {String} AV1
+ */
+export const MillicastVideoCodecs = {
+  VP8: 'vp8',
+  VP9: 'vp9',
+  H264: 'h264',
+  AV1: 'av1'
+}
+
+/**
+ * Enum of Millicast supported Audio codecs
+ * @readonly
+ * @enum {String}
+ * @property {String} OPUS
+ */
+export const MillicastAudioCodecs = {
+  OPUS: 'opus'
+}
+
+/**
  * @class MillicastSignaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
@@ -107,9 +133,10 @@ export default class MillicastSignaling extends EventEmitter {
         logger.error('WebSocket not connected: ', this.webSocket.url)
         /**
            * WebSocket connection failed with signaling server.
+           * Returns url of WebSocket
            *
            * @event MillicastSignaling#wsConnectionError
-           * @type {String} url - WebSocket location
+           * @type {String}
            */
         this.emit(signalingEvents.connectionError, this.webSocket.url)
         reject(this.webSocket.url)

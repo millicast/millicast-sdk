@@ -2,6 +2,7 @@ import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
 import EventEmitter from 'events'
 import MillicastLogger from './MillicastLogger'
+import { MillicastVideoCodecs, MillicastAudioCodecs } from './MillicastSignaling'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
@@ -271,6 +272,52 @@ export default class MillicastWebRTC extends EventEmitter {
     } else {
       logger.error(`There is no ${mediaStreamTrack.kind} track in active broadcast.`)
     }
+  }
+
+  /**
+   * @typedef {Object} MillicastCapability
+   * @property {String} codec - Audio or video codec name.
+   * @property {String} mimeType - Audio or video codec mime type.
+   * @property {Array<String>} [scalabilityModes] - In case of SVC support, a list of scalability modes supported.
+   * @property {Number} [channels] - Only for audio, the number of audio channels supported.
+   */
+  /**
+   * Gets user's browser media capabilities compared with Millicast Media Server support.
+   *
+   * @param {"audio"|"video"} kind - Type of media for which you wish to get sender capabilities.
+   * @returns {Array<MillicastCapability>} An array with all capabilities supported by user's browser and Millicast Media Server.
+   */
+  static getCapabilities (kind) {
+    const browserCapabilites = RTCRtpSender.getCapabilities(kind)
+
+    if (browserCapabilites) {
+      let regex = new RegExp(`^video/(${Object.values(MillicastVideoCodecs).join('|')})x?$`, 'i')
+
+      if (kind === 'audio') {
+        regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodecs).join('|')})$`, 'i')
+      }
+
+      const codecs = {}
+      for (const codec of browserCapabilites.codecs) {
+        const matches = codec.mimeType.match(regex)
+        if (matches) {
+          const codecName = matches[1].toLowerCase()
+          codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType }
+          if (codec.scalabilityModes) {
+            let modes = codecs[codecName].scalabilityModes || []
+            modes = [...modes, ...codec.scalabilityModes]
+            codecs[codecName].scalabilityModes = [...new Set(modes)]
+          }
+          if (codec.channels) {
+            codecs[codecName].channels = codec.channels
+          }
+        }
+      }
+
+      browserCapabilites.codecs = Object.keys(codecs).map((key) => { return { codec: key, ...codecs[key] } })
+    }
+
+    return browserCapabilites
   }
 }
 
