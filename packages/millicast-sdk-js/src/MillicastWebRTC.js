@@ -172,7 +172,6 @@ export default class MillicastWebRTC extends EventEmitter {
 
       this.sessionDescription = response
       if (options.simulcast) {
-        window.MISDP = this.sessionDescription.sdp
         this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
       }
       if (options.stereo) {
