@@ -139,4 +139,20 @@ export default class SdpParser {
     logger.debug('SDP trimmed result: ', sdp)
     return sdp
   }
+
+  /**
+   * Replace codec name of a SDP.
+   * @param {String} sdp - Current SDP.
+   * @param {String} codec - Codec name to be replaced.
+   * @param {String} newCodecName - New codec name to replace.
+   * @returns {String} SDP updated with new codec name.
+   */
+  static adaptCodecName (sdp, codec, newCodecName) {
+    if (!sdp) {
+      return sdp
+    }
+    const regex = new RegExp(`${codec}`, 'i')
+
+    return sdp.replace(regex, newCodecName)
+  }
 }
