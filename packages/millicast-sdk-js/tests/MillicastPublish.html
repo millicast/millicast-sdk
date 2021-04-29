@@ -22,6 +22,9 @@
   </table>
   <br />
   <fieldset>
+    Codec: <select id='codec-select' onchange="millicastPublishTest.changeCodec(this)">
+      
+    </select>
     Bitrate: <select id='bitrate-select' onchange="millicastPublishTest.testUpdateBitrate(this)">
       <option value="0" default>Unlimited</option>
       <option value="2000">2000</option>
@@ -30,6 +33,8 @@
       <option value="250">250</option>
       <option value="125">125</option>
     </select>
+    <input type="checkbox" id="simulcast-checkbox" onclick="millicastPublishTest.setSimulcast(this)">
+    <label for="simulcast">Simulcast</label>
     <input type="checkbox" id="disable-audio-checkbox" onclick="millicastPublishTest.testMuteAudio(this)">
     <label for="disable-audio">Mute audio</label>
     <input type="checkbox" id="disable-video-checkbox" onclick="millicastPublishTest.testMuteVideo(this)">

@@ -11,13 +11,27 @@ class MillicastPublishTest {
     this.mediaStream = await this.millicastMedia.getMedia()
     console.log('GetMedia response:', this.mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
+    this.setCodecOptions()
+  }
+
+  setCodecOptions () {
+    const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
+    const options = []
+
+    for (const codec of capabilities.codecs) {
+      options.push(`<option value='${codec.codec}'>${codec.codec}</option>`)
+    }
+
+    document.getElementById('codec-select').innerHTML = options.join('\n')
+
+    this.selectedCodec = capabilities.codecs[0]?.codec
   }
 
   async testStart (options = undefined) {
     const accountId = 'tnJhvK'
     const bandwidth = Number.parseInt(document.getElementById('bitrate-select').value)
     const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
-    const streamName = 'km0n0h1u'
+    const streamName = 'km0y5qxp'
 
     this.millicastPublish = new millicast.MillicastPublish(streamName)
     try {
@@ -28,12 +42,12 @@ class MillicastPublishTest {
         bandwidth: bandwidth,
         disableVideo: false,
         disableAudio: false,
-        simulcast: true,
-        codec: 'h264'
+        simulcast: this.selectedCodec === 'h264' || this.selectedCodec === 'vp8' ? this.simulcast : false,
+        codec: this.selectedCodec
       }
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
-          const viewLink = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamName}`
+          const viewLink = `http://localhost:10002/?streamAccountId=${accountId}&streamId=${streamName}`
           document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=640 style="border:none;"></iframe>`
           console.log('Broadcast viewer link: ', viewLink)
           document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
@@ -58,6 +72,14 @@ class MillicastPublishTest {
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
     document.getElementById('broadcast-viewers').innerHTML = ''
     document.getElementById('viewer').innerHTML = '<div style="height: 480px; width: 640px;"></div>'
+  }
+
+  changeCodec (selectObject) {
+    this.selectedCodec = selectObject.value
+  }
+
+  setSimulcast (checkboxObject) {
+    this.simulcast = checkboxObject.checked
   }
 
   async testUpdateBitrate (selectObject) {

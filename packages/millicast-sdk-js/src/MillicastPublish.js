@@ -115,7 +115,7 @@ export default class MillicastPublish extends EventEmitter {
       offerToReceiveAudio: !options.disableAudio
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec })
-    let remoteSdp = await this.millicastSignaling.publish(localSdp)
+    let remoteSdp = await this.millicastSignaling.publish(localSdp, options.codec)
     if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
       remoteSdp = SdpParser.removeSdpLine(remoteSdp, 'a=extmap-allow-mixed')
     }
