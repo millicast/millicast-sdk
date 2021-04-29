@@ -6,6 +6,10 @@ import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../PeerConnectionEvent.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
+  beforeEach(() => {
+    jest.spyOn(MillicastWebRTC.prototype, 'getRTCIceServers').mockReturnValue([])
+  })
+
   afterEach(async () => {
     jest.restoreAllMocks()
     changeBrowserMock('Chrome')
