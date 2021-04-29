@@ -38,16 +38,11 @@ export default class MillicastWebRTC extends EventEmitter {
     logger.info('Getting RTC Peer')
     logger.debug('RTC configuration provided by user: ', config)
     if (!this.peer) {
-      try {
-        if (!config) {
-          logger.info('RTC configuration not provided by user.')
-          config = await this.getRTCConfiguration()
-        }
-        this.peer = instanceRTCPeerConnection(this, config)
-      } catch (e) {
-        logger.error('Error while creating RTCPeerConnection: ', e)
-        throw e
+      if (!config) {
+        logger.info('RTC configuration not provided by user.')
+        config = await this.getRTCConfiguration()
       }
+      this.peer = instanceRTCPeerConnection(this, config)
     }
 
     const { connectionState, currentLocalDescription, currentRemoteDescription } = this.peer
@@ -59,15 +54,16 @@ export default class MillicastWebRTC extends EventEmitter {
    * Close RTC peer connection.
    */
   async closeRTCPeer () {
-    try {
-      logger.info('Closing RTCPeerConnection')
-      this.peer?.close()
-      this.peer = null
-      this.emit(webRTCEvents.connectionStateChange, 'closed')
-    } catch (e) {
-      logger.error('Error while closing RTCPeerConnection: ', e)
-      throw e
-    }
+    logger.info('Closing RTCPeerConnection')
+    this.peer?.close()
+    this.peer = null
+    /**
+     * Peer closed connection state change.
+     *
+     * @event MillicastWebRTC#connectionStateChange
+     * @type {RTCPeerConnectionState}
+     */
+    this.emit(webRTCEvents.connectionStateChange, 'closed')
   }
 
   /**
@@ -131,7 +127,7 @@ export default class MillicastWebRTC extends EventEmitter {
       logger.info('RTC Remote SDP was set successfully.')
       logger.debug('RTC Remote SDP new value: ', sdp)
     } catch (e) {
-      logger.error('Error while setting RTC Remote SDP: ', escape)
+      logger.error('Error while setting RTC Remote SDP: ', e)
       throw e
     }
   }
@@ -166,27 +162,22 @@ export default class MillicastWebRTC extends EventEmitter {
     }
 
     logger.info('Creating peer offer')
-    try {
-      const response = await this.peer.createOffer(this.RTCOfferOptions)
-      logger.info('Peer offer created')
-      logger.debug('Peer offer response: ', response.sdp)
+    const response = await this.peer.createOffer(this.RTCOfferOptions)
+    logger.info('Peer offer created')
+    logger.debug('Peer offer response: ', response.sdp)
 
-      this.sessionDescription = response
-      if (options.simulcast) {
-        this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
-      }
-      if (options.stereo) {
-        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
-      }
-
-      await this.peer.setLocalDescription(this.sessionDescription)
-      logger.info('Peer local description set')
-
-      return this.sessionDescription.sdp
-    } catch (e) {
-      logger.info('Error while setting peer local description: ', e)
-      throw e
+    this.sessionDescription = response
+    if (options.simulcast) {
+      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
+    if (options.stereo) {
+      this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+    }
+
+    await this.peer.setLocalDescription(this.sessionDescription)
+    logger.info('Peer local description set')
+
+    return this.sessionDescription.sdp
   }
 
   /**
@@ -195,7 +186,7 @@ export default class MillicastWebRTC extends EventEmitter {
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @return {String} Updated SDP information with new bandwidth restriction.
    */
-  updateBandwidthRestriction (sdp, bitrate = 0) {
+  updateBandwidthRestriction (sdp, bitrate) {
     logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
     return SdpParser.setVideoBitrate(sdp, bitrate)
@@ -238,6 +229,7 @@ export default class MillicastWebRTC extends EventEmitter {
   replaceTrack (mediaStreamTrack) {
     if (!this.peer) {
       logger.error('Could not change track if there is not an active connection.')
+      return
     }
 
     const currentSender = this.peer.getSenders().find(s => s.track.kind === mediaStreamTrack.kind)
@@ -297,7 +289,7 @@ export default class MillicastWebRTC extends EventEmitter {
 }
 
 const isMediaStreamValid = mediaStream =>
-  mediaStream?.getAudioTracks().length === 1 || mediaStream?.getVideoTracks().length === 1
+  mediaStream?.getAudioTracks().length <= 1 && mediaStream?.getVideoTracks().length <= 1
 
 const getValidMediaStream = (mediaStream) => {
   if (!mediaStream) {
@@ -306,7 +298,7 @@ const getValidMediaStream = (mediaStream) => {
 
   if (mediaStream instanceof MediaStream && isMediaStreamValid(mediaStream)) {
     return mediaStream
-  } else {
+  } else if (!(mediaStream instanceof MediaStream)) {
     logger.info('Creating MediaStream to add received tracks.')
     const stream = new MediaStream()
     for (const track of mediaStream) {
