@@ -9,7 +9,7 @@ defineFeature(feature, test => {
   const streamName = 'MyStreamName'
   const accountId = 'MyAccountId'
   const publisherId = 'PublisherId1234'
-  const offerSdp = `v=0
+  const offerSdp = (codec = 'h264') => `v=0
     o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
     s=
     c=IN IP4 host.anywhere.com
@@ -19,12 +19,31 @@ defineFeature(feature, test => {
     a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
     a=rtpmap:119 rtx/90000
     a=fmtp:119 apt=124
-    a=rtpmap:123 H264/90000
+    a=rtpmap:123 ${codec.toUpperCase()}/90000
     a=rtcp-fb:123 goog-remb
     a=rtcp-fb:123 transport-cc
     a=rtcp-fb:123 ccm fir
     a=rtcp-fb:123 nack
     a=rtcp-fb:123 nack pli
+  `
+
+  const localSdp = `v=0
+    o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
+    s=
+    c=IN IP4 host.anywhere.com
+    t=0 0
+    m=audio 49170 RTP/AVP 0
+    a=rtpmap:0 PCMU/8000
+    m=video 51372 RTP/AVP 31
+    a=rtpmap:31 VP8/90000
+    a=rtpmap:31 VP9/90000
+    a=rtpmap:31 H264/90000
+    a=rtcp-fb:31 goog-remb
+    a=rtcp-fb:31 transport-cc
+    a=rtcp-fb:31 ccm fir
+    a=rtcp-fb:31 nack
+    a=rtcp-fb:31 nack pli
+    a=rtpmap:31 AV1X/90000
   `
   let server = null
 
@@ -39,36 +58,14 @@ defineFeature(feature, test => {
   })
 
   test('Offer a SDP with no previous connection and h264 codec', ({ given, when, then }) => {
-    let localSdp
     let response
 
     given('a local sdp and no previous connection to server', async () => {
-      localSdp = `v=0
-        o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-        s=
-        c=IN IP4 host.anywhere.com
-        t=0 0
-        m=audio 49170 RTP/AVP 0
-        a=rtpmap:0 PCMU/8000
-        m=video 51372 RTP/AVP 31
-        a=rtpmap:31 H261/90000
-        m=video 53000 RTP/AVP 32
-        a=rtpmap:32 MPV/90000
-        a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
-        a=rtpmap:119 rtx/90000
-        a=fmtp:119 apt=124
-        a=rtpmap:123 H264/90000
-        a=rtcp-fb:123 goog-remb
-        a=rtcp-fb:123 transport-cc
-        a=rtcp-fb:123 ccm fir
-        a=rtcp-fb:123 nack
-        a=rtcp-fb:123 nack pli
-      `
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
           publisherId,
-          sdp: offerSdp,
+          sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
           uuid: 'feeds://uuid1234/5678'
         }
@@ -85,37 +82,16 @@ defineFeature(feature, test => {
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
-      expect(response).toBe(offerSdp)
+      expect(response).toBe(offerSdp())
+      expect(response).not.toMatch(/AV1X|VP8|VP9/)
     })
   })
 
   test('Offer a SDP with previous connection and h264 codec', ({ given, when, then }) => {
-    let localSdp
     let response
     let millicastSignaling
 
     given('a local sdp and a previous active connection to server', async () => {
-      localSdp = `v=0
-        o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-        s=
-        c=IN IP4 host.anywhere.com
-        t=0 0
-        m=audio 49170 RTP/AVP 0
-        a=rtpmap:0 PCMU/8000
-        m=video 51372 RTP/AVP 31
-        a=rtpmap:31 H261/90000
-        m=video 53000 RTP/AVP 32
-        a=rtpmap:32 MPV/90000
-        a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
-        a=rtpmap:119 rtx/90000
-        a=fmtp:119 apt=124
-        a=rtpmap:123 H264/90000
-        a=rtcp-fb:123 goog-remb
-        a=rtcp-fb:123 transport-cc
-        a=rtcp-fb:123 ccm fir
-        a=rtcp-fb:123 nack
-        a=rtcp-fb:123 nack pli
-      `
       millicastSignaling = new MillicastSignaling({
         streamName: streamName,
         url: publishWebSocketLocation
@@ -125,7 +101,7 @@ defineFeature(feature, test => {
         return {
           feedId: 12345,
           publisherId,
-          sdp: offerSdp,
+          sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
           uuid: 'feeds://uuid1234/5678'
         }
@@ -138,12 +114,12 @@ defineFeature(feature, test => {
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
-      expect(response).toBe(offerSdp)
+      expect(response).toBe(offerSdp())
+      expect(response).not.toMatch(/AV1|VP8|VP9/)
     })
   })
 
   test('Offer no SDP with no previous connection', ({ given, when, then }) => {
-    const localSdp = null
     const errorMessage = 'No sdp'
     let response
 
@@ -157,7 +133,7 @@ defineFeature(feature, test => {
         url: publishWebSocketLocation
       })
       try {
-        await millicastSignaling.publish(localSdp, 'h264')
+        await millicastSignaling.publish(null, 'h264')
       } catch (error) {
         response = error
       }
@@ -170,7 +146,6 @@ defineFeature(feature, test => {
   })
 
   test('Offer no SDP with previous connection', ({ given, when, then }) => {
-    const localSdp = null
     const errorMessage = 'No sdp'
     let response
     let millicastSignaling
@@ -186,7 +161,7 @@ defineFeature(feature, test => {
 
     when('I offer a null sdp', async () => {
       try {
-        await millicastSignaling.publish(localSdp, 'h264')
+        await millicastSignaling.publish(null, 'h264')
       } catch (error) {
         response = error
       }
@@ -199,36 +174,14 @@ defineFeature(feature, test => {
   })
 
   test('Offer a SDP with unexistent stream name', ({ given, when, then }) => {
-    let localSdp
     let response
 
     given('I have not previous connection to server', async () => {
-      localSdp = `v=0
-      o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-      s=
-      c=IN IP4 host.anywhere.com
-      t=0 0
-      m=audio 49170 RTP/AVP 0
-      a=rtpmap:0 PCMU/8000
-      m=video 51372 RTP/AVP 31
-      a=rtpmap:31 H261/90000
-      m=video 53000 RTP/AVP 32
-      a=rtpmap:32 MPV/90000
-      a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
-      a=rtpmap:119 rtx/90000
-      a=fmtp:119 apt=124
-      a=rtpmap:123 H264/90000
-      a=rtcp-fb:123 goog-remb
-      a=rtcp-fb:123 transport-cc
-      a=rtcp-fb:123 ccm fir
-      a=rtcp-fb:123 nack
-      a=rtcp-fb:123 nack pli
-    `
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
           publisherId,
-          sdp: offerSdp,
+          sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
           uuid: 'feeds://uuid1234/5678'
         }
@@ -242,7 +195,8 @@ defineFeature(feature, test => {
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
-      expect(response).toBe(offerSdp)
+      expect(response).toBe(offerSdp())
+      expect(response).not.toMatch(/AV1X|VP8|VP9/)
     })
   })
 
@@ -277,7 +231,6 @@ defineFeature(feature, test => {
   })
 
   test('Offer a SDP with invalid codec', ({ given, when, then }) => {
-    const localSdp = null
     const errorMessage = 'Invalid codec'
     let response
 
@@ -304,36 +257,14 @@ defineFeature(feature, test => {
   })
 
   test('Offer a SDP with no previous connection and vp8 codec', ({ given, when, then }) => {
-    let localSdp
     let response
 
     given('a local sdp and no previous connection to server', async () => {
-      localSdp = `v=0
-        o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-        s=
-        c=IN IP4 host.anywhere.com
-        t=0 0
-        m=audio 49170 RTP/AVP 0
-        a=rtpmap:0 PCMU/8000
-        m=video 51372 RTP/AVP 31
-        a=rtpmap:31 H261/90000
-        m=video 53000 RTP/AVP 32
-        a=rtpmap:32 MPV/90000
-        a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
-        a=rtpmap:119 rtx/90000
-        a=fmtp:119 apt=124
-        a=rtpmap:123 H264/90000
-        a=rtcp-fb:123 goog-remb
-        a=rtcp-fb:123 transport-cc
-        a=rtcp-fb:123 ccm fir
-        a=rtcp-fb:123 nack
-        a=rtcp-fb:123 nack pli
-      `
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
           publisherId,
-          sdp: offerSdp,
+          sdp: offerSdp('vp8'),
           streamId: `${accountId}/${streamName}`,
           uuid: 'feeds://uuid1234/5678'
         }
@@ -350,41 +281,20 @@ defineFeature(feature, test => {
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
-      expect(response).toBe(offerSdp)
+      expect(response).toBe(offerSdp('vp8'))
+      expect(response).not.toMatch(/AV1X|H264|VP9/)
     })
   })
 
   test('Offer a SDP with no previous connection and vp9 codec', ({ given, when, then }) => {
-    let localSdp
     let response
 
     given('a local sdp and no previous connection to server', async () => {
-      localSdp = `v=0
-        o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-        s=
-        c=IN IP4 host.anywhere.com
-        t=0 0
-        m=audio 49170 RTP/AVP 0
-        a=rtpmap:0 PCMU/8000
-        m=video 51372 RTP/AVP 31
-        a=rtpmap:31 H261/90000
-        m=video 53000 RTP/AVP 32
-        a=rtpmap:32 MPV/90000
-        a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
-        a=rtpmap:119 rtx/90000
-        a=fmtp:119 apt=124
-        a=rtpmap:123 H264/90000
-        a=rtcp-fb:123 goog-remb
-        a=rtcp-fb:123 transport-cc
-        a=rtcp-fb:123 ccm fir
-        a=rtcp-fb:123 nack
-        a=rtcp-fb:123 nack pli
-      `
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
           publisherId,
-          sdp: offerSdp,
+          sdp: offerSdp('vp9'),
           streamId: `${accountId}/${streamName}`,
           uuid: 'feeds://uuid1234/5678'
         }
@@ -401,41 +311,20 @@ defineFeature(feature, test => {
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
-      expect(response).toBe(offerSdp)
+      expect(response).toBe(offerSdp('vp9'))
+      expect(response).not.toMatch(/AV1X|VP8|H264/)
     })
   })
 
   test('Offer a SDP with no previous connection and av1 codec', ({ given, when, then }) => {
-    let localSdp
     let response
 
     given('a local sdp and no previous connection to server', async () => {
-      localSdp = `v=0
-        o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
-        s=
-        c=IN IP4 host.anywhere.com
-        t=0 0
-        m=audio 49170 RTP/AVP 0
-        a=rtpmap:0 PCMU/8000
-        m=video 51372 RTP/AVP 31
-        a=rtpmap:31 H261/90000
-        m=video 53000 RTP/AVP 32
-        a=rtpmap:32 MPV/90000
-        a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
-        a=rtpmap:119 rtx/90000
-        a=fmtp:119 apt=124
-        a=rtpmap:123 H264/90000
-        a=rtcp-fb:123 goog-remb
-        a=rtcp-fb:123 transport-cc
-        a=rtcp-fb:123 ccm fir
-        a=rtcp-fb:123 nack
-        a=rtcp-fb:123 nack pli
-      `
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
           publisherId,
-          sdp: offerSdp,
+          sdp: offerSdp('av1'),
           streamId: `${accountId}/${streamName}`,
           uuid: 'feeds://uuid1234/5678'
         }
@@ -452,7 +341,37 @@ defineFeature(feature, test => {
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
-      expect(response).toBe(offerSdp)
+      expect(response).toMatch('AV1X/90000')
+      expect(response).not.toMatch(/H264|VP8|VP9/)
+    })
+  })
+
+  test('Offer a SDP with no codec', ({ given, when, then }) => {
+    let response
+
+    given('I have not previous connection to server', async () => {
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: offerSdp(),
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer a sdp', async () => {
+      const millicastSignaling = new MillicastSignaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      response = await millicastSignaling.publish(localSdp)
+    })
+
+    then('returns a filtered sdp to offer to remote peer', async () => {
+      expect(response).toBeDefined()
+      expect(response).toBe(offerSdp())
     })
   })
 })

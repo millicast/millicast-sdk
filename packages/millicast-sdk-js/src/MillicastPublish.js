@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import MillicastSignaling, { MillicastVideoCodecs } from './MillicastSignaling'
+import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 
 const logger = MillicastLogger.get('MillicastPublish')
@@ -44,7 +44,7 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
-   * @param {MillicastVideoCodecs} options.codec - Codec for publish stream.
+   * @param {MillicastVideoCodec} options.codec - Codec for publish stream.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#peerConnecting
    * @fires MillicastWebRTC#peerConnected
@@ -86,7 +86,7 @@ export default class MillicastPublish extends EventEmitter {
       bandwidth: 0,
       disableVideo: false,
       disableAudio: false,
-      codec: MillicastVideoCodecs.H264
+      codec: MillicastVideoCodec.H264
     }
   ) {
     logger.debug('Broadcast option values: ', options)

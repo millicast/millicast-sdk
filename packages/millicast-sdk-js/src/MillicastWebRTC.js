@@ -2,7 +2,7 @@ import axios from 'axios'
 import SemanticSDP from 'semantic-sdp'
 import EventEmitter from 'events'
 import MillicastLogger from './MillicastLogger'
-import { MillicastVideoCodecs, MillicastAudioCodecs } from './MillicastSignaling'
+import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
@@ -291,10 +291,10 @@ export default class MillicastWebRTC extends EventEmitter {
     const browserCapabilites = RTCRtpSender.getCapabilities(kind)
 
     if (browserCapabilites) {
-      let regex = new RegExp(`^video/(${Object.values(MillicastVideoCodecs).join('|')})x?$`, 'i')
+      let regex = new RegExp(`^video/(${Object.values(MillicastVideoCodec).join('|')})x?$`, 'i')
 
       if (kind === 'audio') {
-        regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodecs).join('|')})$`, 'i')
+        regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
       }
 
       const codecs = {}

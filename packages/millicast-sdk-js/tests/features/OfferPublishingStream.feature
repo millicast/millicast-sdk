@@ -49,3 +49,8 @@ Feature: As a user I want to signal Millicast Server so I can offer publishing a
     Given I have not previous connection to server
     When I offer a sdp with invalid codec
     Then throws no valid codec error
+
+  Scenario: Offer a SDP with no codec
+    Given I have not previous connection to server
+    When I offer a sdp
+    Then returns a filtered sdp to offer to remote peer
