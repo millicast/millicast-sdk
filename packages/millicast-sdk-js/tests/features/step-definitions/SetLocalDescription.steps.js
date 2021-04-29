@@ -2,7 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
-import { changeBrowserMock } from './__mocks__/MockBrowser'
+import './__mocks__/MockBrowser'
 const feature = loadFeature('../SetLocalDescription.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -12,7 +12,6 @@ defineFeature(feature, test => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    changeBrowserMock('Chrome')
   })
 
   test('Get RTC Local SDP as subscriber role', ({ given, when, then }) => {
@@ -48,6 +47,29 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       sdp = await millicastWebRTC.getRTCLocalSDP({ mediaStream, stereo })
+    })
+
+    then('returns the SDP', async () => {
+      expect(millicastWebRTC.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role with simulcast and valid MediaStream', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let sdp
+    let mediaStream
+    let simulcast
+
+    given('I have a MediaStream with 1 audio track and 1 video track and I want support simulcast', async () => {
+      await millicastWebRTC.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      simulcast = true
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await millicastWebRTC.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264' })
     })
 
     then('returns the SDP', async () => {
