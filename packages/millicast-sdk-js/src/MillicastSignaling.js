@@ -1,6 +1,7 @@
 import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import MillicastLogger from './MillicastLogger'
+import SdpParser from './utils/SdpParser'
 
 const logger = MillicastLogger.get('MillicastSignaling')
 
@@ -177,7 +178,7 @@ export default class MillicastSignaling extends EventEmitter {
     logger.debug('Subcription local description: ', sdp)
 
     // Millicast Signaling only recognizes 'AV1' and not 'AV1X'
-    sdp = adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
+    sdp = SdpParser.adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
 
     const data = { sdp, streamId: this.streamName }
 
@@ -187,7 +188,7 @@ export default class MillicastSignaling extends EventEmitter {
       const result = await this.transactionManager.cmd('view', data)
 
       // Millicast Signaling returns 'AV1' instead of 'AV1X'
-      result.sdp = adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
+      result.sdp = SdpParser.adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
@@ -217,7 +218,7 @@ export default class MillicastSignaling extends EventEmitter {
 
     // Millicast Signaling only recognizes 'AV1' and not 'AV1X'
     if (codec === MillicastVideoCodec.AV1) {
-      sdp = adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
+      sdp = SdpParser.adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
     }
 
     const data = {
@@ -233,7 +234,7 @@ export default class MillicastSignaling extends EventEmitter {
 
       // Millicast Signaling returns 'AV1' instead of 'AV1X'
       if (codec === MillicastVideoCodec.AV1) {
-        result.sdp = adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
+        result.sdp = SdpParser.adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
       }
 
       logger.info('Command sent, publisherId: ', result.publisherId)
@@ -244,13 +245,4 @@ export default class MillicastSignaling extends EventEmitter {
       throw e
     }
   }
-}
-
-const adaptCodecName = (sdp, codec, newCodecName) => {
-  if (!sdp) {
-    return sdp
-  }
-  const regex = new RegExp(`${codec}`, 'i')
-
-  return sdp.replace(regex, newCodecName)
 }

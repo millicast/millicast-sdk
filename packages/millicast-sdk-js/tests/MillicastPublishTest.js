@@ -28,7 +28,8 @@ class MillicastPublishTest {
         bandwidth: bandwidth,
         disableVideo: false,
         disableAudio: false,
-        codec: 'vp9'
+        simulcast: true,
+        codec: 'h264'
       }
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {

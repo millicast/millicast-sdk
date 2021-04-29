@@ -1,6 +1,6 @@
 import axios from 'axios'
-import SemanticSDP from 'semantic-sdp'
 import EventEmitter from 'events'
+import SdpParser from './utils/SdpParser'
 import MillicastLogger from './MillicastLogger'
 import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
 
@@ -142,11 +142,15 @@ export default class MillicastWebRTC extends EventEmitter {
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
+   * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Selected codec for support simulcast.
+   * @param {Boolean} options.simulcast - True to modify SDP for support simulcast.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (options = {
     stereo: false,
-    mediaStream: null
+    mediaStream: null,
+    codec: 'h264',
+    simulcast: false
   }) {
     logger.info('Getting RTC Local SDP')
     logger.debug('Stereo value: ', options.stereo)
@@ -168,14 +172,11 @@ export default class MillicastWebRTC extends EventEmitter {
       logger.debug('Peer offer response: ', response.sdp)
 
       this.sessionDescription = response
+      if (options.simulcast) {
+        this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
+      }
       if (options.stereo) {
-        logger.info('Replacing SDP response for support stereo')
-        this.sessionDescription.sdp = this.sessionDescription.sdp.replace(
-          'useinbandfec=1',
-          'useinbandfec=1; stereo=1'
-        )
-        logger.info('Replaced SDP response for support stereo')
-        logger.debug('New SDP value: ', this.sessionDescription.sdp)
+        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
       }
 
       await this.peer.setLocalDescription(this.sessionDescription)
@@ -197,24 +198,7 @@ export default class MillicastWebRTC extends EventEmitter {
   updateBandwidthRestriction (sdp, bitrate = 0) {
     logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
-
-    const offer = SemanticSDP.SDPInfo.parse(sdp)
-    const videoOffer = offer.getMedia('video')
-
-    if (bitrate < 1) {
-      logger.info('Remove bitrate restrictions')
-      sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
-    } else {
-      logger.info('Setting video bitrate')
-      videoOffer.setBitrate(bitrate)
-      sdp = offer.toString()
-      if (sdp.indexOf('b=AS:') > -1 && window.adapter?.browserDetails?.browser === 'firefox') {
-        logger.info('Updating SDP for firefox browser')
-        sdp = sdp.replace('b=AS:', 'b=TIAS:')
-        logger.debug('SDP updated for firefox: ', sdp)
-      }
-    }
-    return sdp
+    return SdpParser.setVideoBitrate(sdp, bitrate)
   }
 
   /**
