@@ -2,3 +2,4 @@ node_modules/**
 dist
 packages/millicast-publisher-demo
 packages/millicast-viewer-demo
+packages/millicast-chromecast-receiver
