@@ -12,7 +12,7 @@ defineFeature(feature, test => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    changeBrowserMock('Chrome')
+    changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
   })
 
   test('Update bitrate with restrictions', ({ given, when, then }) => {
@@ -58,7 +58,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I am using Firefox and I have a peer connected', async () => {
-      changeBrowserMock('firefox')
+      changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
       await millicastWebRTC.getRTCPeer()
       await millicastWebRTC.setRTCRemoteSDP(sdp)
       expect(millicastWebRTC.peer.currentRemoteDescription.sdp).toBe(sdp)

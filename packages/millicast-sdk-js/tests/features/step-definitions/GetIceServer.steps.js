@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
-import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../GetIceServer.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
@@ -10,7 +9,6 @@ jest.mock('axios')
 defineFeature(feature, test => {
   afterEach(async () => {
     jest.restoreAllMocks()
-    changeBrowserMock('Chrome')
   })
 
   test('Get RTC Ice servers with custom location', ({ given, when, then }) => {

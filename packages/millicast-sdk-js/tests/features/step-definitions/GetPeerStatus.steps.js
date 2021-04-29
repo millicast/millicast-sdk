@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
-import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../GetPeerStatus.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -12,7 +11,6 @@ defineFeature(feature, test => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    changeBrowserMock('Chrome')
   })
 
   test('Get existing RTC peer status', ({ given, when, then }) => {
