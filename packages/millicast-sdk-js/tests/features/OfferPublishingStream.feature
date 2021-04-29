@@ -1,13 +1,28 @@
 Feature: As a user I want to signal Millicast Server so I can offer publishing a stream
 
-  Scenario: Offer a SDP with no previous connection
+  Scenario: Offer a SDP with no previous connection and h264 codec
     Given a local sdp and no previous connection to server
-    When I offer my local sdp
+    When I offer my local sdp with h264 codec
     Then returns a filtered sdp to offer to remote peer
 
-  Scenario: Offer a SDP with previous connection
+  Scenario: Offer a SDP with no previous connection and vp8 codec
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp with vp8 codec
+    Then returns a filtered sdp to offer to remote peer
+
+  Scenario: Offer a SDP with no previous connection and vp9 codec
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp with vp9 codec
+    Then returns a filtered sdp to offer to remote peer
+
+  Scenario: Offer a SDP with no previous connection and av1 codec
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp with av1 codec
+    Then returns a filtered sdp to offer to remote peer
+
+  Scenario: Offer a SDP with previous connection and h264 codec
     Given a local sdp and a previous active connection to server
-    When I offer my local spd
+    When I offer my local spd with h264 codec
     Then returns a filtered sdp to offer to remote peer
 
   Scenario: Offer no SDP with no previous connection
@@ -29,3 +44,8 @@ Feature: As a user I want to signal Millicast Server so I can offer publishing a
     Given I have not previous connection to server
     When I offer a sdp without stream
     Then throws no stream found error
+
+  Scenario: Offer a SDP with invalid codec
+    Given I have not previous connection to server
+    When I offer a sdp with invalid codec
+    Then throws no valid codec error
