@@ -47,11 +47,7 @@ export default class MillicastPublish extends EventEmitter {
    * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Codec for publish stream.
    * @param {Boolean} options.simulcast - Enable simulcast.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
-   * @fires MillicastWebRTC#peerConnecting
-   * @fires MillicastWebRTC#peerConnected
-   * @fires MillicastWebRTC#peerClosed
-   * @fires MillicastWebRTC#peerDisconnected
-   * @fires MillicastWebRTC#peerFailed
+   * @fires MillicastWebRTC#connectionStateChange
    * @example await millicastPublish.broadcast(options)
    * @example
    * import MillicastPublish from 'millicast-sdk-js'
@@ -111,7 +107,7 @@ export default class MillicastPublish extends EventEmitter {
     })
 
     await this.webRTCPeer.getRTCPeer()
-    reemit(this.webRTCPeer, this, [webRTCEvents.peerConnecting, webRTCEvents.peerConnected, webRTCEvents.peerClosed, webRTCEvents.peerDisconnected, webRTCEvents.peerFailed])
+    reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
     this.webRTCPeer.RTCOfferOptions = {
       offerToReceiveVideo: !options.disableVideo,
