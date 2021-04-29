@@ -1,8 +1,9 @@
 import EventEmitter from 'events'
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import MillicastSignaling from './MillicastSignaling'
+import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
+import SdpParser from './utils/SdpParser'
 
 const logger = MillicastLogger.get('MillicastPublish')
 
@@ -44,7 +45,7 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
-   * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Codec for publish stream.
+   * @param {MillicastVideoCodec} options.codec - Codec for publish stream.
    * @param {Boolean} options.simulcast - Enable simulcast.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#connectionStateChange
@@ -83,7 +84,7 @@ export default class MillicastPublish extends EventEmitter {
       bandwidth: 0,
       disableVideo: false,
       disableAudio: false,
-      codec: 'h264',
+      codec: MillicastVideoCodec.H264,
       simulcast: false
     }
   ) {
@@ -115,7 +116,9 @@ export default class MillicastPublish extends EventEmitter {
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec })
     let remoteSdp = await this.millicastSignaling.publish(localSdp)
-    remoteSdp = this.webRTCPeer.parseRemoteSDP(remoteSdp)
+    if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
+      remoteSdp = SdpParser.removeSdpLine(remoteSdp, 'a=extmap-allow-mixed')
+    }
     if (!options.disableVideo && options.bandwidth > 0) {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
     }

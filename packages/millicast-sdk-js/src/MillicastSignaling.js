@@ -12,6 +12,34 @@ export const signalingEvents = {
 }
 
 /**
+ * Enum of Millicast supported Video codecs
+ * @readonly
+ * @enum {String}
+ * @property {String} VP8
+ * @property {String} VP9
+ * @property {String} H264
+ * @property {String} AV1
+ */
+export const MillicastVideoCodec = {
+  VP8: 'vp8',
+  VP9: 'vp9',
+  H264: 'h264',
+  AV1: 'av1'
+}
+
+/**
+ * Enum of Millicast supported Audio codecs
+ * @readonly
+ * @enum {String}
+ * @property {String} OPUS
+ * @property {String} MULTIOPUS
+ */
+export const MillicastAudioCodec = {
+  OPUS: 'opus',
+  MULTIOPUS: 'multiopus'
+}
+
+/**
  * @class MillicastSignaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
@@ -107,9 +135,10 @@ export default class MillicastSignaling extends EventEmitter {
         logger.error('WebSocket not connected: ', this.webSocket.url)
         /**
            * WebSocket connection failed with signaling server.
+           * Returns url of WebSocket
            *
            * @event MillicastSignaling#wsConnectionError
-           * @type {String} url - WebSocket location
+           * @type {String}
            */
         this.emit(signalingEvents.connectionError, this.webSocket.url)
         reject(this.webSocket.url)
@@ -147,12 +176,19 @@ export default class MillicastSignaling extends EventEmitter {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
+    // Millicast Signaling only recognizes 'AV1' and not 'AV1X'
+    sdp = adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
+
     const data = { sdp, streamId: this.streamName }
 
     try {
       await this.connect()
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
+
+      // Millicast Signaling returns 'AV1' instead of 'AV1X'
+      result.sdp = adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
+
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
       return result.sdp
@@ -165,23 +201,41 @@ export default class MillicastSignaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @example const response = await millicastSignaling.publish(sdp)
+   * @param {MillicastVideoCodec} [codec="h264"] - Codec for publish stream.
+   * @example const response = await millicastSignaling.publish(sdp, 'h264')
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish (sdp) {
-    logger.info('Starting publishing to streamName: ', this.streamName)
+  async publish (sdp, codec = MillicastVideoCodec.H264) {
+    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${codec}`)
     logger.debug('Publishing local description: ', sdp)
+
+    const videoCodecs = Object.values(MillicastVideoCodec)
+    if (videoCodecs.indexOf(codec) === -1) {
+      logger.error('Invalid codec. Possible values are: ', videoCodecs)
+      throw new Error(`Invalid codec. Possible values are: ${videoCodecs}`)
+    }
+
+    // Millicast Signaling only recognizes 'AV1' and not 'AV1X'
+    if (codec === MillicastVideoCodec.AV1) {
+      sdp = adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
+    }
 
     const data = {
       name: this.streamName,
       sdp,
-      codec: 'h264'
+      codec
     }
 
     try {
       await this.connect()
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
+
+      // Millicast Signaling returns 'AV1' instead of 'AV1X'
+      if (codec === MillicastVideoCodec.AV1) {
+        result.sdp = adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
+      }
+
       logger.info('Command sent, publisherId: ', result.publisherId)
       logger.debug('Command result: ', result)
       return result.sdp
@@ -190,4 +244,13 @@ export default class MillicastSignaling extends EventEmitter {
       throw e
     }
   }
+}
+
+const adaptCodecName = (sdp, codec, newCodecName) => {
+  if (!sdp) {
+    return sdp
+  }
+  const regex = new RegExp(`${codec}`, 'i')
+
+  return sdp.replace(regex, newCodecName)
 }

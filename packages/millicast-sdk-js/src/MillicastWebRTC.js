@@ -2,6 +2,7 @@ import axios from 'axios'
 import EventEmitter from 'events'
 import SdpParser from './utils/SdpParser'
 import MillicastLogger from './MillicastLogger'
+import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
@@ -249,15 +250,49 @@ export default class MillicastWebRTC extends EventEmitter {
   }
 
   /**
-   * Parse remote SDP for correct format when setting in peer.
-   * @param {String} remoteSdp - Remote SDP.
-   * @return {String} Updated SDP information.
+   * @typedef {Object} MillicastCapability
+   * @property {String} codec - Audio or video codec name.
+   * @property {String} mimeType - Audio or video codec mime type.
+   * @property {Array<String>} [scalabilityModes] - In case of SVC support, a list of scalability modes supported.
+   * @property {Number} [channels] - Only for audio, the number of audio channels supported.
    */
-  parseRemoteSDP (remoteSdp) {
-    if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
-      remoteSdp = SdpParser.removeSdpLine(remoteSdp, 'a=extmap-allow-mixed')
+  /**
+   * Gets user's browser media capabilities compared with Millicast Media Server support.
+   *
+   * @param {"audio"|"video"} kind - Type of media for which you wish to get sender capabilities.
+   * @returns {Array<MillicastCapability>} An array with all capabilities supported by user's browser and Millicast Media Server.
+   */
+  static getCapabilities (kind) {
+    const browserCapabilites = RTCRtpSender.getCapabilities(kind)
+
+    if (browserCapabilites) {
+      let regex = new RegExp(`^video/(${Object.values(MillicastVideoCodec).join('|')})x?$`, 'i')
+
+      if (kind === 'audio') {
+        regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
+      }
+
+      const codecs = {}
+      for (const codec of browserCapabilites.codecs) {
+        const matches = codec.mimeType.match(regex)
+        if (matches) {
+          const codecName = matches[1].toLowerCase()
+          codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType }
+          if (codec.scalabilityModes) {
+            let modes = codecs[codecName].scalabilityModes || []
+            modes = [...modes, ...codec.scalabilityModes]
+            codecs[codecName].scalabilityModes = [...new Set(modes)]
+          }
+          if (codec.channels) {
+            codecs[codecName].channels = codec.channels
+          }
+        }
+      }
+
+      browserCapabilites.codecs = Object.keys(codecs).map((key) => { return { codec: key, ...codecs[key] } })
     }
-    return remoteSdp
+
+    return browserCapabilites
   }
 }
 
