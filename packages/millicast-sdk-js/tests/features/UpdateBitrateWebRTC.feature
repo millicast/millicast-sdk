@@ -1,0 +1,16 @@
+Feature: As a user I want to change max bitrate of a stream so I can adapt my stream to users with lower bandwidth
+
+  Scenario: Update bitrate with restrictions
+    Given I have a peer connected
+    When I want to update the bitrate to 1000 kbps
+    Then the bitrate is updated
+
+  Scenario: Update bitrate with no restrictions
+    Given I have a peer connected
+    When I want to update the bitrate to unlimited
+    Then the bitrate is updated
+
+  Scenario: Update bitrate with restrictions in Firefox
+    Given I am using Firefox and I have a peer connected
+    When I want to update the bitrate to 1000 kbps
+    Then the bitrate is updated
