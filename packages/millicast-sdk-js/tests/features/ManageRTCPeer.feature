@@ -18,7 +18,7 @@ Feature: As a user I want to manage the peer connection so I can connect to the 
   Scenario: Close existing RTC peer
     Given I have a RTC peer
     When I close the RTC peer
-    Then the peer is closed and emits peerClosed event
+    Then the peer is closed and emits connectionStateChange event
 
   Scenario: Get RTC Ice servers with custom location
     Given I have an ICE server location
@@ -123,24 +123,24 @@ Feature: As a user I want to manage the peer connection so I can connect to the 
   Scenario: Receive new track from peer
     Given I have a peer connected
     When peer returns new track
-    Then new track event is fired
+    Then track event is fired
 
   Scenario: Get connecting status from peer
     Given I have a peer
     When peer starts to connect
-    Then peer connecting event is fired
+    Then connectionStateChange event is fired
 
   Scenario: Get connected status from peer
     Given I have a peer
     When peer connects
-    Then peer connected event is fired
+    Then connectionStateChange event is fired
 
   Scenario: Get disconnected status from peer
     Given I have a peer connected
     When peer disconnects
-    Then peer disconnected event is fired
+    Then connectionStateChange event is fired
   
   Scenario: Get failed status from peer
     Given I have a peer connected
     When peer have a connection error
-    Then peer failed event is fired
+    Then connectionStateChange event is fired

@@ -81,15 +81,16 @@ defineFeature(feature, test => {
       jest.spyOn(MillicastWebRTC.prototype, 'getRTCIceServers').mockReturnValue([])
       millicastWebRTC = new MillicastWebRTC()
       await millicastWebRTC.getRTCPeer()
-      millicastWebRTC.on('peerClosed', handler)
+      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
     })
 
     when('I close the RTC peer', async () => {
       await millicastWebRTC.closeRTCPeer()
     })
 
-    then('the peer is closed and emits peerClosed event', async () => {
+    then('the peer is closed and emits connectionStateChange event', async () => {
       expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith('closed')
       expect(millicastWebRTC.peer).toBeNull()
     })
   })
@@ -574,11 +575,11 @@ defineFeature(feature, test => {
     })
 
     when('peer returns new track', async () => {
-      millicastWebRTC.on(webRTCEvents.newTrack, handler)
+      millicastWebRTC.on(webRTCEvents.track, handler)
       millicastWebRTC.peer.emitMockEvent('ontrack', { streams: ['new stream incoming'] })
     })
 
-    then('new track event is fired', async () => {
+    then('track event is fired', async () => {
       expect(handler).toBeCalledTimes(1)
       expect(handler).toBeCalledWith({ streams: ['new stream incoming'] })
     })
@@ -594,14 +595,15 @@ defineFeature(feature, test => {
     })
 
     when('peer starts to connect', async () => {
-      millicastWebRTC.on(webRTCEvents.peerConnecting, handler)
+      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
       await millicastWebRTC.setRTCRemoteSDP(sdp)
       millicastWebRTC.peer.connectionState = 'connecting'
       millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
-    then('peer connecting event is fired', async () => {
+    then('connectionStateChange event is fired', async () => {
       expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith('connecting')
     })
   })
 
@@ -615,14 +617,15 @@ defineFeature(feature, test => {
     })
 
     when('peer connects', async () => {
-      millicastWebRTC.on(webRTCEvents.peerConnected, handler)
+      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
       await millicastWebRTC.setRTCRemoteSDP(sdp)
       millicastWebRTC.peer.connectionState = 'connected'
       millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
-    then('peer connected event is fired', async () => {
+    then('connectionStateChange event is fired', async () => {
       expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith('connected')
     })
   })
 
@@ -638,13 +641,14 @@ defineFeature(feature, test => {
     })
 
     when('peer disconnects', async () => {
-      millicastWebRTC.on(webRTCEvents.peerDisconnected, handler)
+      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
       millicastWebRTC.peer.connectionState = 'disconnected'
       millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
-    then('peer disconnected event is fired', async () => {
+    then('connectionStateChange event is fired', async () => {
       expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith('disconnected')
     })
   })
 
@@ -660,13 +664,14 @@ defineFeature(feature, test => {
     })
 
     when('peer have a connection error', async () => {
-      millicastWebRTC.on(webRTCEvents.peerFailed, handler)
+      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
       millicastWebRTC.peer.connectionState = 'failed'
       millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
-    then('peer failed event is fired', async () => {
+    then('connectionStateChange event is fired', async () => {
       expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith('failed')
     })
   })
 })
