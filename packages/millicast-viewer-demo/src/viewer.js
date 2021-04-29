@@ -127,20 +127,24 @@ const addStream = (stream) => {
   }
 };
 
+let isSubscribed = false
+
 const close = () => {
   video.srcObject = null;
   playing = false;
   millicastView?.millicastSignaling?.close();
   millicastView = null
+  isSubscribed = false
   return Promise.resolve({});
 };
 
 const subscribe = async () => {
-  if (millicastView?.isActive()) {
+  if (millicastView?.isActive() || isSubscribed) {
     return
   }
 
   try {
+    isSubscribed = true
     const getViewerResponse = await MillicastDirector.getSubscriber(streamId, streamAccountId)
     const options = {
       subscriberData: getViewerResponse,

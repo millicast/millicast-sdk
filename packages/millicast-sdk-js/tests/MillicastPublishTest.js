@@ -27,7 +27,8 @@ class MillicastPublishTest {
         mediaStream: this.millicastMedia.mediaStream,
         bandwidth: bandwidth,
         disableVideo: false,
-        disableAudio: false
+        disableAudio: false,
+        codec: 'vp9'
       }
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
