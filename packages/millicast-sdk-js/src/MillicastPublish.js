@@ -3,7 +3,6 @@ import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
-import SdpParser from './utils/SdpParser'
 
 const logger = MillicastLogger.get('MillicastPublish')
 
@@ -116,9 +115,7 @@ export default class MillicastPublish extends EventEmitter {
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec })
     let remoteSdp = await this.millicastSignaling.publish(localSdp, options.codec)
-    if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
-      remoteSdp = SdpParser.removeSdpLine(remoteSdp, 'a=extmap-allow-mixed')
-    }
+
     if (!options.disableVideo && options.bandwidth > 0) {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
     }
@@ -136,6 +133,7 @@ export default class MillicastPublish extends EventEmitter {
     logger.info('Stopping broadcast')
     this.webRTCPeer.closeRTCPeer()
     this.millicastSignaling?.close()
+    this.millicastSignaling = null
   }
 
   /**

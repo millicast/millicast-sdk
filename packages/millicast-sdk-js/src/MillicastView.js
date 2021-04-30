@@ -102,14 +102,10 @@ export default class MillicastView extends EventEmitter {
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ stereo: true })
 
     const sdpSubscriber = await this.millicastSignaling.subscribe(localSdp)
-    if (sdpSubscriber) {
-      reemit(this.millicastSignaling, this, [signalingEvents.broadcastEvent])
-      await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
-      logger.info('Connected to streamName: ', this.streamName)
-    } else {
-      logger.error('Failed to connect to publisher: ', sdpSubscriber)
-      throw new Error('Failed to connect to publisher: ', sdpSubscriber)
-    }
+    reemit(this.millicastSignaling, this, [signalingEvents.broadcastEvent])
+
+    await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
+    logger.info('Connected to streamName: ', this.streamName)
   }
 
   /**

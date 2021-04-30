@@ -374,4 +374,32 @@ defineFeature(feature, test => {
       expect(response).toBe(offerSdp())
     })
   })
+  test('Signaling returns SDP with extmap-allow-mixed', ({ given, when, then }) => {
+    let response
+
+    given('I have not previous connection to server', async () => {
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: `${offerSdp()}\na=extmap-allow-mixed`,
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer a sdp', async () => {
+      const millicastSignaling = new MillicastSignaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      response = await millicastSignaling.publish(localSdp)
+    })
+
+    then('returns a filtered sdp to offer without extmap-allow-mixed', async () => {
+      expect(response).toBeDefined()
+      expect(response).toBe(offerSdp())
+    })
+  })
 })

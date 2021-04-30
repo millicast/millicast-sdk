@@ -15,11 +15,6 @@ Feature: As a user I want to subscribe to a stream without managing connections
     When I connect again to the stream
     Then throws an error
 
-  Scenario: Sginaling returns null sdp
-    Given an instance of MillicastViewer
-    When I connect to the stream
-    Then throws an error
-
   Scenario: Stop subscription
     Given I am subscribed to a stream
     When I stop the subscription

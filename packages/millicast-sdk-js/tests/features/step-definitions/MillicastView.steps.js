@@ -74,25 +74,6 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Sginaling returns null sdp', ({ given, when, then }) => {
-    let viewer
-    let expectError
-
-    given('an instance of MillicastViewer', async () => {
-      jest.spyOn(MillicastSignaling.prototype, 'subscribe').mockReturnValue(null)
-      viewer = new MillicastView('streamName')
-    })
-
-    when('I connect to the stream', async () => {
-      expectError = expect(() => viewer.connect({ subscriberData }))
-    })
-
-    then('throws an error', async () => {
-      expectError.rejects.toThrow(Error)
-      expectError.rejects.toThrow('Failed to connect to publisher: ')
-    })
-  })
-
   test('Stop subscription', ({ given, when, then }) => {
     const viewer = new MillicastView('streamName')
     let signaling
