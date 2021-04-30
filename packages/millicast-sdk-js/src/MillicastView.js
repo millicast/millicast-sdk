@@ -83,8 +83,8 @@ export default class MillicastView extends EventEmitter {
       throw new Error('Subscriber data required')
     }
     if (this.isActive()) {
-      logger.warn('Viewer currently subscriber')
-      throw new Error('Viewer currently subscriber')
+      logger.warn('Viewer currently subscribed')
+      throw new Error('Viewer currently subscribed')
     }
 
     this.millicastSignaling = new MillicastSignaling({
@@ -121,6 +121,7 @@ export default class MillicastView extends EventEmitter {
     logger.info('Stopping connection')
     this.webRTCPeer.closeRTCPeer()
     this.millicastSignaling?.close()
+    this.millicastSignaling = null
   }
 
   /**
