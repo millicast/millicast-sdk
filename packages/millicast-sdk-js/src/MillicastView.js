@@ -38,13 +38,9 @@ export default class MillicastView extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
-   * @fires MillicastWebRTC#newTrack
+   * @fires MillicastWebRTC#track
    * @fires MillicastSignaling#broadcastEvent
-   * @fires MillicastWebRTC#peerConnecting
-   * @fires MillicastWebRTC#peerConnected
-   * @fires MillicastWebRTC#peerClosed
-   * @fires MillicastWebRTC#peerDisconnected
-   * @fires MillicastWebRTC#peerFailed
+   * @fires MillicastWebRTC#connectionStateChange
    * @example await millicastView.connect(options)
    * @example
    * import MillicastView from 'millicast-sdk-js'
@@ -53,10 +49,8 @@ export default class MillicastView extends EventEmitter {
    * const streamName = "Millicast Stream Name where i want to connect"
    * const millicastView = new MillicastView(streamName)
    *
-   * //Set new.track event handler.
-   * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
-   * //More information here: {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack}
-   * millicastView.on('newTrack', (event) => {
+   * //Set track event handler.
+   * millicastView.on('track', (event) => {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
