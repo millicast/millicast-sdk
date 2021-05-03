@@ -1,5 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
+import { changeBrowserMock } from './__mocks__/MockBrowser'
 
 const feature = loadFeature('../GetCapabilities.feature', { loadRelativePath: true, errors: true })
 
@@ -127,7 +128,7 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Get audio capabilities', ({ given, when, then }) => {
+  test('Get audio capabilities in Chrome', ({ given, when, then }) => {
     let capabilities
 
     const browserCapabilities = {
@@ -140,6 +141,7 @@ defineFeature(feature, test => {
     }
 
     given('my browser audio capabilities', async () => {
+      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
@@ -147,7 +149,66 @@ defineFeature(feature, test => {
       capabilities = MillicastWebRTC.getCapabilities('audio')
     })
 
-    then('returns same capabilities as browser', async () => {
+    then('returns opus and multiopus codecs', async () => {
+      expect(capabilities.codecs).toEqual([
+        { codec: 'multiopus', mimeType: 'audio/multiopus', channels: 6 },
+        { codec: 'opus', mimeType: 'audio/opus', channels: 2 }
+      ])
+      expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
+    })
+  })
+
+  test('Get audio capabilities in iOS Chrome', ({ given, when, then }) => {
+    let capabilities
+
+    const browserCapabilities = {
+      codecs: [
+        { channels: 2, clockRate: 48000, mimeType: 'audio/opus', sdpFmtpLine: 'minptime=10;useinbandfec=1' },
+        { channels: 1, clockRate: 16000, mimeType: 'audio/ISAC' },
+        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' }
+      ],
+      headerExtensions: []
+    }
+
+    given('my browser audio capabilities', async () => {
+      changeBrowserMock('Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1')
+      jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
+    })
+
+    when('I get audio capabilities', async () => {
+      capabilities = MillicastWebRTC.getCapabilities('audio')
+    })
+
+    then('returns opus codec', async () => {
+      expect(capabilities.codecs).toEqual([
+        { codec: 'opus', mimeType: 'audio/opus', channels: 2 }
+      ])
+      expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
+    })
+  })
+
+  test('Get audio capabilities in other Browser', ({ given, when, then }) => {
+    let capabilities
+
+    const browserCapabilities = {
+      codecs: [
+        { channels: 2, clockRate: 48000, mimeType: 'audio/opus', sdpFmtpLine: 'minptime=10;useinbandfec=1' },
+        { channels: 1, clockRate: 16000, mimeType: 'audio/ISAC' },
+        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' }
+      ],
+      headerExtensions: []
+    }
+
+    given('my browser audio capabilities', async () => {
+      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
+      jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
+    })
+
+    when('I get audio capabilities', async () => {
+      capabilities = MillicastWebRTC.getCapabilities('audio')
+    })
+
+    then('returns opus codec', async () => {
       expect(capabilities.codecs).toEqual([
         { codec: 'opus', mimeType: 'audio/opus', channels: 2 }
       ])

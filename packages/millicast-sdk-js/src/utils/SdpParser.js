@@ -1,6 +1,6 @@
-import UAParser from 'ua-parser-js'
 import SemanticSDP from 'semantic-sdp'
 import MillicastLogger from '../MillicastLogger'
+import UserAgent from './UserAgent'
 
 const logger = MillicastLogger.get('SdpParser')
 
@@ -19,8 +19,8 @@ export default class SdpParser {
    */
   static setSimulcast (sdp, codec) {
     logger.info('Setting simulcast. Codec: ', codec)
-    const browserData = new UAParser(window.navigator.userAgent).getBrowser()
-    if (!browserData.name.match(/Chrome/)) {
+    const browserData = new UserAgent(window.navigator.userAgent)
+    if (!browserData.isChrome()) {
       logger.warn('Simulcast is only available in Google Chrome browser')
       return sdp
     }
@@ -105,14 +105,14 @@ export default class SdpParser {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
-      const browserData = new UAParser(window.navigator.userAgent).getBrowser()
+      const browserData = new UserAgent(window.navigator.userAgent)
       const offer = SemanticSDP.SDPInfo.parse(sdp)
       const videoOffer = offer.getMedia('video')
 
       logger.info('Setting video bitrate')
       videoOffer.setBitrate(bitrate)
       sdp = offer.toString()
-      if (sdp.indexOf('b=AS:') > -1 && browserData.name === 'Firefox') {
+      if (sdp.indexOf('b=AS:') > -1 && browserData.isFirefox()) {
         logger.info('Updating SDP for firefox browser')
         sdp = sdp.replace('b=AS:', 'b=TIAS:')
         logger.debug('SDP updated for firefox: ', sdp)
