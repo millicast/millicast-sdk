@@ -237,6 +237,11 @@ export default class MillicastSignaling extends EventEmitter {
         result.sdp = SdpParser.adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
       }
 
+      // remove a=extmap-allow-mixed for Chrome < M71
+      if (result.sdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
+        result.sdp = SdpParser.removeSdpLine(result.sdp, 'a=extmap-allow-mixed')
+      }
+
       logger.info('Command sent, publisherId: ', result.publisherId)
       logger.debug('Command result: ', result)
       return result.sdp
