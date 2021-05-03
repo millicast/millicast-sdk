@@ -5,6 +5,11 @@ Feature: As a user I want to subscribe to a stream without managing connections
     When I instance a MillicastViewer
     Then throws an error
 
+  Scenario: Subscribe to stream
+    Given an instance of MillicastViewer
+    When I subscribe to a stream with a connection path
+    Then peer connection state is connected
+
   Scenario: Connect subscriber without connection path
     Given an instance of MillicastViewer
     When I connect to stream without a connection path

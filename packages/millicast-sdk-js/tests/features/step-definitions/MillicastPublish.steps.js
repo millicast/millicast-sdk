@@ -39,6 +39,40 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Broadcast stream', ({ given, when, then }) => {
+    let publisher
+
+    given('an instance of MillicastPublish', async () => {
+      publisher = new MillicastPublish('streamName')
+    })
+
+    when('I broadcast a stream with a connection path and media stream', async () => {
+      await publisher.broadcast({ publisherData, mediaStream })
+    })
+
+    then('peer connection state is connected', async () => {
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+    })
+  })
+
+  test('Broadcast stream default options', ({ given, when, then }) => {
+    let publisher
+    let expectError
+
+    given('an instance of MillicastPublish', async () => {
+      publisher = new MillicastPublish('streamName')
+    })
+
+    when('I broadcast a stream without options', async () => {
+      expectError = expect(() => publisher.broadcast())
+    })
+
+    then('throws an error', async () => {
+      expectError.rejects.toThrow(Error)
+      expectError.rejects.toThrow('Publisher data required')
+    })
+  })
+
   test('Broadcast without connection path', ({ given, when, then }) => {
     let publisher
     let expectError
@@ -92,6 +126,28 @@ defineFeature(feature, test => {
     then('throws an error', async () => {
       expectError.rejects.toThrow(Error)
       expectError.rejects.toThrow('Broadcast currently working')
+    })
+  })
+
+  test('Broadcast stream with bandwidth restriction', ({ given, when, then }) => {
+    let publisher
+
+    given('an instance of MillicastPublish', async () => {
+      jest.spyOn(MillicastWebRTC.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
+      publisher = new MillicastPublish('streamName')
+    })
+
+    when('I broadcast a stream with bandwidth restriction', async () => {
+      await publisher.broadcast({
+        publisherData,
+        mediaStream,
+        bandwidth: 1000
+      })
+    })
+
+    then('peer connection state is connected', async () => {
+      expect(publisher.webRTCPeer.updateBandwidthRestriction).toBeCalledTimes(1)
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
   })
 

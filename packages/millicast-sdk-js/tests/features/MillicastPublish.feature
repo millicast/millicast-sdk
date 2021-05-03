@@ -5,6 +5,16 @@ Feature: As a user I want to publish a stream without managing connections
     When I instance a MillicastPublish
     Then throws an error
 
+  Scenario: Broadcast stream
+    Given an instance of MillicastPublish
+    When I broadcast a stream with a connection path and media stream
+    Then peer connection state is connected
+
+  Scenario: Broadcast stream default options
+    Given an instance of MillicastPublish
+    When I broadcast a stream without options
+    Then throws an error
+
   Scenario: Broadcast without connection path
     Given an instance of MillicastPublish
     When I broadcast a stream without a connection path
@@ -19,6 +29,11 @@ Feature: As a user I want to publish a stream without managing connections
     Given an instance of MillicastPublish already connected
     When I broadcast again to the stream
     Then throws an error
+
+  Scenario: Broadcast stream with bandwidth restriction
+    Given an instance of MillicastPublish
+    When I broadcast a stream with bandwidth restriction
+    Then peer connection state is connected
 
   Scenario: Stop publish
     Given I am publishing a stream

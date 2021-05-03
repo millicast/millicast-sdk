@@ -36,6 +36,22 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Subscribe to stream', ({ given, when, then }) => {
+    let viewer
+
+    given('an instance of MillicastViewer', async () => {
+      viewer = new MillicastView('streamName')
+    })
+
+    when('I subscribe to a stream with a connection path', async () => {
+      await viewer.connect({ subscriberData })
+    })
+
+    then('peer connection state is connected', async () => {
+      expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+    })
+  })
+
   test('Connect subscriber without connection path', ({ given, when, then }) => {
     let viewer
     let expectError
