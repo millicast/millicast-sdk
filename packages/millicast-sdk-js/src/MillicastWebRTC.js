@@ -1,6 +1,7 @@
 import axios from 'axios'
 import EventEmitter from 'events'
 import SdpParser from './utils/SdpParser'
+import UserAgent from './utils/UserAgent'
 import MillicastLogger from './MillicastLogger'
 import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
 
@@ -253,13 +254,18 @@ export default class MillicastWebRTC extends EventEmitter {
     const browserCapabilites = RTCRtpSender.getCapabilities(kind)
 
     if (browserCapabilites) {
+      const codecs = {}
       let regex = new RegExp(`^video/(${Object.values(MillicastVideoCodec).join('|')})x?$`, 'i')
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
+        const browserData = new UserAgent(window.navigator.userAgent)
+
+        if (browserData.isChrome(['iOS'])) {
+          codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }
+        }
       }
 
-      const codecs = {}
       for (const codec of browserCapabilites.codecs) {
         const matches = codec.mimeType.match(regex)
         if (matches) {

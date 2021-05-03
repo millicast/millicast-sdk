@@ -20,10 +20,20 @@ Feature: As a user I want to get browser audio/video capabilities so I can choos
     When I get video capabilities
     Then returns VP9 with all scalability modes available
   
-  Scenario: Get audio capabilities
+  Scenario: Get audio capabilities in Chrome
     Given my browser audio capabilities
     When I get audio capabilities
-    Then returns same capabilities as browser
+    Then returns opus and multiopus codecs
+
+  Scenario: Get audio capabilities in iOS Chrome
+    Given my browser audio capabilities
+    When I get audio capabilities
+    Then returns opus codec
+
+  Scenario: Get audio capabilities in other Browser
+    Given my browser audio capabilities
+    When I get audio capabilities
+    Then returns opus codec
   
   Scenario: Get capabilities from inexistent kind
     When I get data capabilities
