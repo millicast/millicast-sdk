@@ -3,6 +3,7 @@ import MillicastView from '../../../src/MillicastView'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import MillicastSignaling from '../../../src/MillicastSignaling'
 import './__mocks__/MockRTCPeerConnection'
+import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../MillicastView.feature', { loadRelativePath: true, errors: true })
 

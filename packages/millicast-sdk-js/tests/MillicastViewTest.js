@@ -4,7 +4,7 @@ class MillicastViewTest {
   constructor () {
     const href = new URL(window.location.href)
     this.streamAccountId = (href.searchParams.get('streamAccountId')) ? href.searchParams.get('streamAccountId') : 'tnJhvK'
-    this.streamName = (href.searchParams.get('streamName')) ? href.searchParams.get('streamName') : 'km0n0h1u'
+    this.streamName = (href.searchParams.get('streamName')) ? href.searchParams.get('streamName') : 'km0y5qxp'
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false

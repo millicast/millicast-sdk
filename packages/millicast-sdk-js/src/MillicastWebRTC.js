@@ -163,6 +163,7 @@ export default class MillicastWebRTC extends EventEmitter {
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
+    this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp)
     if (options.simulcast) {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }

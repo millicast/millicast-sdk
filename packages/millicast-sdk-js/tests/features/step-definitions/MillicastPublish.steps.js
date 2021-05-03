@@ -4,6 +4,7 @@ import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import MillicastSignaling from '../../../src/MillicastSignaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
+import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../MillicastPublish.feature', { loadRelativePath: true, errors: true })
 

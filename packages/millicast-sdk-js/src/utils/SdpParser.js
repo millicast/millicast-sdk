@@ -155,4 +155,32 @@ export default class SdpParser {
 
     return sdp.replace(regex, newCodecName)
   }
+
+  /**
+   * Parse SDP for support multiopus.
+   * @param {String} sdp - Current SDP.
+   * @returns {String} SDP parsed with multiopus support.
+   * @example SdpParser.setMultiopus(sdp)
+   */
+  static setMultiopus (sdp) {
+    const browserData = new UserAgent(window.navigator.userAgent)
+    if (browserData.isChrome()) {
+      logger.info('Setting multiopus')
+      // Find the audio m-line
+      const res = /m=audio 9 UDP\/TLS\/RTP\/SAVPF (.*)\r\n/.exec(sdp)
+      // Get audio line
+      const audio = res[0]
+      // Get free payload number for multiopus
+      const pt = Math.max(...res[1].split(' ').map(Number)) + 1
+      // Add multiopus
+      const multiopus = audio.replace('\r\n', ' ') + pt + '\r\n' +
+            'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
+            'a=fmtp:' + pt + ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
+      // Change sdp
+      sdp = sdp.replace(audio, multiopus)
+      logger.info('Multiopus offer created')
+      logger.debug('SDP parsed for multioups: ', sdp)
+    }
+    return sdp
+  }
 }
