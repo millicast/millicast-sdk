@@ -46,7 +46,7 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @param {MillicastVideoCodec} options.codec - Codec for publish stream.
    * @param {Boolean} options.simulcast - Enable simulcast.
-   * @param {String} options.svcFormat - Selected scalability mode. You can get the available capabilities using getCapabilities method.
+   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using getCapabilities method.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#connectionStateChange
    * @example await millicastPublish.broadcast(options)
@@ -86,7 +86,7 @@ export default class MillicastPublish extends EventEmitter {
       disableAudio: false,
       codec: MillicastVideoCodec.H264,
       simulcast: false,
-      svcFormat: null
+      scalabilityMode: null
     }
   ) {
     logger.debug('Broadcast option values: ', options)
@@ -115,7 +115,7 @@ export default class MillicastPublish extends EventEmitter {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
     }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, svcFormat: options.svcFormat })
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, scalabilityMode: options.scalabilityMode })
     let remoteSdp = await this.millicastSignaling.publish(localSdp, options.codec)
 
     if (!options.disableVideo && options.bandwidth > 0) {
