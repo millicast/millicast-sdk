@@ -37,8 +37,9 @@
   </table>
   <br />
   <fieldset>
-    Codec: <select id='codec-select' onchange="millicastPublishTest.changeCodec(this)">
-      
+    Codec: <select id='codec-select' onchange="millicastPublishTest.changeCodec(this)"> </select>
+    Scalability mode: <select id='scalability-mode-select' onchange="millicastPublishTest.changeScalability(this)"></select>
+
     </select>
     Bitrate: <select id='bitrate-select' onchange="millicastPublishTest.testUpdateBitrate(this)">
       <option value="0" default>Unlimited</option>

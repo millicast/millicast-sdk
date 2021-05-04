@@ -46,6 +46,15 @@ class MillicastPublishTest {
     document.getElementById('codec-select').innerHTML = options.join('\n')
 
     this.selectedCodec = capabilities.codecs[0]?.codec
+
+    if (capabilities.codecs[0]?.scalabilityModes) {
+      const scalabilityOptions = []
+      for (const scalability of capabilities.codecs[0].scalabilityModes) {
+        scalabilityOptions.push(`<option value='${scalability}'>${scalability}</option>`)
+      }
+      document.getElementById('scalability-mode-select').innerHTML = scalabilityOptions.join('\n')
+      this.selectedScalabilityMode = capabilities.codecs[0].scalabilityModes[0]
+    }
   }
 
   async testStart (options = undefined) {
@@ -65,7 +74,7 @@ class MillicastPublishTest {
         disableAudio: false,
         simulcast: this.selectedCodec === 'h264' || this.selectedCodec === 'vp8' ? this.simulcast : false,
         codec: this.selectedCodec,
-        scalabilityMode: 'L1T3'
+        scalabilityMode: this.selectedScalabilityMode
       }
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
@@ -97,7 +106,24 @@ class MillicastPublishTest {
   }
 
   changeCodec (selectObject) {
+    document.getElementById('scalability-mode-select').innerHTML = ''
+    this.selectedScalabilityMode = null
     this.selectedCodec = selectObject.value
+
+    const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
+    const selectedCapability = capabilities.codecs.find(x => x.codec === this.selectedCodec)
+    if (selectedCapability.scalabilityModes) {
+      const scalabilityOptions = []
+      for (const scalability of selectedCapability.scalabilityModes) {
+        scalabilityOptions.push(`<option value='${scalability}'>${scalability}</option>`)
+      }
+      document.getElementById('scalability-mode-select').innerHTML = scalabilityOptions.join('\n')
+      this.selectedScalabilityMode = selectedCapability.scalabilityModes[0]
+    }
+  }
+
+  changeScalability (selectObject) {
+    this.selectedScalabilityMode = selectObject.value
   }
 
   setSimulcast (checkboxObject) {
