@@ -76,6 +76,19 @@ class MockRTCPeerConnection {
       this.onconnectionstatechange(data)
     }
   }
+
+  addTransceiver (track, options) {
+    this.senders.push({
+      track,
+      replaceTrack: (newTrack) => {
+        for (const sender of this.senders) {
+          if (sender.track.kind === newTrack.kind) {
+            sender.track = newTrack
+          }
+        }
+      }
+    })
+  }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection

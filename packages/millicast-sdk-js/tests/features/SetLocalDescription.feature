@@ -29,3 +29,13 @@ Feature: As a user I want to set my local session description so I can broadcast
     Given I have a list of tracks with 3 audio tracks and 1 video track
     When I want to get the RTC Local SDP
     Then throw invalid MediaStream error
+
+  Scenario: Get RTC Local SDP with scalability mode, valid MediaStream and using Chrome
+    Given I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode
+    When I want to get the RTC Local SDP
+    Then returns the SDP with scalability mode
+
+  Scenario: Get RTC Local SDP with scalability mode, valid MediaStream and using Firefox
+    Given I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode
+    When I want to get the RTC Local SDP
+    Then returns the SDP without scalability mode
