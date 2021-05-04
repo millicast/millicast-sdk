@@ -22,8 +22,8 @@ defineFeature(feature, test => {
     })
 
     then('returns the sdp with multiopus updated', async () => {
-      expect(localSdp).not.toBe(multiopusSdp)
-      expect(multiopusSdp).toEqual(expect.stringContaining('multiopus/48000/6'))
+      expect(multiopusSdp).not.toBe(localSdp)
+      expect(multiopusSdp).toMatch('multiopus/48000/6')
     })
   })
 
@@ -41,7 +41,8 @@ defineFeature(feature, test => {
     })
 
     then('returns the sdp without multiopus', async () => {
-      expect(localSdp).toBe(multiopusSdp)
+      expect(multiopusSdp).toBe(localSdp)
+      expect(multiopusSdp).not.toMatch('multiopus/48000/6')
     })
   })
 })
