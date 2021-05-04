@@ -14,6 +14,27 @@ class MillicastPublishTest {
     this.setCodecOptions()
   }
 
+  async loadCamera () {
+    this.mediaStream = await this.millicastMedia.getMedia()
+    console.log('GetMedia response:', this.mediaStream)
+    document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
+  }
+
+  async loadVideo () {
+    const videoUrl = document.getElementById('video-src').value
+    const videoElement = document.getElementById('millicast-media-video-test')
+    if (videoUrl) {
+      videoElement.srcObject = null
+      videoElement.src = videoUrl
+      videoElement.load()
+      videoElement.oncanplay = () => {
+        this.mediaStream = videoElement.captureStream()
+        console.log('LoadVideo response:', this.mediaStream)
+      }
+      videoElement.play()
+    }
+  }
+
   setCodecOptions () {
     const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
     const options = []
@@ -38,7 +59,7 @@ class MillicastPublishTest {
       const getPublisherResponse = await millicast.MillicastDirector.getPublisher(token, streamName)
       const broadcastOptions = options ?? {
         publisherData: getPublisherResponse,
-        mediaStream: this.millicastMedia.mediaStream,
+        mediaStream: this.mediaStream,
         bandwidth: bandwidth,
         disableVideo: false,
         disableAudio: false,
