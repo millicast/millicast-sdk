@@ -136,13 +136,15 @@ export default class MillicastWebRTC extends EventEmitter {
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Selected codec for support simulcast.
    * @param {Boolean} options.simulcast - True to modify SDP for support simulcast.
+   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (options = {
     stereo: false,
     mediaStream: null,
     codec: 'h264',
-    simulcast: false
+    simulcast: false,
+    scalabilityMode: null
   }) {
     logger.info('Getting RTC Local SDP')
     logger.debug('Stereo value: ', options.stereo)
@@ -152,7 +154,20 @@ export default class MillicastWebRTC extends EventEmitter {
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
       for (const track of mediaStream.getTracks()) {
-        this.peer.addTrack(track, mediaStream)
+        if (track.kind === 'video' && options.scalabilityMode && new UserAgent(window.navigator.userAgent).isChrome()) {
+          logger.debug(`Video track with scalability mode: ${options.scalabilityMode}, adding as transceiver.`)
+          this.peer.addTransceiver(track, {
+            streams: [mediaStream],
+            sendEncodings: [
+              { scalabilityMode: options.scalabilityMode }
+            ]
+          })
+        } else {
+          if (track.kind === 'video' && options.scalabilityMode) {
+            logger.warn('SVC is only supported in Google Chrome')
+          }
+          this.peer.addTrack(track, mediaStream)
+        }
         logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
       }
     }

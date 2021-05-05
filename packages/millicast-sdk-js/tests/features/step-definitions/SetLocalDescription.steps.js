@@ -2,7 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
-import './__mocks__/MockBrowser'
+import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../SetLocalDescription.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -12,6 +12,7 @@ defineFeature(feature, test => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
+    changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
   })
 
   test('Get RTC Local SDP as subscriber role', ({ given, when, then }) => {
@@ -145,6 +146,57 @@ defineFeature(feature, test => {
 
     then('throw invalid MediaStream error', async () => {
       expect(errorResponse.message).toBe('MediaStream must have 1 audio track and 1 video track, or at least one of them.')
+    })
+  })
+
+  test('Get RTC Local SDP with scalability mode, valid MediaStream and using Chrome', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let sdp
+    let mediaStream
+    let scalabilityMode
+
+    given('I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode', async () => {
+      await millicastWebRTC.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      scalabilityMode = 'L1T3'
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
+      sdp = await millicastWebRTC.getRTCLocalSDP({ mediaStream, scalabilityMode })
+    })
+
+    then('returns the SDP with scalability mode', async () => {
+      expect(millicastWebRTC.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+      expect(millicastWebRTC.peer.addTransceiver).toBeCalledTimes(1)
+    })
+  })
+
+  test('Get RTC Local SDP with scalability mode, valid MediaStream and using Firefox', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let sdp
+    let mediaStream
+    let scalabilityMode
+
+    given('I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode', async () => {
+      changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
+      await millicastWebRTC.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      scalabilityMode = 'L1T3'
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
+      sdp = await millicastWebRTC.getRTCLocalSDP({ mediaStream, scalabilityMode })
+    })
+
+    then('returns the SDP without scalability mode', async () => {
+      expect(millicastWebRTC.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+      expect(millicastWebRTC.peer.addTransceiver).not.toBeCalled()
     })
   })
 })
