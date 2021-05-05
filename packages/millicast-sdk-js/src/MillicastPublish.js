@@ -46,7 +46,7 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @param {MillicastVideoCodec} options.codec - Codec for publish stream.
    * @param {Boolean} options.simulcast - Enable simulcast.
-   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using getCapabilities method.
+   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#connectionStateChange
    * @example await millicastPublish.broadcast(options)

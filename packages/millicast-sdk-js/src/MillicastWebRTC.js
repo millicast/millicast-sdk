@@ -136,7 +136,7 @@ export default class MillicastWebRTC extends EventEmitter {
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Selected codec for support simulcast.
    * @param {Boolean} options.simulcast - True to modify SDP for support simulcast.
-   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using getCapabilities method.
+   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (options = {
