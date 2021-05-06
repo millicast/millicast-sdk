@@ -278,7 +278,7 @@ export default class MillicastWebRTC extends EventEmitter {
         regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
         const browserData = new UserAgent(window.navigator.userAgent)
 
-        if (browserData.isChrome(['iOS'])) {
+        if (browserData.isChrome()) {
           codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }
         }
       }

@@ -1,7 +1,7 @@
 import UAParser from 'ua-parser-js'
 
 export default class UserAgent extends UAParser {
-  isChrome (excludedOS = []) {
+  isChrome (excludedOS = ['iOS']) {
     const browserData = this.getBrowser()
     const osData = this.getOS()
 

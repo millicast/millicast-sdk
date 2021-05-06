@@ -168,7 +168,7 @@ export default class SdpParser {
    */
   static setMultiopus (sdp) {
     const browserData = new UserAgent(window.navigator.userAgent)
-    if (browserData.isChrome(['iOS'])) {
+    if (browserData.isChrome()) {
       logger.info('Setting multiopus')
       // Find the audio m-line
       const res = /m=audio 9 UDP\/TLS\/RTP\/SAVPF (.*)\r\n/.exec(sdp)
