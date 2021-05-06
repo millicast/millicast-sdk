@@ -9,6 +9,7 @@ class MillicastViewTest {
     this.disableVideo = false
     this.disableAudio = false
     this.millicastView = new millicast.MillicastView(this.streamName)
+    this.tracks = []
   }
 
   async init () {
@@ -18,6 +19,7 @@ class MillicastViewTest {
   async subscribe () {
     try {
       this.millicastView.on('track', (event) => {
+        this.tracks.push(event)
         console.log('Event from newTrack: ', event)
         this.addStreamToVideoTag(event)
       })
@@ -41,7 +43,7 @@ class MillicastViewTest {
   }
 
   addStreamToVideoTag (event) {
-    if (!this.playing) { this.addStream(event.streams[0]) }
+    this.addStream(event.streams[0])
   }
 
   addStream (stream) {

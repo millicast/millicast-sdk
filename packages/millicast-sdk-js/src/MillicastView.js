@@ -3,8 +3,9 @@ import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { signalingEvents } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
+import MillicastDirector from './MillicastDirector'
 const logger = MillicastLogger.get('MillicastView')
-
+const maxReconnectionInterval = 32000
 /**
  * @class MillicastView
  * @extends EventEmitter
@@ -16,9 +17,10 @@ const logger = MillicastLogger.get('MillicastView')
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  * @constructor
  * @param {String} streamName - Millicast existing Stream Name where you want to connect.
+ * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
 export default class MillicastView extends EventEmitter {
-  constructor (streamName) {
+  constructor (streamName, autoReconnect = true) {
     super()
     if (!streamName) {
       logger.error('Stream Name is required to construct a viewer.')
@@ -27,6 +29,12 @@ export default class MillicastView extends EventEmitter {
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
     this.streamName = streamName
+    this.autoReconnect = autoReconnect
+    this.disableVideo = false
+    this.disableAudio = false
+    this.reconnectionInterval = 1000
+    this.alreadyDisconnected = false
+    this.firstReconnection = true
   }
 
   /**
@@ -78,6 +86,8 @@ export default class MillicastView extends EventEmitter {
     }
   ) {
     logger.debug('Viewer connect options values: ', options)
+    this.disableVideo = options.disableVideo
+    this.disableAudio = options.disableAudio
     if (!options.subscriberData) {
       logger.error('Error while subscribing. Subscriber data required')
       throw new Error('Subscriber data required')
@@ -96,8 +106,8 @@ export default class MillicastView extends EventEmitter {
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
     this.webRTCPeer.RTCOfferOptions = {
-      offerToReceiveVideo: !options.disableVideo,
-      offerToReceiveAudio: !options.disableAudio
+      offerToReceiveVideo: !this.disableVideo,
+      offerToReceiveAudio: !this.disableAudio
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ stereo: true })
 
@@ -105,6 +115,8 @@ export default class MillicastView extends EventEmitter {
     reemit(this.millicastSignaling, this, [signalingEvents.broadcastEvent])
 
     await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
+
+    this.setReconnect()
     logger.info('Connected to streamName: ', this.streamName)
   }
 
@@ -130,5 +142,46 @@ export default class MillicastView extends EventEmitter {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Connection status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
+  }
+
+  setReconnect () {
+    if (this.autoReconnect) {
+      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+        if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
+          this.firstReconnection = false
+          this.reconnect()
+        } else if (state === 'disconnected') {
+          this.alreadyDisconnected = true
+          window.setTimeout(() => this.setReconnect(), 1500)
+        } else {
+          this.alreadyDisconnected = false
+        }
+      })
+    }
+  }
+
+  reconnect () {
+    setTimeout(async () => {
+      try {
+        if (!this.isActive()) {
+          this.stop()
+          // Temporal
+          const reconnectSubscriberData = await MillicastDirector.getSubscriber(this.streamName, 'tnJhvK')
+          //
+          await this.connect({
+            subscriberData: reconnectSubscriberData,
+            disableVideo: this.disableVideo,
+            disableAudio: this.disableAudio
+          })
+          this.alreadyDisconnected = false
+          this.reconnectionInterval = 1000
+          this.firstReconnection = true
+        }
+      } catch (error) {
+        this.reconnectionInterval = this.reconnectionInterval < maxReconnectionInterval ? this.reconnectionInterval * 2 : this.reconnectionInterval
+        logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
+        this.reconnect()
+      }
+    }, this.reconnectionInterval)
   }
 }

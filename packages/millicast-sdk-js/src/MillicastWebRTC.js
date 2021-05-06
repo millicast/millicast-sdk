@@ -46,7 +46,8 @@ export default class MillicastWebRTC extends EventEmitter {
       this.peer = instanceRTCPeerConnection(this, config)
     }
 
-    const { connectionState, currentLocalDescription, currentRemoteDescription } = this.peer
+    const connectionState = this.peer.connectionState ?? this.peer.iceConnectionState
+    const { currentLocalDescription, currentRemoteDescription } = this.peer
     logger.debug('getRTCPeer return: ', { connectionState, currentLocalDescription, currentRemoteDescription })
     return this.peer
   }
@@ -229,7 +230,7 @@ export default class MillicastWebRTC extends EventEmitter {
     if (!this.peer) {
       return null
     }
-    const { connectionState } = this.peer
+    const connectionState = this.peer.connectionState ?? this.peer.iceConnectionState
     logger.info('RTC peer status getted, value: ', connectionState)
     return connectionState
   }
@@ -356,14 +357,25 @@ const addPeerEvents = (instanceClass, peer) => {
      */
     instanceClass.emit(webRTCEvents.track, event)
   }
-  peer.onconnectionstatechange = (event) => {
-    logger.info('Peer connection state change: ', peer.connectionState)
-    /**
-    * Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.
-    *
-    * @event MillicastWebRTC#connectionStateChange
-    * @type {RTCPeerConnectionState}
-    */
-    instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState)
+
+  if (peer.connectionState) {
+    peer.onconnectionstatechange = (event) => {
+      logger.info('Peer connection state change: ', peer.connectionState)
+      /**
+      * Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.
+      *
+      * @event MillicastWebRTC#connectionStateChange
+      * @type {RTCPeerConnectionState}
+      */
+      instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState)
+    }
+  } else {
+    peer.oniceconnectionstatechange = (event) => {
+      logger.info('Peer ICE connection state change: ', peer.iceConnectionState)
+      /**
+      * @fires MillicastWebRTC#connectionStateChange
+      */
+      instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
+    }
   }
 }
