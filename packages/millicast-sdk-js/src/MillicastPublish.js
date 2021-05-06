@@ -3,9 +3,9 @@ import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
-
+import MillicastDirector from './MillicastDirector'
 const logger = MillicastLogger.get('MillicastPublish')
-
+const maxReconnectionInterval = 32000
 /**
  * @class MillicastPublish
  * @extends EventEmitter
@@ -19,10 +19,11 @@ const logger = MillicastLogger.get('MillicastPublish')
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  * @constructor
  * @param {String} streamName - Millicast existing stream name.
+ * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
 
 export default class MillicastPublish extends EventEmitter {
-  constructor (streamName) {
+  constructor (streamName, autoReconnect = true) {
     super()
     if (!streamName) {
       logger.error('Stream Name is required to construct a publisher.')
@@ -31,6 +32,11 @@ export default class MillicastPublish extends EventEmitter {
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
     this.streamName = streamName
+    this.codec = MillicastVideoCodec.H264
+    this.autoReconnect = autoReconnect
+    this.reconnectionInterval = 1000
+    this.alreadyDisconnected = false
+    this.firstReconnection = true
   }
 
   /**
@@ -102,7 +108,7 @@ export default class MillicastPublish extends EventEmitter {
       logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
     }
-
+    this.codec = options.codec
     this.millicastSignaling = new MillicastSignaling({
       streamName: this.streamName,
       url: `${options.publisherData.urls[0]}?token=${options.publisherData.jwt}`
@@ -123,6 +129,8 @@ export default class MillicastPublish extends EventEmitter {
     }
 
     await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+
+    this.setReconnect()
     logger.info('Broadcasting to streamName: ', this.streamName)
   }
 
@@ -148,5 +156,46 @@ export default class MillicastPublish extends EventEmitter {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
+  }
+
+  setReconnect () {
+    if (this.autoReconnect) {
+      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+        if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
+          this.firstReconnection = false
+          this.reconnect()
+        } else if (state === 'disconnected') {
+          this.alreadyDisconnected = true
+          window.setTimeout(() => this.setReconnect(), 1500)
+        } else {
+          this.alreadyDisconnected = false
+        }
+      })
+    }
+  }
+
+  reconnect () {
+    setTimeout(async () => {
+      try {
+        if (!this.isActive()) {
+          // Temporal
+          const reconnectPublisherData = await MillicastDirector.getPublisher('9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849', this.streamName)
+          //
+          this.webRTCPeer.peer?.restartIce()
+          this.millicastSignaling.wsUrl = `${reconnectPublisherData.urls[0]}?token=${reconnectPublisherData.jwt}`
+          const sessionDescription = await this.webRTCPeer.peer.createOffer()
+          await this.webRTCPeer.peer.setLocalDescription(sessionDescription)
+          const remoteSdp = await this.millicastSignaling.publish(sessionDescription.sdp, this.codec)
+          await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+          this.alreadyDisconnected = false
+          this.reconnectionInterval = 1000
+          this.firstReconnection = true
+        }
+      } catch (error) {
+        this.reconnectionInterval = this.reconnectionInterval < maxReconnectionInterval ? this.reconnectionInterval * 2 : this.reconnectionInterval
+        logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
+        this.reconnect()
+      }
+    }, this.reconnectionInterval)
   }
 }
