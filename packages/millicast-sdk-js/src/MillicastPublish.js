@@ -45,8 +45,9 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @param {MillicastVideoCodec} options.codec - Codec for publish stream.
-   * @param {Boolean} options.simulcast - Enable simulcast.
+   * @param {Boolean} options.simulcast - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
+   * **Only available in Google Chrome.**
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#connectionStateChange
    * @example await millicastPublish.broadcast(options)

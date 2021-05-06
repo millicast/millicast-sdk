@@ -134,9 +134,10 @@ export default class MillicastWebRTC extends EventEmitter {
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
-   * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Selected codec for support simulcast.
-   * @param {Boolean} options.simulcast - True to modify SDP for support simulcast.
+   * @param {MillicastVideoCodec} options.codec - Selected codec for support simulcast.
+   * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
+   * **Only available in Google Chrome.**
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (options = {

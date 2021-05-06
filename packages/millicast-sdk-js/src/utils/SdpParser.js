@@ -12,6 +12,8 @@ const logger = MillicastLogger.get('SdpParser')
 export default class SdpParser {
   /**
    * Parse SDP for support simulcast.
+   *
+   * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
    * @param {String} codec - Codec.
    * @returns {String} SDP parsed with simulcast support.
@@ -158,6 +160,8 @@ export default class SdpParser {
 
   /**
    * Parse SDP for support multiopus.
+   *
+   * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
    * @returns {String} SDP parsed with multiopus support.
    * @example SdpParser.setMultiopus(sdp)
