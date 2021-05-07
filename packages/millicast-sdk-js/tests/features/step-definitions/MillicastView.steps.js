@@ -9,12 +9,12 @@ const feature = loadFeature('../MillicastView.feature', { loadRelativePath: true
 
 jest.mock('../../../src/MillicastSignaling')
 
-const subscriberData = {
+const mockTokenGenerator = () => Promise.resolve({
   urls: [
     'ws://localhost:8080'
   ],
   jwt: 'this-is-a-jwt-dummy-token'
-}
+})
 
 beforeEach(() => {
   jest.restoreAllMocks()
@@ -37,15 +37,30 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Instance viewer without tokenGenerator', ({ given, when, then }) => {
+    let expectError
+
+    given('no token generator', () => null)
+
+    when('I instance a MillicastViewer', async () => {
+      expectError = expect(() => new MillicastView('streamName'))
+    })
+
+    then('throws an error', async () => {
+      expectError.toThrow(Error)
+      expectError.toThrow('Token generator is required to construct a viewer.')
+    })
+  })
+
   test('Subscribe to stream', ({ given, when, then }) => {
     let viewer
 
     given('an instance of MillicastViewer', async () => {
-      viewer = new MillicastView('streamName')
+      viewer = new MillicastView('streamName', mockTokenGenerator)
     })
 
     when('I subscribe to a stream with a connection path', async () => {
-      await viewer.connect({ subscriberData })
+      await viewer.connect()
     })
 
     then('peer connection state is connected', async () => {
@@ -57,11 +72,12 @@ defineFeature(feature, test => {
     let viewer
     let expectError
 
-    given('an instance of MillicastViewer', async () => {
-      viewer = new MillicastView('streamName')
-    })
+    given('I want to subscribe', async () => {})
 
-    when('I connect to stream without a connection path', async () => {
+    when('I instance a MillicastViewer with a token generator without connection path', async () => {
+      const mockErrorTokenGenerator = () => Promise.resolve(null)
+      viewer = new MillicastView('streamName', mockErrorTokenGenerator)
+
       expectError = expect(() => viewer.connect())
     })
 
@@ -77,12 +93,12 @@ defineFeature(feature, test => {
 
     given('an instance of MillicastViewer already connected', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'subscribe').mockReturnValue('sdp')
-      viewer = new MillicastView('streamName')
-      await viewer.connect({ subscriberData })
+      viewer = new MillicastView('streamName', mockTokenGenerator)
+      await viewer.connect()
     })
 
     when('I connect again to the stream', async () => {
-      expectError = expect(() => viewer.connect({ subscriberData }))
+      expectError = expect(() => viewer.connect())
     })
 
     then('throws an error', async () => {
@@ -92,12 +108,12 @@ defineFeature(feature, test => {
   })
 
   test('Stop subscription', ({ given, when, then }) => {
-    const viewer = new MillicastView('streamName')
+    const viewer = new MillicastView('streamName', mockTokenGenerator)
     let signaling
 
     given('I am subscribed to a stream', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'subscribe').mockReturnValue('sdp')
-      await viewer.connect({ subscriberData })
+      await viewer.connect()
       signaling = viewer.millicastSignaling
     })
 
@@ -113,7 +129,7 @@ defineFeature(feature, test => {
   })
 
   test('Stop inactive subscription', ({ given, when, then }) => {
-    const viewer = new MillicastView('streamName')
+    const viewer = new MillicastView('streamName', mockTokenGenerator)
 
     given('I am not connected to a stream', () => null)
 
@@ -128,12 +144,12 @@ defineFeature(feature, test => {
   })
 
   test('Check status of active subscription', ({ given, when, then }) => {
-    const viewer = new MillicastView('streamName')
+    const viewer = new MillicastView('streamName', mockTokenGenerator)
     let result
 
     given('I am subscribed to a stream', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'subscribe').mockReturnValue('sdp')
-      await viewer.connect({ subscriberData })
+      await viewer.connect()
     })
 
     when('I check if subscription is active', async () => {
@@ -146,7 +162,7 @@ defineFeature(feature, test => {
   })
 
   test('Check status of inactive subscription', ({ given, when, then }) => {
-    const viewer = new MillicastView('streamName')
+    const viewer = new MillicastView('streamName', mockTokenGenerator)
     let result
 
     given('I am not subscribed to a stream', () => null)

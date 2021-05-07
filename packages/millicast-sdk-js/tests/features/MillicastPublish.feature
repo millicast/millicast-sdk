@@ -5,9 +5,14 @@ Feature: As a user I want to publish a stream without managing connections
     When I instance a MillicastPublish
     Then throws an error
 
+  Scenario: Instance publisher without tokenGenerator
+    Given no token generator
+    When I instance a MillicastPublish
+    Then throws an error
+
   Scenario: Broadcast stream
-    Given an instance of MillicastPublish
-    When I broadcast a stream with a connection path and media stream
+    Given an instance of MillicastPublish with connection path
+    When I broadcast a stream with media stream
     Then peer connection state is connected
 
   Scenario: Broadcast stream default options
@@ -16,8 +21,8 @@ Feature: As a user I want to publish a stream without managing connections
     Then throws an error
 
   Scenario: Broadcast without connection path
-    Given an instance of MillicastPublish
-    When I broadcast a stream without a connection path
+    Given I want to broadcast
+    When I instance a MillicastPublish with token generator without connection path
     Then throws an error
   
   Scenario: Broadcast without mediaStream

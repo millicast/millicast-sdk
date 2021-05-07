@@ -4,6 +4,11 @@ Feature: As a user I want to subscribe to a stream without managing connections
     Given no stream name
     When I instance a MillicastViewer
     Then throws an error
+  
+  Scenario: Instance viewer without tokenGenerator
+    Given no token generator
+    When I instance a MillicastViewer
+    Then throws an error
 
   Scenario: Subscribe to stream
     Given an instance of MillicastViewer
@@ -11,8 +16,8 @@ Feature: As a user I want to subscribe to a stream without managing connections
     Then peer connection state is connected
 
   Scenario: Connect subscriber without connection path
-    Given an instance of MillicastViewer
-    When I connect to stream without a connection path
+    Given I want to subscribe
+    When I instance a MillicastViewer with a token generator without connection path
     Then throws an error
   
   Scenario: Connect subscriber already connected

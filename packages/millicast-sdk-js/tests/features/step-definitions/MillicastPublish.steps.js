@@ -10,12 +10,12 @@ const feature = loadFeature('../MillicastPublish.feature', { loadRelativePath: t
 
 jest.mock('../../../src/MillicastSignaling')
 
-const publisherData = {
+const mockTokenGenerator = () => Promise.resolve({
   urls: [
     'ws://localhost:8080'
   ],
   jwt: 'this-is-a-jwt-dummy-token'
-}
+})
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
@@ -40,15 +40,30 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Instance publisher without tokenGenerator', ({ given, when, then }) => {
+    let expectError
+
+    given('no token generator', () => null)
+
+    when('I instance a MillicastPublish', async () => {
+      expectError = expect(() => new MillicastPublish('streamName'))
+    })
+
+    then('throws an error', async () => {
+      expectError.toThrow(Error)
+      expectError.toThrow('Token generator is required to construct a publisher.')
+    })
+  })
+
   test('Broadcast stream', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish', async () => {
-      publisher = new MillicastPublish('streamName')
+    given('an instance of MillicastPublish with connection path', async () => {
+      publisher = new MillicastPublish('streamName', mockTokenGenerator)
     })
 
-    when('I broadcast a stream with a connection path and media stream', async () => {
-      await publisher.broadcast({ publisherData, mediaStream })
+    when('I broadcast a stream with media stream', async () => {
+      await publisher.broadcast({ mediaStream })
     })
 
     then('peer connection state is connected', async () => {
@@ -61,7 +76,7 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of MillicastPublish', async () => {
-      publisher = new MillicastPublish('streamName')
+      publisher = new MillicastPublish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream without options', async () => {
@@ -70,7 +85,7 @@ defineFeature(feature, test => {
 
     then('throws an error', async () => {
       expectError.rejects.toThrow(Error)
-      expectError.rejects.toThrow('Publisher data required')
+      expectError.rejects.toThrow('MediaStream required')
     })
   })
 
@@ -78,11 +93,11 @@ defineFeature(feature, test => {
     let publisher
     let expectError
 
-    given('an instance of MillicastPublish', async () => {
-      publisher = new MillicastPublish('streamName')
-    })
+    given('I want to broadcast', async () => {})
 
-    when('I broadcast a stream without a connection path', async () => {
+    when('I instance a MillicastPublish with token generator without connection path', async () => {
+      const mockErrorTokenGenerator = () => Promise.resolve(null)
+      publisher = new MillicastPublish('streamName', mockErrorTokenGenerator)
       expectError = expect(() => publisher.broadcast({ mediaStream }))
     })
 
@@ -97,11 +112,11 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of MillicastPublish', async () => {
-      publisher = new MillicastPublish('streamName')
+      publisher = new MillicastPublish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream without a mediaStream', async () => {
-      expectError = expect(() => publisher.broadcast({ publisherData }))
+      expectError = expect(() => publisher.broadcast())
     })
 
     then('throws an error', async () => {
@@ -116,12 +131,12 @@ defineFeature(feature, test => {
 
     given('an instance of MillicastPublish already connected', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
-      publisher = new MillicastPublish('streamName')
-      await publisher.broadcast({ publisherData, mediaStream })
+      publisher = new MillicastPublish('streamName', mockTokenGenerator)
+      await publisher.broadcast({ mediaStream })
     })
 
     when('I broadcast again to the stream', async () => {
-      expectError = expect(() => publisher.broadcast({ publisherData, mediaStream }))
+      expectError = expect(() => publisher.broadcast({ mediaStream }))
     })
 
     then('throws an error', async () => {
@@ -135,12 +150,11 @@ defineFeature(feature, test => {
 
     given('an instance of MillicastPublish', async () => {
       jest.spyOn(MillicastWebRTC.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
-      publisher = new MillicastPublish('streamName')
+      publisher = new MillicastPublish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream with bandwidth restriction', async () => {
       await publisher.broadcast({
-        publisherData,
         mediaStream,
         bandwidth: 1000
       })
@@ -153,12 +167,12 @@ defineFeature(feature, test => {
   })
 
   test('Stop publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName')
+    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
     let signaling
 
     given('I am publishing a stream', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
-      await publisher.broadcast({ publisherData, mediaStream })
+      await publisher.broadcast({ mediaStream })
       signaling = publisher.millicastSignaling
     })
 
@@ -174,7 +188,7 @@ defineFeature(feature, test => {
   })
 
   test('Stop inactive publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName')
+    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
 
     given('I am not publishing a stream', () => null)
 
@@ -189,12 +203,12 @@ defineFeature(feature, test => {
   })
 
   test('Check status of active publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName')
+    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
     let result
 
     given('I am publishing a stream', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
-      await publisher.broadcast({ publisherData, mediaStream })
+      await publisher.broadcast({ mediaStream })
     })
 
     when('I check if publish is active', async () => {
@@ -207,7 +221,7 @@ defineFeature(feature, test => {
   })
 
   test('Check status of inactive publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName')
+    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
     let result
 
     given('I am not publishing a stream', () => null)
