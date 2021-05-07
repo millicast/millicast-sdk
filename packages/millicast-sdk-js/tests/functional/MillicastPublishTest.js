@@ -66,11 +66,10 @@ class MillicastPublishTest {
     const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
     const streamName = 'km0y5qxp'
 
-    this.millicastPublish = new millicast.MillicastPublish(streamName)
+    const tokenGenerator = () => millicast.MillicastDirector.getPublisher(token, streamName)
+    this.millicastPublish = new millicast.MillicastPublish(streamName, tokenGenerator)
     try {
-      const getPublisherResponse = await millicast.MillicastDirector.getPublisher(token, streamName)
       const broadcastOptions = options ?? {
-        publisherData: getPublisherResponse,
         mediaStream: this.mediaStream,
         bandwidth: bandwidth,
         disableVideo: false,
