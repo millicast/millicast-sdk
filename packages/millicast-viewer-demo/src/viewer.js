@@ -53,7 +53,8 @@ let video = document.querySelector("video");
 let millicastView = null
 
 const newViewer = () => {
-  const millicastView = new MillicastView(streamId);
+  const tokenGenerator = () => MillicastDirector.getSubscriber(streamId, streamAccountId)
+  const millicastView = new MillicastView(streamId, tokenGenerator)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
   
@@ -68,7 +69,7 @@ const newViewer = () => {
   });
   
   millicastView.on("track", (event) => {
-    if (!playing) addStream(event.streams[0]);
+    addStream(event.streams[0]);
   });
 
   return millicastView
@@ -145,9 +146,7 @@ const subscribe = async () => {
 
   try {
     isSubscribed = true
-    const getViewerResponse = await MillicastDirector.getSubscriber(streamId, streamAccountId)
     const options = {
-      subscriberData: getViewerResponse,
       disableVideo: disableVideo,
       disableAudio: disableAudio,
     };

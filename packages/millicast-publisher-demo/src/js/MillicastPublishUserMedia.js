@@ -2,13 +2,13 @@ import {MillicastPublish} from "millicast-sdk-js"
 import MillicastMedia from "./MillicastMedia"
 
 export default class MillicastPublishUserMedia extends MillicastPublish {
-  constructor(options = undefined) {
-    super(options.streamName);
+  constructor(options = undefined, tokenGenerator) {
+    super(options.streamName, tokenGenerator);
     this.mediaManager = new MillicastMedia(options);
   }
 
-  static async build(options = undefined) {
-    const instance = new MillicastPublishUserMedia(options);
+  static async build(options = undefined, tokenGenerator) {
+    const instance = new MillicastPublishUserMedia(options, tokenGenerator);
     await instance.getMediaStream();
     return instance;
   }
@@ -35,7 +35,6 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
 
   broadcast(
     options = {
-      publisherData: null,
       bandwidth: 0,
       disableVideo: false,
       disableAudio: false,
