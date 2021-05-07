@@ -3,9 +3,18 @@ import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { signalingEvents } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
-import MillicastDirector from './MillicastDirector'
 const logger = MillicastLogger.get('MillicastView')
 const maxReconnectionInterval = 32000
+
+/**
+ * Callback invoke when a new token for viewer is needed.
+ *
+ * @callback subscriberTokenGeneratorCallback
+ * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscriber connection path.
+ *
+ * You can use your own token generator or use the <a href='MillicastDirector#.getSubscriber'>getSubscriber method</a>.
+ */
+
 /**
  * @class MillicastView
  * @extends EventEmitter
@@ -17,14 +26,19 @@ const maxReconnectionInterval = 32000
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  * @constructor
  * @param {String} streamName - Millicast existing Stream Name where you want to connect.
+ * @param {subscriberTokenGeneratorCallback} tokenGenerator - Callback function executed when a new token for viewer is needed.
  * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
 export default class MillicastView extends EventEmitter {
-  constructor (streamName, autoReconnect = true) {
+  constructor (streamName, tokenGenerator, autoReconnect = true) {
     super()
     if (!streamName) {
       logger.error('Stream Name is required to construct a viewer.')
       throw new Error('Stream Name is required to construct a viewer.')
+    }
+    if (!tokenGenerator) {
+      logger.error('Token generator is required to construct a viewer.')
+      throw new Error('Token generator is required to construct a viewer.')
     }
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
@@ -35,6 +49,7 @@ export default class MillicastView extends EventEmitter {
     this.reconnectionInterval = 1000
     this.alreadyDisconnected = false
     this.firstReconnection = true
+    this.tokenGenerator = tokenGenerator
   }
 
   /**
@@ -42,7 +57,6 @@ export default class MillicastView extends EventEmitter {
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} options - General subscriber options.
-   * @param {MillicastDirectorResponse} options.subscriberData - Millicast subscriber connection path.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
@@ -77,10 +91,8 @@ export default class MillicastView extends EventEmitter {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-
   async connect (
     options = {
-      subscriberData: null,
       disableVideo: false,
       disableAudio: false
     }
@@ -88,18 +100,19 @@ export default class MillicastView extends EventEmitter {
     logger.debug('Viewer connect options values: ', options)
     this.disableVideo = options.disableVideo
     this.disableAudio = options.disableAudio
-    if (!options.subscriberData) {
-      logger.error('Error while subscribing. Subscriber data required')
-      throw new Error('Subscriber data required')
-    }
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
+    const subscriberData = await this.tokenGenerator()
+    if (!subscriberData) {
+      logger.error('Error while subscribing. Subscriber data required')
+      throw new Error('Subscriber data required')
+    }
 
     this.millicastSignaling = new MillicastSignaling({
       streamName: this.streamName,
-      url: `${options.subscriberData.urls[0]}?token=${options.subscriberData.jwt}`
+      url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
 
     await this.webRTCPeer.getRTCPeer()
@@ -124,7 +137,6 @@ export default class MillicastView extends EventEmitter {
    * Stops active connection.
    * @example millicastView.stop();
    */
-
   stop () {
     logger.info('Stopping connection')
     this.webRTCPeer.closeRTCPeer()
@@ -137,7 +149,6 @@ export default class MillicastView extends EventEmitter {
    * @example const isActive = millicastView.isActive();
    * @returns {Boolean} - True if connected, false if not.
    */
-
   isActive () {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Connection status: ', rtcPeerState || 'not_established')
@@ -165,11 +176,7 @@ export default class MillicastView extends EventEmitter {
       try {
         if (!this.isActive()) {
           this.stop()
-          // Temporal
-          const reconnectSubscriberData = await MillicastDirector.getSubscriber(this.streamName, 'tnJhvK')
-          //
           await this.connect({
-            subscriberData: reconnectSubscriberData,
             disableVideo: this.disableVideo,
             disableAudio: this.disableAudio
           })

@@ -8,7 +8,8 @@ class MillicastViewTest {
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false
-    this.millicastView = new millicast.MillicastView(this.streamName)
+    const tokenGenerator = () => millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
+    this.millicastView = new millicast.MillicastView(this.streamName, tokenGenerator)
     this.tracks = []
   }
 
@@ -27,9 +28,7 @@ class MillicastViewTest {
         console.log('Event from broadcastEvent: ', event)
       })
 
-      const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
       const options = {
-        subscriberData: getSubscriberResponse,
         disableVideo: this.disableVideo,
         disableAudio: this.disableAudio
       }

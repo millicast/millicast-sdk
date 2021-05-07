@@ -3,9 +3,18 @@ import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
-import MillicastDirector from './MillicastDirector'
 const logger = MillicastLogger.get('MillicastPublish')
 const maxReconnectionInterval = 32000
+
+/**
+ * Callback invoke when a new token for broadcast is needed.
+ *
+ * @callback publishTokenGeneratorCallback
+ * @returns {Promise<MillicastDirectorResponse>} Prmoise object which represents the result of getting the publishing connection path.
+ *
+ * You can use your own token generator or use the <a href='MillicastDirector#.getPublisher'>getPublisher method</a>.
+ */
+
 /**
  * @class MillicastPublish
  * @extends EventEmitter
@@ -19,15 +28,19 @@ const maxReconnectionInterval = 32000
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  * @constructor
  * @param {String} streamName - Millicast existing stream name.
+ * @param {publishTokenGeneratorCallback} tokenGenerator - Callback function executed when a new token for broadcast is needed.
  * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
-
 export default class MillicastPublish extends EventEmitter {
-  constructor (streamName, autoReconnect = true) {
+  constructor (streamName, tokenGenerator, autoReconnect = true) {
     super()
     if (!streamName) {
       logger.error('Stream Name is required to construct a publisher.')
       throw new Error('Stream Name is required to construct a publisher.')
+    }
+    if (!tokenGenerator) {
+      logger.error('Token generator is required to construct a publisher.')
+      throw new Error('Token generator is required to construct a publisher.')
     }
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
@@ -37,6 +50,7 @@ export default class MillicastPublish extends EventEmitter {
     this.reconnectionInterval = 1000
     this.alreadyDisconnected = false
     this.firstReconnection = true
+    this.tokenGenerator = tokenGenerator
   }
 
   /**
@@ -44,7 +58,6 @@ export default class MillicastPublish extends EventEmitter {
    *
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
-   * @param {MillicastDirectorResponse} options.publisherData - Millicast publisher connection path.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
@@ -82,10 +95,8 @@ export default class MillicastPublish extends EventEmitter {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-
   async broadcast (
     options = {
-      publisherData: null,
       mediaStream: null,
       bandwidth: 0,
       disableVideo: false,
@@ -96,10 +107,6 @@ export default class MillicastPublish extends EventEmitter {
     }
   ) {
     logger.debug('Broadcast option values: ', options)
-    if (!options.publisherData) {
-      logger.error('Error while broadcasting. Publisher data required')
-      throw new Error('Publisher data required')
-    }
     if (!options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
@@ -108,10 +115,15 @@ export default class MillicastPublish extends EventEmitter {
       logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
     }
-    this.codec = options.codec
+    const publisherData = await this.tokenGenerator()
+    if (!publisherData) {
+      logger.error('Error while broadcasting. Publisher data required')
+      throw new Error('Publisher data required')
+    }
+
     this.millicastSignaling = new MillicastSignaling({
       streamName: this.streamName,
-      url: `${options.publisherData.urls[0]}?token=${options.publisherData.jwt}`
+      url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
     })
 
     await this.webRTCPeer.getRTCPeer()
@@ -121,6 +133,7 @@ export default class MillicastPublish extends EventEmitter {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
     }
+    this.codec = options.codec
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, scalabilityMode: options.scalabilityMode })
     let remoteSdp = await this.millicastSignaling.publish(localSdp, options.codec)
 
@@ -138,7 +151,6 @@ export default class MillicastPublish extends EventEmitter {
    * Stops active broadcast.
    * @example millicastPublish.stop();
    */
-
   stop () {
     logger.info('Stopping broadcast')
     this.webRTCPeer.closeRTCPeer()
@@ -151,7 +163,6 @@ export default class MillicastPublish extends EventEmitter {
    * @example const isActive = millicastPublish.isActive();
    * @returns {Boolean} - True if connected, false if not.
    */
-
   isActive () {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Broadcast status: ', rtcPeerState || 'not_established')
@@ -178,9 +189,7 @@ export default class MillicastPublish extends EventEmitter {
     setTimeout(async () => {
       try {
         if (!this.isActive()) {
-          // Temporal
-          const reconnectPublisherData = await MillicastDirector.getPublisher('9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849', this.streamName)
-          //
+          const reconnectPublisherData = await this.tokenGenerator()
           this.webRTCPeer.peer?.restartIce()
           this.millicastSignaling.wsUrl = `${reconnectPublisherData.urls[0]}?token=${reconnectPublisherData.jwt}`
           const sessionDescription = await this.webRTCPeer.peer.createOffer()
