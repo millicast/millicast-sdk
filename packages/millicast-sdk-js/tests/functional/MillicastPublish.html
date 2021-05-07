@@ -1,4 +1,4 @@
-<script src="../dist/millicast.umd.js"></script>
+<script src="../../dist/millicast.umd.js"></script>
 <script src="./utils/MillicastMedia.js"></script>
 <script src="./MillicastPublishTest.js"></script>
 
@@ -13,6 +13,21 @@
     </tr>
     <tr>
       <td>
+        <label for="video-src">Video URL to capture</label>
+        <input type="url" id="video-src" size="30">
+        <button onclick="millicastPublishTest.loadVideo()">
+          Load Video
+        </button>
+        <button onclick="millicastPublishTest.loadCamera()">
+          Load Camera
+        </button>
+      </td>
+      <td>
+
+      </td>
+    </tr>
+    <tr>
+      <td>
         <video muted autoplay controls width="640" height="480" id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
       </td>
       <td id="viewer">
@@ -22,8 +37,9 @@
   </table>
   <br />
   <fieldset>
-    Codec: <select id='codec-select' onchange="millicastPublishTest.changeCodec(this)">
-      
+    Codec: <select id='codec-select' onchange="millicastPublishTest.changeCodec(this)"> </select>
+    Scalability mode: <select id='scalability-mode-select' onchange="millicastPublishTest.changeScalability(this)"></select>
+
     </select>
     Bitrate: <select id='bitrate-select' onchange="millicastPublishTest.testUpdateBitrate(this)">
       <option value="0" default>Unlimited</option>

@@ -28,10 +28,12 @@ class MockRTCPeerConnection {
 
   close () {
     this.signalingState = 'closed'
+    this.connectionState = 'closed'
   }
 
   setRemoteDescription (answer) {
     this.currentRemoteDescription = answer
+    this.connectionState = 'connected'
   }
 
   createOffer (rtcOfferOptions) {
@@ -73,6 +75,19 @@ class MockRTCPeerConnection {
     } else if (eventName === 'onconnectionstatechange') {
       this.onconnectionstatechange(data)
     }
+  }
+
+  addTransceiver (track, options) {
+    this.senders.push({
+      track,
+      replaceTrack: (newTrack) => {
+        for (const sender of this.senders) {
+          if (sender.track.kind === newTrack.kind) {
+            sender.track = newTrack
+          }
+        }
+      }
+    })
   }
 }
 

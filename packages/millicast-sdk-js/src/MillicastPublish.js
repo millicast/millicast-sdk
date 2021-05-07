@@ -3,7 +3,6 @@ import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
 import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
-import SdpParser from './utils/SdpParser'
 
 const logger = MillicastLogger.get('MillicastPublish')
 
@@ -46,7 +45,9 @@ export default class MillicastPublish extends EventEmitter {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @param {MillicastVideoCodec} options.codec - Codec for publish stream.
-   * @param {Boolean} options.simulcast - Enable simulcast.
+   * @param {Boolean} options.simulcast - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
+   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
+   * **Only available in Google Chrome.**
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#connectionStateChange
    * @example await millicastPublish.broadcast(options)
@@ -85,7 +86,8 @@ export default class MillicastPublish extends EventEmitter {
       disableVideo: false,
       disableAudio: false,
       codec: MillicastVideoCodec.H264,
-      simulcast: false
+      simulcast: false,
+      scalabilityMode: null
     }
   ) {
     logger.debug('Broadcast option values: ', options)
@@ -114,11 +116,9 @@ export default class MillicastPublish extends EventEmitter {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
     }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec })
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, scalabilityMode: options.scalabilityMode })
     let remoteSdp = await this.millicastSignaling.publish(localSdp, options.codec)
-    if (remoteSdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
-      remoteSdp = SdpParser.removeSdpLine(remoteSdp, 'a=extmap-allow-mixed')
-    }
+
     if (!options.disableVideo && options.bandwidth > 0) {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
     }
@@ -136,6 +136,7 @@ export default class MillicastPublish extends EventEmitter {
     logger.info('Stopping broadcast')
     this.webRTCPeer.closeRTCPeer()
     this.millicastSignaling?.close()
+    this.millicastSignaling = null
   }
 
   /**

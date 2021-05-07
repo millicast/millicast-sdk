@@ -14,6 +14,27 @@ class MillicastPublishTest {
     this.setCodecOptions()
   }
 
+  async loadCamera () {
+    this.mediaStream = await this.millicastMedia.getMedia()
+    console.log('GetMedia response:', this.mediaStream)
+    document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
+  }
+
+  async loadVideo () {
+    const videoUrl = document.getElementById('video-src').value
+    const videoElement = document.getElementById('millicast-media-video-test')
+    if (videoUrl) {
+      videoElement.srcObject = null
+      videoElement.src = videoUrl
+      videoElement.load()
+      videoElement.oncanplay = () => {
+        this.mediaStream = videoElement.captureStream()
+        console.log('LoadVideo response:', this.mediaStream)
+      }
+      videoElement.play()
+    }
+  }
+
   setCodecOptions () {
     const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
     const options = []
@@ -25,6 +46,18 @@ class MillicastPublishTest {
     document.getElementById('codec-select').innerHTML = options.join('\n')
 
     this.selectedCodec = capabilities.codecs[0]?.codec
+
+    if (capabilities.codecs[0]?.scalabilityModes) {
+      const scalabilityOptions = []
+      for (const scalability of capabilities.codecs[0].scalabilityModes) {
+        scalabilityOptions.push(`<option value='${scalability}'>${scalability}</option>`)
+      }
+      scalabilityOptions.push('<option value=\'none\'>None</option>')
+      document.getElementById('scalability-mode-select').innerHTML = scalabilityOptions.join('\n')
+    } else {
+      document.getElementById('scalability-mode-select').innerHTML = '<option value=\'none\'>None</option>'
+    }
+    this.selectedScalabilityMode = document.getElementById('scalability-mode-select').value
   }
 
   async testStart (options = undefined) {
@@ -38,12 +71,13 @@ class MillicastPublishTest {
       const getPublisherResponse = await millicast.MillicastDirector.getPublisher(token, streamName)
       const broadcastOptions = options ?? {
         publisherData: getPublisherResponse,
-        mediaStream: this.millicastMedia.mediaStream,
+        mediaStream: this.mediaStream,
         bandwidth: bandwidth,
         disableVideo: false,
         disableAudio: false,
         simulcast: this.selectedCodec === 'h264' || this.selectedCodec === 'vp8' ? this.simulcast : false,
-        codec: this.selectedCodec
+        codec: this.selectedCodec,
+        scalabilityMode: this.selectedScalabilityMode === 'none' ? null : this.selectedScalabilityMode
       }
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
@@ -75,7 +109,26 @@ class MillicastPublishTest {
   }
 
   changeCodec (selectObject) {
+    document.getElementById('scalability-mode-select').innerHTML = ''
     this.selectedCodec = selectObject.value
+
+    const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
+    const selectedCapability = capabilities.codecs.find(x => x.codec === this.selectedCodec)
+    if (selectedCapability.scalabilityModes) {
+      const scalabilityOptions = []
+      for (const scalability of selectedCapability.scalabilityModes) {
+        scalabilityOptions.push(`<option value='${scalability}'>${scalability}</option>`)
+      }
+      scalabilityOptions.push('<option value=\'none\'>None</option>')
+      document.getElementById('scalability-mode-select').innerHTML = scalabilityOptions.join('\n')
+    } else {
+      document.getElementById('scalability-mode-select').innerHTML = '<option value=\'none\'>None</option>'
+    }
+    this.selectedScalabilityMode = document.getElementById('scalability-mode-select').value
+  }
+
+  changeScalability (selectObject) {
+    this.selectedScalabilityMode = selectObject.value
   }
 
   setSimulcast (checkboxObject) {

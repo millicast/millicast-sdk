@@ -2,6 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
+import './__mocks__/MockBrowser'
 const feature = loadFeature('../ChangeMediaTrack.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
