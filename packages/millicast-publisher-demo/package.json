@@ -1,14 +1,11 @@
 {
   "name": "millicast-publisher-demo",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
   "scripts": {
     "prepare": "node prepare.js",
     "build": "rollup -c",
     "start": "rollup -c -w"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "millicast-sdk-js": "^1.0.0"
   },

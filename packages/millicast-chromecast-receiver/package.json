@@ -1,13 +1,10 @@
 {
   "name": "millicast-chromecast-receiver",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
   "scripts": {
     "prepare": "node prepare.js",
     "build": "rollup -c"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "millicast-sdk-js": "^1.0.0"
   },
