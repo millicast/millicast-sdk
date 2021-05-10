@@ -21,7 +21,7 @@ export default class SdpParser {
    */
   static setSimulcast (sdp, codec) {
     logger.info('Setting simulcast. Codec: ', codec)
-    const browserData = new UserAgent(window.navigator.userAgent)
+    const browserData = new UserAgent()
     if (!browserData.isChrome()) {
       logger.warn('Simulcast is only available in Google Chrome browser')
       return sdp
@@ -107,7 +107,7 @@ export default class SdpParser {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
-      const browserData = new UserAgent(window.navigator.userAgent)
+      const browserData = new UserAgent()
       const offer = SemanticSDP.SDPInfo.parse(sdp)
       const videoOffer = offer.getMedia('video')
 
@@ -167,7 +167,7 @@ export default class SdpParser {
    * @example SdpParser.setMultiopus(sdp)
    */
   static setMultiopus (sdp) {
-    const browserData = new UserAgent(window.navigator.userAgent)
+    const browserData = new UserAgent()
     if (browserData.isChrome()) {
       logger.info('Setting multiopus')
       // Find the audio m-line

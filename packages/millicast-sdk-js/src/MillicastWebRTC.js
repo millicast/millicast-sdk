@@ -155,7 +155,7 @@ export default class MillicastWebRTC extends EventEmitter {
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
       for (const track of mediaStream.getTracks()) {
-        if (track.kind === 'video' && options.scalabilityMode && new UserAgent(window.navigator.userAgent).isChrome()) {
+        if (track.kind === 'video' && options.scalabilityMode && new UserAgent().isChrome()) {
           logger.debug(`Video track with scalability mode: ${options.scalabilityMode}, adding as transceiver.`)
           this.peer.addTransceiver(track, {
             streams: [mediaStream],
@@ -276,7 +276,7 @@ export default class MillicastWebRTC extends EventEmitter {
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
-        const browserData = new UserAgent(window.navigator.userAgent)
+        const browserData = new UserAgent()
 
         if (browserData.isChrome()) {
           codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }
