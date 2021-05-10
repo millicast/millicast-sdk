@@ -4,6 +4,7 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import MillicastLogger from './MillicastLogger'
 import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
+import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
@@ -268,6 +269,11 @@ export default class MillicastWebRTC extends EventEmitter {
    * @returns {Array<MillicastCapability>} An array with all capabilities supported by user's browser and Millicast Media Server.
    */
   static getCapabilities (kind) {
+    const browserData = new UserAgent()
+    if (browserData.isFirefox()) {
+      return mozGetCapabilities(kind)
+    }
+
     const browserCapabilites = RTCRtpSender.getCapabilities(kind)
 
     if (browserCapabilites) {
@@ -276,7 +282,6 @@ export default class MillicastWebRTC extends EventEmitter {
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
-        const browserData = new UserAgent()
 
         if (browserData.isChrome()) {
           codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }

@@ -19,6 +19,11 @@ Feature: As a user I want to get browser audio/video capabilities so I can choos
     Given my browser supprots VP9 with scalability modes repeated
     When I get video capabilities
     Then returns VP9 with all scalability modes available
+
+  Scenario: Get video capabilities in Firefox
+    Given I am in Firefeox
+    When I get video capabilities
+    Then returns H264, VP8 and VP9 codecs
   
   Scenario: Get audio capabilities in Chrome
     Given my browser audio capabilities
@@ -30,11 +35,17 @@ Feature: As a user I want to get browser audio/video capabilities so I can choos
     When I get audio capabilities
     Then returns opus codec
 
-  Scenario: Get audio capabilities in other Browser
+  Scenario: Get audio capabilities in Firefox
     Given my browser audio capabilities
     When I get audio capabilities
     Then returns opus codec
   
-  Scenario: Get capabilities from inexistent kind
+  Scenario: Get capabilities from inexistent kind in Chrome
+    Given I am in Chrome
+    When I get data capabilities
+    Then returns null
+
+  Scenario: Get capabilities from inexistent kind in Firefox
+    Given I am in Firefox
     When I get data capabilities
     Then returns null
