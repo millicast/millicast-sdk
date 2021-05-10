@@ -2,12 +2,13 @@ import axios from 'axios'
 import MillicastLogger from './MillicastLogger'
 
 const logger = MillicastLogger.get('MillicastDirector')
-const publisherLocation = 'https://director.millicast.com/api/director/publish'
-const subscriberLocation = 'https://director.millicast.com/api/director/subscribe'
 const streamTypes = {
   WEBRTC: 'WebRtc',
   RTMP: 'Rtmp'
 }
+
+export const defaultApiEndpoint = 'https://director.millicast.com'
+let apiEndpoint = defaultApiEndpoint
 
 /**
  * @typedef {Object} MillicastDirectorResponse
@@ -25,7 +26,26 @@ const streamTypes = {
  */
 
 export default class MillicastDirector {
-/**
+  /**
+   * Set Director API endpoint where requests will be sent.
+   *
+   * @param {String} url - New Director API endpoint
+   */
+  static setEndpoint (url) {
+    apiEndpoint = url.replace(/\/$/, '')
+  }
+
+  /**
+   * Get current Director API endpoint where requests will be sent.
+   *
+   * By default, https://director.millicast.com is the current API endpoint.
+   * @returns {String} API base url
+   */
+  static getEndpoint () {
+    return apiEndpoint
+  }
+
+  /**
    * Get publisher connection data.
    * @param {String} token - Millicast Publishing Token.
    * @param {String} streamName - Millicast Stream Name.
@@ -60,8 +80,9 @@ export default class MillicastDirector {
     logger.info('Getting publisher connection path for stream name: ', streamName)
     const payload = { streamName, streamType }
     const headers = { Authorization: `Bearer ${token}` }
+    const url = `${this.getEndpoint()}/api/director/publish`
     try {
-      const { data } = await axios.post(publisherLocation, payload, { headers })
+      const { data } = await axios.post(url, payload, { headers })
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
@@ -75,7 +96,6 @@ export default class MillicastDirector {
    * @param {String} streamName - Millicast publisher Stream Name.
    * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
-   * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
    * @example const response = await MillicastDirector.getSubscriber(streamName, streamAccountId)
    * @example
@@ -108,15 +128,16 @@ export default class MillicastDirector {
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (streamName, streamAccountId, subscriberToken = null, streamType = streamTypes.WEBRTC) {
+  static async getSubscriber (streamName, streamAccountId, subscriberToken = null) {
     logger.info(`Getting subscriber connection data for stream name: ${streamName} and account id: ${streamAccountId}`)
-    const payload = { streamAccountId, streamName, streamType }
+    const payload = { streamAccountId, streamName }
     let headers = {}
     if (subscriberToken) {
       headers = { Authorization: `Bearer ${subscriberToken}` }
     }
+    const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
-      const { data } = await axios.post(subscriberLocation, payload, { headers })
+      const { data } = await axios.post(url, payload, { headers })
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {

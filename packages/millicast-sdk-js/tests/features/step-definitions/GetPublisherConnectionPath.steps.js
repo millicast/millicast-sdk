@@ -107,4 +107,44 @@ defineFeature(feature, test => {
       expect(responseError.response.data).toEqual(mockedResponse.response.data)
     })
   })
+
+  test('Publish with an existing stream name and valid token using other API Endpoint', ({ given, when, then }) => {
+    let token
+    let streamName
+    let response
+    const mockedResponse = {
+      data: {
+        status: 'success',
+        data: {
+          subscribeRequiresAuth: false,
+          wsUrl: 'wss://live-west.millicast.com/ws/v2/pub/12345',
+          urls: [
+            'wss://live-west.millicast.com/ws/v2/pub/12345'
+          ],
+          jwt: '123jwt',
+          streamAccountId: 'Existing_accountId'
+        }
+      }
+    }
+    given('I have a valid token and an existing stream name', async () => {
+      token = 'Valid_token'
+      streamName = 'Existing_stream_name'
+      MillicastDirector.setEndpoint('https://director-dev.millicast.com')
+    })
+
+    when('I request a connection path to Director API', async () => {
+      axios.post.mockResolvedValue(mockedResponse)
+      response = await MillicastDirector.getPublisher(token, streamName)
+    })
+
+    then('I get the publish connection path', async () => {
+      expect(axios.post).toBeCalledWith(
+        expect.stringContaining('https://director-dev.millicast.com'),
+        expect.any(Object),
+        expect.any(Object)
+      )
+      expect(response).toBeDefined()
+      expect(response).toEqual(mockedResponse.data.data)
+    })
+  })
 })

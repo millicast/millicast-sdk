@@ -14,3 +14,8 @@ Feature: As a user I want to publish to a Millicast Stream so I can get a connec
     Given I have an invalid token and an existing stream name
     When I request a connection path to Director API
     Then throws an error with "invalid token" message
+
+  Scenario: Publish with an existing stream name and valid token using other API Endpoint
+    Given I have a valid token and an existing stream name
+    When I request a connection path to Director API
+    Then I get the publish connection path
