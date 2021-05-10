@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
+import MillicastSignaling, { MillicastVideoCodec, signalingEvents } from './MillicastSignaling'
 import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
 const logger = MillicastLogger.get('MillicastPublish')
 const maxReconnectionInterval = 32000
@@ -171,6 +171,13 @@ export default class MillicastPublish extends EventEmitter {
 
   setReconnect () {
     if (this.autoReconnect) {
+      this.millicastSignaling.on(signalingEvents.connectionError, () => {
+        if (this.firstReconnection || !this.alreadyDisconnected) {
+          this.firstReconnection = false
+          this.reconnect()
+        }
+      })
+
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
           this.firstReconnection = false
