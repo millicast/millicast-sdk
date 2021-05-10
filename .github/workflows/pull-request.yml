@@ -1,0 +1,42 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: [ develop ]
+    
+  workflow_dispatch:
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12
+      
+      - name: Check Linter 📑
+        run: |
+          npm ci
+          npx eslint . --ext .js,.jsx,.ts,.tsx
+
+  test:
+    needs: eslint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Test 🧪
+        run: |
+          npm ci
+          npm prepare
+          npm test
