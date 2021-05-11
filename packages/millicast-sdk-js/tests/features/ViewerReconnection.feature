@@ -15,6 +15,11 @@ Feature: As a user I want to reconnect to a stream so i can watch streams withou
     When signaling has an error
     Then reconnection is called
 
+  Scenario: No reconnect when signaling has an error and reconnection is already being executed
+    Given an instance of MillicastViewer with reconnection enabled
+    When reconnect was called and signaling has an error
+    Then reconnection is not called
+
   Scenario: Reconnection disabled when peer has an error
     Given an instance of MillicastViewer with reconnection disabled
     When peer has an error

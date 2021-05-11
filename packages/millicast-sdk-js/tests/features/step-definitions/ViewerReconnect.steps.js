@@ -82,6 +82,29 @@ defineFeature(feature, test => {
     })
   })
 
+  test('No reconnect when signaling has an error and reconnection is already being executed', ({ given, when, then }) => {
+    let viewer
+
+    given('an instance of MillicastViewer with reconnection enabled', async () => {
+      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+      jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
+        viewer.firstReconnection = false
+        viewer.alreadyDisconnected = true
+      })
+      await viewer.connect()
+    })
+
+    when('reconnect was called and signaling has an error', () => {
+      viewer.reconnect()
+      expect(viewer.reconnect).toBeCalledTimes(1)
+      viewer.millicastSignaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+    })
+
+    then('reconnection is not called', async () => {
+      expect(viewer.reconnect).toBeCalledTimes(1)
+    })
+  })
+
   test('Reconnection disabled when peer has an error', ({ given, when, then }) => {
     let viewer
 
@@ -116,6 +139,8 @@ defineFeature(feature, test => {
     then('waits and call reconnection', async () => {
       expect(setTimeout).toHaveBeenCalledTimes(1)
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1500)
+      jest.runOnlyPendingTimers()
+      expect(viewer.reconnect).toHaveBeenCalled()
     })
   })
 
