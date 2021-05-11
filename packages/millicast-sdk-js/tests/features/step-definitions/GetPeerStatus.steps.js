@@ -2,6 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
+import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
 const feature = loadFeature('../GetPeerStatus.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -42,6 +43,24 @@ defineFeature(feature, test => {
 
     then('returns no value', async () => {
       expect(status).toBeNull()
+    })
+  })
+
+  test('Get existing RTC peer status without connectionState', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    let status
+
+    given('I have a peer instanced without connectionState', async () => {
+      global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
+      await millicastWebRTC.getRTCPeer()
+    })
+
+    when('I want to get the peer connection state', () => {
+      status = millicastWebRTC.getRTCPeerStatus()
+    })
+
+    then('returns the connection state', async () => {
+      expect(status).toBe('new')
     })
   })
 })

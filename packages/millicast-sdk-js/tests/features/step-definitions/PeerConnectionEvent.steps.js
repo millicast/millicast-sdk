@@ -2,6 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import MillicastWebRTC, { webRTCEvents } from '../../../src/MillicastWebRTC'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
+import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
 const feature = loadFeature('../PeerConnectionEvent.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -121,6 +122,28 @@ defineFeature(feature, test => {
     then('connectionStateChange event is fired', async () => {
       expect(handler).toBeCalledTimes(1)
       expect(handler).toBeCalledWith('failed')
+    })
+  })
+
+  test('Get new status from peer without connectionState', ({ given, when, then }) => {
+    const millicastWebRTC = new MillicastWebRTC()
+    const handler = jest.fn()
+    const sdp = 'My default SDP'
+
+    given('I have a peer without connectionState', async () => {
+      global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
+      await millicastWebRTC.getRTCPeer()
+    })
+
+    when('peer is instanced', async () => {
+      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
+      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      millicastWebRTC.peer.emitMockEvent('oniceconnectionstatechange')
+    })
+
+    then('connectionStateChange event is fired', async () => {
+      expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith('connected')
     })
   })
 })
