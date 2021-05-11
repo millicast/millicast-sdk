@@ -4,6 +4,7 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import MillicastLogger from './MillicastLogger'
 import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
+import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
@@ -155,7 +156,7 @@ export default class MillicastWebRTC extends EventEmitter {
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
       for (const track of mediaStream.getTracks()) {
-        if (track.kind === 'video' && options.scalabilityMode && new UserAgent(window.navigator.userAgent).isChrome()) {
+        if (track.kind === 'video' && options.scalabilityMode && new UserAgent().isChrome()) {
           logger.debug(`Video track with scalability mode: ${options.scalabilityMode}, adding as transceiver.`)
           this.peer.addTransceiver(track, {
             streams: [mediaStream],
@@ -268,6 +269,11 @@ export default class MillicastWebRTC extends EventEmitter {
    * @returns {Array<MillicastCapability>} An array with all capabilities supported by user's browser and Millicast Media Server.
    */
   static getCapabilities (kind) {
+    const browserData = new UserAgent()
+    if (browserData.isFirefox()) {
+      return mozGetCapabilities(kind)
+    }
+
     const browserCapabilites = RTCRtpSender.getCapabilities(kind)
 
     if (browserCapabilites) {
@@ -276,7 +282,6 @@ export default class MillicastWebRTC extends EventEmitter {
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
-        const browserData = new UserAgent(window.navigator.userAgent)
 
         if (browserData.isChrome()) {
           codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }

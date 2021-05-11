@@ -128,6 +128,27 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Get video capabilities in Firefox', ({ given, when, then }) => {
+    let capabilities
+
+    given('I am in Firefeox', async () => {
+      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
+    })
+
+    when('I get video capabilities', async () => {
+      capabilities = MillicastWebRTC.getCapabilities('video')
+    })
+
+    then('returns H264, VP8 and VP9 codecs', async () => {
+      expect(capabilities.codecs).toEqual([
+        { codec: 'vp8', mimeType: 'video/VP8' },
+        { codec: 'vp9', mimeType: 'video/VP9' },
+        { codec: 'h264', mimeType: 'video/H264' }
+      ])
+      expect(capabilities.headerExtensions).toEqual([])
+    })
+  })
+
   test('Get audio capabilities in Chrome', ({ given, when, then }) => {
     let capabilities
 
@@ -187,7 +208,7 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Get audio capabilities in other Browser', ({ given, when, then }) => {
+  test('Get audio capabilities in Firefox', ({ given, when, then }) => {
     let capabilities
 
     const browserCapabilities = {
@@ -216,10 +237,14 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Get capabilities from inexistent kind', ({ when, then }) => {
+  test('Get capabilities from inexistent kind in Chrome', ({ given, when, then }) => {
     let capabilities
 
     const browserCapabilities = null
+
+    given('I am in Chrome', async () => {
+      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
+    })
 
     when('I get data capabilities', async () => {
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue(browserCapabilities)
@@ -228,6 +253,22 @@ defineFeature(feature, test => {
 
     then('returns null', async () => {
       expect(capabilities).toEqual(browserCapabilities)
+    })
+  })
+
+  test('Get capabilities from inexistent kind in Firefox', ({ given, when, then }) => {
+    let capabilities
+
+    given('I am in Firefox', async () => {
+      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
+    })
+
+    when('I get data capabilities', async () => {
+      capabilities = MillicastWebRTC.getCapabilities('data')
+    })
+
+    then('returns null', async () => {
+      expect(capabilities).toEqual(null)
     })
   })
 })
