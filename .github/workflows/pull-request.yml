@@ -28,7 +28,7 @@ jobs:
       
       - name: Check Linter 📑
         run: |
-          npm ci
+          npm install
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
   test:
@@ -54,5 +54,5 @@ jobs:
       - name: Test 🧪
         working-directory: './packages/millicast-sdk-js'
         run: |
-          npm ci
+          npm install
           npm test
