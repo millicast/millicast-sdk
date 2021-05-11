@@ -89,6 +89,8 @@ class MockRTCPeerConnection {
       }
     })
   }
+
+  restartIce () {}
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection
