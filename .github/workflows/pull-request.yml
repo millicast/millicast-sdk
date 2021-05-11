@@ -37,8 +37,6 @@ jobs:
 
       - name: Test 🧪
         working-directory: './packages/millicast-sdk-js'
-        env:
-          NODE_ENV: test
         run: |
           npm ci
           npm test
