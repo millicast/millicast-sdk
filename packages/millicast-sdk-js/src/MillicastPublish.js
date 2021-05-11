@@ -45,12 +45,12 @@ export default class MillicastPublish extends EventEmitter {
     this.webRTCPeer = new MillicastWebRTC()
     this.millicastSignaling = null
     this.streamName = streamName
-    this.codec = MillicastVideoCodec.H264
     this.autoReconnect = autoReconnect
     this.reconnectionInterval = 1000
     this.alreadyDisconnected = false
     this.firstReconnection = true
     this.tokenGenerator = tokenGenerator
+    this.options = null
   }
 
   /**
@@ -120,7 +120,7 @@ export default class MillicastPublish extends EventEmitter {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-
+    this.options = options
     this.millicastSignaling = new MillicastSignaling({
       streamName: this.streamName,
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
@@ -133,7 +133,6 @@ export default class MillicastPublish extends EventEmitter {
       offerToReceiveVideo: !options.disableVideo,
       offerToReceiveAudio: !options.disableAudio
     }
-    this.codec = options.codec
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, scalabilityMode: options.scalabilityMode })
     let remoteSdp = await this.millicastSignaling.publish(localSdp, options.codec)
 
@@ -202,14 +201,8 @@ export default class MillicastPublish extends EventEmitter {
     setTimeout(async () => {
       try {
         if (!this.isActive()) {
-          this.millicastSignaling?.close()
-          const reconnectPublisherData = await this.tokenGenerator()
-          this.webRTCPeer.peer?.restartIce()
-          this.millicastSignaling.wsUrl = `${reconnectPublisherData.urls[0]}?token=${reconnectPublisherData.jwt}`
-          const sessionDescription = await this.webRTCPeer.peer.createOffer()
-          await this.webRTCPeer.peer.setLocalDescription(sessionDescription)
-          const remoteSdp = await this.millicastSignaling.publish(sessionDescription.sdp, this.codec)
-          await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+          this.stop()
+          await this.broadcast(this.options)
           this.alreadyDisconnected = false
           this.reconnectionInterval = 1000
           this.firstReconnection = true

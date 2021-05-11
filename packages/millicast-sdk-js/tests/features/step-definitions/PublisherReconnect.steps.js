@@ -160,7 +160,7 @@ defineFeature(feature, test => {
     })
 
     when('reconnection is called and fails', () => {
-      jest.spyOn(publisher, 'tokenGenerator').mockImplementation(() => { throw new Error() })
+      jest.spyOn(publisher, 'broadcast').mockImplementation(() => { throw new Error() })
       publisher.reconnect()
     })
 
