@@ -170,7 +170,7 @@ export default class MillicastView extends EventEmitter {
           this.reconnect()
         } else if (state === 'disconnected') {
           this.alreadyDisconnected = true
-          window.setTimeout(() => this.setReconnect(), 1500)
+          setTimeout(() => this.reconnect(), 1500)
         } else {
           this.alreadyDisconnected = false
         }
