@@ -169,6 +169,9 @@ export default class MillicastPublish extends EventEmitter {
     return rtcPeerState === 'connected'
   }
 
+  /**
+   * Sets reconnection if autoReconnect is enabled.
+   */
   setReconnect () {
     if (this.autoReconnect) {
       this.millicastSignaling.on(signalingEvents.connectionError, () => {
@@ -192,10 +195,14 @@ export default class MillicastPublish extends EventEmitter {
     }
   }
 
+  /**
+   * Reconnects to last broadcast.
+   */
   reconnect () {
     setTimeout(async () => {
       try {
         if (!this.isActive()) {
+          this.millicastSignaling?.close()
           const reconnectPublisherData = await this.tokenGenerator()
           this.webRTCPeer.peer?.restartIce()
           this.millicastSignaling.wsUrl = `${reconnectPublisherData.urls[0]}?token=${reconnectPublisherData.jwt}`

@@ -155,6 +155,9 @@ export default class MillicastView extends EventEmitter {
     return rtcPeerState === 'connected'
   }
 
+  /**
+   * Sets reconnection if autoReconnect is enabled.
+   */
   setReconnect () {
     if (this.autoReconnect) {
       this.millicastSignaling.on(signalingEvents.connectionError, () => {
@@ -178,6 +181,9 @@ export default class MillicastView extends EventEmitter {
     }
   }
 
+  /**
+   * Reconnects to last broadcast.
+   */
   reconnect () {
     setTimeout(async () => {
       try {
