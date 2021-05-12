@@ -2,11 +2,11 @@ import axios from 'axios'
 import EventEmitter from 'events'
 import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
-import MillicastLogger from './MillicastLogger'
-import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
+import Logger from './Logger'
+import { VideoCodec, AudioCodec } from './Signaling'
 import mozGetCapabilities from './utils/FirefoxCapabilities'
 
-const logger = MillicastLogger.get('MillicastWebRTC')
+const logger = Logger.get('PeerConnection')
 
 export const webRTCEvents = {
   track: 'track',
@@ -14,13 +14,13 @@ export const webRTCEvents = {
 }
 
 /**
- * @class MillicastWebRTC
+ * @class PeerConnection
  * @extends EventEmitter
  * @classdesc Manages WebRTC connection and SDP information between peers.
- * @example const millicastWebRTC = new MillicastWebRTC()
+ * @example const peerConnection = new PeerConnection()
  * @constructor
  */
-export default class MillicastWebRTC extends EventEmitter {
+export default class PeerConnection extends EventEmitter {
   constructor () {
     super()
     this.sessionDescription = null
@@ -55,7 +55,7 @@ export default class MillicastWebRTC extends EventEmitter {
 
   /**
    * Close RTC peer connection.
-   * @fires MillicastWebRTC#connectionStateChange
+   * @fires PeerConnection#connectionStateChange
    */
   async closeRTCPeer () {
     logger.info('Closing RTCPeerConnection')
@@ -136,9 +136,9 @@ export default class MillicastWebRTC extends EventEmitter {
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
-   * @param {MillicastVideoCodec} options.codec - Selected codec for support simulcast.
+   * @param {VideoCodec} options.codec - Selected codec for support simulcast.
    * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
-   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
+   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
@@ -279,10 +279,10 @@ export default class MillicastWebRTC extends EventEmitter {
 
     if (browserCapabilites) {
       const codecs = {}
-      let regex = new RegExp(`^video/(${Object.values(MillicastVideoCodec).join('|')})x?$`, 'i')
+      let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i')
 
       if (kind === 'audio') {
-        regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
+        regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i')
 
         if (browserData.isChrome()) {
           codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }
@@ -346,10 +346,10 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
 
 /**
  * Emits peer events.
- * @param {MillicastWebRTC} instanceClass - MillicastWebRTC instance.
+ * @param {PeerConnection} instanceClass - PeerConnection instance.
  * @param {RTCPeerConnection} peer - Peer instance.
- * @fires MillicastWebRTC#track
- * @fires MillicastWebRTC#connectionStateChange
+ * @fires PeerConnection#track
+ * @fires PeerConnection#connectionStateChange
  */
 const addPeerEvents = (instanceClass, peer) => {
   peer.ontrack = (event) => {
@@ -358,7 +358,7 @@ const addPeerEvents = (instanceClass, peer) => {
     /**
      * New track event.
      *
-     * @event MillicastWebRTC#track
+     * @event PeerConnection#track
      * @type {RTCTrackEvent}
      */
     instanceClass.emit(webRTCEvents.track, event)
@@ -370,7 +370,7 @@ const addPeerEvents = (instanceClass, peer) => {
       /**
       * Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.
       *
-      * @event MillicastWebRTC#connectionStateChange
+      * @event PeerConnection#connectionStateChange
       * @type {RTCPeerConnectionState}
       */
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState)
@@ -379,7 +379,7 @@ const addPeerEvents = (instanceClass, peer) => {
     peer.oniceconnectionstatechange = (event) => {
       logger.info('Peer ICE connection state change: ', peer.iceConnectionState)
       /**
-      * @fires MillicastWebRTC#connectionStateChange
+      * @fires PeerConnection#connectionStateChange
       */
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }

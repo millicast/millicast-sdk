@@ -1,9 +1,9 @@
 import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
-import MillicastLogger from './MillicastLogger'
+import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
 
-const logger = MillicastLogger.get('MillicastSignaling')
+const logger = Logger.get('Signaling')
 
 export const signalingEvents = {
   connectionSuccess: 'wsConnectionSuccess',
@@ -21,7 +21,7 @@ export const signalingEvents = {
  * @property {String} H264
  * @property {String} AV1
  */
-export const MillicastVideoCodec = {
+export const VideoCodec = {
   VP8: 'vp8',
   VP9: 'vp9',
   H264: 'h264',
@@ -35,23 +35,23 @@ export const MillicastVideoCodec = {
  * @property {String} OPUS
  * @property {String} MULTIOPUS
  */
-export const MillicastAudioCodec = {
+export const AudioCodec = {
   OPUS: 'opus',
   MULTIOPUS: 'multiopus'
 }
 
 /**
- * @class MillicastSignaling
+ * @class Signaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
- * @example const millicastSignaling = new MillicastSignaling(options)
+ * @example const millicastSignaling = new Signaling(options)
  * @constructor
  * @param {Object} options - General signaling options.
  * @param {String} options.streamName - Millicast stream name to get subscribed.
  * @param {String} options.url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
  */
 
-export default class MillicastSignaling extends EventEmitter {
+export default class Signaling extends EventEmitter {
   constructor (options = {
     streamName: null,
     url: 'ws://localhost:8080/'
@@ -68,10 +68,10 @@ export default class MillicastSignaling extends EventEmitter {
    * Starts a WebSocket connection with signaling server.
    * @example const response = await millicastSignaling.connect()
    * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API} of the establshed connection.
-   * @fires MillicastSignaling#wsConnectionSuccess
-   * @fires MillicastSignaling#wsConnectionError
-   * @fires MillicastSignaling#wsConnectionClose
-   * @fires MillicastSignaling#broadcastEvent
+   * @fires Signaling#wsConnectionSuccess
+   * @fires Signaling#wsConnectionError
+   * @fires Signaling#wsConnectionClose
+   * @fires Signaling#broadcastEvent
    */
   async connect () {
     logger.info('Connecting to Signaling Server')
@@ -87,7 +87,7 @@ export default class MillicastSignaling extends EventEmitter {
       /**
        * WebSocket connection was successfully established with signaling server.
        *
-       * @event MillicastSignaling#wsConnectionSuccess
+       * @event Signaling#wsConnectionSuccess
        * @type {Object}
        * @property {WebSocket} ws - WebSocket object which represents active connection.
        * @property {TransactionManager} tm - [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands.
@@ -113,7 +113,7 @@ export default class MillicastSignaling extends EventEmitter {
            *
            * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
            *
-           * @event MillicastSignaling#broadcastEvent
+           * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
            * @property {("active" | "inactive" | "stopped")} name - Event name.
@@ -138,7 +138,7 @@ export default class MillicastSignaling extends EventEmitter {
            * WebSocket connection failed with signaling server.
            * Returns url of WebSocket
            *
-           * @event MillicastSignaling#wsConnectionError
+           * @event Signaling#wsConnectionError
            * @type {String}
            */
         this.emit(signalingEvents.connectionError, this.webSocket.url)
@@ -151,7 +151,7 @@ export default class MillicastSignaling extends EventEmitter {
         /**
          * WebSocket connection with signaling server was successfully closed.
          *
-         * @event MillicastSignaling#wsConnectionClose
+         * @event Signaling#wsConnectionClose
          */
         this.emit(signalingEvents.connectionClose)
       }
@@ -177,8 +177,8 @@ export default class MillicastSignaling extends EventEmitter {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
-    // Millicast Signaling only recognizes 'AV1' and not 'AV1X'
-    sdp = SdpParser.adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
+    // Signaling server only recognizes 'AV1' and not 'AV1X'
+    sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
     const data = { sdp, streamId: this.streamName }
 
@@ -187,8 +187,8 @@ export default class MillicastSignaling extends EventEmitter {
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
 
-      // Millicast Signaling returns 'AV1' instead of 'AV1X'
-      result.sdp = SdpParser.adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
+      // Signaling server returns 'AV1' instead of 'AV1X'
+      result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
@@ -202,23 +202,23 @@ export default class MillicastSignaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {MillicastVideoCodec} [codec="h264"] - Codec for publish stream.
+   * @param {VideoCodec} [codec="h264"] - Codec for publish stream.
    * @example const response = await millicastSignaling.publish(sdp, 'h264')
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish (sdp, codec = MillicastVideoCodec.H264) {
+  async publish (sdp, codec = VideoCodec.H264) {
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${codec}`)
     logger.debug('Publishing local description: ', sdp)
 
-    const videoCodecs = Object.values(MillicastVideoCodec)
+    const videoCodecs = Object.values(VideoCodec)
     if (videoCodecs.indexOf(codec) === -1) {
       logger.error('Invalid codec. Possible values are: ', videoCodecs)
       throw new Error(`Invalid codec. Possible values are: ${videoCodecs}`)
     }
 
-    // Millicast Signaling only recognizes 'AV1' and not 'AV1X'
-    if (codec === MillicastVideoCodec.AV1) {
-      sdp = SdpParser.adaptCodecName(sdp, 'AV1X', MillicastVideoCodec.AV1)
+    // Signaling server only recognizes 'AV1' and not 'AV1X'
+    if (codec === VideoCodec.AV1) {
+      sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
     }
 
     const data = {
@@ -232,9 +232,9 @@ export default class MillicastSignaling extends EventEmitter {
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
 
-      // Millicast Signaling returns 'AV1' instead of 'AV1X'
-      if (codec === MillicastVideoCodec.AV1) {
-        result.sdp = SdpParser.adaptCodecName(result.sdp, MillicastVideoCodec.AV1, 'AV1X')
+      // Signaling server returns 'AV1' instead of 'AV1X'
+      if (codec === VideoCodec.AV1) {
+        result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
       }
 
       // remove a=extmap-allow-mixed for Chrome < M71

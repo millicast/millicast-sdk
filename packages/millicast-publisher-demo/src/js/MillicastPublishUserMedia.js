@@ -1,7 +1,7 @@
-import {MillicastPublish} from "millicast-sdk-js"
+import {Publish} from "millicast-sdk-js"
 import MillicastMedia from "./MillicastMedia"
 
-export default class MillicastPublishUserMedia extends MillicastPublish {
+export default class MillicastPublishUserMedia extends Publish {
   constructor(options = undefined, tokenGenerator) {
     super(options.streamName, tokenGenerator);
     this.mediaManager = new MillicastMedia(options);

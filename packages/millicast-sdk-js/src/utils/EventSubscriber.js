@@ -1,11 +1,11 @@
-import MillicastLogger from '../MillicastLogger'
+import Logger from '../Logger'
 import EventEmitter from 'events'
 
-const logger = MillicastLogger.get('MillicastEventSubscriber')
+const logger = Logger.get('EventSubscriber')
 export const eventsLocation = 'wss://streamevents.millicast.com/ws'
 export const recordSeparator = '\x1E'
 
-export default class MillicastEventSubscriber extends EventEmitter {
+export default class EventSubscriber extends EventEmitter {
   constructor () {
     super()
     this.webSocket = null

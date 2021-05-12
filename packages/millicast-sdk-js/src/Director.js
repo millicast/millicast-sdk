@@ -1,7 +1,7 @@
 import axios from 'axios'
-import MillicastLogger from './MillicastLogger'
+import Logger from './Logger'
 
-const logger = MillicastLogger.get('MillicastDirector')
+const logger = Logger.get('Director')
 const streamTypes = {
   WEBRTC: 'WebRtc',
   RTMP: 'Rtmp'
@@ -25,7 +25,7 @@ let apiEndpoint = defaultApiEndpoint
  * @namespace
  */
 
-export default class MillicastDirector {
+export default class Director {
   /**
    * Set Director API endpoint where requests will be sent.
    *
@@ -51,24 +51,23 @@ export default class MillicastDirector {
    * @param {String} streamName - Millicast Stream Name.
    * @param {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
-   * @example const response = await MillicastDirector.getPublisher(token, streamName)
+   * @example const response = await Director.getPublisher(token, streamName)
    * @example
-   * import { MillicastPublish, MillicastDirector } from 'millicast-sdk-js'
+   * import { Publish, Director } from 'millicast-sdk-js'
    *
-   * //Create a new instance
+   * //Define getPublisher as callback for Publish
    * const streamName = "My Millicast Stream Name"
    * const token = "My Millicast publishing token"
-   * const millicastPublish = new MillicastPublish(streamName)
+   * const tokenGenerator = () => Director.getPublisher(token, streamName)
+   *
+   * //Create a new instance
+   * const millicastPublish = new Publish(streamName, tokenGenerator)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStreamImplementation()
    *
-   * //Get Millicast publisher connection path
-   * const publisherData = await MillicastDirector.getPublisher(token, streamName)
-   *
    * //Options
    * const broadcastOptions = {
-   *    publisherData: publisherData,
    *    mediaStream: mediaStream
    *  }
    *
@@ -97,14 +96,19 @@ export default class MillicastDirector {
    * @param {String} streamAccountId - Millicast Account ID.
    * @param {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
-   * @example const response = await MillicastDirector.getSubscriber(streamName, streamAccountId)
+   * @example const response = await Director.getSubscriber(streamName, streamAccountId)
    * @example
-   * import { MillicastView, MillicastDirector } from 'millicast-sdk-js'
+   * import { View, Director } from 'millicast-sdk-js'
+   *
+   * //Define getSubscriber as callback for Subscribe
+   * const streamName = "My Millicast Stream Name"
+   * const accountId = "Millicast Publisher account Id"
+   * const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
+   * //... or for an secure stream
+   * const tokenGenerator = () => Director.getSubscriber(streamName, accountId, '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744')
    *
    * //Create a new instance
-   * const streamName = "Millicast Stream Name where i want to connect"
-   * const accountId = "Millicast Publisher account Id"
-   * const millicastView = new MillicastView(streamName)
+   * const millicastView = new View(streamName, tokenGenerator)
    *
    * //Set new.track event handler.
    * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
@@ -113,15 +117,8 @@ export default class MillicastDirector {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
-   * //Get Millicast Subscriber connection path for an unsecure stream
-   * const subscriberData = await MillicastDirector.getSubscriber(streamName, accountId)
-   *
-   * //... or for an secure stream
-   * const subscriberData = await MillicastDirector.getSubscriber(streamName, accountId, '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744')
-   *
-   * //Options
+   * //View Options
    * const options = {
-   *    subscriberData: subscriberData
    *  }
    *
    * //Start connection to broadcast

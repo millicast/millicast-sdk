@@ -8,8 +8,8 @@ class MillicastViewTest {
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false
-    const tokenGenerator = () => millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
-    this.millicastView = new millicast.MillicastView(this.streamName, tokenGenerator)
+    const tokenGenerator = () => millicast.Director.getSubscriber(this.streamName, this.streamAccountId)
+    this.millicastView = new millicast.View(this.streamName, tokenGenerator)
     this.tracks = []
   }
 

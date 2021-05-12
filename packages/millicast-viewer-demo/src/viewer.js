@@ -1,6 +1,6 @@
-import { MillicastView, MillicastDirector, MillicastLogger } from "millicast-sdk-js";
+import { View, Director, Logger } from "millicast-sdk-js";
 
-window.MillicastLogger = MillicastLogger
+window.Logger = Logger
 
 //Get our url
 const href = new URL(window.location.href);
@@ -53,8 +53,8 @@ let video = document.querySelector("video");
 let millicastView = null
 
 const newViewer = () => {
-  const tokenGenerator = () => MillicastDirector.getSubscriber(streamId, streamAccountId)
-  const millicastView = new MillicastView(streamId, tokenGenerator)
+  const tokenGenerator = () => Director.getSubscriber(streamId, streamAccountId)
+  const millicastView = new View(streamId, tokenGenerator)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
   
