@@ -9,11 +9,13 @@ let MillicastView
 
 jest.useFakeTimers()
 
-const mockTokenGenerator = () => Promise.resolve({
-  urls: [
-    'ws://localhost:8080'
-  ],
-  jwt: 'this-is-a-jwt-dummy-token'
+const mockTokenGenerator = jest.fn(() => {
+  return {
+    urls: [
+      'ws://localhost:8080'
+    ],
+    jwt: 'this-is-a-jwt-dummy-token'
+  }
 })
 
 beforeEach(() => {

@@ -10,11 +10,13 @@ const feature = loadFeature('../MillicastPublish.feature', { loadRelativePath: t
 
 jest.mock('../../../src/MillicastSignaling')
 
-const mockTokenGenerator = () => Promise.resolve({
-  urls: [
-    'ws://localhost:8080'
-  ],
-  jwt: 'this-is-a-jwt-dummy-token'
+const mockTokenGenerator = jest.fn(() => {
+  return {
+    urls: [
+      'ws://localhost:8080'
+    ],
+    jwt: 'this-is-a-jwt-dummy-token'
+  }
 })
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
@@ -232,6 +234,25 @@ defineFeature(feature, test => {
 
     then('returns false', async () => {
       expect(result).toBeFalsy()
+    })
+  })
+
+  test('Broadcast to stream with invalid token generator', ({ given, when, then }) => {
+    let publisher
+    let expectError
+
+    given('an instance of MillicastPublish with invalid token generator', async () => {
+      const errorTokenGenerator = jest.fn(() => { throw new Error('Error getting token') })
+      publisher = new MillicastPublish('streamName', errorTokenGenerator)
+    })
+
+    when('I broadcast a stream', async () => {
+      expectError = expect(() => publisher.connect({ mediaStream }))
+    })
+
+    then('throws token generator error', async () => {
+      expectError.rejects.toThrow(Error)
+      expectError.rejects.toThrow('Error getting token')
     })
   })
 })

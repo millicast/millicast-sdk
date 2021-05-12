@@ -10,14 +10,14 @@ let MillicastPublish
 
 jest.useFakeTimers()
 
-const mockTokenGenerator = () => {
+const mockTokenGenerator = jest.fn(() => {
   return {
     urls: [
       'ws://localhost:8080'
     ],
     jwt: 'this-is-a-jwt-dummy-token'
   }
-}
+})
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 

@@ -59,3 +59,8 @@ Feature: As a user I want to publish a stream without managing connections
     Given I am not publishing a stream
     When I check if publish is active
     Then returns false
+
+  Scenario: Broadcast to stream with invalid token generator
+    Given an instance of MillicastPublish with invalid token generator
+    When I broadcast a stream
+    Then throws token generator error

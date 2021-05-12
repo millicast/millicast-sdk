@@ -44,3 +44,8 @@ Feature: As a user I want to subscribe to a stream without managing connections
     Given I am not subscribed to a stream
     When I check if subscription is active
     Then returns false
+
+  Scenario: Subscribe to stream with invalid token generator
+    Given an instance of MillicastViewer with invalid token generator
+    When I subscribe to a stream
+    Then throws token generator error
