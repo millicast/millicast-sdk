@@ -33,14 +33,14 @@ export default class MillicastPublishUserMedia extends MillicastPublish {
     return this.mediaManager.audioInput;
   }
 
-  broadcast(
+  connect(
     options = {
       bandwidth: 0,
       disableVideo: false,
       disableAudio: false,
     }
   ) {
-    super.broadcast({
+    super.connect({
       ...options,
       mediaStream: this.mediaManager.mediaStream,
     });

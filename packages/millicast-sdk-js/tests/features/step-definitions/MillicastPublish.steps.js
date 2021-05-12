@@ -63,7 +63,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream with media stream', async () => {
-      await publisher.broadcast({ mediaStream })
+      await publisher.connect({ mediaStream })
     })
 
     then('peer connection state is connected', async () => {
@@ -80,7 +80,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream without options', async () => {
-      expectError = expect(() => publisher.broadcast())
+      expectError = expect(() => publisher.connect())
     })
 
     then('throws an error', async () => {
@@ -98,7 +98,7 @@ defineFeature(feature, test => {
     when('I instance a MillicastPublish with token generator without connection path', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
       publisher = new MillicastPublish('streamName', mockErrorTokenGenerator)
-      expectError = expect(() => publisher.broadcast({ mediaStream }))
+      expectError = expect(() => publisher.connect({ mediaStream }))
     })
 
     then('throws an error', async () => {
@@ -116,7 +116,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream without a mediaStream', async () => {
-      expectError = expect(() => publisher.broadcast())
+      expectError = expect(() => publisher.connect())
     })
 
     then('throws an error', async () => {
@@ -132,11 +132,11 @@ defineFeature(feature, test => {
     given('an instance of MillicastPublish already connected', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
       publisher = new MillicastPublish('streamName', mockTokenGenerator)
-      await publisher.broadcast({ mediaStream })
+      await publisher.connect({ mediaStream })
     })
 
     when('I broadcast again to the stream', async () => {
-      expectError = expect(() => publisher.broadcast({ mediaStream }))
+      expectError = expect(() => publisher.connect({ mediaStream }))
     })
 
     then('throws an error', async () => {
@@ -154,7 +154,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream with bandwidth restriction', async () => {
-      await publisher.broadcast({
+      await publisher.connect({
         mediaStream,
         bandwidth: 1000
       })
@@ -172,7 +172,7 @@ defineFeature(feature, test => {
 
     given('I am publishing a stream', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
-      await publisher.broadcast({ mediaStream })
+      await publisher.connect({ mediaStream })
       signaling = publisher.millicastSignaling
     })
 
@@ -208,7 +208,7 @@ defineFeature(feature, test => {
 
     given('I am publishing a stream', async () => {
       jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
-      await publisher.broadcast({ mediaStream })
+      await publisher.connect({ mediaStream })
     })
 
     when('I check if publish is active', async () => {

@@ -1,14 +1,13 @@
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import BaseImplementator from './utils/BaseImplementator'
+import BaseWebRTC from './utils/BaseWebRTC'
 import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
 import { webRTCEvents } from './MillicastWebRTC.js'
 const logger = MillicastLogger.get('MillicastPublish')
-const maxReconnectionInterval = 32000
 
 /**
  * @class MillicastPublish
- * @extends BaseImplementator
+ * @extends BaseWebRTC
  * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
  * and establishes a WebRTC connection to broadcast a MediaStream.
  *
@@ -22,10 +21,9 @@ const maxReconnectionInterval = 32000
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
-export default class MillicastPublish extends BaseImplementator {
+export default class MillicastPublish extends BaseWebRTC {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
-    this.options = null
   }
 
   /**
@@ -43,7 +41,7 @@ export default class MillicastPublish extends BaseImplementator {
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires MillicastWebRTC#connectionStateChange
-   * @example await millicastPublish.broadcast(options)
+   * @example await millicastPublish.connect(options)
    * @example
    * import MillicastPublish from 'millicast-sdk-js'
    *
@@ -65,12 +63,12 @@ export default class MillicastPublish extends BaseImplementator {
    *
    * //Start broadcast
    * try {
-   *  await millicastPublish.broadcast(broadcastOptions)
+   *  await millicastPublish.connect(broadcastOptions)
    * } catch (e) {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-  async broadcast (
+  async connect (
     options = {
       mediaStream: null,
       bandwidth: 0,
@@ -90,7 +88,13 @@ export default class MillicastPublish extends BaseImplementator {
       logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
     }
-    const publisherData = await this.tokenGenerator()
+    let publisherData
+    try {
+      publisherData = await this.tokenGenerator()
+    } catch (error) {
+      logger.error('Error generating token.')
+      throw error
+    }
     if (!publisherData) {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
@@ -119,43 +123,5 @@ export default class MillicastPublish extends BaseImplementator {
 
     this.setReconnect()
     logger.info('Broadcasting to streamName: ', this.streamName)
-  }
-
-  /**
-   * Stops active broadcast.
-   * @example millicastPublish.stop();
-   */
-  stop () {
-    super.stop()
-  }
-
-  /**
-   * Get if the current broadcast is active.
-   * @example const isActive = millicastPublish.isActive();
-   * @returns {Boolean} - True if connected, false if not.
-   */
-  isActive () {
-    return super.isActive()
-  }
-
-  /**
-   * Reconnects to last broadcast.
-   */
-  reconnect () {
-    setTimeout(async () => {
-      try {
-        if (!this.isActive()) {
-          this.stop()
-          await this.broadcast(this.options)
-          this.alreadyDisconnected = false
-          this.reconnectionInterval = 1000
-          this.firstReconnection = true
-        }
-      } catch (error) {
-        this.reconnectionInterval = this.reconnectionInterval < maxReconnectionInterval ? this.reconnectionInterval * 2 : this.reconnectionInterval
-        logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
-        this.reconnect()
-      }
-    }, this.reconnectionInterval)
   }
 }

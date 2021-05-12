@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import MillicastWebRTC, { webRTCEvents } from '../MillicastWebRTC'
 import { signalingEvents } from '../MillicastSignaling'
 let logger
+const maxReconnectionInterval = 32000
 
 /**
  * Callback invoke when a new connection path is needed.
@@ -13,7 +14,7 @@ let logger
  */
 
 /**
- * @class BaseImplementator
+ * @class BaseWebRTC
  * @extends EventEmitter
  * @classdesc Base class for Publisher and Viewer witch manage common actions.
  *
@@ -23,7 +24,7 @@ let logger
  * @param {Object} loggerInstance - Logger instance from the extended classes.
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
-export default class BaseImplementator extends EventEmitter {
+export default class BaseWebRTC extends EventEmitter {
   constructor (streamName, tokenGenerator, loggerInstance, autoReconnect) {
     super()
     logger = loggerInstance
@@ -43,6 +44,7 @@ export default class BaseImplementator extends EventEmitter {
     this.alreadyDisconnected = false
     this.firstReconnection = true
     this.tokenGenerator = tokenGenerator
+    this.options = null
   }
 
   /**
@@ -89,5 +91,26 @@ export default class BaseImplementator extends EventEmitter {
         }
       })
     }
+  }
+
+  /**
+   * Reconnects to last broadcast.
+   */
+  reconnect () {
+    setTimeout(async () => {
+      try {
+        if (!this.isActive()) {
+          this.stop()
+          await this.connect(this.options)
+          this.alreadyDisconnected = false
+          this.reconnectionInterval = 1000
+          this.firstReconnection = true
+        }
+      } catch (error) {
+        this.reconnectionInterval = this.reconnectionInterval < maxReconnectionInterval ? this.reconnectionInterval * 2 : this.reconnectionInterval
+        logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
+        this.reconnect()
+      }
+    }, this.reconnectionInterval)
   }
 }

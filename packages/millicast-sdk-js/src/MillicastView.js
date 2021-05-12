@@ -1,14 +1,13 @@
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import BaseImplementator from './utils/BaseImplementator'
+import BaseWebRTC from './utils/BaseWebRTC'
 import MillicastSignaling, { signalingEvents } from './MillicastSignaling'
 import { webRTCEvents } from './MillicastWebRTC.js'
 const logger = MillicastLogger.get('MillicastView')
-const maxReconnectionInterval = 32000
 
 /**
  * @class MillicastView
- * @extends BaseImplementator
+ * @extends BaseWebRTC
  * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
  * and establishes a WebRTC connection to view a live stream.
  *
@@ -20,11 +19,9 @@ const maxReconnectionInterval = 32000
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
-export default class MillicastView extends BaseImplementator {
+export default class MillicastView extends BaseWebRTC {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
-    this.disableVideo = false
-    this.disableAudio = false
   }
 
   /**
@@ -73,18 +70,22 @@ export default class MillicastView extends BaseImplementator {
     }
   ) {
     logger.debug('Viewer connect options values: ', options)
-    this.disableVideo = options.disableVideo
-    this.disableAudio = options.disableAudio
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
-    const subscriberData = await this.tokenGenerator()
+    let subscriberData
+    try {
+      subscriberData = await this.tokenGenerator()
+    } catch (error) {
+      logger.error('Error generating token.')
+      throw error
+    }
     if (!subscriberData) {
       logger.error('Error while subscribing. Subscriber data required')
       throw new Error('Subscriber data required')
     }
-
+    this.options = options
     this.millicastSignaling = new MillicastSignaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
@@ -94,8 +95,8 @@ export default class MillicastView extends BaseImplementator {
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
     this.webRTCPeer.RTCOfferOptions = {
-      offerToReceiveVideo: !this.disableVideo,
-      offerToReceiveAudio: !this.disableAudio
+      offerToReceiveVideo: !this.options.disableVideo,
+      offerToReceiveAudio: !this.options.disableAudio
     }
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ stereo: true })
 
@@ -106,46 +107,5 @@ export default class MillicastView extends BaseImplementator {
 
     this.setReconnect()
     logger.info('Connected to streamName: ', this.streamName)
-  }
-
-  /**
-   * Stops active connection.
-   * @example millicastView.stop();
-   */
-  stop () {
-    super.stop()
-  }
-
-  /**
-   * Get if the current connection is active.
-   * @example const isActive = millicastView.isActive();
-   * @returns {Boolean} - True if connected, false if not.
-   */
-  isActive () {
-    return super.isActive()
-  }
-
-  /**
-   * Reconnects to last broadcast.
-   */
-  reconnect () {
-    setTimeout(async () => {
-      try {
-        if (!this.isActive()) {
-          this.stop()
-          await this.connect({
-            disableVideo: this.disableVideo,
-            disableAudio: this.disableAudio
-          })
-          this.alreadyDisconnected = false
-          this.reconnectionInterval = 1000
-          this.firstReconnection = true
-        }
-      } catch (error) {
-        this.reconnectionInterval = this.reconnectionInterval < maxReconnectionInterval ? this.reconnectionInterval * 2 : this.reconnectionInterval
-        logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
-        this.reconnect()
-      }
-    }, this.reconnectionInterval)
   }
 }

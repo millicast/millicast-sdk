@@ -86,7 +86,7 @@ class MillicastPublishTest {
           document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
         }
       })
-      this.millicastPublish.broadcast(broadcastOptions)
+      this.millicastPublish.connect(broadcastOptions)
 
       // Subscribing to User Count Event.
       this.streamCount = await millicast.MillicastStreamEvents.init()

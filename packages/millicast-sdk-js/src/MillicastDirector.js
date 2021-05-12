@@ -53,7 +53,7 @@ export default class MillicastDirector {
    *  }
    *
    * //Start broadcast
-   * await millicastPublish.broadcast(broadcastOptions)
+   * await millicastPublish.connect(broadcastOptions)
    */
 
   static async getPublisher (token, streamName, streamType = streamTypes.WEBRTC) {
