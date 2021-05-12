@@ -36,7 +36,7 @@ defineFeature(feature, test => {
 
     then('throws an error', async () => {
       expectError.toThrow(Error)
-      expectError.toThrow('Stream Name is required to construct a publisher.')
+      expectError.toThrow('Stream Name is required to construct this module.')
     })
   })
 
@@ -51,7 +51,7 @@ defineFeature(feature, test => {
 
     then('throws an error', async () => {
       expectError.toThrow(Error)
-      expectError.toThrow('Token generator is required to construct a publisher.')
+      expectError.toThrow('Token generator is required to construct this module.')
     })
   })
 

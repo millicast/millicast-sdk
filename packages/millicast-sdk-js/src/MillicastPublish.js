@@ -1,8 +1,8 @@
-import EventEmitter from 'events'
 import reemit from 're-emitter'
 import MillicastLogger from './MillicastLogger'
-import MillicastSignaling, { MillicastVideoCodec, signalingEvents } from './MillicastSignaling'
-import MillicastWebRTC, { webRTCEvents } from './MillicastWebRTC.js'
+import BaseImplementator from './utils/BaseImplementator'
+import MillicastSignaling, { MillicastVideoCodec } from './MillicastSignaling'
+import { webRTCEvents } from './MillicastWebRTC.js'
 const logger = MillicastLogger.get('MillicastPublish')
 const maxReconnectionInterval = 32000
 
@@ -17,7 +17,7 @@ const maxReconnectionInterval = 32000
 
 /**
  * @class MillicastPublish
- * @extends EventEmitter
+ * @extends BaseImplementator
  * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
  * and establishes a WebRTC connection to broadcast a MediaStream.
  *
@@ -31,25 +31,9 @@ const maxReconnectionInterval = 32000
  * @param {publishTokenGeneratorCallback} tokenGenerator - Callback function executed when a new token for broadcast is needed.
  * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
-export default class MillicastPublish extends EventEmitter {
+export default class MillicastPublish extends BaseImplementator {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
-    super()
-    if (!streamName) {
-      logger.error('Stream Name is required to construct a publisher.')
-      throw new Error('Stream Name is required to construct a publisher.')
-    }
-    if (!tokenGenerator) {
-      logger.error('Token generator is required to construct a publisher.')
-      throw new Error('Token generator is required to construct a publisher.')
-    }
-    this.webRTCPeer = new MillicastWebRTC()
-    this.millicastSignaling = null
-    this.streamName = streamName
-    this.autoReconnect = autoReconnect
-    this.reconnectionInterval = 1000
-    this.alreadyDisconnected = false
-    this.firstReconnection = true
-    this.tokenGenerator = tokenGenerator
+    super(streamName, tokenGenerator, logger, autoReconnect)
     this.options = null
   }
 
@@ -151,10 +135,7 @@ export default class MillicastPublish extends EventEmitter {
    * @example millicastPublish.stop();
    */
   stop () {
-    logger.info('Stopping broadcast')
-    this.webRTCPeer.closeRTCPeer()
-    this.millicastSignaling?.close()
-    this.millicastSignaling = null
+    super.stop()
   }
 
   /**
@@ -163,35 +144,7 @@ export default class MillicastPublish extends EventEmitter {
    * @returns {Boolean} - True if connected, false if not.
    */
   isActive () {
-    const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
-    logger.info('Broadcast status: ', rtcPeerState || 'not_established')
-    return rtcPeerState === 'connected'
-  }
-
-  /**
-   * Sets reconnection if autoReconnect is enabled.
-   */
-  setReconnect () {
-    if (this.autoReconnect) {
-      this.millicastSignaling.on(signalingEvents.connectionError, () => {
-        if (this.firstReconnection || !this.alreadyDisconnected) {
-          this.firstReconnection = false
-          this.reconnect()
-        }
-      })
-
-      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
-        if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
-          this.firstReconnection = false
-          this.reconnect()
-        } else if (state === 'disconnected') {
-          this.alreadyDisconnected = true
-          setTimeout(() => this.reconnect(), 1500)
-        } else {
-          this.alreadyDisconnected = false
-        }
-      })
-    }
+    return super.isActive()
   }
 
   /**
