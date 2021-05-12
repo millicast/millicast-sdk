@@ -12,6 +12,8 @@ const logger = MillicastLogger.get('SdpParser')
 export default class SdpParser {
   /**
    * Parse SDP for support simulcast.
+   *
+   * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
    * @param {String} codec - Codec.
    * @returns {String} SDP parsed with simulcast support.
@@ -19,7 +21,7 @@ export default class SdpParser {
    */
   static setSimulcast (sdp, codec) {
     logger.info('Setting simulcast. Codec: ', codec)
-    const browserData = new UserAgent(window.navigator.userAgent)
+    const browserData = new UserAgent()
     if (!browserData.isChrome()) {
       logger.warn('Simulcast is only available in Google Chrome browser')
       return sdp
@@ -105,7 +107,7 @@ export default class SdpParser {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
-      const browserData = new UserAgent(window.navigator.userAgent)
+      const browserData = new UserAgent()
       const offer = SemanticSDP.SDPInfo.parse(sdp)
       const videoOffer = offer.getMedia('video')
 
@@ -158,13 +160,15 @@ export default class SdpParser {
 
   /**
    * Parse SDP for support multiopus.
+   *
+   * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
    * @returns {String} SDP parsed with multiopus support.
    * @example SdpParser.setMultiopus(sdp)
    */
   static setMultiopus (sdp) {
-    const browserData = new UserAgent(window.navigator.userAgent)
-    if (browserData.isChrome(['iOS'])) {
+    const browserData = new UserAgent()
+    if (browserData.isChrome()) {
       logger.info('Setting multiopus')
       // Find the audio m-line
       const res = /m=audio 9 UDP\/TLS\/RTP\/SAVPF (.*)\r\n/.exec(sdp)

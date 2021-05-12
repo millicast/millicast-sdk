@@ -4,6 +4,7 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import MillicastLogger from './MillicastLogger'
 import { MillicastVideoCodec, MillicastAudioCodec } from './MillicastSignaling'
+import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = MillicastLogger.get('MillicastWebRTC')
 
@@ -135,9 +136,10 @@ export default class MillicastWebRTC extends EventEmitter {
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
-   * @param {'h264'|'vp8'|'vp9'|'av1'} options.codec - Selected codec for support simulcast.
-   * @param {Boolean} options.simulcast - True to modify SDP for support simulcast.
+   * @param {MillicastVideoCodec} options.codec - Selected codec for support simulcast.
+   * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="MillicastWebRTC#.getCapabilities">MillicastWebRTC.getCapabilities</a> method.
+   * **Only available in Google Chrome.**
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (options = {
@@ -155,7 +157,7 @@ export default class MillicastWebRTC extends EventEmitter {
     if (mediaStream) {
       logger.info('Adding mediaStream tracks to RTCPeerConnection')
       for (const track of mediaStream.getTracks()) {
-        if (track.kind === 'video' && options.scalabilityMode && new UserAgent(window.navigator.userAgent).isChrome()) {
+        if (track.kind === 'video' && options.scalabilityMode && new UserAgent().isChrome()) {
           logger.debug(`Video track with scalability mode: ${options.scalabilityMode}, adding as transceiver.`)
           this.peer.addTransceiver(track, {
             streams: [mediaStream],
@@ -268,6 +270,11 @@ export default class MillicastWebRTC extends EventEmitter {
    * @returns {Array<MillicastCapability>} An array with all capabilities supported by user's browser and Millicast Media Server.
    */
   static getCapabilities (kind) {
+    const browserData = new UserAgent()
+    if (browserData.isFirefox()) {
+      return mozGetCapabilities(kind)
+    }
+
     const browserCapabilites = RTCRtpSender.getCapabilities(kind)
 
     if (browserCapabilites) {
@@ -276,9 +283,8 @@ export default class MillicastWebRTC extends EventEmitter {
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(MillicastAudioCodec).join('|')})$`, 'i')
-        const browserData = new UserAgent(window.navigator.userAgent)
 
-        if (browserData.isChrome(['iOS'])) {
+        if (browserData.isChrome()) {
           codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }
         }
       }

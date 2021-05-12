@@ -21,6 +21,7 @@
     "start-docs": "lerna run start-docs --stream"
   },
   "devDependencies": {
+    "@lerna/publish": "^4.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.21.0",
     "eslint-config-airbnb": "^18.2.1",
