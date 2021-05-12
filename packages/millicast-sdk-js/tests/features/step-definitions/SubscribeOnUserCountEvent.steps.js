@@ -1,11 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-import { eventsLocation, recordSeparator } from '../../../src/utils/MillicastEventSubscriber'
+import { eventsLocation, recordSeparator } from '../../../src/utils/EventSubscriber'
 
-let MillicastStreamEvents
+let StreamEvents
 beforeEach(() => {
   jest.isolateModules(() => {
-    MillicastStreamEvents = require('../../../src/MillicastStreamEvents').default
+    StreamEvents = require('../../../src/StreamEvents').default
   })
 })
 
@@ -24,34 +24,34 @@ defineFeature(feature, test => {
     server = null
   })
 
-  test('Creating new MillicastStreamEvents', ({ given, when, then }) => {
-    let millicastStreamEvents
+  test('Creating new StreamEvents', ({ given, when, then }) => {
+    let streamEvents
 
-    given('I want to create a new MillicastStreamEvents instance', () => {
+    given('I want to create a new StreamEvents instance', () => {
       server.on('connection', () => server.send(`{}${recordSeparator}`))
     })
 
-    when('I init a new MillicastStreamEvents instance', async () => {
-      millicastStreamEvents = await MillicastStreamEvents.init()
+    when('I init a new StreamEvents instance', async () => {
+      streamEvents = await StreamEvents.init()
     })
 
     then('the connection handshake is completed', () => {
-      expect(millicastStreamEvents).toBeDefined()
-      expect(millicastStreamEvents.millicastEventSubscriber).toBeDefined()
-      expect(millicastStreamEvents.millicastEventSubscriber.webSocket.readyState).toBe(WebSocket.OPEN)
+      expect(streamEvents).toBeDefined()
+      expect(streamEvents.eventSubscriber).toBeDefined()
+      expect(streamEvents.eventSubscriber.webSocket.readyState).toBe(WebSocket.OPEN)
     })
   })
 
-  test('Error creating new MillicastStreamEvents', ({ given, when, then }) => {
+  test('Error creating new StreamEvents', ({ given, when, then }) => {
     let errorMessage
 
-    given('I want to create a new MillicastStreamEvents instance', () => {
+    given('I want to create a new StreamEvents instance', () => {
       server.on('connection', () => server.send(`{"error":"Handshake was canceled."}${recordSeparator}`))
     })
 
     when('I init handshake and server responds with error', async () => {
       try {
-        await MillicastStreamEvents.init()
+        await StreamEvents.init()
       } catch (error) {
         errorMessage = error
       }
@@ -65,17 +65,17 @@ defineFeature(feature, test => {
   test('Subscribe to onUserCount event', ({ given, when, then }) => {
     let accountId
     let streamName
-    let millicastStreamEvents
+    let streamEvents
 
-    given('an instanced MillicastStreamEvents and existing accountId and streamName', async () => {
+    given('an instanced StreamEvents and existing accountId and streamName', async () => {
       accountId = 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      millicastStreamEvents = await MillicastStreamEvents.init()
+      streamEvents = await StreamEvents.init()
     })
 
     when('I subscribe to onUserCount event', () => {
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      streamEvents.onUserCount(accountId, streamName, handler)
       server.send(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"${accountId}/${streamName}","count":1}]}${recordSeparator}`)
     })
 
@@ -90,19 +90,19 @@ defineFeature(feature, test => {
     let accountId
     let streamNameOne
     let streamNameTwo
-    let millicastStreamEvents
+    let streamEvents
 
-    given('an instanced MillicastStreamEvents and existing accountId and two streamNames', async () => {
+    given('an instanced StreamEvents and existing accountId and two streamNames', async () => {
       accountId = 'AccountID'
       streamNameOne = 'StreamNameOne'
       streamNameTwo = 'StreamNameTwo'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      millicastStreamEvents = await MillicastStreamEvents.init()
+      streamEvents = await StreamEvents.init()
     })
 
     when('I subscribe to onUserCount event for both streamNames', () => {
-      millicastStreamEvents.onUserCount(accountId, streamNameOne, handler)
-      millicastStreamEvents.onUserCount(accountId, streamNameTwo, secondHandler)
+      streamEvents.onUserCount(accountId, streamNameOne, handler)
+      streamEvents.onUserCount(accountId, streamNameTwo, secondHandler)
       server.send(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"${accountId}/${streamNameTwo}","count":1}]}${recordSeparator}`)
       server.send(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"${accountId}/${streamNameOne}","count":0}]}${recordSeparator}`)
     })
@@ -118,17 +118,17 @@ defineFeature(feature, test => {
   test('Receive ping from user count event', ({ given, when, then }) => {
     let accountId
     let streamName
-    let millicastStreamEvents
+    let streamEvents
 
     given('I am subscribed to onUserCount with valid accountId and streamName', async () => {
       accountId = 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      millicastStreamEvents = await MillicastStreamEvents.init()
+      streamEvents = await StreamEvents.init()
     })
 
     when('server sends ping data', () => {
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      streamEvents.onUserCount(accountId, streamName, handler)
       server.send(`{"type":6}${recordSeparator}`)
     })
 
@@ -146,8 +146,8 @@ defineFeature(feature, test => {
       accountId = 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      const millicastStreamEvents = await MillicastStreamEvents.init()
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      const streamEvents = await StreamEvents.init()
+      streamEvents.onUserCount(accountId, streamName, handler)
     })
 
     when('server sends other target', () => {
@@ -167,8 +167,8 @@ defineFeature(feature, test => {
       accountId = 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      const millicastStreamEvents = await MillicastStreamEvents.init()
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      const streamEvents = await StreamEvents.init()
+      streamEvents.onUserCount(accountId, streamName, handler)
     })
 
     when('server sends user count from other streamName', () => {
@@ -183,17 +183,17 @@ defineFeature(feature, test => {
   test('Subscribe to onUserCountEvent with unexisting accountId and streamName', ({ given, when, then }) => {
     let accountId
     let streamName
-    let millicastStreamEvents
+    let streamEvents
 
-    given('an instanced MillicastStreamEvents and unexisting accountId and streamName', async () => {
+    given('an instanced StreamEvents and unexisting accountId and streamName', async () => {
       accountId = 'UnexistingAccountID'
       streamName = 'UnexistingStreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      millicastStreamEvents = await MillicastStreamEvents.init()
+      streamEvents = await StreamEvents.init()
     })
 
     when('I subscribe to onUserCount event', () => {
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      streamEvents.onUserCount(accountId, streamName, handler)
     })
 
     then('callback is not executed', () => {
@@ -201,24 +201,24 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Subscribe to onUserCount without init MillicastStreamEvents instance', ({ given, when, then }) => {
-    let millicastStreamEvents
+  test('Subscribe to onUserCount without init StreamEvents instance', ({ given, when, then }) => {
+    let streamEvents
     let errorMessage
 
-    given('a MillicastStreamEvents instance without init and existing accountId and streamName', () => {
-      millicastStreamEvents = new MillicastStreamEvents()
+    given('a StreamEvents instance without init and existing accountId and streamName', () => {
+      streamEvents = new StreamEvents()
     })
 
     when('I subscribe to onUserCount event', () => {
       try {
-        millicastStreamEvents.onUserCount('AccountId', 'StreamName', handler)
+        streamEvents.onUserCount('AccountId', 'StreamName', handler)
       } catch (error) {
         errorMessage = error
       }
     })
 
     then('throw a not initialized error', () => {
-      expect(errorMessage.message).toBe('You need to initialize stream event with MillicastStreamEvents.init()')
+      expect(errorMessage.message).toBe('You need to initialize stream event with StreamEvents.init()')
     })
   })
 
@@ -226,12 +226,12 @@ defineFeature(feature, test => {
     let accountId
     let streamName
 
-    given('an already subscribed MillicastStreamEvents instance', async () => {
+    given('an already subscribed StreamEvents instance', async () => {
       accountId = 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      const millicastStreamEvents = await MillicastStreamEvents.init()
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      const streamEvents = await StreamEvents.init()
+      streamEvents.onUserCount(accountId, streamName, handler)
     })
 
     when('an error is returned by server', () => {
@@ -252,8 +252,8 @@ defineFeature(feature, test => {
       accountId = 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      const millicastStreamEvents = await MillicastStreamEvents.init()
-      millicastStreamEvents.onUserCount(accountId, streamName, handler)
+      const streamEvents = await StreamEvents.init()
+      streamEvents.onUserCount(accountId, streamName, handler)
     })
 
     when('server sends error from other streamName', () => {
@@ -266,39 +266,39 @@ defineFeature(feature, test => {
   })
 
   test('Close existing server connection', ({ given, when, then }) => {
-    let millicastStreamEvents
+    let streamEvents
 
     given('I am connected to server', async () => {
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      millicastStreamEvents = await MillicastStreamEvents.init()
+      streamEvents = await StreamEvents.init()
     })
 
     when('I want to close connection', () => {
-      millicastStreamEvents.stop()
+      streamEvents.stop()
     })
 
     then('the connection closes', async () => {
       await server.closed
-      expect(millicastStreamEvents.millicastEventSubscriber.webSocket).toBeNull()
+      expect(streamEvents.eventSubscriber.webSocket).toBeNull()
     })
   })
 
   test('Force connection to server', ({ given, when, then }) => {
-    let millicastStreamEvents
+    let streamEvents
     let currentWebSocket
 
     given('I am connected to server', async () => {
       server.on('connection', () => server.send(`{}${recordSeparator}`))
-      millicastStreamEvents = await MillicastStreamEvents.init()
-      currentWebSocket = millicastStreamEvents.millicastEventSubscriber.webSocket
+      streamEvents = await StreamEvents.init()
+      currentWebSocket = streamEvents.eventSubscriber.webSocket
     })
 
     when('I want to reconnect', async () => {
-      await millicastStreamEvents.millicastEventSubscriber.initializeHandshake()
+      await streamEvents.eventSubscriber.initializeHandshake()
     })
 
     then('reconnection is ignored', () => {
-      expect(currentWebSocket).toMatchObject(millicastStreamEvents.millicastEventSubscriber.webSocket)
+      expect(currentWebSocket).toMatchObject(streamEvents.eventSubscriber.webSocket)
     })
   })
 })

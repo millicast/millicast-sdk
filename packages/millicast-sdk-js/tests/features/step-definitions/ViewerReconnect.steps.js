@@ -1,11 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import MillicastWebRTC, { webRTCEvents } from '../../../src/MillicastWebRTC'
-import MillicastSignaling, { signalingEvents } from '../../../src/MillicastSignaling'
+import PeerConnection, { webRTCEvents } from '../../../src/PeerConnection'
+import Signaling, { signalingEvents } from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../ViewerReconnection.feature', { loadRelativePath: true, errors: true })
-let MillicastView
+let View
 
 jest.useFakeTimers()
 
@@ -21,11 +21,11 @@ const mockTokenGenerator = jest.fn(() => {
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(MillicastWebRTC.prototype, 'getRTCIceServers').mockReturnValue([])
-  jest.spyOn(MillicastSignaling.prototype, 'connect').mockImplementation(jest.fn)
-  jest.spyOn(MillicastSignaling.prototype, 'subscribe').mockResolvedValue('SDP')
+  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
+  jest.spyOn(Signaling.prototype, 'connect').mockImplementation(jest.fn)
+  jest.spyOn(Signaling.prototype, 'subscribe').mockResolvedValue('SDP')
   jest.isolateModules(() => {
-    MillicastView = require('../../../src/MillicastView').default
+    View = require('../../../src/View').default
   })
 })
 
@@ -33,8 +33,8 @@ defineFeature(feature, test => {
   test('Reconnection when peer has an error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -51,8 +51,8 @@ defineFeature(feature, test => {
   test('No reconnection when peer has not an error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -69,14 +69,14 @@ defineFeature(feature, test => {
   test('Reconnection when signaling has an error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
 
     when('signaling has an error', () => {
-      viewer.millicastSignaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+      viewer.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
     })
 
     then('reconnection is called', async () => {
@@ -87,8 +87,8 @@ defineFeature(feature, test => {
   test('No reconnect when signaling has an error and reconnection is already being executed', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -99,7 +99,7 @@ defineFeature(feature, test => {
     when('reconnect was called and signaling has an error', () => {
       viewer.reconnect()
       expect(viewer.reconnect).toBeCalledTimes(1)
-      viewer.millicastSignaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+      viewer.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
     })
 
     then('reconnection is not called', async () => {
@@ -110,8 +110,8 @@ defineFeature(feature, test => {
   test('Reconnection disabled when peer has an error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection disabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, false)
+    given('an instance of Viewer with reconnection disabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, false)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -128,8 +128,8 @@ defineFeature(feature, test => {
   test('Reconnection when peer has a disconnection', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -149,8 +149,8 @@ defineFeature(feature, test => {
   test('Reconnection interval when peer has an error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled and peer with error', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled and peer with error', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
       jest.spyOn(viewer, 'isActive').mockImplementation(() => { return false })
@@ -179,8 +179,8 @@ defineFeature(feature, test => {
   test('Reconnection when peer has recover from error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       await viewer.connect()
     })
 
@@ -198,8 +198,8 @@ defineFeature(feature, test => {
   test('Reconnection and peer has recover from error', ({ given, when, then }) => {
     let viewer
 
-    given('an instance of MillicastViewer with reconnection enabled', async () => {
-      viewer = new MillicastView('streamName', mockTokenGenerator, true)
+    given('an instance of Viewer with reconnection enabled', async () => {
+      viewer = new View('streamName', mockTokenGenerator, true)
       await viewer.connect()
     })
 

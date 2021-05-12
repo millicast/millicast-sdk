@@ -1,18 +1,18 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-import MillicastSignaling from '../../../src/MillicastSignaling'
+import Signaling from '../../../src/Signaling'
 const feature = loadFeature('../ManageSignaling.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
   const publishWebSocketLocation = 'ws://localhost:8080'
   const streamName = 'My Stream Name'
   let server = null
-  let millicastSignaling = null
+  let signaling = null
   const handler = jest.fn()
 
   beforeEach(async () => {
     server = new WS(publishWebSocketLocation, { jsonProtocol: true })
-    millicastSignaling = new MillicastSignaling({
+    signaling = new Signaling({
       streamName: streamName,
       url: publishWebSocketLocation
     })
@@ -21,15 +21,15 @@ defineFeature(feature, test => {
   afterEach(async () => {
     WS.clean()
     server = null
-    millicastSignaling = null
+    signaling = null
   })
 
   test('Connect to existing server with no errors', ({ given, when, then }) => {
     given('I have no previous connection to server', () => null)
 
     when('I want to connect to server', async () => {
-      millicastSignaling.on('wsConnectionSuccess', handler)
-      await millicastSignaling.connect()
+      signaling.on('wsConnectionSuccess', handler)
+      await signaling.connect()
     })
 
     then('returns the WebSocket connection and fires a connectionSuccess event', async () => {
@@ -40,12 +40,12 @@ defineFeature(feature, test => {
 
   test('Connect again to existing server with no errors', ({ given, when, then }) => {
     given('I have a previous connection to server', async () => {
-      millicastSignaling.on('wsConnectionSuccess', handler)
-      await millicastSignaling.connect()
+      signaling.on('wsConnectionSuccess', handler)
+      await signaling.connect()
     })
 
     when('I want to connect to server', async () => {
-      await millicastSignaling.connect()
+      await signaling.connect()
     })
 
     then('returns the WebSocket connection and fires a connectionSuccess event', () => {
@@ -59,12 +59,12 @@ defineFeature(feature, test => {
 
     when('I want to connect to no responding server', async () => {
       server.on('connection', () => server.error())
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      millicastSignaling.on('wsConnectionError', handler)
-      await millicastSignaling.connect()
+      signaling.on('wsConnectionError', handler)
+      await signaling.connect()
     })
 
     then('fires a connectionError event', () => {
@@ -75,8 +75,8 @@ defineFeature(feature, test => {
 
   test('Receive broadcast events from server', ({ given, when, then }) => {
     given('I am connected to server', async () => {
-      millicastSignaling.on('broadcastEvent', handler)
-      await millicastSignaling.connect()
+      signaling.on('broadcastEvent', handler)
+      await signaling.connect()
     })
 
     when('the server send a broadcast event', () => {
@@ -91,18 +91,18 @@ defineFeature(feature, test => {
 
   test('Close existing server connection', ({ given, when, then }) => {
     given('I am connected to server', async () => {
-      await millicastSignaling.connect()
+      await signaling.connect()
     })
 
     when('I want to close connection', async () => {
-      millicastSignaling.on('wsConnectionClose', handler)
-      millicastSignaling.close()
+      signaling.on('wsConnectionClose', handler)
+      signaling.close()
     })
 
     then('the connection closes', async () => {
       await server.closed
       expect(handler).toBeCalledTimes(1)
-      expect(millicastSignaling.webSocket).toBe(null)
+      expect(signaling.webSocket).toBe(null)
     })
   })
 
@@ -110,11 +110,11 @@ defineFeature(feature, test => {
     given('I am not connected to server', () => null)
 
     when('I want to close connection', () => {
-      millicastSignaling.close()
+      signaling.close()
     })
 
     then('websocket is not intitialized', () => {
-      expect(millicastSignaling.webSocket).toBe(null)
+      expect(signaling.webSocket).toBe(null)
     })
   })
 })

@@ -1,12 +1,12 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import MillicastWebRTC, { webRTCEvents } from '../../../src/MillicastWebRTC'
-import MillicastSignaling, { signalingEvents } from '../../../src/MillicastSignaling'
+import PeerConnection, { webRTCEvents } from '../../../src/PeerConnection'
+import Signaling, { signalingEvents } from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../PublisherReconnection.feature', { loadRelativePath: true, errors: true })
-let MillicastPublish
+let Publish
 
 jest.useFakeTimers()
 
@@ -24,11 +24,11 @@ const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(MillicastWebRTC.prototype, 'getRTCIceServers').mockReturnValue([])
-  jest.spyOn(MillicastSignaling.prototype, 'connect').mockImplementation(jest.fn)
-  jest.spyOn(MillicastSignaling.prototype, 'publish').mockResolvedValue('SDP')
+  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
+  jest.spyOn(Signaling.prototype, 'connect').mockImplementation(jest.fn)
+  jest.spyOn(Signaling.prototype, 'publish').mockResolvedValue('SDP')
   jest.isolateModules(() => {
-    MillicastPublish = require('../../../src/MillicastPublish').default
+    Publish = require('../../../src/Publish').default
   })
 })
 
@@ -36,8 +36,8 @@ defineFeature(feature, test => {
   test('Reconnection when peer has an error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -54,8 +54,8 @@ defineFeature(feature, test => {
   test('No reconnection when peer has not an error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -72,14 +72,14 @@ defineFeature(feature, test => {
   test('Reconnection when signaling has an error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
 
     when('signaling has an error', () => {
-      publisher.millicastSignaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+      publisher.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
     })
 
     then('reconnection is called', async () => {
@@ -90,8 +90,8 @@ defineFeature(feature, test => {
   test('No reconnect when signaling has an error and reconnection is already being executed', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(() => {
         publisher.firstReconnection = false
         publisher.alreadyDisconnected = true
@@ -102,7 +102,7 @@ defineFeature(feature, test => {
     when('reconnect was called and signaling has an error', () => {
       publisher.reconnect()
       expect(publisher.reconnect).toBeCalledTimes(1)
-      publisher.millicastSignaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+      publisher.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
     })
 
     then('reconnection is not called', async () => {
@@ -113,8 +113,8 @@ defineFeature(feature, test => {
   test('Reconnection disabled when peer has an error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection disabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, false)
+    given('an instance of Publish with reconnection disabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, false)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -131,8 +131,8 @@ defineFeature(feature, test => {
   test('Reconnection when peer has a disconnection', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -152,8 +152,8 @@ defineFeature(feature, test => {
   test('Reconnection interval when peer has an error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled and peer with error', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled and peer with error', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       await publisher.connect({ mediaStream })
       publisher.webRTCPeer.peer.connectionState = 'failed'
       jest.spyOn(publisher, 'isActive').mockImplementation(() => { return false })
@@ -181,8 +181,8 @@ defineFeature(feature, test => {
   test('Reconnection when peer has recover from error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       await publisher.connect({ mediaStream })
     })
 
@@ -200,8 +200,8 @@ defineFeature(feature, test => {
   test('Reconnection and peer has recover from error', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with reconnection enabled', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator, true)
+    given('an instance of Publish with reconnection enabled', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator, true)
       await publisher.connect({ mediaStream })
     })
 

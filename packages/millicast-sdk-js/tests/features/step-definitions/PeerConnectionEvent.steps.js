@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import MillicastWebRTC, { webRTCEvents } from '../../../src/MillicastWebRTC'
+import PeerConnection, { webRTCEvents } from '../../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
@@ -7,7 +7,7 @@ const feature = loadFeature('../PeerConnectionEvent.feature', { loadRelativePath
 
 defineFeature(feature, test => {
   beforeEach(() => {
-    jest.spyOn(MillicastWebRTC.prototype, 'getRTCIceServers').mockReturnValue([])
+    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
   })
 
   afterEach(async () => {
@@ -15,18 +15,18 @@ defineFeature(feature, test => {
   })
 
   test('Receive new track from peer', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const handler = jest.fn()
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await millicastWebRTC.getRTCPeer()
-      await millicastWebRTC.setRTCRemoteSDP(sdp)
+      await peerConnection.getRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
     })
 
     when('peer returns new track', async () => {
-      millicastWebRTC.on(webRTCEvents.track, handler)
-      millicastWebRTC.peer.emitMockEvent('ontrack', { streams: ['new stream incoming'] })
+      peerConnection.on(webRTCEvents.track, handler)
+      peerConnection.peer.emitMockEvent('ontrack', { streams: ['new stream incoming'] })
     })
 
     then('track event is fired', async () => {
@@ -36,19 +36,19 @@ defineFeature(feature, test => {
   })
 
   test('Get connecting status from peer', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const handler = jest.fn()
     const sdp = 'My default SDP'
 
     given('I have a peer', async () => {
-      await millicastWebRTC.getRTCPeer()
+      await peerConnection.getRTCPeer()
     })
 
     when('peer starts to connect', async () => {
-      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
-      await millicastWebRTC.setRTCRemoteSDP(sdp)
-      millicastWebRTC.peer.connectionState = 'connecting'
-      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      await peerConnection.setRTCRemoteSDP(sdp)
+      peerConnection.peer.connectionState = 'connecting'
+      peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
@@ -58,19 +58,19 @@ defineFeature(feature, test => {
   })
 
   test('Get connected status from peer', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const handler = jest.fn()
     const sdp = 'My default SDP'
 
     given('I have a peer', async () => {
-      await millicastWebRTC.getRTCPeer()
+      await peerConnection.getRTCPeer()
     })
 
     when('peer connects', async () => {
-      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
-      await millicastWebRTC.setRTCRemoteSDP(sdp)
-      millicastWebRTC.peer.connectionState = 'connected'
-      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      await peerConnection.setRTCRemoteSDP(sdp)
+      peerConnection.peer.connectionState = 'connected'
+      peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
@@ -80,20 +80,20 @@ defineFeature(feature, test => {
   })
 
   test('Get disconnected status from peer', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const handler = jest.fn()
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await millicastWebRTC.getRTCPeer()
-      await millicastWebRTC.setRTCRemoteSDP(sdp)
-      millicastWebRTC.peer.connectionState = 'connected'
+      await peerConnection.getRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+      peerConnection.peer.connectionState = 'connected'
     })
 
     when('peer disconnects', async () => {
-      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
-      millicastWebRTC.peer.connectionState = 'disconnected'
-      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.peer.connectionState = 'disconnected'
+      peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
@@ -103,20 +103,20 @@ defineFeature(feature, test => {
   })
 
   test('Get failed status from peer', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const handler = jest.fn()
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await millicastWebRTC.getRTCPeer()
-      await millicastWebRTC.setRTCRemoteSDP(sdp)
-      millicastWebRTC.peer.connectionState = 'connected'
+      await peerConnection.getRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+      peerConnection.peer.connectionState = 'connected'
     })
 
     when('peer have a connection error', async () => {
-      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
-      millicastWebRTC.peer.connectionState = 'failed'
-      millicastWebRTC.peer.emitMockEvent('onconnectionstatechange', {})
+      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.peer.connectionState = 'failed'
+      peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
@@ -126,19 +126,19 @@ defineFeature(feature, test => {
   })
 
   test('Get new status from peer without connectionState', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const handler = jest.fn()
     const sdp = 'My default SDP'
 
     given('I have a peer without connectionState', async () => {
       global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
-      await millicastWebRTC.getRTCPeer()
+      await peerConnection.getRTCPeer()
     })
 
     when('peer is instanced', async () => {
-      millicastWebRTC.on(webRTCEvents.connectionStateChange, handler)
-      await millicastWebRTC.setRTCRemoteSDP(sdp)
-      millicastWebRTC.peer.emitMockEvent('oniceconnectionstatechange')
+      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      await peerConnection.setRTCRemoteSDP(sdp)
+      peerConnection.peer.emitMockEvent('oniceconnectionstatechange')
     })
 
     then('connectionStateChange event is fired', async () => {

@@ -1,14 +1,14 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import MillicastPublish from '../../../src/MillicastPublish'
-import MillicastWebRTC from '../../../src/MillicastWebRTC'
-import MillicastSignaling from '../../../src/MillicastSignaling'
+import Publish from '../../../src/Publish'
+import PeerConnection from '../../../src/PeerConnection'
+import Signaling from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../MillicastPublish.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../Publish.feature', { loadRelativePath: true, errors: true })
 
-jest.mock('../../../src/MillicastSignaling')
+jest.mock('../../../src/Signaling')
 
 const mockTokenGenerator = jest.fn(() => {
   return {
@@ -23,7 +23,7 @@ const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
 beforeEach(() => {
   jest.restoreAllMocks()
-  jest.spyOn(MillicastWebRTC.prototype, 'getRTCIceServers').mockReturnValue([])
+  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
 })
 
 defineFeature(feature, test => {
@@ -32,8 +32,8 @@ defineFeature(feature, test => {
 
     given('no stream name', () => null)
 
-    when('I instance a MillicastPublish', async () => {
-      expectError = expect(() => new MillicastPublish())
+    when('I instance a Publish', async () => {
+      expectError = expect(() => new Publish())
     })
 
     then('throws an error', async () => {
@@ -47,8 +47,8 @@ defineFeature(feature, test => {
 
     given('no token generator', () => null)
 
-    when('I instance a MillicastPublish', async () => {
-      expectError = expect(() => new MillicastPublish('streamName'))
+    when('I instance a Publish', async () => {
+      expectError = expect(() => new Publish('streamName'))
     })
 
     then('throws an error', async () => {
@@ -60,8 +60,8 @@ defineFeature(feature, test => {
   test('Broadcast stream', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish with connection path', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    given('an instance of Publish with connection path', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream with media stream', async () => {
@@ -77,8 +77,8 @@ defineFeature(feature, test => {
     let publisher
     let expectError
 
-    given('an instance of MillicastPublish', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    given('an instance of Publish', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream without options', async () => {
@@ -97,9 +97,9 @@ defineFeature(feature, test => {
 
     given('I want to broadcast', async () => {})
 
-    when('I instance a MillicastPublish with token generator without connection path', async () => {
+    when('I instance a Publish with token generator without connection path', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      publisher = new MillicastPublish('streamName', mockErrorTokenGenerator)
+      publisher = new Publish('streamName', mockErrorTokenGenerator)
       expectError = expect(() => publisher.connect({ mediaStream }))
     })
 
@@ -113,8 +113,8 @@ defineFeature(feature, test => {
     let publisher
     let expectError
 
-    given('an instance of MillicastPublish', async () => {
-      publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    given('an instance of Publish', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream without a mediaStream', async () => {
@@ -131,9 +131,9 @@ defineFeature(feature, test => {
     let publisher
     let expectError
 
-    given('an instance of MillicastPublish already connected', async () => {
-      jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
-      publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    given('an instance of Publish already connected', async () => {
+      jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
+      publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
     })
 
@@ -150,9 +150,9 @@ defineFeature(feature, test => {
   test('Broadcast stream with bandwidth restriction', ({ given, when, then }) => {
     let publisher
 
-    given('an instance of MillicastPublish', async () => {
-      jest.spyOn(MillicastWebRTC.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
-      publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    given('an instance of Publish', async () => {
+      jest.spyOn(PeerConnection.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
+      publisher = new Publish('streamName', mockTokenGenerator)
     })
 
     when('I broadcast a stream with bandwidth restriction', async () => {
@@ -169,13 +169,13 @@ defineFeature(feature, test => {
   })
 
   test('Stop publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    const publisher = new Publish('streamName', mockTokenGenerator)
     let signaling
 
     given('I am publishing a stream', async () => {
-      jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
+      jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
       await publisher.connect({ mediaStream })
-      signaling = publisher.millicastSignaling
+      signaling = publisher.signaling
     })
 
     when('I stop the publish', async () => {
@@ -185,12 +185,12 @@ defineFeature(feature, test => {
     then('peer connection and WebSocket are null', async () => {
       expect(publisher.webRTCPeer.peer).toBeNull()
       expect(signaling.close.mock.calls.length).toBe(1)
-      expect(publisher.millicastSignaling).toBeNull()
+      expect(publisher.signaling).toBeNull()
     })
   })
 
   test('Stop inactive publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    const publisher = new Publish('streamName', mockTokenGenerator)
 
     given('I am not publishing a stream', () => null)
 
@@ -200,16 +200,16 @@ defineFeature(feature, test => {
 
     then('peer connection and WebSocket are null', async () => {
       expect(publisher.webRTCPeer.peer).toBeNull()
-      expect(publisher.millicastSignaling).toBeNull()
+      expect(publisher.signaling).toBeNull()
     })
   })
 
   test('Check status of active publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    const publisher = new Publish('streamName', mockTokenGenerator)
     let result
 
     given('I am publishing a stream', async () => {
-      jest.spyOn(MillicastSignaling.prototype, 'publish').mockReturnValue('sdp')
+      jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
       await publisher.connect({ mediaStream })
     })
 
@@ -223,7 +223,7 @@ defineFeature(feature, test => {
   })
 
   test('Check status of inactive publish', ({ given, when, then }) => {
-    const publisher = new MillicastPublish('streamName', mockTokenGenerator)
+    const publisher = new Publish('streamName', mockTokenGenerator)
     let result
 
     given('I am not publishing a stream', () => null)
@@ -241,9 +241,9 @@ defineFeature(feature, test => {
     let publisher
     let expectError
 
-    given('an instance of MillicastPublish with invalid token generator', async () => {
+    given('an instance of Publish with invalid token generator', async () => {
       const errorTokenGenerator = jest.fn(() => { throw new Error('Error getting token') })
-      publisher = new MillicastPublish('streamName', errorTokenGenerator)
+      publisher = new Publish('streamName', errorTokenGenerator)
     })
 
     when('I broadcast a stream', async () => {

@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
-import MillicastDirector from '../../../src/MillicastDirector'
+import Director from '../../../src/Director'
 const feature = loadFeature('../GetPublisherConnectionPath.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
@@ -31,7 +31,7 @@ defineFeature(feature, test => {
 
     when('I request a connection path to Director API', async () => {
       axios.post.mockResolvedValue(mockedResponse)
-      response = await MillicastDirector.getPublisher(token, streamName)
+      response = await Director.getPublisher(token, streamName)
     })
 
     then('I get the publish connection path', async () => {
@@ -62,7 +62,7 @@ defineFeature(feature, test => {
     when('I request a connection path to Director API', async () => {
       axios.post.mockRejectedValue(mockedResponse)
       try {
-        responseError = await MillicastDirector.getPublisher(token, streamName)
+        responseError = await Director.getPublisher(token, streamName)
       } catch (error) {
         responseError = error
       }
@@ -96,7 +96,7 @@ defineFeature(feature, test => {
     when('I request a connection path to Director API', async () => {
       axios.post.mockRejectedValue(mockedResponse)
       try {
-        responseError = await MillicastDirector.getPublisher(token, streamName)
+        responseError = await Director.getPublisher(token, streamName)
       } catch (error) {
         responseError = error
       }
@@ -129,12 +129,12 @@ defineFeature(feature, test => {
     given('I have a valid token and an existing stream name', async () => {
       token = 'Valid_token'
       streamName = 'Existing_stream_name'
-      MillicastDirector.setEndpoint('https://director-dev.millicast.com')
+      Director.setEndpoint('https://director-dev.millicast.com')
     })
 
     when('I request a connection path to Director API', async () => {
       axios.post.mockResolvedValue(mockedResponse)
-      response = await MillicastDirector.getPublisher(token, streamName)
+      response = await Director.getPublisher(token, streamName)
     })
 
     then('I get the publish connection path', async () => {

@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
 import TransactionManager from 'transaction-manager'
-import MillicastSignaling from '../../../src/MillicastSignaling'
+import Signaling from '../../../src/Signaling'
 const feature = loadFeature('../OfferPublishingStream.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -73,11 +73,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local sdp with h264 codec', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp, 'h264')
+      response = await signaling.publish(localSdp, 'h264')
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -89,14 +89,14 @@ defineFeature(feature, test => {
 
   test('Offer a SDP with previous connection and h264 codec', ({ given, when, then }) => {
     let response
-    let millicastSignaling
+    let signaling
 
     given('a local sdp and a previous active connection to server', async () => {
-      millicastSignaling = new MillicastSignaling({
+      signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      await millicastSignaling.connect()
+      await signaling.connect()
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
@@ -109,7 +109,7 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local spd with h264 codec', async () => {
-      response = await millicastSignaling.publish(localSdp, 'h264')
+      response = await signaling.publish(localSdp, 'h264')
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -128,12 +128,12 @@ defineFeature(feature, test => {
     })
 
     when('I offer a null sdp', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
       try {
-        await millicastSignaling.publish(null, 'h264')
+        await signaling.publish(null, 'h264')
       } catch (error) {
         response = error
       }
@@ -148,20 +148,20 @@ defineFeature(feature, test => {
   test('Offer no SDP with previous connection', ({ given, when, then }) => {
     const errorMessage = 'No sdp'
     let response
-    let millicastSignaling
+    let signaling
 
     given('I have previous connection to server', async () => {
-      millicastSignaling = new MillicastSignaling({
+      signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      await millicastSignaling.connect()
+      await signaling.connect()
       jest.spyOn(TransactionManager.prototype, 'cmd').mockRejectedValue(errorMessage)
     })
 
     when('I offer a null sdp', async () => {
       try {
-        await millicastSignaling.publish(null, 'h264')
+        await signaling.publish(null, 'h264')
       } catch (error) {
         response = error
       }
@@ -189,8 +189,8 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local spd and an unexistent stream name', async () => {
-      const millicastSignaling = new MillicastSignaling()
-      response = await millicastSignaling.publish(localSdp, 'h264')
+      const signaling = new Signaling()
+      response = await signaling.publish(localSdp, 'h264')
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -217,8 +217,8 @@ defineFeature(feature, test => {
 
     when('I offer a sdp without stream', async () => {
       try {
-        const millicastSignaling = new MillicastSignaling()
-        response = await millicastSignaling.publish(localSdp, 'h264')
+        const signaling = new Signaling()
+        response = await signaling.publish(localSdp, 'h264')
       } catch (error) {
         response = error
       }
@@ -239,12 +239,12 @@ defineFeature(feature, test => {
     })
 
     when('I offer a sdp with invalid codec', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
       try {
-        await millicastSignaling.publish(localSdp, 'myCodec264')
+        await signaling.publish(localSdp, 'myCodec264')
       } catch (error) {
         response = error
       }
@@ -272,11 +272,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local sdp with vp8 codec', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp, 'vp8')
+      response = await signaling.publish(localSdp, 'vp8')
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -302,11 +302,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local sdp with vp9 codec', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp, 'vp9')
+      response = await signaling.publish(localSdp, 'vp9')
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -332,11 +332,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local sdp with av1 codec', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp, 'av1')
+      response = await signaling.publish(localSdp, 'av1')
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -362,11 +362,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer a sdp', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp)
+      response = await signaling.publish(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -390,11 +390,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer a sdp', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.publish(localSdp)
+      response = await signaling.publish(localSdp)
     })
 
     then('returns a filtered sdp to offer without extmap-allow-mixed', async () => {

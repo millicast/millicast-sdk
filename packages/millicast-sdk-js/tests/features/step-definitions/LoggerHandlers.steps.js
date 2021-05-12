@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import MillicastLogger from '../../../src/MillicastLogger'
+import Logger from '../../../src/Logger'
 const feature = loadFeature('../LoggerHandlers.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -7,18 +7,18 @@ defineFeature(feature, test => {
     const handler = jest.fn()
 
     given('I set a custom handler at INFO level', async () => {
-      MillicastLogger.setHandler(handler, MillicastLogger.INFO)
+      Logger.setHandler(handler, Logger.INFO)
     })
 
     when('I log a message at INFO level', async () => {
-      MillicastLogger.info('This is a log message')
+      Logger.info('This is a log message')
     })
 
     then('I receive this message in handler', async () => {
       expect(handler).toBeCalledTimes(1)
       expect(handler).toBeCalledWith(
         expect.objectContaining({ 0: 'This is a log message' }),
-        { level: MillicastLogger.INFO, filterLevel: MillicastLogger.TRACE }
+        { level: Logger.INFO, filterLevel: Logger.TRACE }
       )
     })
   })
@@ -27,11 +27,11 @@ defineFeature(feature, test => {
     const handler = jest.fn()
 
     given('I set a custom handler at INFO level', async () => {
-      MillicastLogger.setHandler(handler, MillicastLogger.INFO)
+      Logger.setHandler(handler, Logger.INFO)
     })
 
     when('I log a message at DEBUG level', async () => {
-      MillicastLogger.debug('This is a log message')
+      Logger.debug('This is a log message')
     })
 
     then('custom handler does not receive any message', async () => {
@@ -43,18 +43,18 @@ defineFeature(feature, test => {
     const handler = jest.fn()
 
     given('I set a custom handler at INFO level', async () => {
-      MillicastLogger.setHandler(handler, MillicastLogger.INFO)
+      Logger.setHandler(handler, Logger.INFO)
     })
 
     when('I log a message at ERROR level', async () => {
-      MillicastLogger.error('This is a log message')
+      Logger.error('This is a log message')
     })
 
     then('I receive this message in handler', async () => {
       expect(handler).toBeCalledTimes(1)
       expect(handler).toBeCalledWith(
         expect.objectContaining({ 0: 'This is a log message' }),
-        { level: MillicastLogger.ERROR, filterLevel: MillicastLogger.TRACE }
+        { level: Logger.ERROR, filterLevel: Logger.TRACE }
       )
     })
   })
@@ -64,25 +64,25 @@ defineFeature(feature, test => {
     const errorHandler = jest.fn()
 
     given('I set a custom handler at INFO level and other at ERROR level', async () => {
-      MillicastLogger.setHandler(infoHandler, MillicastLogger.INFO)
-      MillicastLogger.setHandler(errorHandler, MillicastLogger.ERROR)
+      Logger.setHandler(infoHandler, Logger.INFO)
+      Logger.setHandler(errorHandler, Logger.ERROR)
     })
 
     when('I log a message at ERROR level', async () => {
-      MillicastLogger.error('This is a log message')
+      Logger.error('This is a log message')
     })
 
     then('both handlers receive this message', async () => {
       expect(infoHandler).toBeCalledTimes(1)
       expect(infoHandler).toBeCalledWith(
         expect.objectContaining({ 0: 'This is a log message' }),
-        { level: MillicastLogger.ERROR, filterLevel: MillicastLogger.TRACE }
+        { level: Logger.ERROR, filterLevel: Logger.TRACE }
       )
 
       expect(errorHandler).toBeCalledTimes(1)
       expect(errorHandler).toBeCalledWith(
         expect.objectContaining({ 0: 'This is a log message' }),
-        { level: MillicastLogger.ERROR, filterLevel: MillicastLogger.TRACE }
+        { level: Logger.ERROR, filterLevel: Logger.TRACE }
       )
     })
   })
