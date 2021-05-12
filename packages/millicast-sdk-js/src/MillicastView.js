@@ -7,15 +7,6 @@ const logger = MillicastLogger.get('MillicastView')
 const maxReconnectionInterval = 32000
 
 /**
- * Callback invoke when a new token for viewer is needed.
- *
- * @callback subscriberTokenGeneratorCallback
- * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscriber connection path.
- *
- * You can use your own token generator or use the <a href='MillicastDirector#.getSubscriber'>getSubscriber method</a>.
- */
-
-/**
  * @class MillicastView
  * @extends BaseImplementator
  * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
@@ -26,7 +17,7 @@ const maxReconnectionInterval = 32000
  * - A connection path that you can get from {@link MillicastDirector} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
  * @constructor
  * @param {String} streamName - Millicast existing Stream Name where you want to connect.
- * @param {subscriberTokenGeneratorCallback} tokenGenerator - Callback function executed when a new token for viewer is needed.
+ * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
  */
 export default class MillicastView extends BaseImplementator {

@@ -4,13 +4,22 @@ import { signalingEvents } from '../MillicastSignaling'
 let logger
 
 /**
+ * Callback invoke when a new connection path is needed.
+ *
+ * @callback tokenGeneratorCallback
+ * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the new connection path.
+ *
+ * You can use your own token generator or use the <a href='MillicastDirector'>MillicastDirector available methods</a>.
+ */
+
+/**
  * @class BaseImplementator
  * @extends EventEmitter
  * @classdesc Base class for Publisher and Viewer witch manage common actions.
  *
  * @constructor
  * @param {String} streamName - Millicast existing stream name.
- * @param {Function} tokenGenerator - Callback function executed when a new token is needed.
+ * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Object} loggerInstance - Logger instance from the extended classes.
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
