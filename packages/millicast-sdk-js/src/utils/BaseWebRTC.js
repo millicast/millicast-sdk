@@ -107,10 +107,14 @@ export default class BaseWebRTC extends EventEmitter {
           this.firstReconnection = true
         }
       } catch (error) {
-        this.reconnectionInterval = this.reconnectionInterval < maxReconnectionInterval ? this.reconnectionInterval * 2 : this.reconnectionInterval
+        this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
         logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
         this.reconnect()
       }
     }, this.reconnectionInterval)
   }
+}
+
+const nextReconnectInterval = (interval) => {
+  return interval < maxReconnectionInterval ? interval * 2 : interval
 }
