@@ -85,7 +85,7 @@ export default class Director {
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting publisher connection path: ', e.response.data)
+      logger.error('Error while getting publisher connection path: ', e.response?.data)
       throw e
     }
   }
@@ -138,7 +138,7 @@ export default class Director {
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting subscriber connection path: ', e.response.data)
+      logger.error('Error while getting subscriber connection path: ', e.response?.data)
       throw e
     }
   }
