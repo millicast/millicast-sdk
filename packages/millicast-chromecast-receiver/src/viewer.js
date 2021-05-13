@@ -1,6 +1,6 @@
-import { MillicastView, MillicastDirector, MillicastLogger } from 'millicast-sdk-js'
+import { View, Director, Logger } from 'millicast-sdk'
 
-window.MillicastLogger = MillicastLogger
+window.Logger = Logger
 
 const addStream = (stream) => {
   const video = document.querySelector('#player')
@@ -15,7 +15,8 @@ const removeStream = () => {
 }
 
 const subscribe = async (streamId, streamAccountId) => {
-  const millicastView = new MillicastView(streamId)
+  const tokenGenerator = () => Director.getSubscriber(streamId, streamAccountId)
+  const millicastView = new View(streamId, tokenGenerator)
   millicastView.on('broadcastEvent', (event) => {
     const layers = event.data.layers !== null ? event.data.layers : {}
     if (event.name === 'layers' && Object.keys(layers).length <= 0) {
@@ -38,10 +39,7 @@ const subscribe = async (streamId, streamAccountId) => {
   }
 
   try {
-    const getViewerResponse = await MillicastDirector.getSubscriber(streamId, streamAccountId)
-    await millicastView.connect({
-      subscriberData: getViewerResponse
-    })
+    await millicastView.connect()
   } catch (error) {
     close().then(() => {
       subscribe(streamId, streamAccountId)

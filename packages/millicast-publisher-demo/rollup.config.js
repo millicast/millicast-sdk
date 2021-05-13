@@ -29,7 +29,7 @@ export default [
       file: 'dist/publisher.umd.js',
       format: 'umd',
       globals: {
-        'millicast-sdk-js': 'millicastSdkJs'
+        'millicast-sdk': 'millicastSdkJs'
       }
     },
     plugins: [

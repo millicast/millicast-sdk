@@ -62,7 +62,7 @@ class MillicastPublishUserMediaTest {
       disableAudio: false,
     };
     try {
-      const response = await this.millicastPublishUserMedia.broadcast(
+      const response = await this.millicastPublishUserMedia.connect(
         broadcastOptions
       );
       console.log("BROADCASTING!! Start response: ", response);

@@ -1,7 +1,7 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { MillicastDirector, MillicastLogger, MillicastStreamEvents } from "millicast-sdk-js"
+import { Director, Logger, StreamEvents } from "millicast-sdk"
 
-window.MillicastLogger = MillicastLogger
+window.Logger = Logger
 
 const streamId = process.env.MILLICAST_STREAM_ID
 const accountId = process.env.MILLICAST_ACCOUNT_ID
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //////
 
   // Add UserCount event listener
-  const events = await MillicastStreamEvents.init()
+  const events = await StreamEvents.init()
   events.onUserCount(accountId, streamId, ({count}) => {
     userCount.innerHTML = count
   })
@@ -124,14 +124,14 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 
   /////////////////////////
-  const millicastPublishUserMedia = await MillicastPublishUserMedia.build({ streamName: streamId })
+  const tokenGenerator = () => Director.getPublisher(publishToken, streamId)
+  const millicastPublishUserMedia = await MillicastPublishUserMedia.build({ streamName: streamId }, tokenGenerator, true)
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
 
   const BroadcastMillicastStream = async () => {
     try{
-      const getPublisherResponse = await MillicastDirector.getPublisher(publishToken, streamId)
-      await millicastPublishUserMedia.broadcast({ publisherData: getPublisherResponse, bandwidth })
+      await millicastPublishUserMedia.connect({ bandwidth, codec: 'vp8' })
       isBroadcasting = true;
       broadcastHandler();
     }
