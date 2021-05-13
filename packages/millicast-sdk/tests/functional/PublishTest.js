@@ -1,9 +1,13 @@
 const millicast = window.millicast
+const accountId = 'tnJhvK'
+const streamName = 'km0y5qxp'
+const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
+const tokenGenerator = () => millicast.Director.getPublisher(token, streamName)
 
 class MillicastPublishTest {
   constructor () {
-    this.millicastPublish = null
     this.streamCount = null
+    this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
   }
 
   async init () {
@@ -61,13 +65,8 @@ class MillicastPublishTest {
   }
 
   async testStart (options = undefined) {
-    const accountId = 'tnJhvK'
     const bandwidth = Number.parseInt(document.getElementById('bitrate-select').value)
-    const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
-    const streamName = 'km0y5qxp'
 
-    const tokenGenerator = () => millicast.Director.getPublisher(token, streamName)
-    this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
     try {
       const broadcastOptions = options ?? {
         mediaStream: this.mediaStream,
