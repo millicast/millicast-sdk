@@ -376,6 +376,7 @@ const addPeerEvents = (instanceClass, peer) => {
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState)
     }
   } else {
+    // ConnectionStateChange does not exists in Firefox.
     peer.oniceconnectionstatechange = (event) => {
       logger.info('Peer ICE connection state change: ', peer.iceConnectionState)
       /**

@@ -16,7 +16,7 @@ const maxReconnectionInterval = 32000
 /**
  * @class BaseWebRTC
  * @extends EventEmitter
- * @classdesc Base class for Publisher and Viewer witch manage common actions.
+ * @classdesc Base class for common actions about peer connection and reconnect mechanism for Publishers and Viewer instances.
  *
  * @constructor
  * @param {String} streamName - Millicast existing stream name.
