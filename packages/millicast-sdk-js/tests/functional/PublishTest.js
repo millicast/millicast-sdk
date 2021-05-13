@@ -7,15 +7,15 @@ class MillicastPublishTest {
   }
 
   async init () {
-    this.millicastMedia = window.millicastMedia
-    this.mediaStream = await this.millicastMedia.getMedia()
+    this.media = window.media
+    this.mediaStream = await this.media.getMedia()
     console.log('GetMedia response:', this.mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
     this.setCodecOptions()
   }
 
   async loadCamera () {
-    this.mediaStream = await this.millicastMedia.getMedia()
+    this.mediaStream = await this.media.getMedia()
     console.log('GetMedia response:', this.mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
@@ -36,7 +36,7 @@ class MillicastPublishTest {
   }
 
   setCodecOptions () {
-    const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
+    const capabilities = millicast.PeerConnection.getCapabilities('video')
     const options = []
 
     for (const codec of capabilities.codecs) {
@@ -66,11 +66,10 @@ class MillicastPublishTest {
     const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
     const streamName = 'km0y5qxp'
 
-    this.millicastPublish = new millicast.MillicastPublish(streamName)
+    const tokenGenerator = () => millicast.Director.getPublisher(token, streamName)
+    this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
     try {
-      const getPublisherResponse = await millicast.MillicastDirector.getPublisher(token, streamName)
       const broadcastOptions = options ?? {
-        publisherData: getPublisherResponse,
         mediaStream: this.mediaStream,
         bandwidth: bandwidth,
         disableVideo: false,
@@ -87,10 +86,10 @@ class MillicastPublishTest {
           document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
         }
       })
-      this.millicastPublish.broadcast(broadcastOptions)
+      this.millicastPublish.connect(broadcastOptions)
 
       // Subscribing to User Count Event.
-      this.streamCount = await millicast.MillicastStreamEvents.init()
+      this.streamCount = await millicast.StreamEvents.init()
       this.streamCount.onUserCount(accountId, streamName, data => {
         document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
       })
@@ -112,7 +111,7 @@ class MillicastPublishTest {
     document.getElementById('scalability-mode-select').innerHTML = ''
     this.selectedCodec = selectObject.value
 
-    const capabilities = millicast.MillicastWebRTC.getCapabilities('video')
+    const capabilities = millicast.PeerConnection.getCapabilities('video')
     const selectedCapability = capabilities.codecs.find(x => x.codec === this.selectedCodec)
     if (selectedCapability.scalabilityModes) {
       const scalabilityOptions = []
@@ -144,24 +143,24 @@ class MillicastPublishTest {
   }
 
   testMuteAudio (checkboxObject) {
-    const muted = this.millicastMedia.muteAudio(checkboxObject.checked)
+    const muted = this.media.muteAudio(checkboxObject.checked)
     console.log('MuteAudio response:', muted)
   }
 
   testMuteVideo (checkboxObject) {
-    const muted = this.millicastMedia.muteVideo(checkboxObject.checked)
+    const muted = this.media.muteVideo(checkboxObject.checked)
     console.log('MuteVideo response:', muted)
   }
 
   async testChangeVideo () {
     const currentVideoDevice = (this.mediaStream.getVideoTracks()[0]).getSettings().deviceId
 
-    const deviceList = await this.millicastMedia.getMediaDevices()
+    const deviceList = await this.media.getMediaDevices()
     console.log(deviceList.videoinput)
     const newDevice = deviceList.videoinput.find(vi => vi.deviceId !== currentVideoDevice)
     console.log(newDevice)
 
-    const newStream = await this.millicastMedia.changeVideo(newDevice.deviceId)
+    const newStream = await this.media.changeVideo(newDevice.deviceId)
     const video = newStream.getVideoTracks()[0]
 
     console.log(video)

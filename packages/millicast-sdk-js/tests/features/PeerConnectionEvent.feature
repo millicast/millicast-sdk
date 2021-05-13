@@ -24,3 +24,8 @@ Feature: As a user I want to listen to peer connection events so I can take acti
     Given I have a peer connected
     When peer have a connection error
     Then connectionStateChange event is fired
+
+  Scenario: Get new status from peer without connectionState
+    Given I have a peer without connectionState
+    When peer is instanced
+    Then connectionStateChange event is fired

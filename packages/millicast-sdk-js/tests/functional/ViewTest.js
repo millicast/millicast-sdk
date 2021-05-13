@@ -8,7 +8,9 @@ class MillicastViewTest {
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false
-    this.millicastView = new millicast.MillicastView(this.streamName)
+    const tokenGenerator = () => millicast.Director.getSubscriber(this.streamName, this.streamAccountId)
+    this.millicastView = new millicast.View(this.streamName, tokenGenerator)
+    this.tracks = []
   }
 
   async init () {
@@ -18,6 +20,7 @@ class MillicastViewTest {
   async subscribe () {
     try {
       this.millicastView.on('track', (event) => {
+        this.tracks.push(event)
         console.log('Event from newTrack: ', event)
         this.addStreamToVideoTag(event)
       })
@@ -25,9 +28,7 @@ class MillicastViewTest {
         console.log('Event from broadcastEvent: ', event)
       })
 
-      const getSubscriberResponse = await millicast.MillicastDirector.getSubscriber(this.streamName, this.streamAccountId)
       const options = {
-        subscriberData: getSubscriberResponse,
         disableVideo: this.disableVideo,
         disableAudio: this.disableAudio
       }
@@ -41,7 +42,7 @@ class MillicastViewTest {
   }
 
   addStreamToVideoTag (event) {
-    if (!this.playing) { this.addStream(event.streams[0]) }
+    this.addStream(event.streams[0])
   }
 
   addStream (stream) {

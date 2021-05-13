@@ -8,7 +8,7 @@ export const defaultConfig = {
   sdpSemantics: 'unified-plan'
 }
 
-class MockRTCPeerConnection {
+export default class MockRTCPeerConnection {
   constructor (config = null) {
     this.config = config
     this.remoteDescription = {
@@ -89,6 +89,8 @@ class MockRTCPeerConnection {
       }
     })
   }
+
+  restartIce () {}
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection

@@ -1,14 +1,14 @@
-import MillicastLogger from './MillicastLogger'
-import MillicastEventSubscriber from './utils/MillicastEventSubscriber'
+import Logger from './Logger'
+import EventSubscriber from './utils/EventSubscriber'
 
 const USER_COUNT_TARGET = 'SubscribeViewerCount'
 const USER_COUNT_TARGET_RESPONSE = 'SubscribeViewerCountResponse'
 
-const logger = MillicastLogger.get('MillicastStreamEvents')
+const logger = Logger.get('StreamEvents')
 const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
-const errorMsg = 'You need to initialize stream event with MillicastStreamEvents.init()'
+const errorMsg = 'You need to initialize stream event with StreamEvents.init()'
 
 /**
  * Callback invoke when new user count is received.
@@ -21,27 +21,27 @@ const errorMsg = 'You need to initialize stream event with MillicastStreamEvents
  */
 
 /**
- * @class MillicastStreamEvents
+ * @class StreamEvents
  * @classdesc Lets you to subscribe to stream events like receive the amount of viewers of a stream.
  *
  * This events are handled via a WebSocket with Millicast server.
  * @hideconstructor
  */
-export default class MillicastStreamEvents {
+export default class StreamEvents {
   constructor () {
-    this.millicastEventSubscriber = null
+    this.eventSubscriber = null
   }
 
   /**
    * Initializes the connection with Millicast Stream Event.
-   * @returns {Promise<MillicastStreamEvents>} Promise object which represents the MillicastStreamEvents instance
+   * @returns {Promise<StreamEvents>} Promise object which represents the StreamEvents instance
    * once the connection with the Millicast stream events is done.
-   * @example const streamEvents = await MillicastStreamEvents.init()
+   * @example const streamEvents = await StreamEvents.init()
    */
   static async init () {
-    const instance = new MillicastStreamEvents()
-    instance.millicastEventSubscriber = new MillicastEventSubscriber()
-    await instance.millicastEventSubscriber.initializeHandshake()
+    const instance = new StreamEvents()
+    instance.eventSubscriber = new EventSubscriber()
+    await instance.eventSubscriber.initializeHandshake()
 
     return instance
   }
@@ -52,10 +52,10 @@ export default class MillicastStreamEvents {
    * @param {String} streamName - Millicast Stream Name.
    * @param {onUserCountCallback} callback - Callback function executed when a new message is available.
    * @example
-   * import MillicastStreamEvents from 'millicast-sdk-js'
+   * import StreamEvents from 'millicast-sdk-js'
    *
    * //Create a new instance
-   * const streamEvents = await MillicastStreamEvents.init()
+   * const streamEvents = await StreamEvents.init()
    * const accountId = "Publisher account ID"
    * const streamName = "Stream Name"
    *
@@ -70,7 +70,7 @@ export default class MillicastStreamEvents {
    * })
    */
   onUserCount (accountId, streamName, callback) {
-    if (!this.millicastEventSubscriber) {
+    if (!this.eventSubscriber) {
       logger.error(errorMsg)
       throw new Error(errorMsg)
     }
@@ -85,8 +85,8 @@ export default class MillicastStreamEvents {
       target: USER_COUNT_TARGET,
       type: 1
     }
-    this.millicastEventSubscriber.subscribe(userCountRequest)
-    this.millicastEventSubscriber.on('message', (response) => {
+    this.eventSubscriber.subscribe(userCountRequest)
+    this.eventSubscriber.on('message', (response) => {
       handleStreamCountResponse(streamId, requestInvocationId, response, callback)
     })
   }
@@ -96,7 +96,7 @@ export default class MillicastStreamEvents {
    * @example streamEvents.stop()
    */
   stop () {
-    this.millicastEventSubscriber.close()
+    this.eventSubscriber.close()
   }
 }
 

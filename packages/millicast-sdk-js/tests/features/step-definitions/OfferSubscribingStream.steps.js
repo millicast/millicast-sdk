@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
 import TransactionManager from 'transaction-manager'
-import MillicastSignaling from '../../../src/MillicastSignaling'
+import Signaling from '../../../src/Signaling'
 const feature = loadFeature('../OfferSubscribingStream.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
@@ -76,11 +76,11 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local sdp', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await millicastSignaling.subscribe(localSdp)
+      response = await signaling.subscribe(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -92,7 +92,7 @@ defineFeature(feature, test => {
   test('Offer a SDP with previous connection', ({ given, when, then }) => {
     let localSdp
     let response
-    let millicastSignaling
+    let signaling
 
     given('a local sdp and a previous active connection to server', async () => {
       localSdp = `v=0
@@ -116,11 +116,11 @@ defineFeature(feature, test => {
         a=rtcp-fb:123 nack
         a=rtcp-fb:123 nack pli
       `
-      millicastSignaling = new MillicastSignaling({
+      signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      await millicastSignaling.connect()
+      await signaling.connect()
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
@@ -133,7 +133,7 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local spd', async () => {
-      response = await millicastSignaling.subscribe(localSdp)
+      response = await signaling.subscribe(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -152,12 +152,12 @@ defineFeature(feature, test => {
     })
 
     when('I offer a null sdp', async () => {
-      const millicastSignaling = new MillicastSignaling({
+      const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
       try {
-        await millicastSignaling.subscribe(localSdp)
+        await signaling.subscribe(localSdp)
       } catch (error) {
         response = error
       }
@@ -173,20 +173,20 @@ defineFeature(feature, test => {
     const localSdp = null
     const errorMessage = 'No sdp'
     let response
-    let millicastSignaling
+    let signaling
 
     given('I have previous connection to server', async () => {
-      millicastSignaling = new MillicastSignaling({
+      signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      await millicastSignaling.connect()
+      await signaling.connect()
       jest.spyOn(TransactionManager.prototype, 'cmd').mockRejectedValue(errorMessage)
     })
 
     when('I offer a null sdp', async () => {
       try {
-        await millicastSignaling.subscribe(localSdp)
+        await signaling.subscribe(localSdp)
       } catch (error) {
         response = error
       }
@@ -236,8 +236,8 @@ defineFeature(feature, test => {
     })
 
     when('I offer my local spd and an unexistent stream name', async () => {
-      const millicastSignaling = new MillicastSignaling()
-      response = await millicastSignaling.subscribe(localSdp)
+      const signaling = new Signaling()
+      response = await signaling.subscribe(localSdp)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {

@@ -1,4 +1,4 @@
-class MillicastMedia {
+class Media {
   constructor (options) {
     this.mediaStream = null
 
@@ -167,4 +167,4 @@ class MillicastMedia {
   }
 }
 
-window.millicastMedia = new MillicastMedia({ audio: true, video: true })
+window.media = new Media({ audio: true, video: true })

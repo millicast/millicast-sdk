@@ -1,22 +1,22 @@
 Feature: As a user I want to subscribe to onUserCount event so I can see how many viewers are watching the stream
 
-  Scenario: Creating new MillicastStreamEvents
-    Given I want to create a new MillicastStreamEvents instance
-    When I init a new MillicastStreamEvents instance
+  Scenario: Creating new StreamEvents
+    Given I want to create a new StreamEvents instance
+    When I init a new StreamEvents instance
     Then the connection handshake is completed
 
-  Scenario: Error creating new MillicastStreamEvents
-    Given I want to create a new MillicastStreamEvents instance
+  Scenario: Error creating new StreamEvents
+    Given I want to create a new StreamEvents instance
     When I init handshake and server responds with error
     Then throws connection timeout error
 
   Scenario: Subscribe to onUserCount event
-    Given an instanced MillicastStreamEvents and existing accountId and streamName
+    Given an instanced StreamEvents and existing accountId and streamName
     When I subscribe to onUserCount event
     Then callback with count result is executed
 
   Scenario: Subscribe to two onUserCount events
-    Given an instanced MillicastStreamEvents and existing accountId and two streamNames
+    Given an instanced StreamEvents and existing accountId and two streamNames
     When I subscribe to onUserCount event for both streamNames
     Then both callbacks with their count results is executed
 
@@ -36,17 +36,17 @@ Feature: As a user I want to subscribe to onUserCount event so I can see how man
     Then callback is not executed
 
   Scenario: Subscribe to onUserCountEvent with unexisting accountId and streamName
-    Given an instanced MillicastStreamEvents and unexisting accountId and streamName
+    Given an instanced StreamEvents and unexisting accountId and streamName
     When I subscribe to onUserCount event
     Then callback is not executed
 
-  Scenario: Subscribe to onUserCount without init MillicastStreamEvents instance
-    Given a MillicastStreamEvents instance without init and existing accountId and streamName
+  Scenario: Subscribe to onUserCount without init StreamEvents instance
+    Given a StreamEvents instance without init and existing accountId and streamName
     When I subscribe to onUserCount event
     Then throw a not initialized error
 
   Scenario: Error getting view count from onUserCount event  
-    Given an already subscribed MillicastStreamEvents instance
+    Given an already subscribed StreamEvents instance
     When an error is returned by server
     Then callback with error result is executed
 

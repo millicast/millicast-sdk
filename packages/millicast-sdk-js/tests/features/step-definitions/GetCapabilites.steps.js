@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import MillicastWebRTC from '../../../src/MillicastWebRTC'
+import PeerConnection from '../../../src/PeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
 
 const feature = loadFeature('../GetCapabilities.feature', { loadRelativePath: true, errors: true })
@@ -30,7 +30,7 @@ defineFeature(feature, test => {
     })
 
     when('I get video capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('video')
+      capabilities = PeerConnection.getCapabilities('video')
     })
 
     then('returns H264 in codecs property', async () => {
@@ -60,7 +60,7 @@ defineFeature(feature, test => {
     })
 
     when('I get video capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('video')
+      capabilities = PeerConnection.getCapabilities('video')
     })
 
     then('returns all codecs except H265', async () => {
@@ -90,7 +90,7 @@ defineFeature(feature, test => {
     })
 
     when('I get video capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('video')
+      capabilities = PeerConnection.getCapabilities('video')
     })
 
     then('returns VP9 with all scalability modes available', async () => {
@@ -117,7 +117,7 @@ defineFeature(feature, test => {
     })
 
     when('I get video capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('video')
+      capabilities = PeerConnection.getCapabilities('video')
     })
 
     then('returns VP9 with all scalability modes available', async () => {
@@ -136,7 +136,7 @@ defineFeature(feature, test => {
     })
 
     when('I get video capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('video')
+      capabilities = PeerConnection.getCapabilities('video')
     })
 
     then('returns H264, VP8 and VP9 codecs', async () => {
@@ -167,7 +167,7 @@ defineFeature(feature, test => {
     })
 
     when('I get audio capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('audio')
+      capabilities = PeerConnection.getCapabilities('audio')
     })
 
     then('returns opus and multiopus codecs', async () => {
@@ -197,7 +197,7 @@ defineFeature(feature, test => {
     })
 
     when('I get audio capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('audio')
+      capabilities = PeerConnection.getCapabilities('audio')
     })
 
     then('returns opus codec', async () => {
@@ -226,7 +226,7 @@ defineFeature(feature, test => {
     })
 
     when('I get audio capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('audio')
+      capabilities = PeerConnection.getCapabilities('audio')
     })
 
     then('returns opus codec', async () => {
@@ -248,7 +248,7 @@ defineFeature(feature, test => {
 
     when('I get data capabilities', async () => {
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue(browserCapabilities)
-      capabilities = MillicastWebRTC.getCapabilities('data')
+      capabilities = PeerConnection.getCapabilities('data')
     })
 
     then('returns null', async () => {
@@ -264,7 +264,7 @@ defineFeature(feature, test => {
     })
 
     when('I get data capabilities', async () => {
-      capabilities = MillicastWebRTC.getCapabilities('data')
+      capabilities = PeerConnection.getCapabilities('data')
     })
 
     then('returns null', async () => {

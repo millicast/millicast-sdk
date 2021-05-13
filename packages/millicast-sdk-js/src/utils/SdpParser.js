@@ -1,8 +1,8 @@
 import SemanticSDP from 'semantic-sdp'
-import MillicastLogger from '../MillicastLogger'
+import Logger from '../Logger'
 import UserAgent from './UserAgent'
 
-const logger = MillicastLogger.get('SdpParser')
+const logger = Logger.get('SdpParser')
 
 /**
  * Simplify SDP parser.

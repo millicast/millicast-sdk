@@ -1,17 +1,17 @@
-import MillicastLogger from './MillicastLogger'
-import MillicastWebRTC from './MillicastWebRTC'
-import MillicastSignaling from './MillicastSignaling'
-import MillicastDirector from './MillicastDirector'
-import MillicastPublish from './MillicastPublish'
-import MillicastView from './MillicastView'
-import MillicastStreamEvents from './MillicastStreamEvents'
+import Logger from './Logger'
+import PeerConnection from './PeerConnection'
+import Signaling from './Signaling'
+import Director from './Director'
+import Publish from './Publish'
+import View from './View'
+import StreamEvents from './StreamEvents'
 
 export {
-  MillicastLogger,
-  MillicastWebRTC,
-  MillicastSignaling,
-  MillicastDirector,
-  MillicastPublish,
-  MillicastView,
-  MillicastStreamEvents
+  Logger,
+  PeerConnection,
+  Signaling,
+  Director,
+  Publish,
+  View,
+  StreamEvents
 }

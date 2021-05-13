@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
-import MillicastWebRTC from '../../../src/MillicastWebRTC'
+import PeerConnection from '../../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 const feature = loadFeature('../GetIceServer.feature', { loadRelativePath: true, errors: true })
 
@@ -12,7 +12,7 @@ defineFeature(feature, test => {
   })
 
   test('Get RTC Ice servers with custom location', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const axiosResponse = {
       data: {
         v: {
@@ -39,7 +39,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Ice Servers', async () => {
       axios.put.mockResolvedValue(axiosResponse)
-      iceServers = await millicastWebRTC.getRTCIceServers(location)
+      iceServers = await peerConnection.getRTCIceServers(location)
     })
 
     then('returns the ICE Servers', async () => {
@@ -52,7 +52,7 @@ defineFeature(feature, test => {
   })
 
   test('Get RTC Ice servers with default location', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const axiosResponse = {
       data: {
         v: {
@@ -76,7 +76,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Ice Servers', async () => {
       axios.put.mockResolvedValue(axiosResponse)
-      iceServers = await millicastWebRTC.getRTCIceServers()
+      iceServers = await peerConnection.getRTCIceServers()
     })
 
     then('returns the ICE Servers', async () => {
@@ -89,7 +89,7 @@ defineFeature(feature, test => {
   })
 
   test('Get RTC Ice servers with different format', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const axiosResponse = {
       data: {
         v: {
@@ -113,7 +113,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Ice Servers and server returns urls instead url', async () => {
       axios.put.mockResolvedValue(axiosResponse)
-      iceServers = await millicastWebRTC.getRTCIceServers()
+      iceServers = await peerConnection.getRTCIceServers()
     })
 
     then('returns the ICE Servers', async () => {
@@ -126,7 +126,7 @@ defineFeature(feature, test => {
   })
 
   test('Error getting RTC Ice servers', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const axiosResponse = {
       data: {
         v: {},
@@ -139,7 +139,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Ice Servers and server responds with error', async () => {
       axios.put.mockResolvedValue(axiosResponse)
-      iceServers = await millicastWebRTC.getRTCIceServers()
+      iceServers = await peerConnection.getRTCIceServers()
     })
 
     then('returns empty ICE Servers', async () => {
@@ -148,7 +148,7 @@ defineFeature(feature, test => {
   })
 
   test('Error sending request for get RTC Ice servers', ({ given, when, then }) => {
-    const millicastWebRTC = new MillicastWebRTC()
+    const peerConnection = new PeerConnection()
     const axiosResponse = {
       response: {
         data: {}
@@ -160,7 +160,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Ice Servers and server responds with 500 error', async () => {
       axios.put.mockRejectedValue(axiosResponse)
-      iceServers = await millicastWebRTC.getRTCIceServers()
+      iceServers = await peerConnection.getRTCIceServers()
     })
 
     then('returns empty ICE Servers', async () => {

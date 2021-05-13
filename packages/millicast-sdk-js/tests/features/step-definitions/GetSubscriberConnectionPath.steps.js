@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
-import MillicastDirector from '../../../src/MillicastDirector'
+import Director from '../../../src/Director'
 const feature = loadFeature('../GetSubscriberConnectionPath.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
@@ -30,7 +30,7 @@ defineFeature(feature, test => {
 
     when('I request a connection path to Director API', async () => {
       axios.post.mockResolvedValue(mockedResponse)
-      response = await MillicastDirector.getSubscriber(streamName, accountId)
+      response = await Director.getSubscriber(streamName, accountId)
     })
 
     then('I get the subscriber connection path', async () => {
@@ -63,7 +63,7 @@ defineFeature(feature, test => {
 
     when('I request a connection path to Director API', async () => {
       axios.post.mockResolvedValue(mockedResponse)
-      response = await MillicastDirector.getSubscriber(streamName, null, token)
+      response = await Director.getSubscriber(streamName, null, token)
     })
 
     then('I get the subscriber connection path', async () => {
@@ -95,7 +95,7 @@ defineFeature(feature, test => {
     when('I request a connection path to Director API', async () => {
       axios.post.mockRejectedValue(mockedResponse)
       try {
-        responseError = await MillicastDirector.getSubscriber(streamName, accountId)
+        responseError = await Director.getSubscriber(streamName, accountId)
       } catch (error) {
         responseError = error
       }
@@ -127,12 +127,12 @@ defineFeature(feature, test => {
     given('I have an existing stream name, accountId and no token', async () => {
       accountId = 'Existing_accountId'
       streamName = 'Existing_stream_name'
-      MillicastDirector.setEndpoint('https://director-dev.millicast.com')
+      Director.setEndpoint('https://director-dev.millicast.com')
     })
 
     when('I request a connection path to Director API', async () => {
       axios.post.mockResolvedValue(mockedResponse)
-      response = await MillicastDirector.getSubscriber(streamName, accountId)
+      response = await Director.getSubscriber(streamName, accountId)
     })
 
     then('I get the subscriber connection path', async () => {
