@@ -47,7 +47,7 @@ export default class PeerConnection extends EventEmitter {
       this.peer = instanceRTCPeerConnection(this, config)
     }
 
-    const connectionState = this.peer.connectionState ?? this.peer.iceConnectionState
+    const connectionState = getConnectionState(this.peer)
     const { currentLocalDescription, currentRemoteDescription } = this.peer
     logger.debug('getRTCPeer return: ', { connectionState, currentLocalDescription, currentRemoteDescription })
     return this.peer
@@ -232,7 +232,7 @@ export default class PeerConnection extends EventEmitter {
     if (!this.peer) {
       return null
     }
-    const connectionState = this.peer.connectionState ?? this.peer.iceConnectionState
+    const connectionState = getConnectionState(this.peer)
     logger.info('RTC peer status getted, value: ', connectionState)
     return connectionState
   }
@@ -384,5 +384,17 @@ const addPeerEvents = (instanceClass, peer) => {
       */
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }
+  }
+}
+
+const getConnectionState = (peer) => {
+  const connectionState = peer.connectionState ?? peer.iceConnectionState
+  switch (connectionState) {
+    case 'checking':
+      return 'connecting'
+    case 'completed':
+      return 'connected'
+    default:
+      return connectionState
   }
 }
