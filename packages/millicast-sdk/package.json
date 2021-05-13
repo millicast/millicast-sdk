@@ -1,6 +1,6 @@
 {
-  "name": "millicast-sdk-js",
-  "version": "1.0.0",
+  "name": "millicast-sdk",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/millicast.cjs.js",
   "module": "dist/millicast.esm.js",
@@ -29,8 +29,8 @@
       }
     }
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Millicast",
+  "license": "",
   "dependencies": {
     "axios": "^0.21.1",
     "buffer": "^6.0.3",

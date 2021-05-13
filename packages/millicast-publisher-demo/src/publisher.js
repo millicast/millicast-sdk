@@ -1,5 +1,5 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { Director, Logger, StreamEvents } from "millicast-sdk-js"
+import { Director, Logger, StreamEvents } from "millicast-sdk"
 
 window.Logger = Logger
 
