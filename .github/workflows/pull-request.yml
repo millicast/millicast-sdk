@@ -51,7 +51,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Test 🧪
-        working-directory: './packages/millicast-sdk-js'
+        working-directory: './packages/millicast-sdk'
         run: |
           npm install
           npm test
