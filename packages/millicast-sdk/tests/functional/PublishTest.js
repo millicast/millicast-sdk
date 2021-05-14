@@ -1,7 +1,8 @@
 const millicast = window.millicast
-const accountId = 'tnJhvK'
-const streamName = 'km0y5qxp'
-const token = '9d8e95ce075bbcd2bc7613db2e7a6370d90e6c54f714c25f96ee7217024c1849'
+const accountId = 'your-account-id'
+const streamName = 'your-stream-name'
+const token = 'your-publishing-token'
+
 const tokenGenerator = () => millicast.Director.getPublisher(token, streamName)
 
 class MillicastPublishTest {
