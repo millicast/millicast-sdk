@@ -1,5 +1,6 @@
 {
   "name": "millicast-viewer-demo",
+  "author": "Millicast, Inc.",
   "private": true,
   "scripts": {
     "prepare": "node prepare.js",

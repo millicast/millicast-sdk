@@ -46,13 +46,14 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Get existing RTC peer status without connectionState', ({ given, when, then }) => {
+  test('Get connecting RTC peer status without connectionState', ({ given, when, then }) => {
     const peerConnection = new PeerConnection()
     let status
 
-    given('I have a peer instanced without connectionState', async () => {
+    given('I have a peer connecting without connectionState', async () => {
       global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
       await peerConnection.getRTCPeer()
+      peerConnection.peer.iceConnectionState = 'checking'
     })
 
     when('I want to get the peer connection state', () => {
@@ -60,7 +61,26 @@ defineFeature(feature, test => {
     })
 
     then('returns the connection state', async () => {
-      expect(status).toBe('new')
+      expect(status).toBe('connecting')
+    })
+  })
+
+  test('Get connected RTC peer status without connectionState', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let status
+
+    given('I have a peer connected without connectionState', async () => {
+      global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
+      await peerConnection.getRTCPeer()
+      peerConnection.peer.iceConnectionState = 'completed'
+    })
+
+    when('I want to get the peer connection state', () => {
+      status = peerConnection.getRTCPeerStatus()
+    })
+
+    then('returns the connection state', async () => {
+      expect(status).toBe('connected')
     })
   })
 })
