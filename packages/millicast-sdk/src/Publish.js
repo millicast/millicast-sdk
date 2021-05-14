@@ -44,7 +44,7 @@ export default class Publish extends BaseWebRTC {
    * @fires PeerConnection#connectionStateChange
    * @example await publish.connect(options)
    * @example
-   * import Publish from 'millicast-sdk-js'
+   * import Publish from '@millicast/sdk'
    *
    * //Define callback for generate new token
    * const tokenGenerator = () => getYourPublisherInformation(token, streamName)
@@ -89,6 +89,7 @@ export default class Publish extends BaseWebRTC {
       throw new Error('Broadcast currently working')
     }
     let publisherData
+    this.options = options
     try {
       publisherData = await this.tokenGenerator()
     } catch (error) {
@@ -99,7 +100,6 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-    this.options = options
     this.signaling = new Signaling({
       streamName: this.streamName,
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
