@@ -52,7 +52,7 @@ export default class StreamEvents {
    * @param {String} streamName - Millicast Stream Name.
    * @param {onUserCountCallback} callback - Callback function executed when a new message is available.
    * @example
-   * import StreamEvents from 'millicast-sdk-js'
+   * import StreamEvents from '@millicast/sdk'
    *
    * //Create a new instance
    * const streamEvents = await StreamEvents.init()

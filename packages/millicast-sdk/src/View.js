@@ -37,7 +37,7 @@ export default class View extends BaseWebRTC {
    * @fires PeerConnection#connectionStateChange
    * @example await millicastView.connect(options)
    * @example
-   * import View from 'millicast-sdk-js'
+   * import View from '@millicast/sdk'
    *
    * //Define callback for generate new token
    * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
@@ -46,7 +46,7 @@ export default class View extends BaseWebRTC {
    * const streamName = "Millicast Stream Name where i want to connect"
    * const millicastView = new View(streamName, tokenGenerator)
    *
-   * //Set track event handler.
+   * //Set track event handler to receive streams from Publisher.
    * millicastView.on('track', (event) => {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
@@ -74,6 +74,7 @@ export default class View extends BaseWebRTC {
       throw new Error('Viewer currently subscribed')
     }
     let subscriberData
+    this.options = options
     try {
       subscriberData = await this.tokenGenerator()
     } catch (error) {
@@ -84,7 +85,6 @@ export default class View extends BaseWebRTC {
       logger.error('Error while subscribing. Subscriber data required')
       throw new Error('Subscriber data required')
     }
-    this.options = options
     this.signaling = new Signaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`

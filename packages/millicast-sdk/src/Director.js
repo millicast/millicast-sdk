@@ -53,7 +53,7 @@ export default class Director {
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
    * @example const response = await Director.getPublisher(token, streamName)
    * @example
-   * import { Publish, Director } from 'millicast-sdk-js'
+   * import { Publish, Director } from '@millicast/sdk'
    *
    * //Define getPublisher as callback for Publish
    * const streamName = "My Millicast Stream Name"
@@ -98,7 +98,7 @@ export default class Director {
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
    * @example const response = await Director.getSubscriber(streamName, streamAccountId)
    * @example
-   * import { View, Director } from 'millicast-sdk-js'
+   * import { View, Director } from '@millicast/sdk'
    *
    * //Define getSubscriber as callback for Subscribe
    * const streamName = "My Millicast Stream Name"
@@ -110,10 +110,8 @@ export default class Director {
    * //Create a new instance
    * const millicastView = new View(streamName, tokenGenerator)
    *
-   * //Set new.track event handler.
-   * //Event is from RTCPeerConnection ontrack event which contains the peer stream.
-   * //More information here: {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack}
-   * millicastView.on('newTrack', (event) => {
+   * //Set track event handler to receive streams from Publisher.
+   * millicastView.on('track', (event) => {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *

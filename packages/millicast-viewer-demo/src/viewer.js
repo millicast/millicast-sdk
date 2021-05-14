@@ -54,17 +54,12 @@ let millicastView = null
 
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamId, streamAccountId)
-  const millicastView = new View(streamId, tokenGenerator)
+  const millicastView = new View(streamId, tokenGenerator, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
   
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
-      //call play logic or being reconnect interval
-      close().then(() => {
-        subscribe();
-      });
-      console.error("Feed no longer found.");
     }
   });
   
@@ -154,11 +149,7 @@ const subscribe = async () => {
     await millicastView.connect(options);
   } catch (error) {
     if (!autoReconnect) return;
-
-    close().then(() => {
-      subscribe();
-    });
-    console.error(error);
+    millicastView.reconnect()
   }
 };
 
