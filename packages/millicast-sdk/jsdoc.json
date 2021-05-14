@@ -18,12 +18,17 @@
     "recurse": true,
     "verbose": true,
     "theme_opts": {
-      "title": "Millicast Realtime Broadcast SDK",
+      "title": "Millicast SDK",
       "theme": "light",
       "menu": [
         {
-          "title": "GitHub",
-          "link": "https://github.com/millicast/realtime-broadcast-sdk",
+          "title": "Github",
+          "link": "https://github.com/millicast/millicast-sdk",
+          "target": "_blank"
+        },
+        {
+          "title": "NPM Package",
+          "link": "https://www.npmjs.com/package/@millicast/sdk",
           "target": "_blank"
         }
       ]
