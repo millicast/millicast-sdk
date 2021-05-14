@@ -1,4 +1,4 @@
-import { View, Director, Logger } from "millicast-sdk";
+import { View, Director, Logger } from "@millicast/sdk";
 
 window.Logger = Logger
 

@@ -7,7 +7,7 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "millicast-sdk": "^0.1.0"
+    "@millicast/sdk": "^0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
