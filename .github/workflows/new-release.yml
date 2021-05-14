@@ -56,10 +56,14 @@ jobs:
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Add Readme to package
+        run: cp README.md packages/millicast-sdk/README.md
+
       - name: Publish package
+        working-directory: './packages/millicast-sdk'
         run: |
           npm install
-          npm prepare
+          npm run prepare
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

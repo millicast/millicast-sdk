@@ -2,8 +2,6 @@
 <!-- TODO: Add badges: NPM, build, tests, etc. -->
 ![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/millicast/millicast-sdk?include_prereleases&label=pre-release)
-![GitHub branch checks state](https://img.shields.io/github/checks-status/millicast/millicast-sdk/main)
 
 This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
 
