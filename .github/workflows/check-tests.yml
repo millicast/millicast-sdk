@@ -1,8 +1,14 @@
-name: Pull Request
+name: Check tests
 
 on:
+  push:
+    branches: 
+      - main
+
   pull_request:
-    branches: [ main, develop ]
+    branches: 
+      - main
+      - develop
     
   workflow_dispatch:
 
