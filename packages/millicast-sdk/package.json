@@ -1,5 +1,5 @@
 {
-  "name": "millicast-sdk",
+  "name": "@millicast/sdk",
   "version": "0.1.0",
   "description": "",
   "main": "dist/millicast.cjs.js",
@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "build-docs": "jsdoc -c jsdoc.json -R docs-home.md",
+    "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "pretest": "npm run build",
     "test": "jest"
@@ -30,7 +30,12 @@
     }
   },
   "author": "Millicast, Inc.",
-  "license": "",
+  "homepage": "https://github.com/millicast/millicast-sdk#readme",
+  "license": "See in LICENSE file",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/millicast/millicast-sdk.git"
+  },
   "dependencies": {
     "axios": "^0.21.1",
     "buffer": "^6.0.3",

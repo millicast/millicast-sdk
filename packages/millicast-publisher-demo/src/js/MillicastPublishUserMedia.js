@@ -1,4 +1,4 @@
-import {Publish} from "millicast-sdk"
+import {Publish} from "@millicast/sdk"
 import MillicastMedia from "./MillicastMedia"
 
 export default class MillicastPublishUserMedia extends Publish {

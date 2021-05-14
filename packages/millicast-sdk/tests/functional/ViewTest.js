@@ -1,10 +1,13 @@
 const millicast = window.millicast
 
+const accountId = 'your-account-id'
+const streamName = 'your-stream-name'
+
 class MillicastViewTest {
   constructor () {
     const href = new URL(window.location.href)
-    this.streamAccountId = (href.searchParams.get('streamAccountId')) ? href.searchParams.get('streamAccountId') : 'tnJhvK'
-    this.streamName = (href.searchParams.get('streamName')) ? href.searchParams.get('streamName') : 'km0y5qxp'
+    this.streamAccountId = (href.searchParams.get('streamAccountId')) ? href.searchParams.get('streamAccountId') : accountId
+    this.streamName = (href.searchParams.get('streamName')) ? href.searchParams.get('streamName') : streamName
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false

@@ -1,69 +1,117 @@
-# Millicast Realtime Broadcast SDK for JavaScript
+# Millicast SDK for JavaScript
 <!-- TODO: Add badges: NPM, build, tests, etc. -->
-This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps. You can find the latest, most up to date, SDK documentation at our [doc site](https://link-to-docs.com).
+![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/millicast/millicast-sdk?include_prereleases&label=pre-release)
+![GitHub branch checks state](https://img.shields.io/github/checks-status/millicast/millicast-sdk/main)
+
+This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
+
+## Table of Contents
+* [Installation](#installation)
+* [Basic Usage](#basic-usage)
+* [API Reference](#api-reference)
+* [Samples](#samples)
+* [SDK developer information](#sdk-developer-information)
+* [License](#license)
 
 
-<!-- ## Installation
-```sh
-$ npm install millicast-sdk-js
-``` -->
-
-<!-- ## Usage -->
-
-## Packages
-This project is built with [Lerna](https://lerna.js.org/) and contains the following packages:
-
-- `millicast-sdk-js`: The SDK itself.
-- `millicast-publisher-demo`: Publisher demo page using SDK. You can try this demo [here](https://demo.millicast.com/?codec=h264&nosimulcast).
-- `millicast-viewer-demo`: Viewer demo page using SDK.
-- `millicast-chromecast-receiver`: Example of Google Cast receiver for demo.
-
-## Development
-Asumming that you have Node 12.10.x or newer and `npm` installed, install the required dependencies running:
-```sh
-$ npm install
-```
-### Building packages
-As the project is built using [Lerna](https://lerna.js.org/), we can rely on it to manage our packages dependencies, so you just need to run at project's root directory
-```sh
-$ npm run prepare
+## Installation
+You can use the CDN version of the SDK adding this tag to your document's `<head>`. Then `millicast` global variable will be available to use it.
+```html
+<script src='https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js'></script>
 ```
 
-Next, to build all packages add a `.env` file in both demo packages (`millicast-publisher-demo` & `millicast-viewer-demo`). You can find the following example in `.env.sample`:
+Or if you are building an application with Node.js, you can install the SDK package to your dependencies.
+
+
 ```sh
-# Make a .env file with the following vars
-MILLICAST_STREAM_ID=test
-MILLICAST_ACCOUNT_ID=test
-MILLICAST_PUBLISH_TOKEN=test
+$ npm i --save @millicast/sdk
 ```
 
-Then, build all packages:
-```sh
-$ npm run build
+## Basic Usage
+This simple example will show how to broadcast the user camera and microphone to Millicast Media Servers and viewing it.
+
+You will need a Millicast account and a valid publishing token that you can find it in your dashboard ([link here](https://dash.millicast.com/#/signin)).
+
+
+### Publisher app
+
+
+```javascript
+import { Director, Publish } from '@millicast/sdk'
+//Define callback for generate new tokens
+const tokenGenerator = () => Director.getPublisher('my-publishing-token', 'my-stream-name')
+
+//Create a new instance
+const millicastPublish = new Publish(streamName, tokenGenerator)
+
+//Get User camera and microphone
+const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+
+//Publishing Options
+const broadcastOptions = {
+  mediaStream
+}
+
+//Start broadcast
+try {
+  await millicastPublish.connect(broadcastOptions)
+} catch (e) {
+  console.log('Connection failed, handle error', e)
+}
 ```
 
-Optionally you can run other Lerna command using `npx lerna [command]`.
 
-### Running demo
-If you want to add, fix or edit features in SDK, or just try our demo pages, run:
-```sh
-$ npm run start
+### Viewer app
+
+`index.html`
+```html
+<html>
+<head>
+  ...
+</head>
+<body>
+  <video id="my-video"></video>
+  
+  <script src='viewer.js'></script>
+</body>
+</html>
 ```
-It opens in your browser both demos and keep watching changes in all packages, so you only need to refresh both pages if you add changes in code.
+`viewer.js`
+```javascript
+import { Director, View } from '@millicast/sdk'
 
-### Building docs
-The SDK documentation is written with [JSDcos](https://jsdoc.app/), so to build documentation to get HTMLs files run:
-```sh
-$ npx lerna run build-docs
+//Define callback for generate new token
+const tokenGenerator = () => Director.getSubscriber('my-stream-name', 'my-account-id')
+
+//Create a new instance
+const millicastView = new View(streamName, tokenGenerator)
+
+//Set event handler for receive stream from publisher and add it to your <video> tag
+millicastView.on('track', (event) => {
+  const video = document.getElementById('my-video')
+  video.srcObject = event.streams[0]
+})
+
+//Start connection to publisher
+try {
+  await millicastView.connect()
+} catch (e) {
+  console.log('Connection failed, handle error', e)
+}
 ```
+## API Reference
+You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
 
-Or if you want to navigate docs in your localhost run:
-```sh
-$ npx lerna run start-docs --stream
-```
-In the logs you find the link where you can access to docs. By default is running at http://localhost:5000.
+## Samples
+In this repo there are two pacakges that implement a broadcaster and viewer application using the SDK.
+You can clone this repo and following the steps indicated in each example:
+* [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
+* [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
 
+## SDK developer information
+To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/developer-info.md)
 
-
-<!-- ## License -->
-
+## License
+Please refer to [LICENSE](https://github.com/millicast/millicast-sdk/blob/main/LICENSE) file.
