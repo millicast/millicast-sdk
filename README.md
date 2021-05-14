@@ -9,30 +9,32 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
 
 You can find the latest, most up to date, SDK documentation at our [doc site](https://millicast.github.io/millicast-sdk/).
 
-## Quick Start
-You can either using the SDK using the CDN version of the package or installing via NPM.
-
-
+## Installation
+You can use the CDN version of the SDK adding this tag to your document's `<head>`. Then `millicast` global variable will be available to use it.
 ```html
 <script src='https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js'></script>
-<script>
-</script>
 ```
+
+Or if you are building an application with Node.js, you can install the SDK package to your dependencies.
 
 
 ```sh
 $ npm i --save @millicast/sdk
 ```
 
- ```javascript
+## Basic Usage
+This simple example will show how to broadcast the user camera and microphone to Millicast Media Servers and viewing it.
+
+You will need a Millicast account and a valid publishing token that you can find it in your dashboard ([link here](https://dash.millicast.com/#/signin)).
+
+
+### Publisher app
+
+
+```javascript
  import { Director, Publish } from '@millicast/sdk'
-
-  //Get your Millicast credentials
-  const publishToken = 'Your publishing token'
-  const streamName = 'Your publishing stream name'
-
-  //Define callback for generate new token
-  const tokenGenerator = () => Director.getPublisher(publishToken, streamName)
+  //Define callback for generate new tokens
+  const tokenGenerator = () => Director.getPublisher('my-publishing-token', 'my-stream-name')
 
   //Create a new instance
   const millicastPublish = new Publish(streamName, tokenGenerator)
@@ -53,24 +55,28 @@ $ npm i --save @millicast/sdk
   }
 ```
 
-```html
-<body>
-  <video
-    id="my-video"
-  >
-  </video>
-</body>
-```
 
-```javascript
- import { Director, View } from '@millicast/sdk'
+### Viewer app
+
+`index.html`
+```html
+<html>
+<head>
+  ...
+</head>
+<body>
+  <video id="my-video"></video>
   
-  //Get your Millicast credentials
-  const accountId = 'Publisher account ID'
-  const streamName = 'Publisher stream name'
+  <script src='viewer.js'></script>
+</body>
+</html>
+```
+`viewer.js`
+```javascript
+  import { Director, View } from '@millicast/sdk'
 
   //Define callback for generate new token
-  const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
+  const tokenGenerator = () => Director.getSubscriber('my-stream-name', 'my-account-id')
   
   //Create a new instance
   const millicastView = new View(streamName, tokenGenerator)
@@ -83,8 +89,13 @@ $ npm i --save @millicast/sdk
 
   //Start connection to publisher
   try {
-  await millicastView.connect()
+    await millicastView.connect()
   } catch (e) {
     console.log('Connection failed, handle error', e)
   }
 ```
+## Samples
+In this repo there are two pacakges that implement a broadcaster and viewer application using the SDK.
+You can clone this repo and following the steps indicated in each example:
+* [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
+* [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
