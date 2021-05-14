@@ -29,7 +29,7 @@
       }
     }
   },
-  "author": "Millicast",
+  "author": "Millicast, Inc.",
   "license": "",
   "dependencies": {
     "axios": "^0.21.1",

@@ -1,5 +1,6 @@
 {
   "name": "millicast-publisher-demo",
+  "author": "Millicast, Inc.",
   "private": true,
   "scripts": {
     "prepare": "node prepare.js",
