@@ -39,27 +39,27 @@ You will need a Millicast account and a valid publishing token that you can find
 
 
 ```javascript
- import { Director, Publish } from '@millicast/sdk'
-  //Define callback for generate new tokens
-  const tokenGenerator = () => Director.getPublisher('my-publishing-token', 'my-stream-name')
+import { Director, Publish } from '@millicast/sdk'
+//Define callback for generate new tokens
+const tokenGenerator = () => Director.getPublisher('my-publishing-token', 'my-stream-name')
 
-  //Create a new instance
-  const millicastPublish = new Publish(streamName, tokenGenerator)
+//Create a new instance
+const millicastPublish = new Publish(streamName, tokenGenerator)
 
-  //Get User camera and microphone
-  const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+//Get User camera and microphone
+const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
 
-  //Publishing Options
-  const broadcastOptions = {
-      mediaStream
-    }
+//Publishing Options
+const broadcastOptions = {
+  mediaStream
+}
 
-  //Start broadcast
-  try {
-    await millicastPublish.connect(broadcastOptions)
-  } catch (e) {
-    console.log('Connection failed, handle error', e)
-  }
+//Start broadcast
+try {
+  await millicastPublish.connect(broadcastOptions)
+} catch (e) {
+  console.log('Connection failed, handle error', e)
+}
 ```
 
 
@@ -80,26 +80,26 @@ You will need a Millicast account and a valid publishing token that you can find
 ```
 `viewer.js`
 ```javascript
-  import { Director, View } from '@millicast/sdk'
+import { Director, View } from '@millicast/sdk'
 
-  //Define callback for generate new token
-  const tokenGenerator = () => Director.getSubscriber('my-stream-name', 'my-account-id')
-  
-  //Create a new instance
-  const millicastView = new View(streamName, tokenGenerator)
-  
-  //Set event handler for receive stream from publisher and add it to your <video> tag
-  millicastView.on('track', (event) => {
-    const video = document.getElementById('my-video')
-    video.srcObject = event.streams[0]
-  })
+//Define callback for generate new token
+const tokenGenerator = () => Director.getSubscriber('my-stream-name', 'my-account-id')
 
-  //Start connection to publisher
-  try {
-    await millicastView.connect()
-  } catch (e) {
-    console.log('Connection failed, handle error', e)
-  }
+//Create a new instance
+const millicastView = new View(streamName, tokenGenerator)
+
+//Set event handler for receive stream from publisher and add it to your <video> tag
+millicastView.on('track', (event) => {
+  const video = document.getElementById('my-video')
+  video.srcObject = event.streams[0]
+})
+
+//Start connection to publisher
+try {
+  await millicastView.connect()
+} catch (e) {
+  console.log('Connection failed, handle error', e)
+}
 ```
 ## API Reference
 You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
