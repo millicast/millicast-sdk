@@ -103,7 +103,7 @@ try {
 You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
 
 ## Samples
-In this repo there are two pacakges that implement a broadcaster and viewer application using the SDK.
+In this repo there are two packages that implement a broadcaster and viewer application using the SDK.
 You can clone this repo and following the steps indicated in each example:
 * [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
 * [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
