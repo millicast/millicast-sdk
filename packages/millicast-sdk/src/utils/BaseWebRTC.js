@@ -55,6 +55,7 @@ export default class BaseWebRTC extends EventEmitter {
     this.webRTCPeer.closeRTCPeer()
     this.signaling?.close()
     this.signaling = null
+    this.webRTCPeer = new PeerConnection()
   }
 
   /**
