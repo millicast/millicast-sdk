@@ -124,4 +124,9 @@ export default class Publish extends BaseWebRTC {
     this.setReconnect()
     logger.info('Broadcasting to streamName: ', this.streamName)
   }
+
+  reconnect () {
+    this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
+    super.reconnect()
+  }
 }
