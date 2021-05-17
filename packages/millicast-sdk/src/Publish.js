@@ -126,7 +126,7 @@ export default class Publish extends BaseWebRTC {
   }
 
   reconnect () {
-    this.options.mediaStream = (this.webRTCPeer?.peer) ? this.webRTCPeer.peer.getSenders().map((sender) => sender.track) : this.options.mediaStream
+    this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
     super.reconnect()
   }
 }
