@@ -17,6 +17,11 @@ afterEach(async () => {
 })
 
 beforeEach(async () => {
+  // browser = await puppeteer.connect({
+  //   browserWSEndpoint: 'ws://localhost:3000'
+  // })
+
+  // Local testing without Docker in headless mode and local Chrome.
   browser = await puppeteer.launch({
     devtools: true,
     executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -44,7 +49,7 @@ defineFeature(feature, test => {
 
     when('I broadcast a stream with h264 codec and connect to stream as viewer', async () => {
       // broadcastPage.on('console', (msg) => console.log(msg.text()))
-      isActive = await broadcastPage.evaluate(async () => {
+      isActive = await broadcastPage.evaluate(async ({ publishToken, streamName }) => {
         const millicast = window.millicast
         millicast.Logger.setLevel(millicast.Logger.DEBUG)
         const tokenGenerator = () => millicast.Director.getPublisher(publishToken, streamName)
@@ -61,9 +66,9 @@ defineFeature(feature, test => {
           scalabilityMode: null
         })
         window.publish = publish
-      })
+      }, { publishToken, streamName })
 
-      await viewerPage.evaluate(async () => {
+      await viewerPage.evaluate(async ({ streamName, accountId }) => {
         const millicast = window.millicast
         millicast.Logger.setLevel(millicast.Logger.DEBUG)
         const tokenGenerator = () => millicast.Director.getSubscriber(streamName, accountId)
@@ -72,7 +77,7 @@ defineFeature(feature, test => {
           document.getElementById('my-video').srcObject = event.streams[0]
         })
         await view.connect()
-      })
+      }, { streamName, accountId })
 
       await broadcastPage.waitForTimeout(4000)
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
