@@ -1,10 +1,10 @@
 import path from 'path'
 import puppeteer from 'puppeteer'
 import { loadFeature, defineFeature } from 'jest-cucumber'
-const feature = loadFeature('../FunctionalPublish.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/FunctionalPublish.feature', { loadRelativePath: true, errors: true })
 
 jest.setTimeout(20000)
-const pageLocation = `file:${path.join(__dirname, '../../PuppeteerJest.html')}`
+const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 const publishToken = ''
 const streamName = ''
 const accountId = ''

@@ -1,9 +1,10 @@
 import path from 'path'
 import puppeteer from 'puppeteer'
 import { loadFeature, defineFeature } from 'jest-cucumber'
-const feature = loadFeature('../Puppeteer.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/Puppeteer.feature', { loadRelativePath: true, errors: true })
 
 // Variables used for testing
+const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 let browser = null
 let page = null
 
@@ -23,7 +24,7 @@ defineFeature(feature, test => {
 
     when('i open a new page and go to the example web', async () => {
       page = await browser.newPage()
-      await page.goto(`file:${path.join(__dirname, '../../PuppeteerJest.html')}`)
+      await page.goto(pageLocation)
     })
 
     then('the web page title says "PuppeteerJest"', async () => {
@@ -37,7 +38,7 @@ defineFeature(feature, test => {
     given('i have a browser opened and an example page with the Millicast SDK', async () => {
       browser = await puppeteer.launch()
       page = await browser.newPage()
-      await page.goto(`file:${path.join(__dirname, '../../PuppeteerJest.html')}`)
+      await page.goto(pageLocation)
     })
 
     when('i ask the "millicast" module', async () => {

@@ -7,9 +7,6 @@ module.exports = {
   clearMocks: true,
   coverageDirectory: 'coverage',
   preset: 'jest-puppeteer',
-  testMatch: [
-    '**/*.steps.js'
-  ],
   transform: {
     '\\.[jt]sx?$': 'babel-jest'
   }
