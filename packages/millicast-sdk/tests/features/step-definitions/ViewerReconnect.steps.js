@@ -34,7 +34,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -52,7 +52,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -70,7 +70,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -88,7 +88,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -111,7 +111,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection disabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, false)
+      viewer = new View('streamName', mockTokenGenerator, null, false)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -129,7 +129,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -150,7 +150,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
       jest.spyOn(viewer, 'isActive').mockImplementation(() => { return false })
@@ -180,7 +180,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       await viewer.connect()
     })
 
@@ -199,7 +199,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       await viewer.connect()
     })
 
