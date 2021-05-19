@@ -19,7 +19,7 @@ const logger = Logger.get('Publish')
  * @constructor
  * @param {String} streamName - Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
+ * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class Publish extends BaseWebRTC {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
