@@ -28,7 +28,7 @@ afterEach(async () => {
 
 beforeEach(async () => {
   browser = await puppeteer.launch({
-    executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    executablePath: process.env.CHROME_LOCATION,
     args: [
       '--use-fake-device-for-media-stream',
       '--use-fake-ui-for-media-stream'
