@@ -63,6 +63,7 @@ jobs:
         working-directory: './packages/millicast-sdk'
         run: |
           npm install
+          npm run build
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
