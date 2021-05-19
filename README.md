@@ -2,6 +2,7 @@
 <!-- TODO: Add badges: NPM, build, tests, etc. -->
 ![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)
+[![Check tests](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml/badge.svg?branch=main)](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml)
 
 This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
 

@@ -40,20 +40,18 @@ applications, and (b) in the case of a business entity, you have the full power 
 authority to bind such entity to the terms of this Agreement. References to "you" herein
 shall refer to you, and/or the entity on whose behalf you are using the SDK, and all
 individual users of the SDK on behalf of such entity. You acknowledge that the foregoing
-license does not include any right to (i) redistribute, sell, lease, license, or modify
-any portion of the SDK, or (ii) distribute, deploy, or otherwise utilize Applications on
-a public, production, commercial, or other similar purpose other than internal use for
-evaluation and the development of non-public, experimental Applications (any other
-public, production, commercial, or similar use requires a separate agreement with
-Millicast), or (iii) use or implement any undocumented feature or API, or use any
-documented feature or API other than in accordance with applicable documentation. You may
-not reproduce, distribute, publicly display, or publicly perform any part of the SDK,
-except as provided herein or in the applicable open source license. Except if, and solely
-to the extent that, such a restriction is not authorized herein, or impermissible under
-applicable law or applicable Third Party Software (defined below) license terms, you may
-not (y) decompile, reverse engineer, or otherwise access or attempt to access the source
-code for the SDK not made available to you in source code form, or make or attempt to
-make any modification to the SDK; or (z) remove, obscure, interfere with or circumvent
+license does not include any right to redistribute, sell, lease or license any portion of
+the SDK. The license does grant the right to utilize the SDK within your Applications on
+a public, production or commercial basis, and interact with the Millicast APIs in
+accordance with applicable documentation. 
+
+You may not reproduce, distribute, publicly display, or publicly perform any part of the
+SDK, except as provided herein or in the applicable open source license. Except if, and
+solely to the extent that, such a restriction is not authorized herein, or impermissible
+under applicable law or applicable Third Party Software (defined below) license terms,
+you may not (y) decompile, reverse engineer, or otherwise access or attempt to access the
+source code for the SDK not made available to you in source code form, or make or attempt
+to make any modification to the SDK; or (z) remove, obscure, interfere with or circumvent
 any feature of the SDK, including without limitation any copyright or other intellectual
 property notices, security, or access control mechanism. You may not use the SDK for any
 purpose other than interoperating with the Service in a manner for which the SDK and
@@ -63,8 +61,8 @@ SDK, you may not use them, and you will comply with all applicable laws and regu
 connection with your use of the SDK. Without limiting the generality of the foregoing,
 you represent and warrant that the SDK will not be shipped, transferred or exported into
 any country or used in any manner prohibited by the United States Export Administration
-Act or any other export laws, restrictions or regulations (collectively the "Export Laws"
-. In addition, if the SDK is identified as export controlled items under the Export Laws,
+Act or any other export laws, restrictions or regulations (collectively the "Export Laws".
+In addition, if the SDK is identified as export controlled items under the Export Laws,
 you represent and warrant that you are not a citizen, or otherwise located within, an
 embargoed nation (including without limitation Crimea, Cuba, Iran, North Korea, Sudan, or
 Syria and that you are not otherwise prohibited under the Export Laws from receiving the
@@ -185,4 +183,4 @@ entity licensing the SDK for or on behalf of a United States government entity, 
 is licensed (a) only as a Commercial Item and (b) with only those rights as are granted
 to all other end users pursuant to the terms and conditions of this agreement.
 
-Last updated: May 12, 2020
+Last updated: May 18, 2021

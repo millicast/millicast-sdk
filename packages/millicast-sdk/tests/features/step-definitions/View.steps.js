@@ -70,6 +70,25 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Subscribe to stream with media element', ({ given, when, then }) => {
+    let viewer
+    const videoElement = { srcObject: null }
+
+    given('an instance of View with media element', async () => {
+      viewer = new View('streamName', mockTokenGenerator, videoElement)
+    })
+
+    when('I subscribe to a stream with a connection path', async () => {
+      await viewer.connect()
+      viewer.webRTCPeer.peer.emitMockEvent('ontrack', { streams: ['new stream incoming'] })
+    })
+
+    then('peer connection state is connected', async () => {
+      expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      expect(videoElement.srcObject).not.toBeNull()
+    })
+  })
+
   test('Connect subscriber without connection path', ({ given, when, then }) => {
     let viewer
     let expectError

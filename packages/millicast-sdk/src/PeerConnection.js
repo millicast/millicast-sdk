@@ -310,6 +310,14 @@ export default class PeerConnection extends EventEmitter {
 
     return browserCapabilites
   }
+
+  /**
+   * Get sender tracks
+   * @returns {Array<MediaStreamTrack>} An array with all tracks in sender peer.
+   */
+  getTracks () {
+    return this.peer?.getSenders()?.map((sender) => sender.track)
+  }
 }
 
 const isMediaStreamValid = mediaStream =>

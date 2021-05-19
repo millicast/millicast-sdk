@@ -64,6 +64,6 @@ jobs:
         run: |
           npm install
           npm run prepare
-          npm publish
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
