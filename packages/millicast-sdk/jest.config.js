@@ -9,5 +9,6 @@ module.exports = {
   preset: 'jest-puppeteer',
   transform: {
     '\\.[jt]sx?$': 'babel-jest'
-  }
+  },
+  setupFiles: ['<rootDir>/tests/env.js']
 }
