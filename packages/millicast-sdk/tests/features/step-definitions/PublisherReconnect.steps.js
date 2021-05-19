@@ -151,9 +151,11 @@ defineFeature(feature, test => {
 
   test('Reconnection interval when peer has an error', ({ given, when, then }) => {
     let publisher
+    const reconnectHandler = jest.fn()
 
     given('an instance of Publish with reconnection enabled and peer with error', async () => {
       publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher.on('reconnect', reconnectHandler)
       await publisher.connect({ mediaStream })
       publisher.webRTCPeer.peer.connectionState = 'failed'
       jest.spyOn(publisher, 'isActive').mockImplementation(() => { return false })
@@ -169,11 +171,15 @@ defineFeature(feature, test => {
       for (let i = 1; i <= 6; i++) {
         expect(setTimeout).toHaveBeenCalledTimes(i)
         expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), interval)
+        expect(reconnectHandler).toHaveBeenCalledTimes(i)
+        expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: interval })
         jest.runOnlyPendingTimers()
         interval = interval * 2
       }
       expect(setTimeout).toHaveBeenCalledTimes(7)
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 32000)
+      expect(reconnectHandler).toHaveBeenCalledTimes(7)
+      expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: 32000 })
       jest.runOnlyPendingTimers()
     })
   })

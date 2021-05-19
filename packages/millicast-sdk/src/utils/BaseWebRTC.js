@@ -96,8 +96,19 @@ export default class BaseWebRTC extends EventEmitter {
 
   /**
    * Reconnects to last broadcast.
+   * @fires BaseWebRTC#reconnect
    */
   reconnect () {
+    /**
+     * Emits with every reconnection attempt made when an active stream
+     * stopped unexpectedly.
+     *
+     * @event BaseWebRTC#reconnect
+     * @type {Object}
+     * @property {Number} timeout - Next retry interval in milliseconds.
+     */
+    this.emit('reconnect', { timeout: this.reconnectionInterval })
+
     setTimeout(async () => {
       try {
         if (!this.isActive()) {
