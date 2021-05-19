@@ -17,15 +17,23 @@
             window.publish = publish
          }
 
-         const startViewer = async (streamName, accountId) => {
-            const millicast = window.millicast
-            millicast.Logger.setLevel(millicast.Logger.DEBUG)
-            const tokenGenerator = () => millicast.Director.getSubscriber(streamName, accountId)
-            const view = new millicast.View(streamName, tokenGenerator)
-            view.on('track', (event) => {
-               document.getElementById('my-video').srcObject = event.streams[0]
+         const startViewer = (streamName, accountId) => {
+            return new Promise(resolve => {
+               const millicast = window.millicast
+               const video = document.getElementById('my-video')
+               millicast.Logger.setLevel(millicast.Logger.DEBUG)
+               const tokenGenerator = () => millicast.Director.getSubscriber(streamName, accountId)
+               const view = new millicast.View(streamName, tokenGenerator)
+               video.addEventListener('timeupdate', () => {
+                  if (video.currentTime > 1){
+                     resolve()
+                  }
+               })
+               view.on('track', (event) => {
+                  video.srcObject = event.streams[0]
+               })
+               view.connect()
             })
-            await view.connect()
          }
 
          const getVideoPixelSums = () => {

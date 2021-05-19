@@ -59,7 +59,6 @@ defineFeature(feature, test => {
     when('I broadcast a stream and connect to stream as viewer', async () => {
       await broadcastPage.evaluate(async ({ options, publishToken, streamName }) => await startPublisher(publishToken, streamName, options), { options, publishToken, streamName })
       await viewerPage.evaluate(async ({ streamName, accountId }) => await startViewer(streamName, accountId), { streamName, accountId })
-      await broadcastPage.waitForTimeout(4000)
 
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
 
