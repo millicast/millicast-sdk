@@ -38,9 +38,10 @@ class MillicastViewTest {
       this.millicastView.on('connectionStateChange', (state) => {
         console.log('Event from connectionStateChange: ', state)
       })
-      this.millicastView.connect(options)
+      await this.millicastView.connect(options)
     } catch (error) {
-      console.log('There was an error while trying to connect with the publisher: ', error)
+      console.log('There was an error while trying to connect with the publisher')
+      this.millicastView.reconnect()
     }
   }
 

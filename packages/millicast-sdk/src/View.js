@@ -90,12 +90,12 @@ export default class View extends BaseWebRTC {
     }
   ) {
     logger.debug('Viewer connect options values: ', options)
+    this.options = options
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
     let subscriberData
-    this.options = options
     try {
       subscriberData = await this.tokenGenerator()
     } catch (error) {
