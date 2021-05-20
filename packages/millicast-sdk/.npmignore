@@ -1,0 +1,6 @@
+tests
+docs
+coverage
+node_modules
+jest.config.js
+jsdoc.json
