@@ -3,6 +3,7 @@ import PeerConnection, { webRTCEvents } from '../PeerConnection'
 import { signalingEvents } from '../Signaling'
 let logger
 const maxReconnectionInterval = 32000
+const baseInterval = 1000
 
 /**
  * Callback invoke when a new connection path is needed.
@@ -40,7 +41,7 @@ export default class BaseWebRTC extends EventEmitter {
     this.signaling = null
     this.streamName = streamName
     this.autoReconnect = autoReconnect
-    this.reconnectionInterval = 1000
+    this.reconnectionInterval = baseInterval
     this.alreadyDisconnected = false
     this.firstReconnection = true
     this.tokenGenerator = tokenGenerator
@@ -98,32 +99,29 @@ export default class BaseWebRTC extends EventEmitter {
    * Reconnects to last broadcast.
    * @fires BaseWebRTC#reconnect
    */
-  reconnect () {
-    /**
-     * Emits with every reconnection attempt made when an active stream
-     * stopped unexpectedly.
-     *
-     * @event BaseWebRTC#reconnect
-     * @type {Object}
-     * @property {Number} timeout - Next retry interval in milliseconds.
-     */
-    this.emit('reconnect', { timeout: this.reconnectionInterval })
-
-    setTimeout(async () => {
-      try {
-        if (!this.isActive()) {
-          this.stop()
-          await this.connect(this.options)
-          this.alreadyDisconnected = false
-          this.reconnectionInterval = 1000
-          this.firstReconnection = true
-        }
-      } catch (error) {
-        this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
-        logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
-        this.reconnect()
+  async reconnect () {
+    try {
+      if (!this.isActive()) {
+        this.stop()
+        await this.connect(this.options)
+        this.alreadyDisconnected = false
+        this.reconnectionInterval = baseInterval
+        this.firstReconnection = true
       }
-    }, this.reconnectionInterval)
+    } catch (error) {
+      this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
+      logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
+      /**
+       * Emits with every reconnection attempt made when an active stream
+       * stopped unexpectedly.
+       *
+       * @event BaseWebRTC#reconnect
+       * @type {Object}
+       * @property {Number} timeout - Next retry interval in milliseconds.
+       */
+      this.emit('reconnect', { timeout: this.reconnectionInterval })
+      setTimeout(() => this.reconnect(), this.reconnectionInterval)
+    }
   }
 }
 
