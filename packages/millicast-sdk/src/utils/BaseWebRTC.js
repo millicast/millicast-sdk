@@ -118,8 +118,9 @@ export default class BaseWebRTC extends EventEmitter {
        * @event BaseWebRTC#reconnect
        * @type {Object}
        * @property {Number} timeout - Next retry interval in milliseconds.
+       * @property {Error} error - Error object with cause of failure.
        */
-      this.emit('reconnect', { timeout: this.reconnectionInterval })
+      this.emit('reconnect', { timeout: this.reconnectionInterval, error })
       setTimeout(() => this.reconnect(), this.reconnectionInterval)
     }
   }
