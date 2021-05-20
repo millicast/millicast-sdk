@@ -59,6 +59,5 @@ jobs:
       - name: Test 🧪
         working-directory: './packages/millicast-sdk'
         run: |
-          npm cache clean --force
           npm install
           npm test
