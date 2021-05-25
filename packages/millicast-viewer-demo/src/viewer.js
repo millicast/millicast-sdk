@@ -54,7 +54,7 @@ let millicastView = null
 
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamId, streamAccountId)
-  const millicastView = new View(streamId, tokenGenerator, autoReconnect)
+  const millicastView = new View(streamId, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
   

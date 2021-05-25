@@ -163,12 +163,13 @@ export default class SdpParser {
    *
    * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
+   * @param {String} codec - Current codec selected.
    * @returns {String} SDP parsed with multiopus support.
    * @example SdpParser.setMultiopus(sdp)
    */
-  static setMultiopus (sdp) {
+  static setMultiopus (sdp, codec) {
     const browserData = new UserAgent()
-    if (browserData.isChrome()) {
+    if (browserData.isChrome() && codec !== 'h264') {
       if (!sdp.includes('multiopus/48000/6')) {
         logger.info('Setting multiopus')
         // Find the audio m-line
