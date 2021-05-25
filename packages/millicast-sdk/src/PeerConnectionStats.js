@@ -11,23 +11,34 @@ export default class PeerConnectionStats extends EventEmitter {
   constructor (peer) {
     super()
     this.peer = peer
+    this.firstIntervalExecuted = false
     this.timerInterval = null
+    this.emitInterval = null
     this.previousStats = null
     this.interval = null
   }
 
   init (interval) {
     logger.info('Initializing get peer connection stats')
-    if (!Number.isInteger(interval)) {
+    const intervalCast = parseInt(interval)
+    if (!Number.isInteger(intervalCast)) {
       const error = `Invalid interval value ${interval}`
       logger.error(error)
       throw new Error(error)
     }
-    this.interval = interval * 1000
+    this.interval = intervalCast * 1000
     this.timerInterval = setInterval(async () => {
-      logger.info('New interval executed')
+      logger.debug('New internal interval executed')
       const stats = await this.peer.getStats()
-      this.emit(peerConnectionStatsEvents.stats, this.parseStats(stats))
+      this.stats = this.parseStats(stats)
+      this.firstIntervalExecuted = true
+    }, 1000)
+
+    this.emitInterval = setInterval(() => {
+      if (this.firstIntervalExecuted) {
+        logger.debug('Emitting stats')
+        this.emit(peerConnectionStatsEvents.stats, this.stats)
+      }
     }, this.interval)
   }
 
@@ -46,22 +57,13 @@ export default class PeerConnectionStats extends EventEmitter {
     for (const report of lastestStats.values()) {
       switch (report.type) {
         case 'outbound-rtp': {
-          const mediaType = report.mediaType || report.kind
-          const codecInfo = {}
-          const codec = report.codecId ? lastestStats.get(report.codecId) : null
-          const additionalData = {}
+          const mediaType = this.getMediaType(report)
+          const codecInfo = report.codecId ? this.getCodecData(lastestStats.get(report.codecId)) : {}
+          const additionalData = this.getBaseReportData(report, mediaType)
 
-          if (codec) {
-            codecInfo.mimeType = codec.mimeType
-          }
-
-          if (mediaType === 'video') {
-            additionalData.framesPerSecond = report.framesPerSecond
-          }
           const previousBytes = this.previousStats ? this.previousStats[mediaType].outbound.bytesSent : 0
           additionalData.bitrate = 8 * (report.bytesSent - previousBytes)
           additionalData.bytesSent = report.bytesSent
-          additionalData.timestamp = report.timestamp
 
           statsObject[mediaType].outbound = {
             ...codecInfo,
@@ -70,29 +72,20 @@ export default class PeerConnectionStats extends EventEmitter {
           break
         }
         case 'inbound-rtp': {
-          let mediaType = report.mediaType || report.kind
-          const codecInfo = {}
-          const codec = report.codecId ? lastestStats.get(report.codecId) : null
-          const additionalData = {}
+          let mediaType = this.getMediaType(report)
+          const codecInfo = report.codecId ? this.getCodecData(lastestStats.get(report.codecId)) : {}
 
           // Safari is missing mediaType and kind for 'inbound-rtp'
           if (!['audio', 'video'].includes(mediaType)) {
             if (report.id.includes('Video')) mediaType = 'video'
             else if (report.id.includes('Audio')) mediaType = 'audio'
           }
+          const additionalData = this.getBaseReportData(report, mediaType)
 
-          if (codec) {
-            codecInfo.mimeType = codec.mimeType
-          }
-
-          if (mediaType === 'video') {
-            additionalData.framesPerSecond = report.framesPerSecond
-          }
           const previousBytes = this.previousStats ? this.previousStats[mediaType].inbound.bytesReceived : 0
           additionalData.bitrate = 8 * (report.bytesReceived - previousBytes)
           additionalData.bytesReceived = report.bytesReceived
           additionalData.packetsLost = report.packetsLost
-          additionalData.timestamp = report.timestamp
 
           statsObject[mediaType].inbound = {
             ...codecInfo,
@@ -107,8 +100,30 @@ export default class PeerConnectionStats extends EventEmitter {
     return { raw: lastestStats, data: statsObject }
   }
 
+  getMediaType (report) {
+    return report.mediaType || report.kind
+  }
+
+  getCodecData (codecReport) {
+    const codecData = {}
+    if (codecReport) {
+      codecData.mimeType = codecReport.mimeType
+    }
+    return codecData
+  }
+
+  getBaseReportData (report, mediaType) {
+    const additionalData = {}
+    if (mediaType === 'video') {
+      additionalData.framesPerSecond = report.framesPerSecond
+    }
+    additionalData.timestamp = report.timestamp
+    return additionalData
+  }
+
   stop () {
     logger.info('Stopping peer connection stats')
     clearInterval(this.timerInterval)
+    clearInterval(this.emitInterval)
   }
 }
