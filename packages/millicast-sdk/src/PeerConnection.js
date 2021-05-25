@@ -1,5 +1,7 @@
 import axios from 'axios'
 import EventEmitter from 'events'
+import reemit from 're-emitter'
+import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnectionStats'
 import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
@@ -25,6 +27,7 @@ export default class PeerConnection extends EventEmitter {
     super()
     this.sessionDescription = null
     this.peer = null
+    this.peerConnectionStats = null
     this.RTCOfferOptions = {
       offerToReceiveVideo: true,
       offerToReceiveAudio: true
@@ -61,6 +64,7 @@ export default class PeerConnection extends EventEmitter {
     logger.info('Closing RTCPeerConnection')
     this.peer?.close()
     this.peer = null
+    this.stopStats()
     this.emit(webRTCEvents.connectionStateChange, 'closed')
   }
 
@@ -317,6 +321,23 @@ export default class PeerConnection extends EventEmitter {
    */
   getTracks () {
     return this.peer?.getSenders()?.map((sender) => sender.track)
+  }
+
+  getStats (interval = 1) {
+    if (this.peerConnectionStats) {
+      logger.warn('Cannot get peer stats: Already initialized')
+    } else if (this.peer) {
+      this.peerConnectionStats = new PeerConnectionStats(this.peer)
+      this.peerConnectionStats.init(interval)
+      this.reemitter = reemit(this.peerConnectionStats, this, [peerConnectionStatsEvents.stats])
+    } else {
+      logger.warn('Cannot get peer stats: RTCPeerConnection not initialized')
+    }
+  }
+
+  stopStats () {
+    this.peerConnectionStats?.stop()
+    this.peerConnectionStats = null
   }
 }
 

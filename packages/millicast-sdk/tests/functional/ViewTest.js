@@ -39,6 +39,11 @@ class MillicastViewTest {
         console.log('Event from connectionStateChange: ', state)
       })
       await this.millicastView.connect(options)
+
+      this.millicastView.webRTCPeer.getStats()
+      this.millicastView.webRTCPeer.on('peerStats', (stats) => {
+        console.log('Stats from event: ', stats)
+      })
     } catch (error) {
       console.log('There was an error while trying to connect with the publisher')
       this.millicastView.reconnect()

@@ -86,7 +86,12 @@ class MillicastPublishTest {
           document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
         }
       })
-      this.millicastPublish.connect(broadcastOptions)
+      await this.millicastPublish.connect(broadcastOptions)
+
+      // On Peer stats
+      this.millicastPublish.webRTCPeer.on('stats', (stats) => {
+        console.log('Stats from event: ', stats)
+      })
 
       // Subscribing to User Count Event.
       this.streamCount = await millicast.StreamEvents.init()
@@ -168,6 +173,14 @@ class MillicastPublishTest {
     this.millicastPublish.webRTCPeer.replaceTrack(video)
     this.mediaStream = newStream
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
+  }
+
+  testGetStats () {
+    this.millicastPublish.webRTCPeer.getStats()
+  }
+
+  testStopStats () {
+    this.millicastPublish.webRTCPeer.stopStats()
   }
 }
 
