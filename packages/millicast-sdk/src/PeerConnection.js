@@ -329,7 +329,7 @@ export default class PeerConnection extends EventEmitter {
     } else if (this.peer) {
       this.peerConnectionStats = new PeerConnectionStats(this.peer)
       this.peerConnectionStats.init(interval)
-      this.reemitter = reemit(this.peerConnectionStats, this, [peerConnectionStatsEvents.stats])
+      reemit(this.peerConnectionStats, this, [peerConnectionStatsEvents.stats])
     } else {
       logger.warn('Cannot get peer stats: RTCPeerConnection not initialized')
     }

@@ -11,6 +11,7 @@ export default class PeerConnectionStats extends EventEmitter {
   constructor (peer) {
     super()
     this.peer = peer
+    this.stats = null
     this.firstIntervalExecuted = false
     this.timerInterval = null
     this.emitInterval = null
@@ -21,7 +22,7 @@ export default class PeerConnectionStats extends EventEmitter {
   init (interval) {
     logger.info('Initializing get peer connection stats')
     const intervalCast = parseInt(interval)
-    if (!Number.isInteger(intervalCast)) {
+    if (!Number.isInteger(intervalCast) || intervalCast < 1) {
       const error = `Invalid interval value ${interval}`
       logger.error(error)
       throw new Error(error)
@@ -93,6 +94,8 @@ export default class PeerConnectionStats extends EventEmitter {
           }
           break
         }
+        default:
+          break
       }
     }
 
@@ -123,6 +126,7 @@ export default class PeerConnectionStats extends EventEmitter {
 
   stop () {
     logger.info('Stopping peer connection stats')
+    this.firstIntervalExecuted = false
     clearInterval(this.timerInterval)
     clearInterval(this.emitInterval)
   }

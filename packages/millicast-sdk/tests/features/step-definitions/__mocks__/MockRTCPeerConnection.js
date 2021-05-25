@@ -91,6 +91,61 @@ export default class MockRTCPeerConnection {
   }
 
   restartIce () {}
+
+  getStats () {
+    return new Promise((resolve) => {
+      resolve({
+        values: peerStatsValue,
+        get: peerStatsGetCodecReport
+      })
+    })
+  }
+}
+
+const peerStatsValue = () => {
+  return [
+    {
+      type: 'test'
+    },
+    {
+      type: 'outbound-rtp',
+      kind: 'audio',
+      bytesSent: 1000
+    },
+    {
+      type: 'outbound-rtp',
+      mediaType: 'video',
+      codecId: 1,
+      bytesSent: 2000,
+      framesPerSecond: 30
+    },
+    {
+      type: 'inbound-rtp',
+      mediaType: 'otherMediaType',
+      id: 'Video123',
+      bytesReceived: 2000,
+      framesPerSecond: 30
+    },
+    {
+      type: 'inbound-rtp',
+      id: 'Audio123',
+      mediaType: 'otherMediaType',
+      codecId: 2,
+      bytesReceived: 2000
+    },
+    {
+      type: 'inbound-rtp',
+      id: 'Audio456',
+      mediaType: 'audio',
+      bytesReceived: 4000
+    }
+  ]
+}
+
+const peerStatsGetCodecReport = (reportId) => {
+  return {
+    mimeType: 'mime/test'
+  }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection
