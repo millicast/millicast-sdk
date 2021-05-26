@@ -326,7 +326,7 @@ export default class PeerConnection extends EventEmitter {
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
    * @param {Number|String} interval - Interval in seconds of how often it should get stats.
-   * @fires PeerConnectionStats#stats
+   * @fires PeerConnection#stats
    * @example peerConnection.getStats()
    * @example
    * import Publish from '@millicast/sdk'

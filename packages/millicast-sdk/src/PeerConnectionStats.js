@@ -6,27 +6,25 @@ const logger = Logger.get('PeerConnectionStats')
 /**
  * @typedef {Object} ConnectionStats
  * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing.
- * @property {Object} data
- * @property {TrackReport} data.audio - Parsed audio information.
- * @property {TrackReport} data.video - Parsed video information.
+ * @property {TrackReport} audio - Parsed audio information.
+ * @property {TrackReport} video - Parsed video information.
  */
 
 /**
  * @typedef {Object} TrackReport
  * @property {Object} inbound - Parsed information of inbound-rtp.
- * @property {String|undefined} inbound.mimeType - Mime type if related report had codec report associated.
- * @property {Number|undefined} inbound.framesPerSecond - Current framerate if it's video report.
+ * @property {String} [inbound.mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [inbound.framesPerSecond] - Current framerate if it's video report.
  * @property {Number} inbound.timestamp - Timestamp of report.
  * @property {Number} inbound.bytesReceived - Total bytes received.
  * @property {Number} inbound.packetsLost - Total packets lost.
- * @property {Number} inbound.bitrate - Current bitrate in bits.
+ * @property {Number} inbound.bitrate - Current bitrate in bits per second.
  * @property {Object} outbound - Parsed information of outbound-rtp.
- * @property {String|undefined} outbound.mimeType - Mime type if related report had codec report associated.
- * @property {Number|undefined} outbound.framesPerSecond - Current framerate if it's video report.
+ * @property {String} [outbound.mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [outbound.framesPerSecond] - Current framerate if it's video report.
  * @property {Number} outbound.timestamp - Timestamp of report.
  * @property {Number} outbound.bytesSent - Total bytes sent.
- * @property {Number} outbound.packetsLost - Total packets lost.
- * @property {Number} outbound.bitrate - Current bitrate in bits.
+ * @property {Number} outbound.bitrate - Current bitrate in bits per second.
  */
 
 export const peerConnectionStatsEvents = {
@@ -71,7 +69,7 @@ export default class PeerConnectionStats extends EventEmitter {
         /**
         * Peer connection incoming stats.
         *
-        * @event PeerConnectionStats#stats
+        * @event PeerConnection#stats
         * @type {ConnectionStats}
         */
         this.emit(peerConnectionStatsEvents.stats, this.stats)
@@ -141,7 +139,7 @@ export default class PeerConnectionStats extends EventEmitter {
     }
 
     this.previousStats = statsObject
-    return { raw: latestStats, data: statsObject }
+    return { raw: latestStats, ...statsObject }
   }
 
   /**
