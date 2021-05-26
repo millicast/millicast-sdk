@@ -15,6 +15,11 @@ Feature: As a user I want to get the peer stats so I can know if the connection 
     When I want to get the peer stats every 4 seconds
     Then every 4 seconds returns the peer stats parsed
 
+  Scenario: Get stats with default interval wihtout codec information
+    Given I am connected with the peer
+    When I want to get the peer stats and peer does not have codec information
+    Then every 1 second returns the peer stats parsed
+
   Scenario: Stop get stats
     Given I am getting stats
     When I want to stop get stats

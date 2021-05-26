@@ -96,9 +96,15 @@ export default class MockRTCPeerConnection {
     return new Promise((resolve) => {
       resolve({
         values: peerStatsValue,
-        get: peerStatsGetCodecReport
+        get: this.peerStatsGetCodecReport
       })
     })
+  }
+
+  peerStatsGetCodecReport (reportId) {
+    return {
+      mimeType: 'mime/test'
+    }
   }
 }
 
@@ -140,12 +146,6 @@ const peerStatsValue = () => {
       bytesReceived: 4000
     }
   ]
-}
-
-const peerStatsGetCodecReport = (reportId) => {
-  return {
-    mimeType: 'mime/test'
-  }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection

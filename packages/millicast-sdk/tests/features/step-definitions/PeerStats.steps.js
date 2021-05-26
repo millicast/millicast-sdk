@@ -3,7 +3,7 @@ import Publish from '../../../src/Publish'
 import PeerConnection from '../../../src/PeerConnection'
 import PeerConnectionStats, { peerConnectionStatsEvents } from '../../../src/PeerConnectionStats'
 import '../../../src/Signaling'
-import './__mocks__/MockRTCPeerConnection'
+import MockRTCPeerConnection from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
@@ -98,6 +98,31 @@ defineFeature(feature, test => {
     then('every 4 seconds returns the peer stats parsed', () => {
       for (let i = 1; i <= 10; i++) {
         jest.advanceTimersByTime(4000)
+        expect(handler).toBeCalledTimes(i)
+      }
+    })
+  })
+
+  test('Get stats with default interval wihtout codec information', ({ given, when, then }) => {
+    let publisher
+
+    given('I am connected with the peer', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+    })
+
+    when('I want to get the peer stats and peer does not have codec information', () => {
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsGetCodecReport').mockReturnValue(undefined)
+      publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
+      publisher.webRTCPeer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.firstIntervalExecuted = true
+      expect(handler).not.toBeCalled()
+    })
+
+    then('every 1 second returns the peer stats parsed', () => {
+      for (let i = 1; i <= 10; i++) {
+        jest.advanceTimersByTime(1000)
         expect(handler).toBeCalledTimes(i)
       }
     })
