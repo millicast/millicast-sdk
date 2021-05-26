@@ -36,7 +36,6 @@ export default class PeerConnectionStats extends EventEmitter {
     super()
     this.peer = peer
     this.stats = null
-    this.firstIntervalExecuted = false
     this.timerInterval = null
     this.emitInterval = null
     this.previousStats = null
@@ -45,7 +44,7 @@ export default class PeerConnectionStats extends EventEmitter {
 
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
-   * @param {Number|String} interval - Interval in seconds of how often it should get stats.
+   * @param {Number} interval - Interval in seconds of how often it should get stats.
    */
   init (interval) {
     logger.info('Initializing get peer connection stats')
@@ -59,12 +58,11 @@ export default class PeerConnectionStats extends EventEmitter {
     this.timerInterval = setInterval(async () => {
       logger.debug('New internal interval executed')
       const stats = await this.peer.getStats()
-      this.stats = this.parseStats(stats)
-      this.firstIntervalExecuted = true
+      this.parseStats(stats)
     }, 1000)
 
     this.emitInterval = setInterval(() => {
-      if (this.firstIntervalExecuted) {
+      if (this.stats) {
         logger.debug('Emitting stats')
         /**
         * Peer connection incoming stats.
@@ -79,10 +77,11 @@ export default class PeerConnectionStats extends EventEmitter {
 
   /**
    * Parse incoming RTCPeerConnection stats.
-   * @param {RTCStatsReport} latestStats - RTCPeerConnection stats.
+   * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
    * @returns {ConnectionStats} RTCPeerConnection stats parsed.
    */
-  parseStats (latestStats) {
+  parseStats (rawStats) {
+    this.previousStats = this.stats
     const statsObject = {
       audio: {
         inbound: {},
@@ -91,19 +90,19 @@ export default class PeerConnectionStats extends EventEmitter {
       video: {
         inbound: {},
         outbound: {}
-      }
+      },
+      raw: rawStats
     }
 
-    for (const report of latestStats.values()) {
+    for (const report of rawStats.values()) {
       switch (report.type) {
         case 'outbound-rtp': {
-          const mediaType = this.getMediaType(report)
-          const codecInfo = this.getCodecData(report.codecId, latestStats)
-          const additionalData = this.getBaseReportData(report, mediaType)
-
-          const previousBytes = this.previousStats ? this.previousStats[mediaType].outbound.bytesSent : 0
-          additionalData.bitrate = 8 * (report.bytesSent - previousBytes)
+          const mediaType = getMediaType(report)
+          const codecInfo = getCodecData(report.codecId, rawStats)
+          const additionalData = getBaseReportData(report, mediaType)
           additionalData.bytesSent = report.bytesSent
+
+          additionalData.bitrate = this.previousStats ? 8 * (report.bytesSent - this.previousStats[mediaType].outbound.bytesSent) : 0
 
           statsObject[mediaType].outbound = {
             ...codecInfo,
@@ -112,20 +111,19 @@ export default class PeerConnectionStats extends EventEmitter {
           break
         }
         case 'inbound-rtp': {
-          let mediaType = this.getMediaType(report)
-          const codecInfo = this.getCodecData(report.codecId, latestStats)
+          let mediaType = getMediaType(report)
+          const codecInfo = getCodecData(report.codecId, rawStats)
 
           // Safari is missing mediaType and kind for 'inbound-rtp'
           if (!['audio', 'video'].includes(mediaType)) {
             if (report.id.includes('Video')) mediaType = 'video'
             else mediaType = 'audio'
           }
-          const additionalData = this.getBaseReportData(report, mediaType)
-
-          const previousBytes = this.previousStats ? this.previousStats[mediaType].inbound.bytesReceived : 0
-          additionalData.bitrate = 8 * (report.bytesReceived - previousBytes)
+          const additionalData = getBaseReportData(report, mediaType)
           additionalData.bytesReceived = report.bytesReceived
           additionalData.packetsLost = report.packetsLost
+
+          additionalData.bitrate = this.previousStats ? 8 * (report.bytesReceived - this.previousStats[mediaType].inbound.bytesReceived) : 0
 
           statsObject[mediaType].inbound = {
             ...codecInfo,
@@ -137,48 +135,7 @@ export default class PeerConnectionStats extends EventEmitter {
           break
       }
     }
-
-    this.previousStats = statsObject
-    return { raw: latestStats, ...statsObject }
-  }
-
-  /**
-   * Get media type.
-   * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
-   * @returns {String} Media type.
-   */
-  getMediaType (report) {
-    return report.mediaType || report.kind
-  }
-
-  /**
-   * Get codec information from stats.
-   * @param {String} codecReportId - Codec report ID.
-   * @param {RTCStatsReport} latestStats - RTCPeerConnection stats.
-   * @returns {Object} Object containing codec information.
-   */
-  getCodecData (codecReportId, latestStats) {
-    const codecReport = codecReportId ? latestStats.get(codecReportId) : {}
-    const codecData = {}
-    if (codecReport) {
-      codecData.mimeType = codecReport.mimeType
-    }
-    return codecData
-  }
-
-  /**
-   * Get common information
-   * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
-   * @param {String} mediaType - Media type.
-   * @returns Object containing common information.
-   */
-  getBaseReportData (report, mediaType) {
-    const additionalData = {}
-    if (mediaType === 'video') {
-      additionalData.framesPerSecond = report.framesPerSecond
-    }
-    additionalData.timestamp = report.timestamp
-    return additionalData
+    this.stats = statsObject
   }
 
   /**
@@ -186,8 +143,42 @@ export default class PeerConnectionStats extends EventEmitter {
    */
   stop () {
     logger.info('Stopping peer connection stats')
-    this.firstIntervalExecuted = false
     clearInterval(this.timerInterval)
     clearInterval(this.emitInterval)
   }
+}
+
+/**
+ * Get media type.
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @returns {String} Media type.
+ */
+const getMediaType = (report) => {
+  return report.mediaType || report.kind
+}
+
+/**
+ * Get codec information from stats.
+ * @param {String} codecReportId - Codec report ID.
+ * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
+ * @returns {Object} Object containing codec information.
+ */
+const getCodecData = (codecReportId, rawStats) => {
+  const { mimeType } = codecReportId ? rawStats.get(codecReportId) ?? {} : {}
+  return { mimeType }
+}
+
+/**
+ * Get common information
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @param {String} mediaType - Media type.
+ * @returns {Object} Object containing common information.
+ */
+const getBaseReportData = (report, mediaType) => {
+  const additionalData = {}
+  if (mediaType === 'video') {
+    additionalData.framesPerSecond = report.framesPerSecond
+  }
+  additionalData.timestamp = report.timestamp
+  return additionalData
 }

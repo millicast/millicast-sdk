@@ -1,19 +1,14 @@
 Feature: As a user I want to get the peer stats so I can know if the connection is working correctly
 
-  Scenario: Get stats with default interval
+  Scenario: Get stats with two seconds interval
     Given I am connected with the peer
     When I want to get the peer stats
-    Then every 1 second returns the peer stats parsed
+    Then every 2 seconds returns the peer stats parsed
 
   Scenario: Get stats when first iteration is completed
     Given I am connected with the peer
     When I want to get the peer stats
     Then peer stats is not fired until the first report is generated
-
-  Scenario: Get stats with custom interval
-    Given I am connected with the peer
-    When I want to get the peer stats every 4 seconds
-    Then every 4 seconds returns the peer stats parsed
 
   Scenario: Get stats with default interval wihtout codec information
     Given I am connected with the peer

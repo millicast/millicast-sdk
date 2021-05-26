@@ -176,7 +176,7 @@ class MillicastPublishTest {
   }
 
   testGetStats () {
-    this.millicastPublish.webRTCPeer.getStats()
+    this.millicastPublish.webRTCPeer.initStats(1)
   }
 
   testStopStats () {

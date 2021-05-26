@@ -40,7 +40,7 @@ class MillicastViewTest {
       })
       await this.millicastView.connect(options)
 
-      this.millicastView.webRTCPeer.getStats(4)
+      this.millicastView.webRTCPeer.initStats(1)
       this.millicastView.webRTCPeer.on('stats', (stats) => {
         console.log('Stats from event: ', stats)
       })
