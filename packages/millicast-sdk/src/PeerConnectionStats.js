@@ -43,7 +43,7 @@ export default class PeerConnectionStats extends EventEmitter {
     }, this.interval)
   }
 
-  parseStats (lastestStats) {
+  parseStats (latestStats) {
     const statsObject = {
       audio: {
         inbound: {},
@@ -55,11 +55,11 @@ export default class PeerConnectionStats extends EventEmitter {
       }
     }
 
-    for (const report of lastestStats.values()) {
+    for (const report of latestStats.values()) {
       switch (report.type) {
         case 'outbound-rtp': {
           const mediaType = this.getMediaType(report)
-          const codecInfo = this.getCodecData(report.codecId, lastestStats)
+          const codecInfo = this.getCodecData(report.codecId, latestStats)
           const additionalData = this.getBaseReportData(report, mediaType)
 
           const previousBytes = this.previousStats ? this.previousStats[mediaType].outbound.bytesSent : 0
@@ -74,7 +74,7 @@ export default class PeerConnectionStats extends EventEmitter {
         }
         case 'inbound-rtp': {
           let mediaType = this.getMediaType(report)
-          const codecInfo = this.getCodecData(report.codecId, lastestStats)
+          const codecInfo = this.getCodecData(report.codecId, latestStats)
 
           // Safari is missing mediaType and kind for 'inbound-rtp'
           if (!['audio', 'video'].includes(mediaType)) {
@@ -100,7 +100,7 @@ export default class PeerConnectionStats extends EventEmitter {
     }
 
     this.previousStats = statsObject
-    return { raw: lastestStats, data: statsObject }
+    return { raw: latestStats, data: statsObject }
   }
 
   getMediaType (report) {
