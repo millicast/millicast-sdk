@@ -323,6 +323,40 @@ export default class PeerConnection extends EventEmitter {
     return this.peer?.getSenders()?.map((sender) => sender.track)
   }
 
+  /**
+   * Initialize the statistics monitoring of the RTCPeerConnection.
+   * @param {Number|String} interval - Interval in seconds of how often it should get stats.
+   * @fires PeerConnectionStats#stats
+   * @example peerConnection.getStats()
+   * @example
+   * import Publish from '@millicast/sdk'
+   *
+   * //Initialize and connect your Publisher
+   * const millicastPublish = new Publish(streamName, tokenGenerator)
+   * await millicastPublish.connect(options)
+   *
+   * //Initialize get stats with 2 seconds interval
+   * millicastPublish.webRTCPeer.getStats(2)
+   *
+   * //Capture new stats from event every 2 seconds
+   * millicastPublish.webRTCPeer.on('stats', (stats) => {
+   *   console.log('Stats from event: ', stats)
+   * })
+   * @example
+   * import View from '@millicast/sdk'
+   *
+   * //Initialize and connect your Viewer
+   * const millicastView = new View(streamName, tokenGenerator)
+   * await millicastView.connect()
+   *
+   * //Initialize the get stats with 2 seconds interval
+   * millicastView.webRTCPeer.getStats(2)
+   *
+   * //Capture new stats from event every 2 seconds
+   * millicastView.webRTCPeer.on('stats', (stats) => {
+   *   console.log('Stats from event: ', stats)
+   * })
+   */
   getStats (interval = 1) {
     if (this.peerConnectionStats) {
       logger.warn('Cannot get peer stats: Already initialized')
@@ -335,6 +369,10 @@ export default class PeerConnection extends EventEmitter {
     }
   }
 
+  /**
+   * Stops the monitoring of RTCPeerConnection statistics.
+   * @example peerConnection.stopStats()
+   */
   stopStats () {
     this.peerConnectionStats?.stop()
     this.peerConnectionStats = null
