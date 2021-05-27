@@ -2,6 +2,32 @@
 <script src="./utils/Media.js"></script>
 <script src="./PublishTest.js"></script>
 
+<style>
+  #stats {
+    display: none;
+  }
+
+  #stats.show {
+    display: block;
+  }
+
+  #stats table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #stats table td, #stats table th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  #stats table tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+
 <div>
   <h1>Publish</h1>
   <br />
@@ -28,10 +54,10 @@
     </tr>
     <tr>
       <td>
-        <video muted autoplay controls width="640" height="480" id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
+        <video muted autoplay controls width="854" height="480" id="millicast-media-video-test" style="display: block;margin: 0 auto;"></video>
       </td>
       <td id="viewer">
-        <div style="height: 480px; width: 640px;"></div>
+        <div style="height: 480px; width: 854px;"></div>
       </td>
     </tr>
   </table>
@@ -73,4 +99,33 @@
       Stop stats
     </button>
   </fieldset>
+  <br>
+  <div id="stats">
+    <table>
+      <tr>
+        <th>MediaTrack</th>
+        <th>Codec</th>
+        <th>Frames per second</th>
+        <th>Bytes sent (total)</th>
+        <th>Bitrate (kbps)</th>
+        <th>Timestamp</th>
+      </tr>
+      <tr>
+        <td>Video</td>
+        <td id="stats-video-mimeType"></td>
+        <td id="stats-video-framesPerSecond"></td>
+        <td id="stats-video-bytesSent"></td>
+        <td id="stats-video-bitrate"></td>
+        <td id="stats-video-timestamp"></td>
+      </tr>
+      <tr>
+        <td>Audio</td>
+        <td id="stats-audio-mimeType"></td>
+        <td id="stats-audio-framesPerSecond">-</td>
+        <td id="stats-audio-bytesSent"></td>
+        <td id="stats-audio-bitrate"></td>
+        <td id="stats-audio-timestamp"></td>
+      </tr>
+    </table>
+  </div>
 </div>

@@ -81,7 +81,7 @@ class MillicastPublishTest {
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
           const viewLink = `http://localhost:10002/?streamAccountId=${accountId}&streamId=${streamName}`
-          document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=640 style="border:none;"></iframe>`
+          document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=854 style="border:none;"></iframe>`
           console.log('Broadcast viewer link: ', viewLink)
           document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
         }
@@ -91,6 +91,7 @@ class MillicastPublishTest {
       // On Peer stats
       this.millicastPublish.webRTCPeer.on('stats', (stats) => {
         console.log('Stats from event: ', stats)
+        this.loadStatsInTable(stats)
       })
 
       // Subscribing to User Count Event.
@@ -177,10 +178,28 @@ class MillicastPublishTest {
 
   testGetStats () {
     this.millicastPublish.webRTCPeer.initStats(1)
+    document.getElementById('stats').classList.add('show')
   }
 
   testStopStats () {
     this.millicastPublish.webRTCPeer.stopStats()
+    document.getElementById('stats').classList.remove('show')
+  }
+
+  loadStatsInTable (stats) {
+    for (const [mediaTrack, data] of Object.entries(stats)) {
+      if (mediaTrack !== 'raw') {
+        for (const [statKey, value] of Object.entries(data.outbound)) {
+          let valueParsed = value
+          if (statKey === 'bitrate') {
+            valueParsed /= 1000
+          } else if (statKey === 'timestamp') {
+            valueParsed = new Date(valueParsed).toISOString()
+          }
+          document.getElementById(`stats-${mediaTrack}-${statKey}`).innerHTML = `${valueParsed}`
+        }
+      }
+    }
   }
 }
 
