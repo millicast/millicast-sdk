@@ -21,7 +21,7 @@ $ npm run prepare
 Next, to build all packages add a `.env` file in both demo packages (`millicast-publisher-demo`, `millicast-viewer-demo` & `millicast-chromecast-receiver`). You can find the following example in `.env.sample`:
 ```sh
 # Make a .env file with the following vars
-MILLICAST_STREAM_ID=test
+MILLICAST_STREAM_NAME=test
 MILLICAST_ACCOUNT_ID=test
 MILLICAST_PUBLISH_TOKEN=test
 ```
