@@ -47,7 +47,7 @@ export default class PeerConnectionStats extends EventEmitter {
    * @param {Number} interval - Interval in seconds of how often it should get stats.
    */
   init (interval) {
-    logger.info('Initializing get peer connection stats')
+    logger.info('Initializing peer connection stats')
     const intervalCast = parseInt(interval)
     if (!Number.isInteger(intervalCast) || intervalCast < 1) {
       const error = `Invalid interval value ${interval}`

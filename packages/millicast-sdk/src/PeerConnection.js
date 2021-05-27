@@ -360,7 +360,7 @@ export default class PeerConnection extends EventEmitter {
    */
   initStats (interval) {
     if (this.peerConnectionStats) {
-      logger.warn('Cannot get peer stats: Already initialized')
+      logger.warn('Cannot init peer stats: Already initialized')
     } else if (this.peer) {
       this.peerConnectionStats = new PeerConnectionStats(this.peer)
       this.peerConnectionStats.init(interval)
