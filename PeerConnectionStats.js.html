@@ -28,7 +28,7 @@
 
 
     <title>
-      utils/SdpParser.js
+      PeerConnectionStats.js
     </title>
 
     <!--[if lt IE 9]>
@@ -96,7 +96,7 @@
     <div id="main" class="main-content">
       
       <h1 id='page-title' class="page-title">
-        utils/SdpParser.js
+        PeerConnectionStats.js
       </h1>
       
 
@@ -107,228 +107,189 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import SemanticSDP from 'semantic-sdp'
-import Logger from '../Logger'
-import UserAgent from './UserAgent'
+            <pre class="prettyprint source linenums"><code>import EventEmitter from 'events'
+import Logger from './Logger'
 
-const logger = Logger.get('SdpParser')
-
-const firstPayloadTypeLowerRange = 35
-const lastPayloadTypeLowerRange = 65
-
-const firstPayloadTypeUpperRange = 96
-const lastPayloadTypeUpperRange = 127
-
-const payloadTypeLowerRange = Array.from({ length: (lastPayloadTypeLowerRange - firstPayloadTypeLowerRange) + 1 }, (_, i) => i + firstPayloadTypeLowerRange)
-const payloadTypeUppperRange = Array.from({ length: (lastPayloadTypeUpperRange - firstPayloadTypeUpperRange) + 1 }, (_, i) => i + firstPayloadTypeUpperRange)
+const logger = Logger.get('PeerConnectionStats')
 
 /**
- * Simplify SDP parser.
- *
- * @namespace
+ * @typedef {Object} ConnectionStats
+ * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing.
+ * @property {TrackReport} audio - Parsed audio information.
+ * @property {TrackReport} video - Parsed video information.
  */
-export default class SdpParser {
-  /**
-   * Parse SDP for support simulcast.
-   *
-   * **Only available in Google Chrome.**
-   * @param {String} sdp - Current SDP.
-   * @param {String} codec - Codec.
-   * @returns {String} SDP parsed with simulcast support.
-   * @example SdpParser.setSimulcast(sdp, 'h264')
-   */
-  static setSimulcast (sdp, codec) {
-    logger.info('Setting simulcast. Codec: ', codec)
-    const browserData = new UserAgent()
-    if (!browserData.isChrome()) {
-      logger.warn('Simulcast is only available in Google Chrome browser')
-      return sdp
-    }
-    if (codec !== 'h264' &amp;&amp; codec !== 'vp8') {
-      logger.warn('Simulcast is only available in h264 and vp8 codecs')
-      return sdp
-    }
 
-    try {
-      const reg1 = /m=video.*?a=ssrc:(\d*) cname:(.+?)\r\n/s
-      const reg2 = /m=video.*?a=ssrc:(\d*) mslabel:(.+?)\r\n/s
-      const reg3 = /m=video.*?a=ssrc:(\d*) msid:(.+?)\r\n/s
-      const reg4 = /m=video.*?a=ssrc:(\d*) label:(.+?)\r\n/s
-      // Get ssrc and cname
-      const res = reg1.exec(sdp)
-      const ssrc = res[1]
-      const cname = res[2]
-      // Get other params
-      const mslabel = reg2.exec(sdp)[2]
-      const msid = reg3.exec(sdp)[2]
-      const label = reg4.exec(sdp)[2]
-      // Add simulcasts ssrcs
-      const num = 2
-      const ssrcs = [ssrc]
-      for (let i = 0; i &lt; num; ++i) {
-        // Create new ssrcs
-        const ssrc = 100 + i * 2
-        const rtx = ssrc + 1
-        // Add to ssrc list
-        ssrcs.push(ssrc)
-        // Add sdp stuff
-        sdp += 'a=ssrc-group:FID ' + ssrc + ' ' + rtx + '\r\n' +
-            'a=ssrc:' + ssrc + ' cname:' + cname + '\r\n' +
-            'a=ssrc:' + ssrc + ' msid:' + msid + '\r\n' +
-            'a=ssrc:' + ssrc + ' mslabel:' + mslabel + '\r\n' +
-            'a=ssrc:' + ssrc + ' label:' + label + '\r\n' +
-            'a=ssrc:' + rtx + ' cname:' + cname + '\r\n' +
-            'a=ssrc:' + rtx + ' msid:' + msid + '\r\n' +
-            'a=ssrc:' + rtx + ' mslabel:' + mslabel + '\r\n' +
-            'a=ssrc:' + rtx + ' label:' + label + '\r\n'
+/**
+ * @typedef {Object} TrackReport
+ * @property {Object} inbound - Parsed information of inbound-rtp.
+ * @property {String} [inbound.mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [inbound.framesPerSecond] - Current framerate if it's video report.
+ * @property {Number} inbound.timestamp - Timestamp of report.
+ * @property {Number} inbound.bytesReceived - Total bytes received.
+ * @property {Number} inbound.packetsLost - Total packets lost.
+ * @property {Number} inbound.bitrate - Current bitrate in bits per second.
+ * @property {Object} outbound - Parsed information of outbound-rtp.
+ * @property {String} [outbound.mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [outbound.framesPerSecond] - Current framerate if it's video report.
+ * @property {Number} outbound.timestamp - Timestamp of report.
+ * @property {Number} outbound.bytesSent - Total bytes sent.
+ * @property {Number} outbound.bitrate - Current bitrate in bits per second.
+ */
+
+export const peerConnectionStatsEvents = {
+  stats: 'stats'
+}
+
+export default class PeerConnectionStats extends EventEmitter {
+  constructor (peer) {
+    super()
+    this.peer = peer
+    this.stats = null
+    this.timerInterval = null
+    this.emitInterval = null
+    this.previousStats = null
+    this.interval = null
+  }
+
+  /**
+   * Initialize the statistics monitoring of the RTCPeerConnection.
+   * @param {Number} interval - Interval in seconds of how often it should get stats.
+   */
+  init (interval) {
+    logger.info('Initializing peer connection stats')
+    const intervalCast = parseInt(interval)
+    if (!Number.isInteger(intervalCast) || intervalCast &lt; 1) {
+      const error = `Invalid interval value ${interval}`
+      logger.error(error)
+      throw new Error(error)
+    }
+    this.interval = intervalCast * 1000
+    this.timerInterval = setInterval(async () => {
+      logger.debug('New internal interval executed')
+      const stats = await this.peer.getStats()
+      this.parseStats(stats)
+    }, 1000)
+
+    this.emitInterval = setInterval(() => {
+      if (this.stats) {
+        logger.debug('Emitting stats')
+        /**
+        * Peer connection incoming stats.
+        *
+        * @event PeerConnection#stats
+        * @type {ConnectionStats}
+        */
+        this.emit(peerConnectionStatsEvents.stats, this.stats)
       }
-      // Conference flag
-      sdp += 'a=x-google-flag:conference\r\n'
-      // Add SIM group
-      sdp += 'a=ssrc-group:SIM ' + ssrcs.join(' ') + '\r\n'
+    }, this.interval)
+  }
 
-      logger.info('Simulcast setted')
-      logger.debug('Simulcast SDP: ', sdp)
-      return sdp
-    } catch (e) {
-      logger.error('Error setting SDP for simulcast: ', e)
-      throw e
+  /**
+   * Parse incoming RTCPeerConnection stats.
+   * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
+   * @returns {ConnectionStats} RTCPeerConnection stats parsed.
+   */
+  parseStats (rawStats) {
+    this.previousStats = this.stats
+    const statsObject = {
+      audio: {
+        inbound: {},
+        outbound: {}
+      },
+      video: {
+        inbound: {},
+        outbound: {}
+      },
+      raw: rawStats
     }
-  }
 
-  /**
-   * Parse SDP for support stereo.
-   * @param {String} sdp - Current SDP.
-   * @returns {String} SDP parsed with stereo support.
-   * @example SdpParser.setStereo(sdp)
-   */
-  static setStereo (sdp) {
-    logger.info('Replacing SDP response for support stereo')
-    sdp = sdp.replace(
-      'useinbandfec=1',
-      'useinbandfec=1; stereo=1'
-    )
-    logger.info('Replaced SDP response for support stereo')
-    logger.debug('New SDP value: ', sdp)
-    return sdp
-  }
+    for (const report of rawStats.values()) {
+      switch (report.type) {
+        case 'outbound-rtp': {
+          const mediaType = getMediaType(report)
+          const codecInfo = getCodecData(report.codecId, rawStats)
+          const additionalData = getBaseReportData(report, mediaType)
+          additionalData.bytesSent = report.bytesSent
 
-  /**
-   * Parse SDP for desired bitrate.
-   * @param {String} sdp - Current SDP.
-   * @param {Number} bitrate - Bitrate value in kbps or 0 for unlimited bitrate.
-   * @returns {String} SDP parsed with desired bitrate.
-   * @example SdpParser.setVideoBitrate(sdp, 1000)
-   */
-  static setVideoBitrate (sdp, bitrate) {
-    if (bitrate &lt; 1) {
-      logger.info('Remove bitrate restrictions')
-      sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
-    } else {
-      const browserData = new UserAgent()
-      const offer = SemanticSDP.SDPInfo.parse(sdp)
-      const videoOffer = offer.getMedia('video')
+          additionalData.bitrate = this.previousStats ? 8 * (report.bytesSent - this.previousStats[mediaType].outbound.bytesSent) : 0
 
-      logger.info('Setting video bitrate')
-      videoOffer.setBitrate(bitrate)
-      sdp = offer.toString()
-      if (sdp.indexOf('b=AS:') > -1 &amp;&amp; browserData.isFirefox()) {
-        logger.info('Updating SDP for firefox browser')
-        sdp = sdp.replace('b=AS:', 'b=TIAS:')
-        logger.debug('SDP updated for firefox: ', sdp)
-      }
-    }
-    return sdp
-  }
+          statsObject[mediaType].outbound = {
+            ...codecInfo,
+            ...additionalData
+          }
+          break
+        }
+        case 'inbound-rtp': {
+          let mediaType = getMediaType(report)
+          const codecInfo = getCodecData(report.codecId, rawStats)
 
-  /**
-   * Remove SDP line.
-   * @param {String} sdp - Current SDP.
-   * @param {String} sdpLine - SDP line to remove.
-   * @returns {String} SDP without the line.
-   * @example SdpParser.removeSdpLine(sdp, 'custom line')
-   */
-  static removeSdpLine (sdp, sdpLine) {
-    logger.debug('SDP before trimming: ', sdp)
-    sdp = sdp
-      .split('\n')
-      .filter((line) => {
-        return line.trim() !== sdpLine
-      })
-      .join('\n')
-    logger.debug('SDP trimmed result: ', sdp)
-    return sdp
-  }
+          // Safari is missing mediaType and kind for 'inbound-rtp'
+          if (!['audio', 'video'].includes(mediaType)) {
+            if (report.id.includes('Video')) mediaType = 'video'
+            else mediaType = 'audio'
+          }
+          const additionalData = getBaseReportData(report, mediaType)
+          additionalData.bytesReceived = report.bytesReceived
+          additionalData.packetsLost = report.packetsLost
 
-  /**
-   * Replace codec name of a SDP.
-   * @param {String} sdp - Current SDP.
-   * @param {String} codec - Codec name to be replaced.
-   * @param {String} newCodecName - New codec name to replace.
-   * @returns {String} SDP updated with new codec name.
-   */
-  static adaptCodecName (sdp, codec, newCodecName) {
-    if (!sdp) {
-      return sdp
-    }
-    const regex = new RegExp(`${codec}`, 'i')
+          additionalData.bitrate = this.previousStats ? 8 * (report.bytesReceived - this.previousStats[mediaType].inbound.bytesReceived) : 0
 
-    return sdp.replace(regex, newCodecName)
-  }
-
-  /**
-   * Parse SDP for support multiopus.
-   *
-   * **Only available in Google Chrome.**
-   * @param {String} sdp - Current SDP.
-   * @returns {String} SDP parsed with multiopus support.
-   * @example SdpParser.setMultiopus(sdp)
-   */
-  static setMultiopus (sdp) {
-    const browserData = new UserAgent()
-    if (browserData.isChrome()) {
-      if (!sdp.includes('multiopus/48000/6')) {
-        logger.info('Setting multiopus')
-        // Find the audio m-line
-        const res = /m=audio 9 UDP\/TLS\/RTP\/SAVPF (.*)\r\n/.exec(sdp)
-        // Get audio line
-        const audio = res[0]
-        // Get free payload number for multiopus
-        const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
-        // Add multiopus
-        const multiopus = audio.replace('\r\n', ' ') + pt + '\r\n' +
-              'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
-              'a=fmtp:' + pt + ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
-        // Change sdp
-        sdp = sdp.replace(audio, multiopus)
-        logger.info('Multiopus offer created')
-        logger.debug('SDP parsed for multioups: ', sdp)
-      } else {
-        logger.info('Multiopus already setted')
+          statsObject[mediaType].inbound = {
+            ...codecInfo,
+            ...additionalData
+          }
+          break
+        }
+        default:
+          break
       }
     }
-    return sdp
+    this.stats = statsObject
   }
 
   /**
-   * Gets all available payload type IDs of the current Session Description.
-   *
-   * @param {String} sdp - Current SDP.
-   * @returns {Array&lt;Number>} All available payload type ids.
+   * Stops the monitoring of RTCPeerConnection statistics.
    */
-  static getAvailablePayloadTypeRange (sdp) {
-    const regex = /m=(?:.*) (?:.*) UDP\/TLS\/RTP\/SAVPF (.*)\r\n/gm
-
-    const matches = sdp.matchAll(regex)
-    let ptAvailable = payloadTypeUppperRange.concat(payloadTypeLowerRange)
-
-    for (const match of matches) {
-      const usedNumbers = match[1].split(' ').map(n => parseInt(n))
-      ptAvailable = ptAvailable.filter(n => !usedNumbers.includes(n))
-    }
-
-    return ptAvailable
+  stop () {
+    logger.info('Stopping peer connection stats')
+    clearInterval(this.timerInterval)
+    clearInterval(this.emitInterval)
   }
+}
+
+/**
+ * Get media type.
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @returns {String} Media type.
+ */
+const getMediaType = (report) => {
+  return report.mediaType || report.kind
+}
+
+/**
+ * Get codec information from stats.
+ * @param {String} codecReportId - Codec report ID.
+ * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
+ * @returns {Object} Object containing codec information.
+ */
+const getCodecData = (codecReportId, rawStats) => {
+  const { mimeType } = codecReportId ? rawStats.get(codecReportId) ?? {} : {}
+  return { mimeType }
+}
+
+/**
+ * Get common information
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @param {String} mediaType - Media type.
+ * @returns {Object} Object containing common information.
+ */
+const getBaseReportData = (report, mediaType) => {
+  const additionalData = {}
+  if (mediaType === 'video') {
+    additionalData.framesPerSecond = report.framesPerSecond
+  }
+  additionalData.timestamp = report.timestamp
+  return additionalData
 }
 </code></pre>
         </article>
