@@ -8,9 +8,9 @@ const href = new URL(window.location.href);
 const url = !!href.searchParams.get("url")
   ? href.searchParams.get("url")
   : "wss://turn.millicast.com/millisock";
-const streamId = !!href.searchParams.get("streamId")
-  ? href.searchParams.get("streamId")
-  : process.env.MILLICAST_STREAM_ID;
+const streamName = !!href.searchParams.get("streamName")
+  ? href.searchParams.get("streamName")
+  : process.env.MILLICAST_STREAM_NAME;
 const streamAccountId = !!href.searchParams.get("streamAccountId")
   ? href.searchParams.get("streamAccountId")
   : process.env.MILLICAST_ACCOUNT_ID;
@@ -53,8 +53,8 @@ let video = document.querySelector("video");
 let millicastView = null
 
 const newViewer = () => {
-  const tokenGenerator = () => Director.getSubscriber(streamId, streamAccountId)
-  const millicastView = new View(streamId, tokenGenerator, null, autoReconnect)
+  const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
+  const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
   
@@ -211,8 +211,8 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
 
     if (castState === cast.framework.CastState.CONNECTED) {
       const castSession = castContext.getCurrentSession()
-      const mediaInfo = new chrome.cast.media.MediaInfo(streamId, '')
-      mediaInfo.customData = { streamId, streamAccountId }
+      const mediaInfo = new chrome.cast.media.MediaInfo(streamName, '')
+      mediaInfo.customData = { streamName, streamAccountId }
       mediaInfo.streamType = chrome.cast.media.StreamType.LIVE
 
       const loadRequest = new chrome.cast.media.LoadRequest(mediaInfo)
