@@ -3,7 +3,7 @@ import { Director, Logger, StreamEvents } from "@millicast/sdk"
 
 window.Logger = Logger
 
-const streamId = process.env.MILLICAST_STREAM_ID
+const streamName = process.env.MILLICAST_STREAM_NAME
 const accountId = process.env.MILLICAST_ACCOUNT_ID
 const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
 const disableVideo = false
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   // Add UserCount event listener
   const events = await StreamEvents.init()
-  events.onUserCount(accountId, streamId, ({count}) => {
+  events.onUserCount(accountId, streamName, ({count}) => {
     userCount.innerHTML = count
   })
   
@@ -124,8 +124,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 
   /////////////////////////
-  const tokenGenerator = () => Director.getPublisher(publishToken, streamId)
-  const millicastPublishUserMedia = await MillicastPublishUserMedia.build({ streamName: streamId }, tokenGenerator, true)
+  const tokenGenerator = () => Director.getPublisher(publishToken, streamName)
+  const millicastPublishUserMedia = await MillicastPublishUserMedia.build({ streamName }, tokenGenerator, true)
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
 
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       href = href.substring(0, href.lastIndexOf('/') + 1);
     }
 
-    let viewerUrl = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamId}`;
+    let viewerUrl = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamName}`;
 
     if (disableVideo === true) {
       viewerUrl = `${viewerUrl}&disableVideo=${disableVideo}`
