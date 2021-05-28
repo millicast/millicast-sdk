@@ -91,6 +91,7 @@ class MillicastPublishTest {
       // On Peer stats
       this.millicastPublish.webRTCPeer.on('stats', (stats) => {
         console.log('Stats from event: ', stats)
+        this.stats = stats
         this.loadStatsInTable(stats)
       })
 
@@ -196,7 +197,10 @@ class MillicastPublishTest {
           } else if (statKey === 'timestamp') {
             valueParsed = new Date(valueParsed).toISOString()
           }
-          document.getElementById(`stats-${mediaTrack}-${statKey}`).innerHTML = `${valueParsed}`
+          const element = document.getElementById(`stats-${mediaTrack}-${statKey}`)
+          if (element) {
+            element.innerHTML = `${valueParsed}`
+          }
         }
       }
     }

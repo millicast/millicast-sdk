@@ -43,6 +43,7 @@ class MillicastViewTest {
       this.millicastView.webRTCPeer.initStats(1)
       this.millicastView.webRTCPeer.on('stats', (stats) => {
         console.log('Stats from event: ', stats)
+        this.stats = stats
         this.loadStatsInTable(stats)
       })
     } catch (error) {
@@ -76,7 +77,10 @@ class MillicastViewTest {
           } else if (statKey === 'timestamp') {
             valueParsed = new Date(valueParsed).toISOString()
           }
-          document.getElementById(`stats-${mediaTrack}-${statKey}`).innerHTML = `${valueParsed}`
+          const element = document.getElementById(`stats-${mediaTrack}-${statKey}`)
+          if (element) {
+            element.innerHTML = `${valueParsed}`
+          }
         }
       }
     }

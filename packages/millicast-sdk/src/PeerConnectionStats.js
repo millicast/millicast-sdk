@@ -100,10 +100,13 @@ export default class PeerConnectionStats extends EventEmitter {
           const mediaType = getMediaType(report)
           const codecInfo = getCodecData(report.codecId, rawStats)
           const additionalData = getBaseReportData(report, mediaType)
-          additionalData.bytesSent = report.bytesSent
+          additionalData.totalBytesSent = report.bytesSent
 
-          additionalData.bitrate = this.previousStats ? 8 * (report.bytesSent - this.previousStats[mediaType].outbound.bytesSent) : 0
+          additionalData.bitrate = this.previousStats ? 8 * (report.bytesSent - this.previousStats[mediaType].outbound.totalBytesSent) : 0
 
+          if (mediaType === 'video') {
+            additionalData.qualityLimitationReason = report.qualityLimitationReason
+          }
           statsObject[mediaType].outbound = {
             ...codecInfo,
             ...additionalData
@@ -120,14 +123,29 @@ export default class PeerConnectionStats extends EventEmitter {
             else mediaType = 'audio'
           }
           const additionalData = getBaseReportData(report, mediaType)
-          additionalData.bytesReceived = report.bytesReceived
-          additionalData.packetsLost = report.packetsLost
+          additionalData.totalBytesReceived = report.bytesReceived
+          additionalData.totalPacketsReceived = report.packetsReceived
+          additionalData.totalPacketsLost = report.packetsLost
+          additionalData.jitter = report.jitter
+          additionalData.jitterBufferDelay = report.jitterBufferDelay
 
-          additionalData.bitrate = this.previousStats ? 8 * (report.bytesReceived - this.previousStats[mediaType].inbound.bytesReceived) : 0
+          additionalData.bitrate = this.previousStats ? 8 * (report.bytesReceived - this.previousStats[mediaType].inbound.totalBytesReceived) : 0
+          additionalData.packetsLostRatioPerSecond = this.previousStats ? calculatePacketsLostRatio(additionalData, this.previousStats[mediaType].inbound) : 0
 
           statsObject[mediaType].inbound = {
             ...codecInfo,
             ...additionalData
+          }
+          break
+        }
+        case 'track': {
+          const mediaType = getMediaType(report)
+          if (mediaType === 'video') {
+            statsObject[mediaType] = {
+              ...statsObject[mediaType],
+              frameHeight: report.frameHeight,
+              frameWidth: report.frameWidth
+            }
           }
           break
         }
@@ -181,4 +199,16 @@ const getBaseReportData = (report, mediaType) => {
   }
   additionalData.timestamp = report.timestamp
   return additionalData
+}
+
+/**
+ * Calculate the packets lost ratio
+ * @param {Object} actualReport - JSON object which represents a parsed report.
+ * @param {Object} previousReport - JSON object which represents a parsed report.
+ * @returns {Number} Packets lost ratio
+ */
+const calculatePacketsLostRatio = (actualReport, previousReport) => {
+  const currentLostPackages = actualReport.totalPacketsLost - previousReport.totalPacketsLost
+  const currentReceivedPackages = actualReport.totalPacketsReceived - previousReport.totalPacketsReceived
+  return currentLostPackages / currentReceivedPackages
 }

@@ -144,6 +144,16 @@ const peerStatsValue = () => {
       id: 'Audio456',
       mediaType: 'audio',
       bytesReceived: 4000
+    },
+    {
+      type: 'track',
+      kind: 'video',
+      frameHeight: 1080,
+      frameWidth: 1920
+    },
+    {
+      type: 'track',
+      kind: 'audio'
     }
   ]
 }
