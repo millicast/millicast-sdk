@@ -63,7 +63,6 @@ jobs:
           npm test
   
       - name: Test End-2-End
-        working-directory: './packages/millicast-sdk'
         uses: ianwalter/puppeteer-container@v4.0.0
         with:
           args: npm run test-e2e
