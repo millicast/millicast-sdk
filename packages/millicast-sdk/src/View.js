@@ -17,11 +17,17 @@ const logger = Logger.get('View')
  * @constructor
  * @param {String} streamName - Millicast existing Stream Name where you want to connect.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
+ * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
+ * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
-  constructor (streamName, tokenGenerator, autoReconnect = true) {
+  constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
+    if (mediaElement) {
+      this.on(webRTCEvents.track, e => {
+        mediaElement.srcObject = e.streams[0]
+      })
+    }
   }
 
   /**
@@ -39,6 +45,25 @@ export default class View extends BaseWebRTC {
    * @example
    * import View from '@millicast/sdk'
    *
+   * // Create media element
+   * const videoElement = document.createElement("video")
+   *
+   * //Define callback for generate new token
+   * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
+   *
+   * //Create a new instance
+   * const streamName = "Millicast Stream Name where i want to connect"
+   * const millicastView = new View(streamName, tokenGenerator, videoElement)
+   *
+   * //Start connection to broadcast
+   * try {
+   *  await millicastView.connect()
+   * } catch (e) {
+   *  console.log('Connection failed, handle error', e)
+   * }
+   * @example
+   * import View from '@millicast/sdk'
+   *
    * //Define callback for generate new token
    * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
    *
@@ -51,13 +76,9 @@ export default class View extends BaseWebRTC {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
-   * //Options
-   * const options = {
-   *  }
-   *
    * //Start connection to broadcast
    * try {
-   * await millicastView.connect(options)
+   *  await millicastView.connect()
    * } catch (e) {
    *  console.log('Connection failed, handle error', e)
    * }
@@ -69,12 +90,12 @@ export default class View extends BaseWebRTC {
     }
   ) {
     logger.debug('Viewer connect options values: ', options)
+    this.options = options
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
     let subscriberData
-    this.options = options
     try {
       subscriberData = await this.tokenGenerator()
     } catch (error) {

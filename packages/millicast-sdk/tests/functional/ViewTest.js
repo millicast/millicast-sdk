@@ -38,9 +38,16 @@ class MillicastViewTest {
       this.millicastView.on('connectionStateChange', (state) => {
         console.log('Event from connectionStateChange: ', state)
       })
-      this.millicastView.connect(options)
+      await this.millicastView.connect(options)
+
+      this.millicastView.webRTCPeer.initStats(1)
+      this.millicastView.webRTCPeer.on('stats', (stats) => {
+        console.log('Stats from event: ', stats)
+        this.loadStatsInTable(stats)
+      })
     } catch (error) {
-      console.log('There was an error while trying to connect with the publisher: ', error)
+      console.log('There was an error while trying to connect with the publisher')
+      this.millicastView.reconnect()
     }
   }
 
@@ -56,6 +63,22 @@ class MillicastViewTest {
       if (video)video.parentNode.removeChild(video)
     } else {
       video.srcObject = stream
+    }
+  }
+
+  loadStatsInTable (stats) {
+    for (const [mediaTrack, data] of Object.entries(stats)) {
+      if (mediaTrack !== 'raw') {
+        for (const [statKey, value] of Object.entries(data.inbound)) {
+          let valueParsed = value
+          if (statKey === 'bitrate') {
+            valueParsed /= 1000
+          } else if (statKey === 'timestamp') {
+            valueParsed = new Date(valueParsed).toISOString()
+          }
+          document.getElementById(`stats-${mediaTrack}-${statKey}`).innerHTML = `${valueParsed}`
+        }
+      }
     }
   }
 }

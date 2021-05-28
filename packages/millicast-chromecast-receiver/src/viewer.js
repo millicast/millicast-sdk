@@ -14,15 +14,15 @@ const removeStream = () => {
   video.srcObject = null
 }
 
-const subscribe = async (streamId, streamAccountId) => {
-  const tokenGenerator = () => Director.getSubscriber(streamId, streamAccountId)
-  const millicastView = new View(streamId, tokenGenerator)
+const subscribe = async (streamName, streamAccountId) => {
+  const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
+  const millicastView = new View(streamName, tokenGenerator)
   millicastView.on('broadcastEvent', (event) => {
     const layers = event.data.layers !== null ? event.data.layers : {}
     if (event.name === 'layers' && Object.keys(layers).length <= 0) {
       // call play logic or being reconnect interval
       close().then(() => {
-        subscribe(streamId, streamAccountId)
+        subscribe(streamName, streamAccountId)
       })
       console.error('Feed no longer found.')
     }
@@ -42,7 +42,7 @@ const subscribe = async (streamId, streamAccountId) => {
     await millicastView.connect()
   } catch (error) {
     close().then(() => {
-      subscribe(streamId, streamAccountId)
+      subscribe(streamName, streamAccountId)
     })
     console.error(error)
   }
@@ -59,9 +59,9 @@ player.setMediaElement(document.querySelector('#player'))
 player.setMessageInterceptor(
   cast.framework.messages.MessageType.LOAD, loadRequestData => {
     const media = loadRequestData.media
-    const { streamId, streamAccountId } = media.customData
+    const { streamName, streamAccountId } = media.customData
 
-    subscribe(streamId, streamAccountId)
+    subscribe(streamName, streamAccountId)
 
     loadRequestData.media.contentUrl = 'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4'
     loadRequestData.media.contentType = 'video/mp4'

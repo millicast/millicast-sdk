@@ -34,7 +34,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -52,7 +52,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -70,7 +70,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -88,7 +88,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -111,7 +111,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection disabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, false)
+      viewer = new View('streamName', mockTokenGenerator, null, false)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -129,7 +129,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -148,29 +148,36 @@ defineFeature(feature, test => {
 
   test('Reconnection interval when peer has an error', ({ given, when, then }) => {
     let viewer
+    const reconnectHandler = jest.fn()
+    const errorMessage = 'Error has ocurred'
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
       jest.spyOn(viewer, 'isActive').mockImplementation(() => { return false })
     })
 
     when('reconnection is called and fails', () => {
-      jest.spyOn(viewer, 'connect').mockImplementation(() => { throw new Error() })
+      jest.spyOn(viewer, 'connect').mockImplementation(() => { throw new Error(errorMessage) })
       viewer.reconnect()
     })
 
     then('reconnection is called again in increments of 2 seconds until 32 seconds', async () => {
-      let interval = 1000
-      for (let i = 1; i <= 6; i++) {
+      let interval = 2000
+      for (let i = 1; i <= 5; i++) {
         expect(setTimeout).toHaveBeenCalledTimes(i)
         expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), interval)
+        expect(reconnectHandler).toHaveBeenCalledTimes(i)
+        expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: interval, error: new Error(errorMessage) })
         jest.runOnlyPendingTimers()
         interval = interval * 2
       }
-      expect(setTimeout).toHaveBeenCalledTimes(7)
+      expect(setTimeout).toHaveBeenCalledTimes(6)
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 32000)
+      expect(reconnectHandler).toHaveBeenCalledTimes(6)
+      expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: 32000, error: new Error(errorMessage) })
       jest.runOnlyPendingTimers()
       expect(viewer.connect).toBeCalledTimes(7)
     })
@@ -180,7 +187,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       await viewer.connect()
     })
 
@@ -190,8 +197,7 @@ defineFeature(feature, test => {
     })
 
     then('reconnection is not called again', async () => {
-      jest.advanceTimersByTime(62000)
-      expect(setTimeout).toHaveBeenCalledTimes(1)
+      expect(setTimeout).not.toHaveBeenCalled()
     })
   })
 
@@ -199,7 +205,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, true)
+      viewer = new View('streamName', mockTokenGenerator, null, true)
       await viewer.connect()
     })
 
@@ -210,13 +216,7 @@ defineFeature(feature, test => {
     })
 
     then('peer reconnects and reconnection is not called again', async () => {
-      expect(setTimeout).toHaveBeenCalledTimes(1)
-      expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000)
-      jest.runOnlyPendingTimers()
-      jest.spyOn(viewer, 'isActive').mockImplementation(() => { return true })
-
-      jest.advanceTimersByTime(62000)
-      expect(setTimeout).toHaveBeenCalledTimes(1)
+      expect(setTimeout).not.toHaveBeenCalled()
     })
   })
 })

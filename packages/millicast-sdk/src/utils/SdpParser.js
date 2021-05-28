@@ -4,6 +4,15 @@ import UserAgent from './UserAgent'
 
 const logger = Logger.get('SdpParser')
 
+const firstPayloadTypeLowerRange = 35
+const lastPayloadTypeLowerRange = 65
+
+const firstPayloadTypeUpperRange = 96
+const lastPayloadTypeUpperRange = 127
+
+const payloadTypeLowerRange = Array.from({ length: (lastPayloadTypeLowerRange - firstPayloadTypeLowerRange) + 1 }, (_, i) => i + firstPayloadTypeLowerRange)
+const payloadTypeUppperRange = Array.from({ length: (lastPayloadTypeUpperRange - firstPayloadTypeUpperRange) + 1 }, (_, i) => i + firstPayloadTypeUpperRange)
+
 /**
  * Simplify SDP parser.
  *
@@ -176,7 +185,7 @@ export default class SdpParser {
         // Get audio line
         const audio = res[0]
         // Get free payload number for multiopus
-        const pt = Math.max(...res[1].split(' ').map(Number)) + 1
+        const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
         // Add multiopus
         const multiopus = audio.replace('\r\n', ' ') + pt + '\r\n' +
               'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
@@ -190,5 +199,25 @@ export default class SdpParser {
       }
     }
     return sdp
+  }
+
+  /**
+   * Gets all available payload type IDs of the current Session Description.
+   *
+   * @param {String} sdp - Current SDP.
+   * @returns {Array<Number>} All available payload type ids.
+   */
+  static getAvailablePayloadTypeRange (sdp) {
+    const regex = /m=(?:.*) (?:.*) UDP\/TLS\/RTP\/SAVPF (.*)\r\n/gm
+
+    const matches = sdp.matchAll(regex)
+    let ptAvailable = payloadTypeUppperRange.concat(payloadTypeLowerRange)
+
+    for (const match of matches) {
+      const usedNumbers = match[1].split(' ').map(n => parseInt(n))
+      ptAvailable = ptAvailable.filter(n => !usedNumbers.includes(n))
+    }
+
+    return ptAvailable
   }
 }

@@ -1,8 +1,58 @@
 <script src="../../dist/millicast.umd.js"></script>
 <script src="./ViewTest.js"></script>
 
+<style>
+  #stats table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #stats table td, #stats table th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  #stats table tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+
 <div>
   <h1>View</h1>
   <br />
-  <video autoplay playsinline controls muted id="millicast-view-test" style="display: block;margin: 0 auto;"></video>
+  <video autoplay playsinline controls muted id="millicast-view-test" width="1280" height="720" style="display: block;margin: 0 auto;"></video>
+</div>
+<br>
+<div id="stats">
+  <table>
+    <tr>
+      <th>MediaTrack</th>
+      <th>Codec</th>
+      <th>Frames per second</th>
+      <th>Bytes received (total)</th>
+      <th>Packet loss (total)</th>
+      <th>Bitrate (kbps)</th>
+      <th>Timestamp</th>
+    </tr>
+    <tr>
+      <td>Video</td>
+      <td id="stats-video-mimeType"></td>
+      <td id="stats-video-framesPerSecond"></td>
+      <td id="stats-video-bytesReceived"></td>
+      <td id="stats-video-packetsLost"></td>
+      <td id="stats-video-bitrate"></td>
+      <td id="stats-video-timestamp"></td>
+    </tr>
+    <tr>
+      <td>Audio</td>
+      <td id="stats-audio-mimeType"></td>
+      <td id="stats-audio-framesPerSecond">-</td>
+      <td id="stats-audio-bytesReceived"></td>
+      <td id="stats-audio-packetsLost"></td>
+      <td id="stats-audio-bitrate"></td>
+      <td id="stats-audio-timestamp"></td>
+    </tr>
+  </table>
 </div>

@@ -19,7 +19,7 @@ const logger = Logger.get('Publish')
  * @constructor
  * @param {String} streamName - Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {Boolean} autoReconnect - Enable auto reconnect to stream.
+ * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class Publish extends BaseWebRTC {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
@@ -80,6 +80,7 @@ export default class Publish extends BaseWebRTC {
     }
   ) {
     logger.debug('Broadcast option values: ', options)
+    this.options = options
     if (!options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
@@ -89,7 +90,6 @@ export default class Publish extends BaseWebRTC {
       throw new Error('Broadcast currently working')
     }
     let publisherData
-    this.options = options
     try {
       publisherData = await this.tokenGenerator()
     } catch (error) {

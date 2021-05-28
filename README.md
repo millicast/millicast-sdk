@@ -67,31 +67,28 @@ try {
 `index.html`
 ```html
 <html>
-<head>
-  ...
-</head>
-<body>
-  <video id="my-video"></video>
-  
-  <script src='viewer.js'></script>
-</body>
+  <head>
+    ...
+  </head>
+  <body>
+    <video id="my-video"></video>
+    
+    <script src='viewer.js'></script>
+  </body>
 </html>
 ```
 `viewer.js`
 ```javascript
 import { Director, View } from '@millicast/sdk'
 
+// Get Media Element
+const video = document.getElementById('my-video')
+
 //Define callback for generate new token
 const tokenGenerator = () => Director.getSubscriber('my-stream-name', 'my-account-id')
 
 //Create a new instance
-const millicastView = new View(streamName, tokenGenerator)
-
-//Set event handler for receive stream from publisher and add it to your <video> tag
-millicastView.on('track', (event) => {
-  const video = document.getElementById('my-video')
-  video.srcObject = event.streams[0]
-})
+const millicastView = new View(streamName, tokenGenerator, video)
 
 //Start connection to publisher
 try {
