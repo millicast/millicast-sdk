@@ -61,3 +61,8 @@ jobs:
         run: |
           npm install
           npm test
+  
+      - name: Test End-2-End
+        uses: ianwalter/puppeteer-container@v4.0.0
+        with:
+          args: npm run test-e2e

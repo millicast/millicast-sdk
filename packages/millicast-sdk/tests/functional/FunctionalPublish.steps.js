@@ -28,8 +28,9 @@ afterEach(async () => {
 
 beforeEach(async () => {
   browser = await puppeteer.launch({
-    executablePath: process.env.CHROME_LOCATION,
+    // executablePath: process.env.CHROME_LOCATION,
     args: [
+      '--no-sandbox',
       '--use-fake-device-for-media-stream',
       '--use-fake-ui-for-media-stream'
     ]
