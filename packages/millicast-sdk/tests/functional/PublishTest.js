@@ -1,7 +1,7 @@
 const millicast = window.millicast
-const accountId = 'your-account-id'
-const streamName = 'your-stream-name'
-const token = 'your-publishing-token'
+const accountId = window.accountId
+const streamName = window.streamName
+const token = window.token
 
 const tokenGenerator = () => millicast.Director.getPublisher(token, streamName)
 

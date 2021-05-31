@@ -1,7 +1,7 @@
 const millicast = window.millicast
 
-const accountId = 'your-account-id'
-const streamName = 'your-stream-name'
+const accountId = window.accountId
+const streamName = window.streamName
 
 class MillicastViewTest {
   constructor () {
