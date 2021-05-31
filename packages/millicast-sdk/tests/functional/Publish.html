@@ -105,7 +105,11 @@
     <table>
       <tr>
         <th>MediaTrack</th>
+        <th>Id</th>
         <th>Codec</th>
+        <th>Frame height</th>
+        <th>Frame width</th>
+        <th>Quality limitation reason</th>
         <th>Frames per second</th>
         <th>Bytes sent (total)</th>
         <th>Bitrate (kbps)</th>
@@ -113,19 +117,66 @@
       </tr>
       <tr>
         <td>Video</td>
-        <td id="stats-video-mimeType"></td>
-        <td id="stats-video-framesPerSecond"></td>
-        <td id="stats-video-totalBytesSent"></td>
-        <td id="stats-video-bitrate"></td>
-        <td id="stats-video-timestamp"></td>
+        <td id="stats-video1-id"></td>
+        <td id="stats-video1-mimeType"></td>
+        <td id="stats-video1-frameHeight"></td>
+        <td id="stats-video1-frameWidth"></td>
+        <td id="stats-video1-qualityLimitationReason"></td>
+        <td id="stats-video1-framesPerSecond"></td>
+        <td id="stats-video1-totalBytesSent"></td>
+        <td id="stats-video1-bitrate"></td>
+        <td id="stats-video1-timestamp"></td>
+      </tr>
+      <tr>
+        <td>Video</td>
+        <td id="stats-video2-id"></td>
+        <td id="stats-video2-mimeType"></td>
+        <td id="stats-video2-frameHeight"></td>
+        <td id="stats-video2-frameWidth"></td>
+        <td id="stats-video2-qualityLimitationReason"></td>
+        <td id="stats-video2-framesPerSecond"></td>
+        <td id="stats-video2-totalBytesSent"></td>
+        <td id="stats-video2-bitrate"></td>
+        <td id="stats-video2-timestamp"></td>
+      </tr>
+      <tr>
+        <td>Video</td>
+        <td id="stats-video3-id"></td>
+        <td id="stats-video3-mimeType"></td>
+        <td id="stats-video3-frameHeight"></td>
+        <td id="stats-video3-frameWidth"></td>
+        <td id="stats-video3-qualityLimitationReason"></td>
+        <td id="stats-video3-framesPerSecond"></td>
+        <td id="stats-video3-totalBytesSent"></td>
+        <td id="stats-video3-bitrate"></td>
+        <td id="stats-video3-timestamp"></td>
       </tr>
       <tr>
         <td>Audio</td>
+        <td id="stats-audio-id"></td>
         <td id="stats-audio-mimeType"></td>
+        <td id="stats-audio-frameHeight">-</td>
+        <td id="stats-audio-frameWidth">-</td>
+        <td id="stats-audio-qualityLimitationReason">-</td>
         <td id="stats-audio-framesPerSecond">-</td>
         <td id="stats-audio-totalBytesSent"></td>
         <td id="stats-audio-bitrate"></td>
         <td id="stats-audio-timestamp"></td>
+      </tr>
+    </table>
+    <br>
+    <table>
+      <tr>
+        <th>Candidate type</th>
+        <th>Available outgoing bitrate</th>
+        <th>Average round trip time</th>
+        <th>Total round trip time</th>
+      </tr>
+      <tr>
+        <td id="stats-candidateType"></td>
+        <td id="stats-availableOutgoingBitrate"></td>
+        <td id="stats-averageRoundTripTime"></td>
+        <td id="stats-totalRoundTripTime"></td>
       </tr>
     </table>
   </div>

@@ -84,12 +84,12 @@ export default class PeerConnectionStats extends EventEmitter {
     this.previousStats = this.stats
     const statsObject = {
       audio: {
-        inbound: {},
-        outbound: {}
+        inbounds: [],
+        outbounds: []
       },
       video: {
-        inbound: {},
-        outbound: {}
+        inbounds: [],
+        outbounds: []
       },
       raw: rawStats
     }
@@ -97,55 +97,16 @@ export default class PeerConnectionStats extends EventEmitter {
     for (const report of rawStats.values()) {
       switch (report.type) {
         case 'outbound-rtp': {
-          const mediaType = getMediaType(report)
-          const codecInfo = getCodecData(report.codecId, rawStats)
-          const additionalData = getBaseReportData(report, mediaType)
-          additionalData.totalBytesSent = report.bytesSent
-
-          additionalData.bitrate = this.previousStats ? 8 * (report.bytesSent - this.previousStats[mediaType].outbound.totalBytesSent) : 0
-
-          if (mediaType === 'video') {
-            additionalData.qualityLimitationReason = report.qualityLimitationReason
-          }
-          statsObject[mediaType].outbound = {
-            ...codecInfo,
-            ...additionalData
-          }
+          addOutboundRtpReport(report, this.previousStats, statsObject)
           break
         }
         case 'inbound-rtp': {
-          let mediaType = getMediaType(report)
-          const codecInfo = getCodecData(report.codecId, rawStats)
-
-          // Safari is missing mediaType and kind for 'inbound-rtp'
-          if (!['audio', 'video'].includes(mediaType)) {
-            if (report.id.includes('Video')) mediaType = 'video'
-            else mediaType = 'audio'
-          }
-          const additionalData = getBaseReportData(report, mediaType)
-          additionalData.totalBytesReceived = report.bytesReceived
-          additionalData.totalPacketsReceived = report.packetsReceived
-          additionalData.totalPacketsLost = report.packetsLost
-          additionalData.jitter = report.jitter
-          additionalData.jitterBufferDelay = report.jitterBufferDelay
-
-          additionalData.bitrate = this.previousStats ? 8 * (report.bytesReceived - this.previousStats[mediaType].inbound.totalBytesReceived) : 0
-          additionalData.packetsLostRatioPerSecond = this.previousStats ? calculatePacketsLostRatio(additionalData, this.previousStats[mediaType].inbound) : 0
-
-          statsObject[mediaType].inbound = {
-            ...codecInfo,
-            ...additionalData
-          }
+          addInboundRtpReport(report, this.previousStats, statsObject)
           break
         }
-        case 'track': {
-          const mediaType = getMediaType(report)
-          if (mediaType === 'video') {
-            statsObject[mediaType] = {
-              ...statsObject[mediaType],
-              frameHeight: report.frameHeight,
-              frameWidth: report.frameWidth
-            }
+        case 'candidate-pair': {
+          if (report.nominated) {
+            addCandidateReport(report, statsObject)
           }
           break
         }
@@ -164,6 +125,76 @@ export default class PeerConnectionStats extends EventEmitter {
     clearInterval(this.timerInterval)
     clearInterval(this.emitInterval)
   }
+}
+
+/**
+ * Parse and add incoming outbound-rtp report from RTCPeerConnection to final report.
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @param {ConnectionStats} previousStats - Previous stats parsed.
+ * @param {Object} statsObject - Current stats object being parsed.
+ */
+const addOutboundRtpReport = (report, previousStats, statsObject) => {
+  const mediaType = getMediaType(report)
+  const codecInfo = getCodecData(report.codecId, statsObject.raw)
+  const additionalData = getBaseRtpReportData(report, mediaType)
+  additionalData.totalBytesSent = report.bytesSent
+  additionalData.id = report.id
+
+  const previousBytesSent = previousStats ? previousStats[mediaType].outbounds.find(x => x.id === additionalData.id)?.totalBytesSent ?? 0 : null
+  additionalData.bitrate = previousBytesSent ? 8 * (report.bytesSent - previousBytesSent) : 0
+
+  if (mediaType === 'video') {
+    additionalData.qualityLimitationReason = report.qualityLimitationReason
+  }
+  statsObject[mediaType].outbounds.push({
+    ...codecInfo,
+    ...additionalData
+  })
+}
+
+/**
+ * Parse and add incoming inbound-rtp report from RTCPeerConnection to final report.
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @param {ConnectionStats} previousStats - Previous stats parsed.
+ * @param {Object} statsObject - Current stats object being parsed.
+ */
+const addInboundRtpReport = (report, previousStats, statsObject) => {
+  let mediaType = getMediaType(report)
+  const codecInfo = getCodecData(report.codecId, statsObject.raw)
+
+  // Safari is missing mediaType and kind for 'inbound-rtp'
+  if (!['audio', 'video'].includes(mediaType)) {
+    if (report.id.includes('Video')) mediaType = 'video'
+    else mediaType = 'audio'
+  }
+  const additionalData = getBaseRtpReportData(report, mediaType)
+  additionalData.totalBytesReceived = report.bytesReceived
+  additionalData.totalPacketsReceived = report.packetsReceived
+  additionalData.totalPacketsLost = report.packetsLost
+  additionalData.jitter = report.jitter
+  additionalData.id = report.id
+
+  const previousBytesReceived = previousStats ? previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)?.totalBytesReceived ?? 0 : null
+  additionalData.bitrate = previousBytesReceived ? 8 * (report.bytesReceived - previousBytesReceived) : 0
+  additionalData.packetsLostRatioPerSecond = previousStats ? calculatePacketsLostRatio(additionalData, previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)) : 0
+
+  statsObject[mediaType].inbounds.push({
+    ...codecInfo,
+    ...additionalData
+  })
+}
+
+/**
+ * Parse and add incoming candidate-pair report from RTCPeerConnection to final report.
+ * Also adds associated local-candidate data to report.
+ * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
+ * @param {Object} statsObject - Current stats object being parsed.
+ */
+const addCandidateReport = (report, statsObject) => {
+  statsObject.totalRoundTripTime = report.totalRoundTripTime
+  statsObject.averageRoundTripTime = report.totalRoundTripTime / report.responsesReceived
+  statsObject.availableOutgoingBitrate = report.availableOutgoingBitrate
+  statsObject.candidateType = statsObject.raw.get(report.localCandidateId).candidateType
 }
 
 /**
@@ -187,15 +218,17 @@ const getCodecData = (codecReportId, rawStats) => {
 }
 
 /**
- * Get common information
+ * Get common information for RTP reports.
  * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
  * @param {String} mediaType - Media type.
  * @returns {Object} Object containing common information.
  */
-const getBaseReportData = (report, mediaType) => {
+const getBaseRtpReportData = (report, mediaType) => {
   const additionalData = {}
   if (mediaType === 'video') {
     additionalData.framesPerSecond = report.framesPerSecond
+    additionalData.frameHeight = report.frameHeight
+    additionalData.frameWidth = report.frameWidth
   }
   additionalData.timestamp = report.timestamp
   return additionalData

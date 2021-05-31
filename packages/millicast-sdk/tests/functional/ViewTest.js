@@ -69,8 +69,8 @@ class MillicastViewTest {
 
   loadStatsInTable (stats) {
     for (const [mediaTrack, data] of Object.entries(stats)) {
-      if (mediaTrack !== 'raw') {
-        for (const [statKey, value] of Object.entries(data.inbound)) {
+      if (mediaTrack.includes('audio') || mediaTrack.includes('video')) {
+        for (const [statKey, value] of Object.entries(data.inbounds[0])) {
           let valueParsed = value
           if (statKey === 'bitrate') {
             valueParsed /= 1000

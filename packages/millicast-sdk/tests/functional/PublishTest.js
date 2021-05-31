@@ -189,8 +189,25 @@ class MillicastPublishTest {
 
   loadStatsInTable (stats) {
     for (const [mediaTrack, data] of Object.entries(stats)) {
-      if (mediaTrack !== 'raw') {
-        for (const [statKey, value] of Object.entries(data.outbound)) {
+      let videoId = 1
+      if (mediaTrack.includes('video')) {
+        for (const outbound of data.outbounds) {
+          for (const [statKey, value] of Object.entries(outbound)) {
+            let valueParsed = value
+            if (statKey === 'bitrate') {
+              valueParsed /= 1000
+            } else if (statKey === 'timestamp') {
+              valueParsed = new Date(valueParsed).toISOString()
+            }
+            const element = document.getElementById(`stats-${mediaTrack}${videoId}-${statKey}`)
+            if (element) {
+              element.innerHTML = `${valueParsed}`
+            }
+          }
+          videoId++
+        }
+      } else if (mediaTrack.includes('audio')) {
+        for (const [statKey, value] of Object.entries(data.outbounds[0])) {
           let valueParsed = value
           if (statKey === 'bitrate') {
             valueParsed /= 1000
@@ -201,6 +218,11 @@ class MillicastPublishTest {
           if (element) {
             element.innerHTML = `${valueParsed}`
           }
+        }
+      } else {
+        const element = document.getElementById(`stats-${mediaTrack}`)
+        if (element) {
+          element.innerHTML = `${data}`
         }
       }
     }
