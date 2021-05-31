@@ -8,23 +8,37 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing.
  * @property {TrackReport} audio - Parsed audio information.
  * @property {TrackReport} video - Parsed video information.
+ * @property {Number} availableOutgoingBitrate - Available outgoing bitrate.
+ * @property {Number} totalRoundTripTime - Total round trip time.
+ * @property {Number} averageRoundTripTime - Average round trip time. Based on totalRoundTripTime / responseReceived.
+ * @property {RTCIceCandidateType} candidateType - Local candidate type.
  */
 
 /**
  * @typedef {Object} TrackReport
- * @property {Object} inbound - Parsed information of inbound-rtp.
- * @property {String} [inbound.mimeType] - Mime type if related report had codec report associated.
- * @property {Number} [inbound.framesPerSecond] - Current framerate if it's video report.
- * @property {Number} inbound.timestamp - Timestamp of report.
- * @property {Number} inbound.bytesReceived - Total bytes received.
- * @property {Number} inbound.packetsLost - Total packets lost.
- * @property {Number} inbound.bitrate - Current bitrate in bits per second.
- * @property {Object} outbound - Parsed information of outbound-rtp.
- * @property {String} [outbound.mimeType] - Mime type if related report had codec report associated.
- * @property {Number} [outbound.framesPerSecond] - Current framerate if it's video report.
- * @property {Number} outbound.timestamp - Timestamp of report.
- * @property {Number} outbound.bytesSent - Total bytes sent.
- * @property {Number} outbound.bitrate - Current bitrate in bits per second.
+ * @property {Array<Object>} inbounds - Parsed information of each inbound-rtp.
+ * @property {String} inbounds.id - inbound-rtp Id.
+ * @property {Number} inbounds.jitter - Current Jitter.
+ * @property {String} [inbounds.mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [inbounds.framesPerSecond] - Current framerate if it's video report.
+ * @property {Number} [inbounds.frameHeight] - Current frame height if it's video report.
+ * @property {Number} [inbounds.frameWidth] - Current frame width if it's video report.
+ * @property {Number} inbounds.timestamp - Timestamp of report.
+ * @property {Number} inbounds.totalBytesReceived - Total bytes received.
+ * @property {Number} inbounds.totalPacketsReceived - Total packets received.
+ * @property {Number} inbounds.totalPacketsLost - Total packets lost.
+ * @property {Number} inbounds.packetsLostRatioPerSecond - Packet lost ratio per second.
+ * @property {Number} inbounds.bitrate - Current bitrate in bits per second.
+ * @property {Array<Object>} outbounds - Parsed information of each outbound-rtp.
+ * @property {String} outbounds.id - outbound-rtp Id.
+ * @property {String} [outbounds.mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [outbounds.framesPerSecond] - Current framerate if it's video report.
+ * @property {Number} [outbounds.frameHeight] - Current frame height if it's video report.
+ * @property {Number} [outbounds.frameWidth] - Current frame width if it's video report.
+ * @property {String} [outbounds.qualityLimitationReason] - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
+ * @property {Number} outbounds.timestamp - Timestamp of report.
+ * @property {Number} outbounds.totalBytesSent - Total bytes sent.
+ * @property {Number} outbounds.bitrate - Current bitrate in bits per second.
  */
 
 export const peerConnectionStatsEvents = {
