@@ -68,22 +68,55 @@ class MillicastViewTest {
   }
 
   loadStatsInTable (stats) {
-    for (const [mediaTrack, data] of Object.entries(stats)) {
-      if (mediaTrack.includes('audio') || mediaTrack.includes('video')) {
-        for (const [statKey, value] of Object.entries(data.inbounds[0])) {
-          let valueParsed = value
-          if (statKey === 'bitrate') {
-            valueParsed /= 1000
-          } else if (statKey === 'timestamp') {
-            valueParsed = new Date(valueParsed).toISOString()
-          }
-          const element = document.getElementById(`stats-${mediaTrack}-${statKey}`)
-          if (element) {
-            element.innerHTML = `${valueParsed}`
-          }
-        }
-      }
+    const candidateInfo = document.getElementById('candidate-info')
+    candidateInfo.innerHTML = `
+      <tr>
+        <td>${stats.candidateType}</td>
+        <td>${stats.currentRoundTripTime}</td>
+        <td>${stats.totalRoundTripTime}</td>
+      </tr>
+    `
+
+    const tracksInfo = document.getElementById('tracks-info')
+    const tracks = []
+
+    for (const track of stats.video.inbounds) {
+      tracks.push(`
+        <tr>
+          <td>Video</td>
+          <td>${track.mimeType}</td>
+          <td>${track.frameWidth}</td>
+          <td>${track.frameHeight}</td>
+          <td>${track.framesPerSecond}</td>
+          <td>${track.totalBytesSent}</td>
+          <td>${track.packetsLostRatioPerSecond}</td>
+          <td>${track.totalPacketsLost}</td>
+          <td>${track.jitter}</td>
+          <td>${track.bitrate / 1000}</td>
+          <td>${new Date(track.timestamp).toISOString()}</td>
+        </tr>
+      `)
     }
+
+    for (const track of stats.audio.inbounds) {
+      tracks.push(`
+        <tr>
+          <td>Audio</td>
+          <td>${track.mimeType}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${track.totalBytesSent}</td>
+          <td>${track.packetsLostRatioPerSecond}</td>
+          <td>${track.totalPacketsLost}</td>
+          <td>${track.jitter}</td>
+          <td>${track.bitrate / 1000}</td>
+          <td>${new Date(track.timestamp).toISOString()}</td>
+        </tr>
+      `)
+    }
+
+    tracksInfo.innerHTML = tracks.join(' ')
   }
 }
 

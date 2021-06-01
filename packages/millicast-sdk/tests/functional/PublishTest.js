@@ -100,6 +100,9 @@ class MillicastPublishTest {
       this.streamCount.onUserCount(accountId, streamName, data => {
         document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
       })
+
+      // Start Stats
+      this.testGetStats()
     } catch (error) {
       console.log('There was an error while trying to broadcast: ', error)
     }
@@ -108,6 +111,7 @@ class MillicastPublishTest {
   testStop () {
     this.millicastPublish.stop()
     this.streamCount.stop()
+    this.testStopStats()
     console.log('Broadcast stopped')
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
     document.getElementById('broadcast-viewers').innerHTML = ''
@@ -185,47 +189,60 @@ class MillicastPublishTest {
   testStopStats () {
     this.millicastPublish.webRTCPeer.stopStats()
     document.getElementById('stats').classList.remove('show')
+    const candidateInfo = document.getElementById('candidate-info')
+    const tracksInfo = document.getElementById('tracks-info')
+    candidateInfo.innerHTML = tracksInfo.innerHTML = ''
   }
 
   loadStatsInTable (stats) {
-    for (const [mediaTrack, data] of Object.entries(stats)) {
-      let videoId = 1
-      if (mediaTrack.includes('video')) {
-        for (const outbound of data.outbounds) {
-          for (const [statKey, value] of Object.entries(outbound)) {
-            let valueParsed = value
-            if (statKey === 'bitrate') {
-              valueParsed /= 1000
-            } else if (statKey === 'timestamp') {
-              valueParsed = new Date(valueParsed).toISOString()
-            }
-            const element = document.getElementById(`stats-${mediaTrack}${videoId}-${statKey}`)
-            if (element) {
-              element.innerHTML = `${valueParsed}`
-            }
-          }
-          videoId++
-        }
-      } else if (mediaTrack.includes('audio')) {
-        for (const [statKey, value] of Object.entries(data.outbounds[0])) {
-          let valueParsed = value
-          if (statKey === 'bitrate') {
-            valueParsed /= 1000
-          } else if (statKey === 'timestamp') {
-            valueParsed = new Date(valueParsed).toISOString()
-          }
-          const element = document.getElementById(`stats-${mediaTrack}-${statKey}`)
-          if (element) {
-            element.innerHTML = `${valueParsed}`
-          }
-        }
-      } else {
-        const element = document.getElementById(`stats-${mediaTrack}`)
-        if (element) {
-          element.innerHTML = `${data}`
-        }
-      }
+    const candidateInfo = document.getElementById('candidate-info')
+    candidateInfo.innerHTML = `
+      <tr>
+        <td>${stats.candidateType}</td>
+        <td>${stats.availableOutgoingBitrate / 1000}</td>
+        <td>${stats.currentRoundTripTime}</td>
+        <td>${stats.totalRoundTripTime}</td>
+      </tr>
+    `
+
+    const tracksInfo = document.getElementById('tracks-info')
+    const tracks = []
+
+    for (const track of stats.video.outbounds) {
+      tracks.push(`
+        <tr>
+          <td>Video</td>
+          <td>${track.id}</td>
+          <td>${track.mimeType}</td>
+          <td>${track.frameWidth}</td>
+          <td>${track.frameHeight}</td>
+          <td>${track.qualityLimitationReason}</td>
+          <td>${track.framesPerSecond || '-'}</td>
+          <td>${track.totalBytesSent}</td>
+          <td>${track.bitrate / 1000}</td>
+          <td>${new Date(track.timestamp).toISOString()}</td>
+        </tr>
+      `)
     }
+
+    for (const track of stats.audio.outbounds) {
+      tracks.push(`
+        <tr>
+          <td>Audio</td>
+          <td>${track.id}</td>
+          <td>${track.mimeType}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${track.totalBytesSent}</td>
+          <td>${track.bitrate / 1000}</td>
+          <td>${new Date(track.timestamp).toISOString()}</td>
+        </tr>
+      `)
+    }
+
+    tracksInfo.innerHTML = tracks.join(' ')
   }
 }
 
