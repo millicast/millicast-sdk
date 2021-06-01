@@ -188,9 +188,16 @@ const addInboundRtpReport = (report, previousStats, statsObject) => {
   additionalData.jitter = report.jitter
   additionalData.id = report.id
 
-  const previousBytesReceived = previousStats ? previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)?.totalBytesReceived ?? 0 : null
-  additionalData.bitrate = previousBytesReceived ? 8 * (report.bytesReceived - previousBytesReceived) : 0
-  additionalData.packetsLostRatioPerSecond = previousStats ? calculatePacketsLostRatio(additionalData, previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)) : 0
+  additionalData.bitrate = 0
+  additionalData.packetsLostRatioPerSecond = 0
+  if (previousStats) {
+    const previousReport = previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)
+    if (previousReport) {
+      const previousBytesReceived = previousReport.totalBytesReceived
+      additionalData.bitrate = 8 * (report.bytesReceived - previousBytesReceived)
+      additionalData.packetsLostRatioPerSecond = calculatePacketsLostRatio(additionalData, previousReport)
+    }
+  }
 
   statsObject[mediaType].inbounds.push({
     ...codecInfo,

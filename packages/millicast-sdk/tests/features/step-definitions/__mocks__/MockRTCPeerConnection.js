@@ -8,6 +8,55 @@ export const defaultConfig = {
   sdpSemantics: 'unified-plan'
 }
 
+export const rawStats = [
+  {
+    type: 'test'
+  },
+  {
+    type: 'outbound-rtp',
+    kind: 'audio',
+    bytesSent: 1000
+  },
+  {
+    type: 'outbound-rtp',
+    mediaType: 'video',
+    codecId: 'Codec1',
+    bytesSent: 2000,
+    framesPerSecond: 30
+  },
+  {
+    type: 'inbound-rtp',
+    mediaType: 'otherMediaType',
+    id: 'Video123',
+    bytesReceived: 2000,
+    framesPerSecond: 30
+  },
+  {
+    type: 'inbound-rtp',
+    id: 'Audio123',
+    mediaType: 'otherMediaType',
+    codecId: 'Codec2',
+    bytesReceived: 2000
+  },
+  {
+    type: 'inbound-rtp',
+    id: 'Audio456',
+    mediaType: 'audio',
+    bytesReceived: 4000
+  },
+  {
+    type: 'candidate-pair',
+    nominated: false
+  },
+  {
+    type: 'candidate-pair',
+    nominated: true,
+    totalRoundTripTime: 2,
+    responsesReceived: 1,
+    localCandidateId: '123LocalCandidate'
+  }
+]
+
 export default class MockRTCPeerConnection {
   constructor (config = null) {
     this.config = config
@@ -95,67 +144,24 @@ export default class MockRTCPeerConnection {
   getStats () {
     return new Promise((resolve) => {
       resolve({
-        values: peerStatsValue,
-        get: this.peerStatsGetCodecReport
+        values: this.peerStatsValue,
+        get: this.peerStatsGetReport
       })
     })
   }
 
-  peerStatsGetCodecReport (reportId) {
+  peerStatsGetReport (reportId) {
+    if (reportId.toString().toLowerCase().includes('localcandidate')) {
+      return {
+        candidateType: 'relay'
+      }
+    }
     return {
       mimeType: 'mime/test'
     }
   }
-}
 
-const peerStatsValue = () => {
-  return [
-    {
-      type: 'test'
-    },
-    {
-      type: 'outbound-rtp',
-      kind: 'audio',
-      bytesSent: 1000
-    },
-    {
-      type: 'outbound-rtp',
-      mediaType: 'video',
-      codecId: 1,
-      bytesSent: 2000,
-      framesPerSecond: 30
-    },
-    {
-      type: 'inbound-rtp',
-      mediaType: 'otherMediaType',
-      id: 'Video123',
-      bytesReceived: 2000,
-      framesPerSecond: 30
-    },
-    {
-      type: 'inbound-rtp',
-      id: 'Audio123',
-      mediaType: 'otherMediaType',
-      codecId: 2,
-      bytesReceived: 2000
-    },
-    {
-      type: 'inbound-rtp',
-      id: 'Audio456',
-      mediaType: 'audio',
-      bytesReceived: 4000
-    },
-    {
-      type: 'track',
-      kind: 'video',
-      frameHeight: 1080,
-      frameWidth: 1920
-    },
-    {
-      type: 'track',
-      kind: 'audio'
-    }
-  ]
+  peerStatsValue () { return null }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection

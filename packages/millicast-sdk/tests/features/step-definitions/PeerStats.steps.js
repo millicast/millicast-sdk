@@ -3,7 +3,7 @@ import Publish from '../../../src/Publish'
 import PeerConnection from '../../../src/PeerConnection'
 import PeerConnectionStats, { peerConnectionStatsEvents } from '../../../src/PeerConnectionStats'
 import '../../../src/Signaling'
-import MockRTCPeerConnection from './__mocks__/MockRTCPeerConnection'
+import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
@@ -28,6 +28,7 @@ beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
   jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
+  jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue(rawStats)
 })
 
 defineFeature(feature, test => {
@@ -40,7 +41,7 @@ defineFeature(feature, test => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
 
-    when('I want to get the peer stats', () => {
+    when('I want to get the peer stats every 2 seconds', () => {
       publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
       publisher.webRTCPeer.initStats(2)
       expect(handler).not.toBeCalled()
@@ -82,7 +83,7 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Get stats with default interval wihtout codec information', ({ given, when, then }) => {
+  test('Get stats without codec information', ({ given, when, then }) => {
     let publisher
 
     given('I am connected with the peer', async () => {
@@ -91,14 +92,51 @@ defineFeature(feature, test => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
 
-    when('I want to get the peer stats and peer does not have codec information', () => {
-      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsGetCodecReport').mockReturnValue(undefined)
+    when('I want to get the peer stats every 2 seconds and peer does not have codec information', () => {
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsGetReport').mockReturnValue({
+        candidateType: 'relay'
+      })
       publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
       publisher.webRTCPeer.initStats(2)
       expect(handler).not.toBeCalled()
     })
 
-    then('every 1 second returns the peer stats parsed', async () => {
+    then('every 2 seconds returns the peer stats parsed', async () => {
+      for (let i = 1; i <= 10; i++) {
+        jest.advanceTimersByTime(1000)
+        await Promise.resolve()
+        jest.advanceTimersByTime(1000)
+        await Promise.resolve()
+        expect(handler).toBeCalledTimes(i)
+      }
+    })
+  })
+
+  test('Get stats without codec report', ({ given, when, then }) => {
+    let publisher
+
+    given('I am connected with the peer', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+    })
+
+    when('I want to get the peer stats every 2 seconds and peer have codec id related and report does not have the report', () => {
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsGetReport').mockImplementation((reportId) => {
+        if (reportId.toString().toLowerCase().includes('codec')) {
+          return undefined
+        } else {
+          return {
+            candidateType: 'relay'
+          }
+        }
+      })
+      publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
+      publisher.webRTCPeer.initStats(2)
+      expect(handler).not.toBeCalled()
+    })
+
+    then('every 2 seconds returns the peer stats parsed', async () => {
       for (let i = 1; i <= 10; i++) {
         jest.advanceTimersByTime(1000)
         await Promise.resolve()
@@ -220,6 +258,232 @@ defineFeature(feature, test => {
 
     then('throws invalid interval value error', () => {
       expect(expectError.message).toBe(`Invalid interval value ${interval}`)
+    })
+  })
+
+  test('Calculate inbound bitrate with no existing previous stats', ({ given, when, then }) => {
+    let publisher
+
+    given('I have new inbound raw stats and no existing previous stats', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.peerConnectionStats.stats = null
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
+        {
+          id: 'inbound1',
+          type: 'inbound-rtp',
+          mediaType: 'video',
+          codecId: 'Codec1',
+          bytesReceived: 2000,
+          framesPerSecond: 30
+        }
+      ])
+    })
+
+    when('I want to parse the stats', async () => {
+      const stats = await publisher.webRTCPeer.peer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.parseStats(stats)
+    })
+
+    then('returns the parsed stats with 0 bitrate', () => {
+      expect(publisher.webRTCPeer.peerConnectionStats.stats.video.inbounds[0].bitrate).toBe(0)
+    })
+  })
+
+  test('Calculate inbound bitrate with previous stats and existing related report', ({ given, when, then }) => {
+    let publisher
+
+    given('I have new inbound raw stats with 12000 bytes received and existing previous stats and related report with 10000 bytes received', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.peerConnectionStats.stats = {
+        video: {
+          inbounds: [
+            {
+              id: 'inbound1',
+              totalBytesReceived: 10000,
+              totalPacketsLost: 0
+            }
+          ]
+        }
+      }
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
+        {
+          id: 'inbound1',
+          type: 'inbound-rtp',
+          mediaType: 'video',
+          codecId: 'Codec1',
+          bytesReceived: 12000,
+          framesPerSecond: 30,
+          packetsLost: 0
+        }
+      ])
+    })
+
+    when('I want to parse the stats', async () => {
+      const stats = await publisher.webRTCPeer.peer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.parseStats(stats)
+    })
+
+    then('returns the parsed stats with 16000 bitrate', () => {
+      expect(publisher.webRTCPeer.peerConnectionStats.stats.video.inbounds[0].bitrate).toBe(16000)
+    })
+  })
+
+  test('Calculate inbound bitrate with previous stats and unexisting related report', ({ given, when, then }) => {
+    let publisher
+
+    given('I have new inbound raw stats with 12000 bytes received and existing previous stats with unexisting related report', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.peerConnectionStats.stats = {
+        video: {
+          inbounds: [
+            {
+              id: 'inbound2',
+              totalBytesReceived: 10000,
+              totalPacketsLost: 0
+            }
+          ]
+        }
+      }
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
+        {
+          id: 'inbound1',
+          type: 'inbound-rtp',
+          mediaType: 'video',
+          codecId: 'Codec1',
+          bytesReceived: 12000,
+          framesPerSecond: 30,
+          packetsLost: 0
+        }
+      ])
+    })
+
+    when('I want to parse the stats', async () => {
+      const stats = await publisher.webRTCPeer.peer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.parseStats(stats)
+    })
+
+    then('returns the parsed stats with 0 bitrate', () => {
+      expect(publisher.webRTCPeer.peerConnectionStats.stats.video.inbounds[0].bitrate).toBe(0)
+    })
+  })
+
+  test('Calculate outbound bitrate with no existing previous stats', ({ given, when, then }) => {
+    let publisher
+
+    given('I have new outbound raw stats and no existing previous stats', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.peerConnectionStats.stats = null
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
+        {
+          id: 'outbound1',
+          type: 'outbound-rtp',
+          mediaType: 'video',
+          codecId: 'Codec1',
+          bytesSent: 2000,
+          framesPerSecond: 30
+        }
+      ])
+    })
+
+    when('I want to parse the stats', async () => {
+      const stats = await publisher.webRTCPeer.peer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.parseStats(stats)
+    })
+
+    then('returns the parsed stats with 0 bitrate', () => {
+      expect(publisher.webRTCPeer.peerConnectionStats.stats.video.outbounds[0].bitrate).toBe(0)
+    })
+  })
+
+  test('Calculate outbound bitrate with previous stats and existing related report', ({ given, when, then }) => {
+    let publisher
+
+    given('I have new outbound raw stats with 12000 bytes sent and existing previous stats and related report with 10000 bytes sent', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.peerConnectionStats.stats = {
+        video: {
+          outbounds: [
+            {
+              id: 'outbound1',
+              totalBytesSent: 10000
+            }
+          ]
+        }
+      }
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
+        {
+          id: 'outbound1',
+          type: 'outbound-rtp',
+          mediaType: 'video',
+          codecId: 'Codec1',
+          bytesSent: 12000,
+          framesPerSecond: 30
+        }
+      ])
+    })
+
+    when('I want to parse the stats', async () => {
+      const stats = await publisher.webRTCPeer.peer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.parseStats(stats)
+    })
+
+    then('returns the parsed stats with 16000 bitrate', () => {
+      expect(publisher.webRTCPeer.peerConnectionStats.stats.video.outbounds[0].bitrate).toBe(16000)
+    })
+  })
+
+  test('Calculate outbound bitrate with previous stats and unexisting related report', ({ given, when, then }) => {
+    let publisher
+
+    given('I have new outbound raw stats with 12000 bytes sent and existing previous stats with unexisting related report', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.peerConnectionStats.stats = {
+        video: {
+          outbounds: [
+            {
+              id: 'outbound2',
+              totalBytesSent: 10000
+            }
+          ]
+        }
+      }
+      jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
+        {
+          id: 'outbound1',
+          type: 'outbound-rtp',
+          mediaType: 'video',
+          codecId: 'Codec1',
+          bytesSent: 12000,
+          framesPerSecond: 30
+        }
+      ])
+    })
+
+    when('I want to parse the stats', async () => {
+      const stats = await publisher.webRTCPeer.peer.getStats()
+      publisher.webRTCPeer.peerConnectionStats.parseStats(stats)
+    })
+
+    then('returns the parsed stats with 0 bitrate', () => {
+      expect(publisher.webRTCPeer.peerConnectionStats.stats.video.outbounds[0].bitrate).toBe(0)
     })
   })
 })
