@@ -10,7 +10,7 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {TrackReport} video - Parsed video information.
  * @property {Number} availableOutgoingBitrate - Available outgoing bitrate.
  * @property {Number} totalRoundTripTime - Total round trip time.
- * @property {Number} averageRoundTripTime - Average round trip time. Based on totalRoundTripTime / responseReceived.
+ * @property {Number} currentRoundTripTime - Current round trip time. Based on totalRoundTripTime / responseReceived.
  * @property {RTCIceCandidateType} candidateType - Local candidate type.
  */
 
@@ -213,7 +213,7 @@ const addInboundRtpReport = (report, previousStats, statsObject) => {
  */
 const addCandidateReport = (report, statsObject) => {
   statsObject.totalRoundTripTime = report.totalRoundTripTime
-  statsObject.averageRoundTripTime = report.totalRoundTripTime / report.responsesReceived
+  statsObject.currentRoundTripTime = report.currentRoundTripTime
   statsObject.availableOutgoingBitrate = report.availableOutgoingBitrate
   statsObject.candidateType = statsObject.raw.get(report.localCandidateId).candidateType
 }
