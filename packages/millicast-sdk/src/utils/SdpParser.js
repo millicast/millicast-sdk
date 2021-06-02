@@ -187,11 +187,19 @@ export default class SdpParser {
         // Get free payload number for multiopus
         const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
         // Add multiopus
-        const multiopus = audio.replace('\r\n', ' ') + pt + '\r\n' +
-              'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
-              'a=fmtp:' + pt + ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
+        const audioWithMultiopus = audio.replace('\r\n', ' ') + pt + '\r\n'
         // Change sdp
-        sdp = sdp.replace(audio, multiopus)
+        sdp = sdp.replace(audio, audioWithMultiopus)
+        // Create multiopus codec
+        const multiopus = 'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
+                          'a=fmtp:' + pt + ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
+        // Add multiopus at the end of the rtmpmpa for audio
+        const ini = sdp.indexOf('m=audio')
+        const end = sdp.indexOf('m=', ini + 8)
+        const last = sdp.lastIndexOf('a=rtpmap', end)
+        const pos = sdp.indexOf('\r\n', last) + 2
+        // Insert after  it
+        sdp = sdp.substring(0, pos) + multiopus + sdp.substring(pos)
         logger.info('Multiopus offer created')
         logger.debug('SDP parsed for multioups: ', sdp)
       } else {
