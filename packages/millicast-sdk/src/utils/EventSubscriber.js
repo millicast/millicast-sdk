@@ -96,10 +96,12 @@ export default class EventSubscriber extends EventEmitter {
    * Close WebSocket connection with Millicast stream events server.
    */
   close () {
-    this.webSocket?.close()
-    this.webSocket.onclose = () => {
-      logger.info('Events WebSocket closed')
-      this.webSocket = null
+    if (this.webSocket) {
+      this.webSocket.close()
+      this.webSocket.onclose = () => {
+        logger.info('Events WebSocket closed')
+        this.webSocket = null
+      }
     }
   }
 }
