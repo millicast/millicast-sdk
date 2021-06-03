@@ -7,6 +7,9 @@ assignees: emilsas, R-Delfino95
 
 ---
 
+**Version affected**
+Please indicate the current version that you are using.
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
