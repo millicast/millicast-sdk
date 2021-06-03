@@ -50,43 +50,28 @@ export default class PeerConnectionStats extends EventEmitter {
     super()
     this.peer = peer
     this.stats = null
-    this.timerInterval = null
     this.emitInterval = null
     this.previousStats = null
-    this.interval = null
   }
 
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
-   * @param {Number} interval - Interval in seconds of how often it should get stats.
    */
-  init (interval) {
+  init () {
     logger.info('Initializing peer connection stats')
-    const intervalCast = parseInt(interval)
-    if (!Number.isInteger(intervalCast) || intervalCast < 1) {
-      const error = `Invalid interval value ${interval}`
-      logger.error(error)
-      throw new Error(error)
-    }
-    this.interval = intervalCast * 1000
-    this.timerInterval = setInterval(async () => {
-      logger.debug('New internal interval executed')
+    this.emitInterval = setInterval(async () => {
+      logger.debug('New interval executed')
       const stats = await this.peer.getStats()
       this.parseStats(stats)
+      logger.debug('Emitting stats')
+      /**
+       * Peer connection incoming stats.
+       *
+       * @event PeerConnection#stats
+       * @type {ConnectionStats}
+      */
+      this.emit(peerConnectionStatsEvents.stats, this.stats)
     }, 1000)
-
-    this.emitInterval = setInterval(() => {
-      if (this.stats) {
-        logger.debug('Emitting stats')
-        /**
-        * Peer connection incoming stats.
-        *
-        * @event PeerConnection#stats
-        * @type {ConnectionStats}
-        */
-        this.emit(peerConnectionStatsEvents.stats, this.stats)
-      }
-    }, this.interval)
   }
 
   /**
@@ -95,6 +80,7 @@ export default class PeerConnectionStats extends EventEmitter {
    * @returns {ConnectionStats} RTCPeerConnection stats parsed.
    */
   parseStats (rawStats) {
+    logger.debug('Parsing raw stats')
     this.previousStats = this.stats
     const statsObject = {
       audio: {
@@ -136,7 +122,6 @@ export default class PeerConnectionStats extends EventEmitter {
    */
   stop () {
     logger.info('Stopping peer connection stats')
-    clearInterval(this.timerInterval)
     clearInterval(this.emitInterval)
   }
 }
@@ -148,6 +133,7 @@ export default class PeerConnectionStats extends EventEmitter {
  * @param {Object} statsObject - Current stats object being parsed.
  */
 const addOutboundRtpReport = (report, previousStats, statsObject) => {
+  logger.debug('Parsing outbound-rtp report')
   const mediaType = getMediaType(report)
   const codecInfo = getCodecData(report.codecId, statsObject.raw)
   const additionalData = getBaseRtpReportData(report, mediaType)
@@ -173,6 +159,7 @@ const addOutboundRtpReport = (report, previousStats, statsObject) => {
  * @param {Object} statsObject - Current stats object being parsed.
  */
 const addInboundRtpReport = (report, previousStats, statsObject) => {
+  logger.debug('Parsing inbound-rtp report')
   let mediaType = getMediaType(report)
   const codecInfo = getCodecData(report.codecId, statsObject.raw)
 
@@ -212,6 +199,7 @@ const addInboundRtpReport = (report, previousStats, statsObject) => {
  * @param {Object} statsObject - Current stats object being parsed.
  */
 const addCandidateReport = (report, statsObject) => {
+  logger.debug('Parsing candidate-pair report')
   statsObject.totalRoundTripTime = report.totalRoundTripTime
   statsObject.currentRoundTripTime = report.currentRoundTripTime
   statsObject.availableOutgoingBitrate = report.availableOutgoingBitrate

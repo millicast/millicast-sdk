@@ -1,24 +1,19 @@
 Feature: As a user I want to get the peer stats so I can know if the connection is working correctly
 
-  Scenario: Get stats with two seconds interval
-    Given I am connected with the peer
-    When I want to get the peer stats every 2 seconds
-    Then every 2 seconds returns the peer stats parsed
-
-  Scenario: Get stats when first iteration is completed
+  Scenario: Get stats
     Given I am connected with the peer
     When I want to get the peer stats
-    Then peer stats is not fired until the first report is generated
+    Then each second returns the peer stats parsed
 
   Scenario: Get stats without codec information
     Given I am connected with the peer
-    When I want to get the peer stats every 2 seconds and peer does not have codec information
-    Then every 2 seconds returns the peer stats parsed
+    When I want to get the peer stats and peer does not have codec information
+    Then each second returns the peer stats parsed
 
   Scenario: Get stats without codec report
     Given I am connected with the peer
-    When I want to get the peer stats every 2 seconds and peer have codec id related and report does not have the report
-    Then every 2 seconds returns the peer stats parsed
+    When I want to get the peer stats and peer have codec id related and report does not have the report
+    Then each second returns the peer stats parsed
 
   Scenario: Stop get stats
     Given I am getting stats
@@ -34,16 +29,6 @@ Feature: As a user I want to get the peer stats so I can know if the connection 
     Given I do not have peer connected
     When I want to get stats
     Then the get stats is not initialized
-
-  Scenario: Get stats with characters interval
-    Given I am connected with the peer
-    When I want to get the peer stats with invalid interval
-    Then throws invalid interval value error
-
-  Scenario: Get stats with 0 interval
-    Given I am connected with the peer
-    When I want to get the peer stats every 0 seconds
-    Then throws invalid interval value error
 
   Scenario: Calculate inbound bitrate with no existing previous stats
     Given I have new inbound raw stats and no existing previous stats

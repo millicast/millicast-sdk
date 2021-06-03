@@ -40,7 +40,7 @@ class MillicastViewTest {
       })
       await this.millicastView.connect(options)
 
-      this.millicastView.webRTCPeer.initStats(1)
+      this.millicastView.webRTCPeer.initStats()
       this.millicastView.webRTCPeer.on('stats', (stats) => {
         console.log('Stats from event: ', stats)
         this.stats = stats
@@ -88,7 +88,7 @@ class MillicastViewTest {
           <td>${track.frameWidth}</td>
           <td>${track.frameHeight}</td>
           <td>${track.framesPerSecond}</td>
-          <td>${track.totalBytesSent}</td>
+          <td>${track.totalBytesReceived}</td>
           <td>${track.packetsLostRatioPerSecond}</td>
           <td>${track.totalPacketsLost}</td>
           <td>${track.jitter}</td>
@@ -106,7 +106,7 @@ class MillicastViewTest {
           <td>-</td>
           <td>-</td>
           <td>-</td>
-          <td>${track.totalBytesSent}</td>
+          <td>${track.totalBytesReceived}</td>
           <td>${track.packetsLostRatioPerSecond}</td>
           <td>${track.totalPacketsLost}</td>
           <td>${track.jitter}</td>

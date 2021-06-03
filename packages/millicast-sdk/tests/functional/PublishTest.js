@@ -182,7 +182,7 @@ class MillicastPublishTest {
   }
 
   testGetStats () {
-    this.millicastPublish.webRTCPeer.initStats(1)
+    this.millicastPublish.webRTCPeer.initStats()
     document.getElementById('stats').classList.add('show')
   }
 

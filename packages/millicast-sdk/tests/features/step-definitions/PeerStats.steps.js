@@ -32,33 +32,7 @@ beforeEach(() => {
 })
 
 defineFeature(feature, test => {
-  test('Get stats with two seconds interval', ({ given, when, then }) => {
-    let publisher
-
-    given('I am connected with the peer', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
-      await publisher.connect({ mediaStream })
-      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-    })
-
-    when('I want to get the peer stats every 2 seconds', () => {
-      publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
-      publisher.webRTCPeer.initStats(2)
-      expect(handler).not.toBeCalled()
-    })
-
-    then('every 2 seconds returns the peer stats parsed', async () => {
-      for (let i = 1; i <= 10; i++) {
-        jest.advanceTimersByTime(1000)
-        await Promise.resolve()
-        jest.advanceTimersByTime(1000)
-        await Promise.resolve()
-        expect(handler).toBeCalledTimes(i)
-      }
-    })
-  })
-
-  test('Get stats when first iteration is completed', ({ given, when, then }) => {
+  test('Get stats', ({ given, when, then }) => {
     let publisher
 
     given('I am connected with the peer', async () => {
@@ -69,17 +43,16 @@ defineFeature(feature, test => {
 
     when('I want to get the peer stats', () => {
       publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
-      publisher.webRTCPeer.initStats(1)
+      publisher.webRTCPeer.initStats()
       expect(handler).not.toBeCalled()
     })
 
-    then('peer stats is not fired until the first report is generated', async () => {
-      jest.advanceTimersByTime(1000)
-      await Promise.resolve()
-      expect(handler).not.toBeCalled()
-      jest.advanceTimersByTime(1000)
-      await Promise.resolve()
-      expect(handler).toBeCalledTimes(1)
+    then('each second returns the peer stats parsed', async () => {
+      for (let i = 1; i <= 10; i++) {
+        jest.advanceTimersByTime(1000)
+        await Promise.resolve()
+        expect(handler).toBeCalledTimes(i)
+      }
     })
   })
 
@@ -92,19 +65,17 @@ defineFeature(feature, test => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
 
-    when('I want to get the peer stats every 2 seconds and peer does not have codec information', () => {
+    when('I want to get the peer stats and peer does not have codec information', () => {
       jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsGetReport').mockReturnValue({
         candidateType: 'relay'
       })
       publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
-      publisher.webRTCPeer.initStats(2)
+      publisher.webRTCPeer.initStats()
       expect(handler).not.toBeCalled()
     })
 
-    then('every 2 seconds returns the peer stats parsed', async () => {
+    then('each second returns the peer stats parsed', async () => {
       for (let i = 1; i <= 10; i++) {
-        jest.advanceTimersByTime(1000)
-        await Promise.resolve()
         jest.advanceTimersByTime(1000)
         await Promise.resolve()
         expect(handler).toBeCalledTimes(i)
@@ -121,7 +92,7 @@ defineFeature(feature, test => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
 
-    when('I want to get the peer stats every 2 seconds and peer have codec id related and report does not have the report', () => {
+    when('I want to get the peer stats and peer have codec id related and report does not have the report', () => {
       jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsGetReport').mockImplementation((reportId) => {
         if (reportId.toString().toLowerCase().includes('codec')) {
           return undefined
@@ -132,14 +103,12 @@ defineFeature(feature, test => {
         }
       })
       publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
-      publisher.webRTCPeer.initStats(2)
+      publisher.webRTCPeer.initStats()
       expect(handler).not.toBeCalled()
     })
 
-    then('every 2 seconds returns the peer stats parsed', async () => {
+    then('each second returns the peer stats parsed', async () => {
       for (let i = 1; i <= 10; i++) {
-        jest.advanceTimersByTime(1000)
-        await Promise.resolve()
         jest.advanceTimersByTime(1000)
         await Promise.resolve()
         expect(handler).toBeCalledTimes(i)
@@ -156,9 +125,7 @@ defineFeature(feature, test => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
 
       publisher.webRTCPeer.on(peerConnectionStatsEvents.stats, handler)
-      publisher.webRTCPeer.initStats(1)
-      jest.advanceTimersByTime(1000)
-      await Promise.resolve()
+      publisher.webRTCPeer.initStats()
       jest.advanceTimersByTime(1000)
       await Promise.resolve()
       expect(handler).toBeCalledTimes(1)
@@ -184,12 +151,12 @@ defineFeature(feature, test => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
 
       jest.spyOn(PeerConnectionStats.prototype, 'init').mockImplementation(jest.fn)
-      publisher.webRTCPeer.initStats(1)
+      publisher.webRTCPeer.initStats()
       expect(publisher.webRTCPeer.peerConnectionStats.init).toBeCalledTimes(1)
     })
 
     when('I want to get stats', () => {
-      publisher.webRTCPeer.initStats(1)
+      publisher.webRTCPeer.initStats()
     })
 
     then('the get stats is not initialized again', () => {
@@ -205,59 +172,11 @@ defineFeature(feature, test => {
     })
 
     when('I want to get stats', () => {
-      publisher.webRTCPeer.initStats(1)
+      publisher.webRTCPeer.initStats()
     })
 
     then('the get stats is not initialized', () => {
       expect(publisher.webRTCPeer.peerConnectionStats).toBeNull()
-    })
-  })
-
-  test('Get stats with characters interval', ({ given, when, then }) => {
-    const interval = 'InvalidInterval'
-    let publisher
-    let expectError
-
-    given('I am connected with the peer', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
-      await publisher.connect({ mediaStream })
-      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-    })
-
-    when('I want to get the peer stats with invalid interval', () => {
-      try {
-        publisher.webRTCPeer.initStats(interval)
-      } catch (e) {
-        expectError = e
-      }
-    })
-
-    then('throws invalid interval value error', () => {
-      expect(expectError.message).toBe(`Invalid interval value ${interval}`)
-    })
-  })
-
-  test('Get stats with 0 interval', ({ given, when, then }) => {
-    const interval = 0
-    let publisher
-    let expectError
-
-    given('I am connected with the peer', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
-      await publisher.connect({ mediaStream })
-      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-    })
-
-    when('I want to get the peer stats every 0 seconds', () => {
-      try {
-        publisher.webRTCPeer.initStats(interval)
-      } catch (e) {
-        expectError = e
-      }
-    })
-
-    then('throws invalid interval value error', () => {
-      expect(expectError.message).toBe(`Invalid interval value ${interval}`)
     })
   })
 
@@ -268,7 +187,7 @@ defineFeature(feature, test => {
       publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.initStats()
       publisher.webRTCPeer.peerConnectionStats.stats = null
       jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
         {
@@ -299,7 +218,7 @@ defineFeature(feature, test => {
       publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.initStats()
       publisher.webRTCPeer.peerConnectionStats.stats = {
         video: {
           inbounds: [
@@ -341,7 +260,7 @@ defineFeature(feature, test => {
       publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.initStats()
       publisher.webRTCPeer.peerConnectionStats.stats = {
         video: {
           inbounds: [
@@ -383,7 +302,7 @@ defineFeature(feature, test => {
       publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.initStats()
       publisher.webRTCPeer.peerConnectionStats.stats = null
       jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue([
         {
@@ -414,7 +333,7 @@ defineFeature(feature, test => {
       publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.initStats()
       publisher.webRTCPeer.peerConnectionStats.stats = {
         video: {
           outbounds: [
@@ -454,7 +373,7 @@ defineFeature(feature, test => {
       publisher = new Publish('streamName', mockTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-      publisher.webRTCPeer.initStats(5)
+      publisher.webRTCPeer.initStats()
       publisher.webRTCPeer.peerConnectionStats.stats = {
         video: {
           outbounds: [
