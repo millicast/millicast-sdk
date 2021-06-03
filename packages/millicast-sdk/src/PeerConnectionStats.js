@@ -5,13 +5,19 @@ const logger = Logger.get('PeerConnectionStats')
 
 /**
  * @typedef {Object} ConnectionStats
- * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing. Reference https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport.
+ * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing. Reference {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport}.
  * @property {TrackReport} audio - Parsed audio information.
  * @property {TrackReport} video - Parsed video information.
  * @property {Number} availableOutgoingBitrate - The available outbound capacity of the network connection. The higher the value, the more bandwidth you can assume is available for outgoing data. The value is reported in bits per second.
+ *
+ * This value comes from the nominated candidate-pair.
  * @property {Number} totalRoundTripTime - Total round trip time is the total time in seconds that has elapsed between sending STUN requests and receiving the responses.
+ *
+ * This value comes from the nominated candidate-pair.
  * @property {Number} currentRoundTripTime - Current round trip time indicate the number of seconds it takes for data to be sent by this peer to the remote peer and back over the connection described by this pair of ICE candidates.
- * @property {RTCIceCandidateType} candidateType - Local candidate type.
+ *
+ * This value comes from the nominated candidate-pair.
+ * @property {RTCIceCandidateType} candidateType - Local candidate type from the nominated candidate-pair which indicates the type of ICE candidate the object represents.
  */
 
 /**
