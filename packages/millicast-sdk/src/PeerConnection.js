@@ -325,7 +325,8 @@ export default class PeerConnection extends EventEmitter {
 
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
-   * Each second it will emit the stats.
+   *
+   * It will be emitted every second.
    * @fires PeerConnection#stats
    * @example peerConnection.initStats()
    * @example
@@ -338,7 +339,7 @@ export default class PeerConnection extends EventEmitter {
    * //Initialize get stats
    * millicastPublish.webRTCPeer.initStats()
    *
-   * //Capture new stats from event each second
+   * //Capture new stats from event every second
    * millicastPublish.webRTCPeer.on('stats', (stats) => {
    *   console.log('Stats from event: ', stats)
    * })
@@ -352,7 +353,7 @@ export default class PeerConnection extends EventEmitter {
    * //Initialize get stats
    * millicastView.webRTCPeer.initStats()
    *
-   * //Capture new stats from event each second
+   * //Capture new stats from event every second
    * millicastView.webRTCPeer.on('stats', (stats) => {
    *   console.log('Stats from event: ', stats)
    * })

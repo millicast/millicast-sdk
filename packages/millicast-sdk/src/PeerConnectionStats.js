@@ -5,12 +5,12 @@ const logger = Logger.get('PeerConnectionStats')
 
 /**
  * @typedef {Object} ConnectionStats
- * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing.
+ * @property {RTCStatsReport} raw - All RTCPeerConnection stats without parsing. Reference https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport.
  * @property {TrackReport} audio - Parsed audio information.
  * @property {TrackReport} video - Parsed video information.
- * @property {Number} availableOutgoingBitrate - Available outgoing bitrate.
- * @property {Number} totalRoundTripTime - Total round trip time.
- * @property {Number} currentRoundTripTime - Current round trip time. Based on totalRoundTripTime / responseReceived.
+ * @property {Number} availableOutgoingBitrate - The available outbound capacity of the network connection. The higher the value, the more bandwidth you can assume is available for outgoing data. The value is reported in bits per second.
+ * @property {Number} totalRoundTripTime - Total round trip time is the total time in seconds that has elapsed between sending STUN requests and receiving the responses.
+ * @property {Number} currentRoundTripTime - Current round trip time indicate the number of seconds it takes for data to be sent by this peer to the remote peer and back over the connection described by this pair of ICE candidates.
  * @property {RTCIceCandidateType} candidateType - Local candidate type.
  */
 
@@ -18,17 +18,17 @@ const logger = Logger.get('PeerConnectionStats')
  * @typedef {Object} TrackReport
  * @property {Array<Object>} inbounds - Parsed information of each inbound-rtp.
  * @property {String} inbounds.id - inbound-rtp Id.
- * @property {Number} inbounds.jitter - Current Jitter.
+ * @property {Number} inbounds.jitter - Current Jitter measured in seconds.
  * @property {String} [inbounds.mimeType] - Mime type if related report had codec report associated.
  * @property {Number} [inbounds.framesPerSecond] - Current framerate if it's video report.
  * @property {Number} [inbounds.frameHeight] - Current frame height if it's video report.
  * @property {Number} [inbounds.frameWidth] - Current frame width if it's video report.
  * @property {Number} inbounds.timestamp - Timestamp of report.
- * @property {Number} inbounds.totalBytesReceived - Total bytes received.
- * @property {Number} inbounds.totalPacketsReceived - Total packets received.
+ * @property {Number} inbounds.totalBytesReceived - Total bytes received is an integer value which indicates the total number of bytes received so far from this synchronization source.
+ * @property {Number} inbounds.totalPacketsReceived - Total packets received indicates the total number of packets of any kind that have been received on the connection described by the pair of candidates.
  * @property {Number} inbounds.totalPacketsLost - Total packets lost.
- * @property {Number} inbounds.packetsLostRatioPerSecond - Packet lost ratio per second.
- * @property {Number} inbounds.packetsLostDeltaPerSecond - Packet lost delta per second.
+ * @property {Number} inbounds.packetsLostRatioPerSecond - Total packet lost ratio per second.
+ * @property {Number} inbounds.packetsLostDeltaPerSecond - Total packet lost delta per second.
  * @property {Number} inbounds.bitrate - Current bitrate in bits per second.
  * @property {Array<Object>} outbounds - Parsed information of each outbound-rtp.
  * @property {String} outbounds.id - outbound-rtp Id.
@@ -38,7 +38,7 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} [outbounds.frameWidth] - Current frame width if it's video report.
  * @property {String} [outbounds.qualityLimitationReason] - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
  * @property {Number} outbounds.timestamp - Timestamp of report.
- * @property {Number} outbounds.totalBytesSent - Total bytes sent.
+ * @property {Number} outbounds.totalBytesSent - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
  * @property {Number} outbounds.bitrate - Current bitrate in bits per second.
  */
 
