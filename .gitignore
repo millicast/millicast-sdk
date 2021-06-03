@@ -4,3 +4,4 @@ coverage
 dist
 docs
 .env
+env.js
