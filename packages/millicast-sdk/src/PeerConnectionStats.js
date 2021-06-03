@@ -28,6 +28,7 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} inbounds.totalPacketsReceived - Total packets received.
  * @property {Number} inbounds.totalPacketsLost - Total packets lost.
  * @property {Number} inbounds.packetsLostRatioPerSecond - Packet lost ratio per second.
+ * @property {Number} inbounds.packetsLostDeltaPerSecond - Packet lost delta per second.
  * @property {Number} inbounds.bitrate - Current bitrate in bits per second.
  * @property {Array<Object>} outbounds - Parsed information of each outbound-rtp.
  * @property {String} outbounds.id - outbound-rtp Id.
@@ -177,12 +178,14 @@ const addInboundRtpReport = (report, previousStats, statsObject) => {
 
   additionalData.bitrate = 0
   additionalData.packetsLostRatioPerSecond = 0
+  additionalData.packetsLostDeltaPerSecond = 0
   if (previousStats) {
     const previousReport = previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)
     if (previousReport) {
       const previousBytesReceived = previousReport.totalBytesReceived
       additionalData.bitrate = 8 * (report.bytesReceived - previousBytesReceived)
       additionalData.packetsLostRatioPerSecond = calculatePacketsLostRatio(additionalData, previousReport)
+      additionalData.packetsLostDeltaPerSecond = calculatePacketsLostDelta(additionalData, previousReport)
     }
   }
 
@@ -244,13 +247,23 @@ const getBaseRtpReportData = (report, mediaType) => {
 }
 
 /**
- * Calculate the packets lost ratio
+ * Calculate the ratio packets lost
  * @param {Object} actualReport - JSON object which represents a parsed report.
  * @param {Object} previousReport - JSON object which represents a parsed report.
  * @returns {Number} Packets lost ratio
  */
 const calculatePacketsLostRatio = (actualReport, previousReport) => {
-  const currentLostPackages = actualReport.totalPacketsLost - previousReport.totalPacketsLost
+  const currentLostPackages = calculatePacketsLostDelta(actualReport, previousReport)
   const currentReceivedPackages = actualReport.totalPacketsReceived - previousReport.totalPacketsReceived
   return currentLostPackages / currentReceivedPackages
+}
+
+/**
+ * Calculate the delta packets lost
+ * @param {Object} actualReport - JSON object which represents a parsed report.
+ * @param {Object} previousReport - JSON object which represents a parsed report.
+ * @returns {Number} Packets lost ratio
+ */
+const calculatePacketsLostDelta = (actualReport, previousReport) => {
+  return actualReport.totalPacketsLost - previousReport.totalPacketsLost
 }

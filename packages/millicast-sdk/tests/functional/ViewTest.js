@@ -89,6 +89,7 @@ class MillicastViewTest {
           <td>${track.frameHeight}</td>
           <td>${track.framesPerSecond}</td>
           <td>${track.totalBytesReceived}</td>
+          <td>${track.packetsLostDeltaPerSecond}</td>
           <td>${track.packetsLostRatioPerSecond}</td>
           <td>${track.totalPacketsLost}</td>
           <td>${track.jitter}</td>
@@ -107,6 +108,7 @@ class MillicastViewTest {
           <td>-</td>
           <td>-</td>
           <td>${track.totalBytesReceived}</td>
+          <td>${track.packetsLostDeltaPerSecond}</td>
           <td>${track.packetsLostRatioPerSecond}</td>
           <td>${track.totalPacketsLost}</td>
           <td>${track.jitter}</td>
