@@ -229,5 +229,5 @@ export default class SdpParser {
  * @returns {Boolean} returns true if MediaStream has more than 2 channels.
  */
 const hasAudioMultichannel = (mediaStream) => {
-  return !!mediaStream.getAudioTracks().find(value => value.getSettings().channelCount > 2)
+  return mediaStream.getAudioTracks().some(value => value.getSettings().channelCount > 2)
 }
