@@ -56,6 +56,10 @@ jobs:
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Prepare Tests
+        working-directory: './packages/millicast-sdk'
+        run: echo -n ${{secrets.MILLICAST_TEST_ACCOUNT}} | base64 -d > ./tests/test-env.js
+
       - name: Test 🧪
         working-directory: './packages/millicast-sdk'
         run: |

@@ -4,4 +4,4 @@ coverage
 dist
 docs
 .env
-env.js
+test-env.js
