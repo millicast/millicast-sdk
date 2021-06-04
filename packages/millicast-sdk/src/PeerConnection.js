@@ -185,7 +185,7 @@ export default class PeerConnection extends EventEmitter {
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
-    this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp)
+    this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
     if (options.simulcast) {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }

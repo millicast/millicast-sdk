@@ -172,12 +172,13 @@ export default class SdpParser {
    *
    * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
+   * @param {MediaStream} mediaStream - MediaStream offered in the stream.
    * @returns {String} SDP parsed with multiopus support.
-   * @example SdpParser.setMultiopus(sdp)
+   * @example SdpParser.setMultiopus(sdp, mediaStream)
    */
-  static setMultiopus (sdp) {
+  static setMultiopus (sdp, mediaStream) {
     const browserData = new UserAgent()
-    if (browserData.isChrome()) {
+    if (browserData.isChrome() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
       if (!sdp.includes('multiopus/48000/6')) {
         logger.info('Setting multiopus')
         // Find the audio m-line
@@ -220,4 +221,13 @@ export default class SdpParser {
 
     return ptAvailable
   }
+}
+
+/**
+ * Checks if mediaStream has more than 2 audio channels.
+ * @param {MediaStream} mediaStream - MediaStream to verify.
+ * @returns {Boolean} returns true if MediaStream has more than 2 channels.
+ */
+const hasAudioMultichannel = (mediaStream) => {
+  return !!mediaStream.getAudioTracks().find(value => value.getSettings().channelCount > 2)
 }
