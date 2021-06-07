@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   const BroadcastMillicastStream = async () => {
     try{
-      await millicastPublishUserMedia.connect({ bandwidth, codec: 'vp8' })
+      await millicastPublishUserMedia.connect({ bandwidth, codec: 'h264' })
       isBroadcasting = true;
       broadcastHandler();
     }
