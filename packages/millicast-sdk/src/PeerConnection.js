@@ -185,7 +185,7 @@ export default class PeerConnection extends EventEmitter {
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
-    this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp)
+    this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
     if (options.simulcast) {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
@@ -325,10 +325,10 @@ export default class PeerConnection extends EventEmitter {
 
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
-   * @param {Number} interval - Interval in seconds of how often it should get stats.
-   * Should be greater or equals to 1 second.
+   *
+   * It will be emitted every second.
    * @fires PeerConnection#stats
-   * @example peerConnection.initStats(1)
+   * @example peerConnection.initStats()
    * @example
    * import Publish from '@millicast/sdk'
    *
@@ -336,10 +336,10 @@ export default class PeerConnection extends EventEmitter {
    * const millicastPublish = new Publish(streamName, tokenGenerator)
    * await millicastPublish.connect(options)
    *
-   * //Initialize get stats with 2 seconds interval
-   * millicastPublish.webRTCPeer.initStats(2)
+   * //Initialize get stats
+   * millicastPublish.webRTCPeer.initStats()
    *
-   * //Capture new stats from event every 2 seconds
+   * //Capture new stats from event every second
    * millicastPublish.webRTCPeer.on('stats', (stats) => {
    *   console.log('Stats from event: ', stats)
    * })
@@ -350,20 +350,20 @@ export default class PeerConnection extends EventEmitter {
    * const millicastView = new View(streamName, tokenGenerator)
    * await millicastView.connect()
    *
-   * //Initialize the get stats with 2 seconds interval
-   * millicastView.webRTCPeer.initStats(2)
+   * //Initialize get stats
+   * millicastView.webRTCPeer.initStats()
    *
-   * //Capture new stats from event every 2 seconds
+   * //Capture new stats from event every second
    * millicastView.webRTCPeer.on('stats', (stats) => {
    *   console.log('Stats from event: ', stats)
    * })
    */
-  initStats (interval) {
+  initStats () {
     if (this.peerConnectionStats) {
       logger.warn('Cannot init peer stats: Already initialized')
     } else if (this.peer) {
       this.peerConnectionStats = new PeerConnectionStats(this.peer)
-      this.peerConnectionStats.init(interval)
+      this.peerConnectionStats.init()
       reemit(this.peerConnectionStats, this, [peerConnectionStatsEvents.stats])
     } else {
       logger.warn('Cannot init peer stats: RTCPeerConnection not initialized')

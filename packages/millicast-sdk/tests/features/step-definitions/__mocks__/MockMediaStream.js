@@ -1,7 +1,10 @@
 export default class MockMediaStream {
   constructor (tracks = []) {
-    this.audioTracks = tracks.filter(x => x.kind === 'audio') ?? []
-    this.videoTracks = tracks.filter(x => x.kind === 'video') ?? []
+    this.audioTracks = []
+    this.videoTracks = []
+    for (const track of tracks) {
+      this.addTrack(track)
+    }
   }
 
   getAudioTracks () {
@@ -17,11 +20,19 @@ export default class MockMediaStream {
   }
 
   addTrack (track) {
+    const trackParsed = track
+    trackParsed.getSettings = trackParsed.getSettings ?? getSettings
     if (track.kind === 'audio') {
-      this.audioTracks.push(track)
+      this.audioTracks.push(trackParsed)
     } else {
-      this.videoTracks.push(track)
+      this.videoTracks.push(trackParsed)
     }
+  }
+}
+
+const getSettings = () => {
+  return {
+    channelCount: 0
   }
 }
 

@@ -283,6 +283,27 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Close unexisting server connection', ({ given, when, then }) => {
+    let streamEvents
+
+    given('I am disconnected from server', async () => {
+      server.on('connection', () => server.send(`{}${recordSeparator}`))
+      streamEvents = await StreamEvents.init()
+      streamEvents.stop()
+      await server.closed
+      expect(streamEvents.eventSubscriber.webSocket).toBeNull()
+    })
+
+    when('I want to close connection', () => {
+      streamEvents.stop()
+    })
+
+    then('the connection remains closed', async () => {
+      await server.closed
+      expect(streamEvents.eventSubscriber.webSocket).toBeNull()
+    })
+  })
+
   test('Force connection to server', ({ given, when, then }) => {
     let streamEvents
     let currentWebSocket

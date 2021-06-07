@@ -1,5 +1,8 @@
 <script src="../../dist/millicast.umd.js"></script>
 <script src="./utils/Media.js"></script>
+<script src="./utils/test-environment.js"></script>
+<!-- Standard shim for WebRTC browser compatibility -->
+<script src="./utils/adapter-latest.js"></script>
 <script src="./PublishTest.js"></script>
 
 <style>
@@ -92,40 +95,36 @@
     <button onclick="millicastPublishTest.testChangeVideo()">
       Change Video
     </button>
-    <button onclick="millicastPublishTest.testGetStats()">
-      Get stats
-    </button>
-    <button onclick="millicastPublishTest.testStopStats()">
-      Stop stats
-    </button>
   </fieldset>
   <br>
   <div id="stats">
     <table>
       <tr>
         <th>MediaTrack</th>
+        <th>Id</th>
         <th>Codec</th>
-        <th>Frames per second</th>
+        <th>Frame Width</th>
+        <th>Frame Height</th>
+        <th>Quality limitation reason</th>
+        <th>FPS</th>
         <th>Bytes sent (total)</th>
         <th>Bitrate (kbps)</th>
         <th>Timestamp</th>
       </tr>
+      <tbody id='tracks-info'>
+
+      </tbody>
+    </table>
+    <br>
+    <table>
       <tr>
-        <td>Video</td>
-        <td id="stats-video-mimeType"></td>
-        <td id="stats-video-framesPerSecond"></td>
-        <td id="stats-video-bytesSent"></td>
-        <td id="stats-video-bitrate"></td>
-        <td id="stats-video-timestamp"></td>
+        <th>Candidate type</th>
+        <th>Available outgoing bitrate (kbps)</th>
+        <th>Current RTT (sec.)</th>
+        <th>Total RTT (sec.)</th>
       </tr>
-      <tr>
-        <td>Audio</td>
-        <td id="stats-audio-mimeType"></td>
-        <td id="stats-audio-framesPerSecond">-</td>
-        <td id="stats-audio-bytesSent"></td>
-        <td id="stats-audio-bitrate"></td>
-        <td id="stats-audio-timestamp"></td>
-      </tr>
+      <tbody id='candidate-info'>
+      </tbody>
     </table>
   </div>
 </div>

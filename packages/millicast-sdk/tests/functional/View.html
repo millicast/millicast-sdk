@@ -1,4 +1,7 @@
 <script src="../../dist/millicast.umd.js"></script>
+<script src="./utils/test-environment.js"></script>
+<!-- Standard shim for WebRTC browser compatibility -->
+<script src="./utils/adapter-latest.js"></script>
 <script src="./ViewTest.js"></script>
 
 <style>
@@ -30,29 +33,29 @@
     <tr>
       <th>MediaTrack</th>
       <th>Codec</th>
-      <th>Frames per second</th>
+      <th>Frame Width</th>
+      <th>Frame Height</th>
+      <th>FPS</th>
       <th>Bytes received (total)</th>
+      <th>Packet loss delta (sec.)</th>
+      <th>Packet loss ratio</th>
       <th>Packet loss (total)</th>
+      <th>Jitter (sec.)</th>
       <th>Bitrate (kbps)</th>
       <th>Timestamp</th>
     </tr>
+    <tbody id='tracks-info'>
+      
+    </tbody>
+  </table>
+  <br>
+  <table>
     <tr>
-      <td>Video</td>
-      <td id="stats-video-mimeType"></td>
-      <td id="stats-video-framesPerSecond"></td>
-      <td id="stats-video-bytesReceived"></td>
-      <td id="stats-video-packetsLost"></td>
-      <td id="stats-video-bitrate"></td>
-      <td id="stats-video-timestamp"></td>
+      <th>Candidate type</th>
+      <th>Current RTT (sec.)</th>
+      <th>Total RTT (sec.)</th>
     </tr>
-    <tr>
-      <td>Audio</td>
-      <td id="stats-audio-mimeType"></td>
-      <td id="stats-audio-framesPerSecond">-</td>
-      <td id="stats-audio-bytesReceived"></td>
-      <td id="stats-audio-packetsLost"></td>
-      <td id="stats-audio-bitrate"></td>
-      <td id="stats-audio-timestamp"></td>
-    </tr>
+    <tbody id='candidate-info'>
+    </tbody>
   </table>
 </div>
