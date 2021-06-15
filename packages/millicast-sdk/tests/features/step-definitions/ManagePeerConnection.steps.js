@@ -27,7 +27,7 @@ defineFeature(feature, test => {
     })
 
     then('returns the peer', async () => {
-      expect(peer.getConfiguration()).toMatchObject({ ...defaultConfig, bundlePolicy: 'max-bundle' })
+      expect(peer.getConfiguration()).toMatchObject({ ...defaultConfig, bundlePolicy: 'balanced' })
     })
   })
 

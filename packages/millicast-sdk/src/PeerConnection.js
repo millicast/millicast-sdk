@@ -74,11 +74,7 @@ export default class PeerConnection extends EventEmitter {
    */
   async getRTCConfiguration () {
     logger.info('Getting RTC configuration')
-    const config = {
-      rtcpMuxPolicy: 'require',
-      bundlePolicy: 'max-bundle'
-    }
-
+    const config = {}
     config.iceServers = await this.getRTCIceServers()
     return config
   }
