@@ -5,6 +5,16 @@ Feature: As a user I want to set my local session description so I can broadcast
     When I want to get the RTC Local SDP
     Then returns the SDP
 
+ Scenario: Get RTC Local SDP without video as subscriber role
+    Given I want local SDP without video
+    When I want to get the RTC Local SDP
+    Then returns the SDP
+
+ Scenario: Get RTC Local SDP without audio as subscriber role
+    Given I want local SDP without audio
+    When I want to get the RTC Local SDP
+    Then returns the SDP
+
   Scenario: Get RTC Local SDP as publisher role with valid MediaStream
     Given I have a MediaStream with 1 audio track and 1 video track and I want support stereo
     When I want to get the RTC Local SDP

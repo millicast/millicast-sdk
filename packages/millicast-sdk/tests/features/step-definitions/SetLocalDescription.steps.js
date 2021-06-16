@@ -33,6 +33,42 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Get RTC Local SDP without video as subscriber role', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+
+    given('I want local SDP without video', async () => {
+      await peerConnection.getRTCPeer()
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ enableAudio: true, enableVideo: false })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP without audio as subscriber role', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+
+    given('I want local SDP without audio', async () => {
+      await peerConnection.getRTCPeer()
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ enableAudio: false, enableVideo: true })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
   test('Get RTC Local SDP as publisher role with valid MediaStream', ({ given, when, then }) => {
     const peerConnection = new PeerConnection()
     let sdp
@@ -70,7 +106,7 @@ defineFeature(feature, test => {
     })
 
     when('I want to get the RTC Local SDP', async () => {
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264' })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264', enableVideo: true })
     })
 
     then('returns the SDP', async () => {
@@ -164,13 +200,13 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, enableVideo: true })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, enableVideo: true, enableAudio: true })
     })
 
     then('returns the SDP with scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
-      expect(peerConnection.peer.addTransceiver).toBeCalledTimes(1)
+      expect(peerConnection.peer.addTransceiver).toBeCalledTimes(2)
     })
   })
 
@@ -190,13 +226,12 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, enableVideo: true })
     })
 
     then('returns the SDP without scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
-      expect(peerConnection.peer.addTransceiver).not.toBeCalled()
     })
   })
 })

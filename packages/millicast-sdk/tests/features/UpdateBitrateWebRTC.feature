@@ -14,3 +14,8 @@ Feature: As a user I want to change max bitrate of a stream so I can adapt my st
     Given I am using Firefox and I have a peer connected
     When I want to update the bitrate to 1000 kbps
     Then the bitrate is updated
+
+  Scenario: Update bitrate with no existing peer
+    Given I do not have a peer connected
+    When I want to update the bitrate to 1000 kbps
+    Then throw no existing peer error
