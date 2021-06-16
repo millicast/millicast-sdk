@@ -164,7 +164,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, enableVideo: true })
     })
 
     then('returns the SDP with scalability mode', async () => {
