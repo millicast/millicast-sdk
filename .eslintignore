@@ -3,4 +3,3 @@ dist
 packages/millicast-publisher-demo
 packages/millicast-viewer-demo
 packages/millicast-chromecast-receiver
-adapter-latest.js
