@@ -42,7 +42,6 @@ class MillicastViewTest {
 
       this.millicastView.webRTCPeer.initStats()
       this.millicastView.webRTCPeer.on('stats', (stats) => {
-        console.log('Stats from event: ', stats)
         this.stats = stats
         this.loadStatsInTable(stats)
       })
