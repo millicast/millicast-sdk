@@ -70,9 +70,8 @@ export default class PeerConnection extends EventEmitter {
    */
   async getRTCConfiguration () {
     logger.info('Getting RTC configuration')
-    const config = {}
-    config.iceServers = await this.getRTCIceServers()
-    return config
+    const iceServers = await this.getRTCIceServers()
+    return { iceServers }
   }
 
   /**
@@ -167,10 +166,12 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = response
     if (options.enableAudio) {
       this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
-      this.sessionDescription.sdp = options.stereo ? SdpParser.setStereo(this.sessionDescription.sdp) : this.sessionDescription.sdp
+      if (options.stereo) {
+        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+      }
     }
-    if (options.enableVideo) {
-      this.sessionDescription.sdp = options.simulcast ? SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec) : this.sessionDescription.sdp
+    if (options.enableVideo && options.simulcast) {
+      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
 
     await this.peer.setLocalDescription(this.sessionDescription)
@@ -441,32 +442,39 @@ const addPeerEvents = (instanceClass, peer) => {
 const addMediaStreamToPeer = (peer, mediaStream, options) => {
   logger.info('Adding mediaStream tracks to RTCPeerConnection')
   for (const track of mediaStream.getTracks()) {
-    if ((track.kind === 'video' && options.enableVideo) || (track.kind === 'audio' && options.enableAudio)) {
-      const initOptions = {
-        streams: [mediaStream],
-        direction: 'sendonly'
-      }
-      if (track.kind === 'video' && options.scalabilityMode && new UserAgent().isChrome()) {
+    const initOptions = {
+      streams: [mediaStream]
+    }
+
+    if (track.kind === 'audio') {
+      initOptions.direction = options.enableAudio ? 'sendonly' : 'inactive'
+    }
+
+    if (track.kind === 'video') {
+      initOptions.direction = options.enableVideo ? 'sendonly' : 'inactive'
+
+      if (options.scalabilityMode && new UserAgent().isChrome()) {
         logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
         initOptions.sendEncodings = [
           { scalabilityMode: options.scalabilityMode }
         ]
-      } else if (track.kind === 'video' && options.scalabilityMode) {
+      } else if (options.scalabilityMode) {
         logger.warn('SVC is only supported in Google Chrome')
       }
-      peer.addTransceiver(track, initOptions)
-      logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
     }
+
+    peer.addTransceiver(track, initOptions)
+    logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
   }
 }
 
 const addReceiveTransceivers = (peer, options) => {
-  if (options.enableVideo) {
-    peer.addTransceiver('video', { direction: 'recvonly' })
-  }
-  if (options.enableAudio) {
-    peer.addTransceiver('audio', { direction: 'recvonly' })
-  }
+  peer.addTransceiver('video', {
+    direction: options.enableVideo ? 'recvonly' : 'inactive'
+  })
+  peer.addTransceiver('audio', {
+    direction: options.enableAudio ? 'recvonly' : 'inactive'
+  })
 }
 
 const getConnectionState = (peer) => {
