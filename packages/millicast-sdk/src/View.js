@@ -7,7 +7,8 @@ const logger = Logger.get('View')
 
 const connectOptions = {
   disableVideo: false,
-  disableAudio: false
+  disableAudio: false,
+  peerOptions: null
 }
 
 /**
@@ -42,6 +43,7 @@ export default class View extends BaseWebRTC {
    * @param {Object} options - General subscriber options.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
+   * @param {RTCConfiguration} options.peerOptions - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
@@ -111,7 +113,7 @@ export default class View extends BaseWebRTC {
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
 
-    await this.webRTCPeer.getRTCPeer()
+    await this.webRTCPeer.getRTCPeer(this.options.peerOptions)
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })

@@ -49,10 +49,7 @@ export default class PeerConnection extends EventEmitter {
     logger.info('Getting RTC Peer')
     logger.debug('RTC configuration provided by user: ', config)
     if (!this.peer) {
-      if (!config) {
-        logger.info('RTC configuration not provided by user.')
-        config = await this.getRTCConfiguration()
-      }
+      config = await this.getRTCConfiguration(config)
       this.peer = instanceRTCPeerConnection(this, config)
     }
 
@@ -75,13 +72,15 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
-   * Get RTC configurations with ICE servers get from Milicast signaling server.
+   * Get default RTC configuration with ICE servers from Milicast signaling server and merge it with the user configuration provided. User configuration has priority over defaults.
+   * @param {RTCConfiguration} config - Options to configure the new RTCPeerConnection.
    * @returns {Promise<RTCConfiguration>} Promise object which represents the RTCConfiguration.
    */
-  async getRTCConfiguration () {
+  async getRTCConfiguration (config) {
     logger.info('Getting RTC configuration')
-    const iceServers = await this.getRTCIceServers()
-    return { iceServers }
+    const configParsed = config ?? {}
+    configParsed.iceServers = configParsed.iceServers ?? await this.getRTCIceServers()
+    return configParsed
   }
 
   /**
