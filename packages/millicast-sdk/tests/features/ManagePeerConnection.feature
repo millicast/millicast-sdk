@@ -4,11 +4,11 @@ Feature: As a user I want to manage the peer connection so I can initialize a We
     Given I have no configuration
     When I get the RTC peer
     Then returns the peer
-  
-  Scenario: Get RTC peer again
-    Given I got the peer previously
-    When I get the RTC peer
-    Then returns the peer
+
+  Scenario: Get RTC peer without instance previously
+    Given I have no configuration
+    When I get the RTC peer without instance first
+    Then returns null
 
   Scenario: Get RTC peer with configuration
     Given I have configuration

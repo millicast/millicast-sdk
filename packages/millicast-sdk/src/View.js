@@ -113,7 +113,7 @@ export default class View extends BaseWebRTC {
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
 
-    await this.webRTCPeer.getRTCPeer(this.options.peerOptions)
+    await this.webRTCPeer.createRTCPeer(this.options.peerOptions)
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })

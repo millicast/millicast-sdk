@@ -107,7 +107,7 @@ export default class Publish extends BaseWebRTC {
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
     })
 
-    await this.webRTCPeer.getRTCPeer(this.options.peerOptions)
+    await this.webRTCPeer.createRTCPeer(this.options.peerOptions)
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)

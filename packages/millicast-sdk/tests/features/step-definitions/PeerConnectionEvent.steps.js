@@ -20,7 +20,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       await peerConnection.setRTCRemoteSDP(sdp)
     })
 
@@ -41,7 +41,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('peer starts to connect', async () => {
@@ -63,7 +63,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('peer connects', async () => {
@@ -85,7 +85,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       await peerConnection.setRTCRemoteSDP(sdp)
       peerConnection.peer.connectionState = 'connected'
     })
@@ -108,7 +108,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       await peerConnection.setRTCRemoteSDP(sdp)
       peerConnection.peer.connectionState = 'connected'
     })
@@ -132,7 +132,7 @@ defineFeature(feature, test => {
 
     given('I have a peer without connectionState', async () => {
       global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('peer is instanced', async () => {

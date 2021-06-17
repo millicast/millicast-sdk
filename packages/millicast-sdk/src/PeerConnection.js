@@ -41,21 +41,27 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
-   * Get current RTC peer connection or establish a new connection.
+   * Instance new RTCPeerConnection.
    * @param {RTCConfiguration} config - Peer configuration.
-   * @returns {Promise<RTCPeerConnection>} Promise object which represents the RTCPeerConnection.
    */
-  async getRTCPeer (config = null) {
-    logger.info('Getting RTC Peer')
+  async createRTCPeer (config = null) {
+    logger.info('Creating new RTCPeerConnection')
     logger.debug('RTC configuration provided by user: ', config)
-    if (!this.peer) {
-      config = await this.getRTCConfiguration(config)
-      this.peer = instanceRTCPeerConnection(this, config)
-    }
+    config = await this.getRTCConfiguration(config)
+    this.peer = instanceRTCPeerConnection(this, config)
+  }
 
-    const connectionState = getConnectionState(this.peer)
-    const { currentLocalDescription, currentRemoteDescription } = this.peer
-    logger.debug('getRTCPeer return: ', { connectionState, currentLocalDescription, currentRemoteDescription })
+  /**
+   * Get current RTC peer connection.
+   * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
+   */
+  getRTCPeer () {
+    logger.info('Getting RTC Peer')
+    if (this.peer) {
+      const connectionState = getConnectionState(this.peer)
+      const { currentLocalDescription, currentRemoteDescription } = this.peer
+      logger.debug('getRTCPeer return: ', { connectionState, currentLocalDescription, currentRemoteDescription })
+    }
     return this.peer
   }
 
