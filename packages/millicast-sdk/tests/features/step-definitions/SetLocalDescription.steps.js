@@ -42,7 +42,7 @@ defineFeature(feature, test => {
     })
 
     when('I want to get the RTC Local SDP', async () => {
-      sdp = await peerConnection.getRTCLocalSDP({ enableAudio: true, enableVideo: false })
+      sdp = await peerConnection.getRTCLocalSDP({ disableAudio: false, disableVideo: true })
     })
 
     then('returns the SDP', async () => {
@@ -60,7 +60,7 @@ defineFeature(feature, test => {
     })
 
     when('I want to get the RTC Local SDP', async () => {
-      sdp = await peerConnection.getRTCLocalSDP({ enableAudio: false, enableVideo: true })
+      sdp = await peerConnection.getRTCLocalSDP({ disableAudio: true, disableVideo: false })
     })
 
     then('returns the SDP', async () => {
@@ -92,6 +92,52 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Get RTC Local SDP as publisher role without video', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+    let mediaStream
+    let stereo
+
+    given('I have a MediaStream with 1 audio track and 1 video track', async () => {
+      await peerConnection.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      stereo = true
+    })
+
+    when('I want to get the RTC Local SDP without video', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, stereo, disableAudio: false, disableVideo: true })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role without audio', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+    let mediaStream
+    let stereo
+
+    given('I have a MediaStream with 1 audio track and 1 video track', async () => {
+      await peerConnection.getRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      stereo = true
+    })
+
+    when('I want to get the RTC Local SDP without audio', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, stereo, disableAudio: true, disableVideo: false })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
   test('Get RTC Local SDP as publisher role with simulcast and valid MediaStream', ({ given, when, then }) => {
     const peerConnection = new PeerConnection()
     let sdp
@@ -106,7 +152,7 @@ defineFeature(feature, test => {
     })
 
     when('I want to get the RTC Local SDP', async () => {
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264', enableVideo: true })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264', disableVideo: false })
     })
 
     then('returns the SDP', async () => {
@@ -200,7 +246,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, enableVideo: true, enableAudio: true })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, disableVideo: false, disableAudio: false })
     })
 
     then('returns the SDP with scalability mode', async () => {
@@ -226,7 +272,7 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, enableVideo: true })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, disableVideo: false })
     })
 
     then('returns the SDP without scalability mode', async () => {

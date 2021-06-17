@@ -80,7 +80,7 @@ export default class Publish extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     logger.debug('Broadcast option values: ', options)
-    this.options = getOptions(options)
+    this.options = { ...connectOptions, ...options }
     if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
@@ -108,14 +108,7 @@ export default class Publish extends BaseWebRTC {
     await this.webRTCPeer.getRTCPeer()
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({
-      mediaStream: this.options.mediaStream,
-      simulcast: this.options.simulcast,
-      codec: this.options.codec,
-      scalabilityMode: this.options.scalabilityMode,
-      enableAudio: !this.options.disableAudio,
-      enableVideo: !this.options.disableVideo
-    })
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
     let remoteSdp = await this.signaling.publish(localSdp, this.options.codec)
 
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
@@ -131,12 +124,5 @@ export default class Publish extends BaseWebRTC {
   reconnect () {
     this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
     super.reconnect()
-  }
-}
-
-const getOptions = (options) => {
-  return {
-    ...connectOptions,
-    ...options
   }
 }

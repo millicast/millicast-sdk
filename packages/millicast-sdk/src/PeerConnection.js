@@ -15,6 +15,16 @@ export const webRTCEvents = {
   connectionStateChange: 'connectionStateChange'
 }
 
+const localSDPOptions = {
+  stereo: false,
+  mediaStream: null,
+  codec: 'h264',
+  simulcast: false,
+  scalabilityMode: null,
+  disableAudio: false,
+  disableVideo: false
+}
+
 /**
  * @class PeerConnection
  * @extends EventEmitter
@@ -135,20 +145,13 @@ export default class PeerConnection extends EventEmitter {
    * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
-   * @param {Boolean} options.enableAudio - True to modify SDP for support audio.
-   * @param {Boolean} options.enableVideo - True to modify SDP for support video.
+   * @param {Boolean} options.disableAudio - True to not support audio.
+   * @param {Boolean} options.disableVideo - True to not support video.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
-  async getRTCLocalSDP (options = {
-    stereo: false,
-    mediaStream: null,
-    codec: 'h264',
-    simulcast: false,
-    scalabilityMode: null,
-    enableAudio: true,
-    enableVideo: true
-  }) {
+  async getRTCLocalSDP (options = localSDPOptions) {
     logger.info('Getting RTC Local SDP')
+    options = { ...localSDPOptions, ...options }
     logger.debug('Options: ', options)
 
     const mediaStream = getValidMediaStream(options.mediaStream)
@@ -164,13 +167,13 @@ export default class PeerConnection extends EventEmitter {
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
-    if (options.enableAudio) {
+    if (!options.disableAudio) {
       this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
       if (options.stereo) {
         this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
       }
     }
-    if (options.enableVideo && options.simulcast) {
+    if (!options.disableVideo && options.simulcast) {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
 
@@ -447,11 +450,11 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
     }
 
     if (track.kind === 'audio') {
-      initOptions.direction = options.enableAudio ? 'sendonly' : 'inactive'
+      initOptions.direction = !options.disableAudio ? 'sendonly' : 'inactive'
     }
 
     if (track.kind === 'video') {
-      initOptions.direction = options.enableVideo ? 'sendonly' : 'inactive'
+      initOptions.direction = !options.disableVideo ? 'sendonly' : 'inactive'
 
       if (options.scalabilityMode && new UserAgent().isChrome()) {
         logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
@@ -470,10 +473,10 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
 
 const addReceiveTransceivers = (peer, options) => {
   peer.addTransceiver('video', {
-    direction: options.enableVideo ? 'recvonly' : 'inactive'
+    direction: !options.disableVideo ? 'recvonly' : 'inactive'
   })
   peer.addTransceiver('audio', {
-    direction: options.enableAudio ? 'recvonly' : 'inactive'
+    direction: !options.disableAudio ? 'recvonly' : 'inactive'
   })
 }
 

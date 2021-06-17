@@ -20,6 +20,16 @@ Feature: As a user I want to set my local session description so I can broadcast
     When I want to get the RTC Local SDP
     Then returns the SDP
 
+  Scenario: Get RTC Local SDP as publisher role without video
+    Given I have a MediaStream with 1 audio track and 1 video track
+    When I want to get the RTC Local SDP without video
+    Then returns the SDP
+
+  Scenario: Get RTC Local SDP as publisher role without audio
+    Given I have a MediaStream with 1 audio track and 1 video track
+    When I want to get the RTC Local SDP without audio
+    Then returns the SDP
+
   Scenario: Get RTC Local SDP as publisher role with simulcast and valid MediaStream
     Given I have a MediaStream with 1 audio track and 1 video track and I want support simulcast
     When I want to get the RTC Local SDP

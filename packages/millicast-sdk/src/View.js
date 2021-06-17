@@ -90,7 +90,7 @@ export default class View extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     logger.debug('Viewer connect options values: ', options)
-    this.options = getOptions(options)
+    this.options = { ...connectOptions, ...options }
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
@@ -114,12 +114,7 @@ export default class View extends BaseWebRTC {
     await this.webRTCPeer.getRTCPeer()
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({
-      stereo: true,
-      enableAudio: !this.options.disableAudio,
-      enableVideo: !this.options.disableVideo
-    })
-
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
     const sdpSubscriber = await this.signaling.subscribe(localSdp)
     reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
@@ -127,12 +122,5 @@ export default class View extends BaseWebRTC {
 
     this.setReconnect()
     logger.info('Connected to streamName: ', this.streamName)
-  }
-}
-
-const getOptions = (options) => {
-  return {
-    ...connectOptions,
-    ...options
   }
 }
