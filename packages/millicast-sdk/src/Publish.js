@@ -12,7 +12,8 @@ const connectOptions = {
   disableAudio: false,
   codec: VideoCodec.H264,
   simulcast: false,
-  scalabilityMode: null
+  scalabilityMode: null,
+  peerConfig: null
 }
 
 /**
@@ -50,6 +51,7 @@ export default class Publish extends BaseWebRTC {
    * @param {Boolean} options.simulcast - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
+   * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @example await publish.connect(options)
@@ -105,7 +107,7 @@ export default class Publish extends BaseWebRTC {
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
     })
 
-    await this.webRTCPeer.getRTCPeer()
+    await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)

@@ -19,7 +19,7 @@ defineFeature(feature, test => {
 
     given('I got the peer', async () => {
       jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('I set the remote description', async () => {
@@ -38,7 +38,7 @@ defineFeature(feature, test => {
 
     given('I got the peer', async () => {
       jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('I set the remote description and peer returns an error', async () => {

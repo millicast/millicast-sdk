@@ -23,7 +23,8 @@ defineFeature(feature, test => {
     })
 
     when('I get the RTC peer', async () => {
-      peer = await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
+      peer = peerConnection.getRTCPeer()
     })
 
     then('returns the peer', async () => {
@@ -31,22 +32,21 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Get RTC peer again', ({ given, when, then }) => {
+  test('Get RTC peer without instance previously', ({ given, when, then }) => {
     let peerConnection = null
     let peer = null
 
-    given('I got the peer previously', async () => {
+    given('I have no configuration', async () => {
       jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       peerConnection = new PeerConnection()
-      await peerConnection.getRTCPeer()
     })
 
-    when('I get the RTC peer', async () => {
-      peer = await peerConnection.getRTCPeer()
+    when('I get the RTC peer without instance first', async () => {
+      peer = peerConnection.getRTCPeer()
     })
 
-    then('returns the peer', async () => {
-      expect(peer).toMatchObject(peerConnection.peer)
+    then('returns null', async () => {
+      expect(peer).toBeNull()
     })
   })
 
@@ -59,9 +59,10 @@ defineFeature(feature, test => {
     })
 
     when('I get the RTC peer', async () => {
-      peer = await peerConnection.getRTCPeer({
+      await peerConnection.createRTCPeer({
         bundlePolicy: 'max-bundle'
       })
+      peer = peerConnection.getRTCPeer()
     })
 
     then('returns the peer', async () => {
@@ -79,7 +80,7 @@ defineFeature(feature, test => {
     given('I have a RTC peer', async () => {
       jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       peerConnection = new PeerConnection()
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       peerConnection.on(webRTCEvents.connectionStateChange, handler)
     })
 

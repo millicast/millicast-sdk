@@ -19,7 +19,7 @@ defineFeature(feature, test => {
     let status
 
     given('I have a peer instanced', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('I want to get the peer connection state', () => {
@@ -52,7 +52,7 @@ defineFeature(feature, test => {
 
     given('I have a peer connecting without connectionState', async () => {
       global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       peerConnection.peer.iceConnectionState = 'checking'
     })
 
@@ -71,7 +71,7 @@ defineFeature(feature, test => {
 
     given('I have a peer connected without connectionState', async () => {
       global.RTCPeerConnection = MockRTCPeerConnectionNoConnectionState
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       peerConnection.peer.iceConnectionState = 'completed'
     })
 

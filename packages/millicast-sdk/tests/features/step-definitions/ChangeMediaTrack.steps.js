@@ -19,7 +19,7 @@ defineFeature(feature, test => {
     const track = { id: 3, kind: 'audio', label: 'Audio2' }
 
     given('I have a peer connected', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
       const mediaStream = new MediaStream(tracks)
       await peerConnection.getRTCLocalSDP({ mediaStream, disableVideo: false, disableAudio: false })
@@ -61,7 +61,7 @@ defineFeature(feature, test => {
     const track = { id: 2, kind: 'audio', label: 'Audio2' }
 
     given('I have a peer connected with video track', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'video', label: 'Video1' }]
       const mediaStream = new MediaStream(tracks)
       await peerConnection.getRTCLocalSDP({ mediaStream })
