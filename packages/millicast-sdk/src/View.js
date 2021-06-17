@@ -5,6 +5,11 @@ import Signaling, { signalingEvents } from './Signaling'
 import { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('View')
 
+const connectOptions = {
+  disableVideo: false,
+  disableAudio: false
+}
+
 /**
  * @class View
  * @extends BaseWebRTC
@@ -83,14 +88,9 @@ export default class View extends BaseWebRTC {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-  async connect (
-    options = {
-      disableVideo: false,
-      disableAudio: false
-    }
-  ) {
+  async connect (options = connectOptions) {
     logger.debug('Viewer connect options values: ', options)
-    this.options = options
+    this.options = { ...connectOptions, ...options }
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
@@ -114,12 +114,7 @@ export default class View extends BaseWebRTC {
     await this.webRTCPeer.getRTCPeer()
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
-    this.webRTCPeer.RTCOfferOptions = {
-      offerToReceiveVideo: !this.options.disableVideo,
-      offerToReceiveAudio: !this.options.disableAudio
-    }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ stereo: true })
-
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
     const sdpSubscriber = await this.signaling.subscribe(localSdp)
     reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 

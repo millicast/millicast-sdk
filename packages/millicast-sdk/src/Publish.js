@@ -5,6 +5,16 @@ import Signaling, { VideoCodec } from './Signaling'
 import { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('Publish')
 
+const connectOptions = {
+  mediaStream: null,
+  bandwidth: 0,
+  disableVideo: false,
+  disableAudio: false,
+  codec: VideoCodec.H264,
+  simulcast: false,
+  scalabilityMode: null
+}
+
 /**
  * @class Publish
  * @extends BaseWebRTC
@@ -68,20 +78,10 @@ export default class Publish extends BaseWebRTC {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-  async connect (
-    options = {
-      mediaStream: null,
-      bandwidth: 0,
-      disableVideo: false,
-      disableAudio: false,
-      codec: VideoCodec.H264,
-      simulcast: false,
-      scalabilityMode: null
-    }
-  ) {
+  async connect (options = connectOptions) {
     logger.debug('Broadcast option values: ', options)
-    this.options = options
-    if (!options.mediaStream) {
+    this.options = { ...connectOptions, ...options }
+    if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
     }
@@ -108,15 +108,11 @@ export default class Publish extends BaseWebRTC {
     await this.webRTCPeer.getRTCPeer()
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
-    this.webRTCPeer.RTCOfferOptions = {
-      offerToReceiveVideo: !options.disableVideo,
-      offerToReceiveAudio: !options.disableAudio
-    }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, scalabilityMode: options.scalabilityMode })
-    let remoteSdp = await this.signaling.publish(localSdp, options.codec)
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
+    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec)
 
-    if (!options.disableVideo && options.bandwidth > 0) {
-      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
+    if (!this.options.disableVideo && this.options.bandwidth > 0) {
+      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }
 
     await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)

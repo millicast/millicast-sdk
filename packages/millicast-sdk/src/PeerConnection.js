@@ -15,6 +15,16 @@ export const webRTCEvents = {
   connectionStateChange: 'connectionStateChange'
 }
 
+const localSDPOptions = {
+  stereo: false,
+  mediaStream: null,
+  codec: 'h264',
+  simulcast: false,
+  scalabilityMode: null,
+  disableAudio: false,
+  disableVideo: false
+}
+
 /**
  * @class PeerConnection
  * @extends EventEmitter
@@ -28,10 +38,6 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
-    this.RTCOfferOptions = {
-      offerToReceiveVideo: true,
-      offerToReceiveAudio: true
-    }
   }
 
   /**
@@ -74,13 +80,8 @@ export default class PeerConnection extends EventEmitter {
    */
   async getRTCConfiguration () {
     logger.info('Getting RTC configuration')
-    const config = {
-      rtcpMuxPolicy: 'require',
-      bundlePolicy: 'max-bundle'
-    }
-
-    config.iceServers = await this.getRTCIceServers()
-    return config
+    const iceServers = await this.getRTCIceServers()
+    return { iceServers }
   }
 
   /**
@@ -144,53 +145,36 @@ export default class PeerConnection extends EventEmitter {
    * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
+   * @param {Boolean} options.disableAudio - True to not support audio.
+   * @param {Boolean} options.disableVideo - True to not support video.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
-  async getRTCLocalSDP (options = {
-    stereo: false,
-    mediaStream: null,
-    codec: 'h264',
-    simulcast: false,
-    scalabilityMode: null
-  }) {
+  async getRTCLocalSDP (options = localSDPOptions) {
     logger.info('Getting RTC Local SDP')
-    logger.debug('Stereo value: ', options.stereo)
-    logger.debug('RTC offer options: ', this.RTCOfferOptions)
+    options = { ...localSDPOptions, ...options }
+    logger.debug('Options: ', options)
 
     const mediaStream = getValidMediaStream(options.mediaStream)
     if (mediaStream) {
-      logger.info('Adding mediaStream tracks to RTCPeerConnection')
-      for (const track of mediaStream.getTracks()) {
-        if (track.kind === 'video' && options.scalabilityMode && new UserAgent().isChrome()) {
-          logger.debug(`Video track with scalability mode: ${options.scalabilityMode}, adding as transceiver.`)
-          this.peer.addTransceiver(track, {
-            streams: [mediaStream],
-            sendEncodings: [
-              { scalabilityMode: options.scalabilityMode }
-            ]
-          })
-        } else {
-          if (track.kind === 'video' && options.scalabilityMode) {
-            logger.warn('SVC is only supported in Google Chrome')
-          }
-          this.peer.addTrack(track, mediaStream)
-        }
-        logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
-      }
+      addMediaStreamToPeer(this.peer, mediaStream, options)
+    } else {
+      addReceiveTransceivers(this.peer, options)
     }
 
     logger.info('Creating peer offer')
-    const response = await this.peer.createOffer(this.RTCOfferOptions)
+    const response = await this.peer.createOffer()
     logger.info('Peer offer created')
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
-    this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
-    if (options.simulcast) {
-      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
+    if (!options.disableAudio) {
+      this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
+      if (options.stereo) {
+        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+      }
     }
-    if (options.stereo) {
-      this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+    if (!options.disableVideo && options.simulcast) {
+      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
 
     await this.peer.setLocalDescription(this.sessionDescription)
@@ -217,11 +201,14 @@ export default class PeerConnection extends EventEmitter {
    * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
    */
   async updateBitrate (bitrate = 0) {
+    if (!this.peer) {
+      logger.error('Cannot update bitrate. No peer found.')
+      throw new Error('Cannot update bitrate. No peer found.')
+    }
+
     logger.info('Updating bitrate to value: ', bitrate)
-
     this.peer = await this.getRTCPeer()
-    await this.getRTCLocalSDP(true, null)
-
+    await this.peer.setLocalDescription(this.sessionDescription)
     const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
     await this.setRTCRemoteSDP(sdp)
     logger.info('Bitrate restirctions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
@@ -453,6 +440,44 @@ const addPeerEvents = (instanceClass, peer) => {
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }
   }
+}
+
+const addMediaStreamToPeer = (peer, mediaStream, options) => {
+  logger.info('Adding mediaStream tracks to RTCPeerConnection')
+  for (const track of mediaStream.getTracks()) {
+    const initOptions = {
+      streams: [mediaStream]
+    }
+
+    if (track.kind === 'audio') {
+      initOptions.direction = !options.disableAudio ? 'sendonly' : 'inactive'
+    }
+
+    if (track.kind === 'video') {
+      initOptions.direction = !options.disableVideo ? 'sendonly' : 'inactive'
+
+      if (options.scalabilityMode && new UserAgent().isChrome()) {
+        logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
+        initOptions.sendEncodings = [
+          { scalabilityMode: options.scalabilityMode }
+        ]
+      } else if (options.scalabilityMode) {
+        logger.warn('SVC is only supported in Google Chrome')
+      }
+    }
+
+    peer.addTransceiver(track, initOptions)
+    logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
+  }
+}
+
+const addReceiveTransceivers = (peer, options) => {
+  peer.addTransceiver('video', {
+    direction: !options.disableVideo ? 'recvonly' : 'inactive'
+  })
+  peer.addTransceiver('audio', {
+    direction: !options.disableAudio ? 'recvonly' : 'inactive'
+  })
 }
 
 const getConnectionState = (peer) => {

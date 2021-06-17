@@ -22,7 +22,7 @@ defineFeature(feature, test => {
       await peerConnection.getRTCPeer()
       const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
       const mediaStream = new MediaStream(tracks)
-      await peerConnection.getRTCLocalSDP({ mediaStream })
+      await peerConnection.getRTCLocalSDP({ mediaStream, disableVideo: false, disableAudio: false })
     })
 
     when('I want to change current audio track', () => {
