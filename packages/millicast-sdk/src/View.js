@@ -5,6 +5,12 @@ import Signaling, { signalingEvents } from './Signaling'
 import { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('View')
 
+const connectOptions = {
+  disableVideo: false,
+  disableAudio: false,
+  peerConfig: null
+}
+
 /**
  * @class View
  * @extends BaseWebRTC
@@ -37,6 +43,7 @@ export default class View extends BaseWebRTC {
    * @param {Object} options - General subscriber options.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
+   * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
@@ -83,14 +90,9 @@ export default class View extends BaseWebRTC {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-  async connect (
-    options = {
-      disableVideo: false,
-      disableAudio: false
-    }
-  ) {
+  async connect (options = connectOptions) {
     logger.debug('Viewer connect options values: ', options)
-    this.options = options
+    this.options = { ...connectOptions, ...options }
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
@@ -111,15 +113,10 @@ export default class View extends BaseWebRTC {
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
 
-    await this.webRTCPeer.getRTCPeer()
+    await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
-    this.webRTCPeer.RTCOfferOptions = {
-      offerToReceiveVideo: !this.options.disableVideo,
-      offerToReceiveAudio: !this.options.disableAudio
-    }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ stereo: true })
-
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
     const sdpSubscriber = await this.signaling.subscribe(localSdp)
     reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 

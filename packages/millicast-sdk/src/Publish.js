@@ -5,6 +5,17 @@ import Signaling, { VideoCodec } from './Signaling'
 import { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('Publish')
 
+const connectOptions = {
+  mediaStream: null,
+  bandwidth: 0,
+  disableVideo: false,
+  disableAudio: false,
+  codec: VideoCodec.H264,
+  simulcast: false,
+  scalabilityMode: null,
+  peerConfig: null
+}
+
 /**
  * @class Publish
  * @extends BaseWebRTC
@@ -40,6 +51,7 @@ export default class Publish extends BaseWebRTC {
    * @param {Boolean} options.simulcast - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
+   * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @example await publish.connect(options)
@@ -68,20 +80,10 @@ export default class Publish extends BaseWebRTC {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-  async connect (
-    options = {
-      mediaStream: null,
-      bandwidth: 0,
-      disableVideo: false,
-      disableAudio: false,
-      codec: VideoCodec.H264,
-      simulcast: false,
-      scalabilityMode: null
-    }
-  ) {
+  async connect (options = connectOptions) {
     logger.debug('Broadcast option values: ', options)
-    this.options = options
-    if (!options.mediaStream) {
+    this.options = { ...connectOptions, ...options }
+    if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
     }
@@ -105,18 +107,14 @@ export default class Publish extends BaseWebRTC {
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
     })
 
-    await this.webRTCPeer.getRTCPeer()
+    await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
-    this.webRTCPeer.RTCOfferOptions = {
-      offerToReceiveVideo: !options.disableVideo,
-      offerToReceiveAudio: !options.disableAudio
-    }
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ mediaStream: options.mediaStream, simulcast: options.simulcast, codec: options.codec, scalabilityMode: options.scalabilityMode })
-    let remoteSdp = await this.signaling.publish(localSdp, options.codec)
+    const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
+    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec)
 
-    if (!options.disableVideo && options.bandwidth > 0) {
-      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, options.bandwidth)
+    if (!this.options.disableVideo && this.options.bandwidth > 0) {
+      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }
 
     await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)

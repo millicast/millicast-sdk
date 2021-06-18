@@ -20,11 +20,47 @@ defineFeature(feature, test => {
     let sdp
 
     given('I do not have options', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
     })
 
     when('I want to get the RTC Local SDP', async () => {
       sdp = await peerConnection.getRTCLocalSDP()
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP without video as subscriber role', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+
+    given('I want local SDP without video', async () => {
+      await peerConnection.createRTCPeer()
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ disableAudio: false, disableVideo: true })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP without audio as subscriber role', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+
+    given('I want local SDP without audio', async () => {
+      await peerConnection.createRTCPeer()
+    })
+
+    when('I want to get the RTC Local SDP', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ disableAudio: true, disableVideo: false })
     })
 
     then('returns the SDP', async () => {
@@ -40,7 +76,7 @@ defineFeature(feature, test => {
     let stereo
 
     given('I have a MediaStream with 1 audio track and 1 video track and I want support stereo', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
       mediaStream = new MediaStream(tracks)
       stereo = true
@@ -56,6 +92,52 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Get RTC Local SDP as publisher role without video', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+    let mediaStream
+    let stereo
+
+    given('I have a MediaStream with 1 audio track and 1 video track', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      stereo = true
+    })
+
+    when('I want to get the RTC Local SDP without video', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, stereo, disableAudio: false, disableVideo: true })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
+  test('Get RTC Local SDP as publisher role without audio', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sdp
+    let mediaStream
+    let stereo
+
+    given('I have a MediaStream with 1 audio track and 1 video track', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+      stereo = true
+    })
+
+    when('I want to get the RTC Local SDP without audio', async () => {
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, stereo, disableAudio: true, disableVideo: false })
+    })
+
+    then('returns the SDP', async () => {
+      expect(peerConnection.peer.currentLocalDescription).toBeDefined()
+      expect(sdp).toBeDefined()
+    })
+  })
+
   test('Get RTC Local SDP as publisher role with simulcast and valid MediaStream', ({ given, when, then }) => {
     const peerConnection = new PeerConnection()
     let sdp
@@ -63,14 +145,14 @@ defineFeature(feature, test => {
     let simulcast
 
     given('I have a MediaStream with 1 audio track and 1 video track and I want support simulcast', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
       mediaStream = new MediaStream(tracks)
       simulcast = true
     })
 
     when('I want to get the RTC Local SDP', async () => {
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264' })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264', disableVideo: false })
     })
 
     then('returns the SDP', async () => {
@@ -86,7 +168,7 @@ defineFeature(feature, test => {
     let stereo
 
     given('I have a MediaStream with 2 video tracks and no audio track', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'video', label: 'Video1' }, { id: 2, kind: 'video', label: 'Video2' }]
       mediaStream = new MediaStream(tracks)
       stereo = true
@@ -111,7 +193,7 @@ defineFeature(feature, test => {
     let tracks
 
     given('I have a list of tracks with 1 audio track and 1 video track', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
     })
 
@@ -131,7 +213,7 @@ defineFeature(feature, test => {
     let tracks
 
     given('I have a list of tracks with 3 audio tracks and 1 video track', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' },
         { id: 3, kind: 'audio', label: 'Audio2' }, { id: 4, kind: 'audio', label: 'Audio3' }]
     })
@@ -156,7 +238,7 @@ defineFeature(feature, test => {
     let scalabilityMode
 
     given('I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode', async () => {
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
       mediaStream = new MediaStream(tracks)
       scalabilityMode = 'L1T3'
@@ -164,13 +246,13 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, disableVideo: false, disableAudio: false })
     })
 
     then('returns the SDP with scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
-      expect(peerConnection.peer.addTransceiver).toBeCalledTimes(1)
+      expect(peerConnection.peer.addTransceiver).toBeCalledTimes(2)
     })
   })
 
@@ -182,7 +264,7 @@ defineFeature(feature, test => {
 
     given('I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode', async () => {
       changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
-      await peerConnection.getRTCPeer()
+      await peerConnection.createRTCPeer()
       const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
       mediaStream = new MediaStream(tracks)
       scalabilityMode = 'L1T3'
@@ -190,13 +272,12 @@ defineFeature(feature, test => {
 
     when('I want to get the RTC Local SDP', async () => {
       jest.spyOn(global.RTCPeerConnection.prototype, 'addTransceiver').mockImplementation(jest.fn)
-      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode })
+      sdp = await peerConnection.getRTCLocalSDP({ mediaStream, scalabilityMode, disableVideo: false })
     })
 
     then('returns the SDP without scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
-      expect(peerConnection.peer.addTransceiver).not.toBeCalled()
     })
   })
 })
