@@ -1,9 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
+import 'jwt-decode'
 import Director from '../../../src/Director'
 const feature = loadFeature('../GetSubscriberConnectionPath.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
+jest.mock('jwt-decode')
 
 defineFeature(feature, test => {
   test('Subscribe to an existing unrestricted stream, valid accountId and no token', ({ given, when, then }) => {

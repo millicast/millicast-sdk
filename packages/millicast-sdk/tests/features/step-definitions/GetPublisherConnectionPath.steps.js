@@ -1,9 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
+import 'jwt-decode'
 import Director from '../../../src/Director'
 const feature = loadFeature('../GetPublisherConnectionPath.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
+jest.mock('jwt-decode')
 
 defineFeature(feature, test => {
   test('Publish with an existing stream name and valid token', ({ given, when, then }) => {
