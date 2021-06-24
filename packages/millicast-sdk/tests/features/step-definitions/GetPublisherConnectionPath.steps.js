@@ -1,11 +1,10 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import axios from 'axios'
-import 'jwt-decode'
 import Director from '../../../src/Director'
 const feature = loadFeature('../GetPublisherConnectionPath.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('axios')
-jest.mock('jwt-decode')
+const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
 
 defineFeature(feature, test => {
   test('Publish with an existing stream name and valid token', ({ given, when, then }) => {
@@ -21,7 +20,7 @@ defineFeature(feature, test => {
           urls: [
             'wss://live-west.millicast.com/ws/v2/pub/12345'
           ],
-          jwt: '123jwt',
+          jwt: dummyToken,
           streamAccountId: 'Existing_accountId'
         }
       }
@@ -38,7 +37,7 @@ defineFeature(feature, test => {
 
     then('I get the publish connection path', async () => {
       expect(response).toBeDefined()
-      expect(response).toEqual(mockedResponse.data.data)
+      expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
     })
   })
 
@@ -106,7 +105,7 @@ defineFeature(feature, test => {
 
     then('throws an error with "invalid token" message', async () => {
       expect(responseError).toBeDefined()
-      expect(responseError.response.data).toEqual(mockedResponse.response.data)
+      expect(responseError.response.data).toEqual(expect.objectContaining(mockedResponse.response.data))
     })
   })
 
@@ -123,7 +122,7 @@ defineFeature(feature, test => {
           urls: [
             'wss://live-west.millicast.com/ws/v2/pub/12345'
           ],
-          jwt: '123jwt',
+          jwt: dummyToken,
           streamAccountId: 'Existing_accountId'
         }
       }
@@ -146,7 +145,7 @@ defineFeature(feature, test => {
         expect.any(Object)
       )
       expect(response).toBeDefined()
-      expect(response).toEqual(mockedResponse.data.data)
+      expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
     })
   })
 })

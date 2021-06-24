@@ -85,7 +85,7 @@ export default class Director {
     try {
       const { data } = await axios.post(url, payload, { headers })
       logger.debug('Getting publisher response: ', data)
-      return { ...data.data, jwtDecoded: jwtDecode(data.data.jwt) }
+      return { ...data.data, jwtDecoded: jwtDecode(data.data.jwt).millicast }
     } catch (e) {
       logger.error('Error while getting publisher connection path: ', e.response?.data)
       throw e
@@ -136,7 +136,7 @@ export default class Director {
     try {
       const { data } = await axios.post(url, payload, { headers })
       logger.debug('Getting subscriber response: ', data)
-      return { ...data.data, jwtDecoded: jwtDecode(data.data.jwt) }
+      return { ...data.data, jwtDecoded: jwtDecode(data.data.jwt).millicast }
     } catch (e) {
       logger.error('Error while getting subscriber connection path: ', e.response?.data)
       throw e
