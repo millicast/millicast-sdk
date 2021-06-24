@@ -13,7 +13,8 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: null
+  peerConfig: null,
+  record: false
 }
 
 /**
@@ -52,6 +53,7 @@ export default class Publish extends BaseWebRTC {
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
+   * @param {Boolean} options.record - Enable stream recording. **Only available in Tokens with recording enabled.**
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @example await publish.connect(options)
@@ -111,7 +113,7 @@ export default class Publish extends BaseWebRTC {
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
-    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec)
+    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec, this.options.record)
 
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
