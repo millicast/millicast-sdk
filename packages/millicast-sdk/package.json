@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -48,6 +48,7 @@
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "js-logger": "^1.6.1",
+    "jwt-decode": "^3.1.2",
     "re-emitter": "^1.1.4",
     "semantic-sdp": "^3.21.0",
     "transaction-manager": "^2.1.3",

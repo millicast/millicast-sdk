@@ -72,12 +72,12 @@ defineFeature(feature, test => {
       })
     })
 
-    when('I offer my local sdp with h264 codec', async () => {
+    when('I offer my local sdp with h264 codec and recording option', async () => {
       const signaling = new Signaling({
         streamName: streamName,
         url: publishWebSocketLocation
       })
-      response = await signaling.publish(localSdp, 'h264')
+      response = await signaling.publish(localSdp, 'h264', true)
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {

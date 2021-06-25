@@ -76,7 +76,8 @@ class MillicastPublishTest {
         disableAudio: false,
         simulcast: this.selectedCodec === 'h264' || this.selectedCodec === 'vp8' ? this.simulcast : false,
         codec: this.selectedCodec,
-        scalabilityMode: this.selectedScalabilityMode === 'none' ? null : this.selectedScalabilityMode
+        scalabilityMode: this.selectedScalabilityMode === 'none' ? null : this.selectedScalabilityMode,
+        record: false
       }
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
