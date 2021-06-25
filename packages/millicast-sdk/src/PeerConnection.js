@@ -254,16 +254,18 @@ export default class PeerConnection extends EventEmitter {
 
   /**
    * @typedef {Object} MillicastCapability
-   * @property {String} codec - Audio or video codec name.
-   * @property {String} mimeType - Audio or video codec mime type.
-   * @property {Array<String>} [scalabilityModes] - In case of SVC support, a list of scalability modes supported.
-   * @property {Number} [channels] - Only for audio, the number of audio channels supported.
+   * @property {Array<Object>} codecs
+   * @property {String} codecs.codec - Audio or video codec name.
+   * @property {String} codecs.mimeType - Audio or video codec mime type.
+   * @property {Array<String>} [codecs.scalabilityModes] - In case of SVC support, a list of scalability modes supported.
+   * @property {Number} [codecs.channels] - Only for audio, the number of audio channels supported.
+   * @property {Array<RTCRtpHeaderExtensionCapability>} headerExtensions - An array specifying the URI of the header extension, as described in RFC 5285.
    */
   /**
    * Gets user's browser media capabilities compared with Millicast Media Server support.
    *
    * @param {"audio"|"video"} kind - Type of media for which you wish to get sender capabilities.
-   * @returns {Array<MillicastCapability>} An array with all capabilities supported by user's browser and Millicast Media Server.
+   * @returns {MillicastCapability} Object with all capabilities supported by user's browser and Millicast Media Server.
    */
   static getCapabilities (kind) {
     const browserData = new UserAgent()
