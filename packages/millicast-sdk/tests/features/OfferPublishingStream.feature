@@ -2,7 +2,7 @@ Feature: As a user I want to signal Millicast Server so I can offer publishing a
 
   Scenario: Offer a SDP with no previous connection and h264 codec
     Given a local sdp and no previous connection to server
-    When I offer my local sdp with h264 codec
+    When I offer my local sdp with h264 codec and recording option
     Then returns a filtered sdp to offer to remote peer
 
   Scenario: Offer a SDP with no previous connection and vp8 codec

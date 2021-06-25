@@ -7,10 +7,7 @@ class Media {
         echoCancellation: false,
         channelCount: { ideal: 2 }
       },
-      video: {
-        height: 1080,
-        width: 1920
-      }
+      video: true
     }
     /* Apply Options */
     if (options && !!options.constraints) { Object.assign(this.constraints, options.constraints) }

@@ -13,8 +13,7 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: null,
-  record: false
+  peerConfig: null
 }
 
 /**
@@ -53,7 +52,7 @@ export default class Publish extends BaseWebRTC {
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
-   * @param {Boolean} options.record - Enable stream recording. **Only available in Tokens with recording enabled.**
+   * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @example await publish.connect(options)
