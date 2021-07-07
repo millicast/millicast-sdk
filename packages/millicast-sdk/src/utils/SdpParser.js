@@ -105,6 +105,23 @@ export default class SdpParser {
   }
 
   /**
+   * Parse SDP for support dtx.
+   * @param {String} sdp - Current SDP.
+   * @returns {String} SDP parsed with dtx support.
+   * @example SdpParser.setDTX(sdp)
+   */
+  static setDTX (sdp) {
+    logger.info('Replacing SDP response for support dtx')
+    sdp = sdp.replace(
+      'useinbandfec=1',
+      'useinbandfec=1; usedtx=1'
+    )
+    logger.info('Replaced SDP response for support dtx')
+    logger.debug('New SDP value: ', sdp)
+    return sdp
+  }
+
+  /**
    * Parse SDP for desired bitrate.
    * @param {String} sdp - Current SDP.
    * @param {Number} bitrate - Bitrate value in kbps or 0 for unlimited bitrate.
