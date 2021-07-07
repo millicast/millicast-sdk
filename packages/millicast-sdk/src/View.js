@@ -43,6 +43,9 @@ export default class View extends BaseWebRTC {
    * @param {Object} options - General subscriber options.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
+   * @param {Number} multiplexedAudioTracks - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+   * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
+   * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
@@ -117,7 +120,7 @@ export default class View extends BaseWebRTC {
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
-    const sdpSubscriber = await this.signaling.subscribe(localSdp)
+    const sdpSubscriber = await this.signaling.subscribe(localSdp, this.options.multiplexedAudioTracks > 0, this.options.pinnedSourceId, this.options.excludedSourceIds)
     reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
     await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)

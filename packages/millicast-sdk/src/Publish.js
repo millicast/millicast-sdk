@@ -42,6 +42,7 @@ export default class Publish extends BaseWebRTC {
    *
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
+   * @param {String} options.sourceId - Source unique id. Only avialable if stream is multisource.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
@@ -112,7 +113,7 @@ export default class Publish extends BaseWebRTC {
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
     const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
-    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec, this.options.record)
+    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec, this.options.record, this.options.sourceId)
 
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)

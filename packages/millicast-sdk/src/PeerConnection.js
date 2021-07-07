@@ -485,6 +485,11 @@ const addReceiveTransceivers = (peer, options) => {
   peer.addTransceiver('audio', {
     direction: !options.disableAudio ? 'recvonly' : 'inactive'
   })
+  for (let i = 0; i < options.multiplexedAudioTracks; i++) {
+    peer.addTransceiver('audio', {
+      direction: 'recvonly'
+    })
+  }
 }
 
 const getConnectionState = (peer) => {
