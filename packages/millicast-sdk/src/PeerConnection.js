@@ -212,7 +212,7 @@ export default class PeerConnection extends EventEmitter {
     }
 
     logger.info('Updating bitrate to value: ', bitrate)
-    this.peer = await this.getRTCPeer()
+    this.sessionDescription = await this.peer.createOffer()
     await this.peer.setLocalDescription(this.sessionDescription)
     const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
     await this.setRTCRemoteSDP(sdp)
