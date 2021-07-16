@@ -144,6 +144,7 @@ export default class PeerConnection extends EventEmitter {
    * Set SDP information to local peer.
    * @param {Object} options
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
+   * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.*
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {VideoCodec} options.codec - Selected codec for support simulcast.
@@ -176,6 +177,9 @@ export default class PeerConnection extends EventEmitter {
       this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
       if (options.stereo) {
         this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+      }
+      if (options.dtx) {
+        this.sessionDescription.sdp = SdpParser.setDTX(this.sessionDescription.sdp)
       }
     }
     if (!options.disableVideo && options.simulcast) {
@@ -479,12 +483,16 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
 }
 
 const addReceiveTransceivers = (peer, options) => {
-  peer.addTransceiver('video', {
-    direction: !options.disableVideo ? 'recvonly' : 'inactive'
-  })
-  peer.addTransceiver('audio', {
-    direction: !options.disableAudio ? 'recvonly' : 'inactive'
-  })
+  if (!options.disableVideo) {
+    peer.addTransceiver('video', {
+      direction: 'recvonly'
+    })
+  }
+  if (!options.disableAudio) {
+    peer.addTransceiver('audio', {
+      direction: 'recvonly'
+    })
+  }
   for (let i = 0; i < options.multiplexedAudioTracks; i++) {
     peer.addTransceiver('audio', {
       direction: 'recvonly'
