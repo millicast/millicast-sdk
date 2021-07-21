@@ -63,7 +63,7 @@ export default class Director {
 
   /**
    * Get publisher connection data.
-   * @param {DirectorPublisherOptions | String} options - Millicast options. *Deprecated, use options parameter instead* Millicast Publishing Token.
+   * @param {DirectorPublisherOptions | String} options - Millicast options or *Deprecated Millicast Publishing Token.*
    * @param {String} [streamName] - *Deprecated, use options parameter instead* Millicast Stream Name.
    * @param {("WebRtc" | "Rtmp")} [streamType] - *Deprecated, use options parameter instead* Millicast Stream Type.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
@@ -109,7 +109,7 @@ export default class Director {
 
   /**
    * Get subscriber connection data.
-   * @param {DirectorSubscriberOptions | String} options - Millicast options. *Deprecated, use options parameter instead* Millicast publisher Stream Name.
+   * @param {DirectorSubscriberOptions | String} options - Millicast options or *Deprecated Millicast publisher Stream Name.*
    * @param {String} [streamAccountId] - *Deprecated, use options parameter instead* Millicast Account ID.
    * @param {String} [subscriberToken] - *Deprecated, use options parameter instead* Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
