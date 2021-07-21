@@ -19,3 +19,8 @@ Feature: As a user I want to subscribe to a Millicast Stream so I can get a conn
     Given I have an existing stream name, accountId and no token
     When I request a connection path to Director API
     Then I get the subscriber connection path
+
+  Scenario: Subscribe to an existing unrestricted stream, valid accountId, no token and options as object
+    Given I have an existing stream name, accountId and no token
+    When I request a connection path to Director API using options object
+    Then I get the subscriber connection path
