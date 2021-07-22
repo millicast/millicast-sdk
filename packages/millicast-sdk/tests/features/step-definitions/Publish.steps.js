@@ -15,7 +15,7 @@ const mockTokenGenerator = jest.fn(() => {
     urls: [
       'ws://localhost:8080'
     ],
-    jwt: 'this-is-a-jwt-dummy-token'
+    jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
   }
 })
 
@@ -253,6 +253,24 @@ defineFeature(feature, test => {
     then('throws token generator error', async () => {
       expectError.rejects.toThrow(Error)
       expectError.rejects.toThrow('Error getting token')
+    })
+  })
+
+  test('Broadcast to stream with record option but no record available from token', ({ given, when, then }) => {
+    let publisher
+    let expectError
+
+    given('an instance of Publish with valid token generator with no recording available', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+    })
+
+    when('I broadcast a stream', async () => {
+      expectError = expect(() => publisher.connect({ mediaStream, record: true }))
+    })
+
+    then('throws an error', async () => {
+      expectError.rejects.toThrow(Error)
+      expectError.rejects.toThrow('Record option detected but recording is not available')
     })
   })
 })
