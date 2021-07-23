@@ -64,3 +64,8 @@ Feature: As a user I want to publish a stream without managing connections
     Given an instance of Publish with invalid token generator
     When I broadcast a stream
     Then throws token generator error
+
+  Scenario: Broadcast to stream with record option but no record available from token
+    Given an instance of Publish with valid token generator with no recording available
+    When I broadcast a stream
+    Then throws an error
