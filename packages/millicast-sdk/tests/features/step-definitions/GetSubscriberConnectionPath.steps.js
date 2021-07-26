@@ -146,4 +146,37 @@ defineFeature(feature, test => {
       expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
     })
   })
+
+  test('Subscribe to an existing unrestricted stream, valid accountId, no token and options as object', ({ given, when, then }) => {
+    let accountId
+    let streamName
+    let response
+    const mockedResponse = {
+      data: {
+        status: 'success',
+        data: {
+          wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
+          urls: [
+            'wss://live-west.millicast.com/ws/v2/sub/12345'
+          ],
+          jwt: dummyToken,
+          streamAccountId: 'Existing_accountId'
+        }
+      }
+    }
+    given('I have an existing stream name, accountId and no token', async () => {
+      accountId = 'Existing_accountId'
+      streamName = 'Existing_stream_name'
+    })
+
+    when('I request a connection path to Director API using options object', async () => {
+      axios.post.mockResolvedValue(mockedResponse)
+      response = await Director.getSubscriber({ streamName, streamAccountId: accountId })
+    })
+
+    then('I get the subscriber connection path', async () => {
+      expect(response).toBeDefined()
+      expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
+    })
+  })
 })

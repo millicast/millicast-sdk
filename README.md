@@ -40,7 +40,10 @@ You will need a Millicast account and a valid publishing token that you can find
 ```javascript
 import { Director, Publish } from '@millicast/sdk'
 //Define callback for generate new tokens
-const tokenGenerator = () => Director.getPublisher('my-publishing-token', 'my-stream-name')
+const tokenGenerator = () => Director.getPublisher({
+    token: 'my-publishing-token', 
+    streamName: 'my-stream-name'
+  })
 
 //Create a new instance
 const millicastPublish = new Publish(streamName, tokenGenerator)
@@ -85,7 +88,10 @@ import { Director, View } from '@millicast/sdk'
 const video = document.getElementById('my-video')
 
 //Define callback for generate new token
-const tokenGenerator = () => Director.getSubscriber('my-stream-name', 'my-account-id')
+const tokenGenerator = () => Director.getSubscriber({
+    streamName: 'my-stream-name', 
+    streamAccountId: 'my-account-id'
+  })
 
 //Create a new instance
 const millicastView = new View(streamName, tokenGenerator, video)

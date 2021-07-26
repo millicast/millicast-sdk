@@ -49,6 +49,14 @@ export default class BaseWebRTC extends EventEmitter {
   }
 
   /**
+  * Get current RTC peer connection.
+  * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
+  */
+  getRTCPeerConnection () {
+    return this.webRTCPeer ? this.webRTCPeer.getRTCPeer() : null
+  }
+
+  /**
    * Stops connection.
    */
   stop () {

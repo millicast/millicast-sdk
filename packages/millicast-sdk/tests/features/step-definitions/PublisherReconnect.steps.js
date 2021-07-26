@@ -15,7 +15,7 @@ const mockTokenGenerator = jest.fn(() => {
     urls: [
       'ws://localhost:8080'
     ],
-    jwt: 'this-is-a-jwt-dummy-token'
+    jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
   }
 })
 
