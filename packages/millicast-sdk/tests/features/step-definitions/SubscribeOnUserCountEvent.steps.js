@@ -1,25 +1,25 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-import { eventsLocation, recordSeparator } from '../../../src/utils/EventSubscriber'
-
-let StreamEvents
-beforeEach(() => {
-  jest.isolateModules(() => {
-    StreamEvents = require('../../../src/StreamEvents').default
-  })
-})
+import { recordSeparator } from '../../../src/utils/EventSubscriber'
 
 const feature = loadFeature('../SubscribeOnUserCountEvent.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
+  const websocketTest = 'wss://localhost:29100/ws'
+  let StreamEvents
   let server = null
-  const handler = jest.fn()
+  let handler
 
-  beforeEach(async () => {
-    server = new WS(eventsLocation)
+  beforeEach(() => {
+    jest.isolateModules(() => {
+      StreamEvents = require('../../../src/StreamEvents').default
+    })
+    handler = jest.fn()
+    server = new WS(websocketTest)
+    StreamEvents.setEventsLocation(websocketTest)
   })
 
-  afterEach(async () => {
+  afterEach(() => {
     WS.clean()
     server = null
   })
