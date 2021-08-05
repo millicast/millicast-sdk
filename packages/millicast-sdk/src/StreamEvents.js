@@ -8,6 +8,9 @@ const logger = Logger.get('StreamEvents')
 const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
+export const defaultEventsLocation = 'wss://streamevents.millicast.com/ws'
+let eventsLocation = defaultEventsLocation
+
 const errorMsg = 'You need to initialize stream event with StreamEvents.init()'
 
 /**
@@ -40,10 +43,29 @@ export default class StreamEvents {
    */
   static async init () {
     const instance = new StreamEvents()
-    instance.eventSubscriber = new EventSubscriber()
+    instance.eventSubscriber = new EventSubscriber(this.getEventsLocation())
     await instance.eventSubscriber.initializeHandshake()
 
     return instance
+  }
+
+  /**
+   * Set Websocket Stream Events location.
+   *
+   * @param {String} url - New Stream Events location
+  */
+  static setEventsLocation (url) {
+    eventsLocation = url
+  }
+
+  /**
+   * Get current Websocket Stream Events location.
+   *
+   * By default, wss://streamevents.millicast.com/ws is the location.
+   * @returns {String} Stream Events location
+  */
+  static getEventsLocation () {
+    return eventsLocation
   }
 
   /**

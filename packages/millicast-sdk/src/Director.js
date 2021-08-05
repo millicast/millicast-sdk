@@ -7,6 +7,7 @@ const streamTypes = {
   RTMP: 'Rtmp'
 }
 
+let liveWebsocketDomain = ''
 export const defaultApiEndpoint = 'https://director.millicast.com'
 let apiEndpoint = defaultApiEndpoint
 
@@ -60,6 +61,26 @@ export default class Director {
   }
 
   /**
+   * Set Websocket Live domain from Director API response.
+   * If it is set to empty, it will not parse the response.
+   *
+   * @param {String} domain - New Websocket Live domain
+  */
+  static setLiveDomain (domain) {
+    liveWebsocketDomain = domain.replace(/\/$/, '')
+  }
+
+  /**
+   * Get current Websocket Live domain.
+   *
+   * By default is empty which corresponds to not parse the Director response.
+   * @returns {String} Websocket Live domain
+  */
+  static getLiveDomain () {
+    return liveWebsocketDomain
+  }
+
+  /**
    * Get publisher connection data.
    * @param {DirectorPublisherOptions | String} options - Millicast options or *Deprecated Millicast Publishing Token.*
    * @param {String} [streamName] - *Deprecated, use options parameter instead* Millicast Stream Name.
@@ -96,7 +117,8 @@ export default class Director {
     const headers = { Authorization: `Bearer ${optionsParsed.token}` }
     const url = `${this.getEndpoint()}/api/director/publish`
     try {
-      const { data } = await axios.post(url, payload, { headers })
+      let { data } = await axios.post(url, payload, { headers })
+      data = parseIncomingDirectorResponse(data)
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
@@ -149,7 +171,8 @@ export default class Director {
     }
     const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
-      const { data } = await axios.post(url, payload, { headers })
+      let { data } = await axios.post(url, payload, { headers })
+      data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
@@ -181,4 +204,13 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
     }
   }
   return parsedOptions
+}
+
+const parseIncomingDirectorResponse = (directorResponse) => {
+  if (Director.getLiveDomain()) {
+    const domainRegex = /(?<=\/\/)(.*?)(?=\/)/
+    const urlsParsed = directorResponse.data.urls.map(url => url.replace(domainRegex, Director.getLiveDomain()))
+    directorResponse.data.urls = urlsParsed
+  }
+  return directorResponse
 }

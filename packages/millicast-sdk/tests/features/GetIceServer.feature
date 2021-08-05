@@ -24,3 +24,8 @@ Feature: As a user I want to get ICE server so I can configure a peer connection
     Given I do not have an ICE server location
     When I want to get the RTC Ice Servers and server responds with 500 error
     Then returns empty ICE Servers
+
+  Scenario: Get RTC Ice servers with custom location set in static method
+    Given I have an ICE server location
+    When I set the TURN server location and I want to get the RTC Ice Servers
+    Then returns the ICE Servers

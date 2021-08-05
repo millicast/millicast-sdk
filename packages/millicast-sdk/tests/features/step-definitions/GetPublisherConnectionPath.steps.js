@@ -7,6 +7,10 @@ jest.mock('axios')
 const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
 
 defineFeature(feature, test => {
+  beforeEach(() => {
+    Director.setLiveDomain('')
+  })
+
   test('Publish with an existing stream name and valid token', ({ given, when, then }) => {
     let token
     let streamName
@@ -175,6 +179,41 @@ defineFeature(feature, test => {
     when('I request a connection path to Director API using options object', async () => {
       axios.post.mockResolvedValue(mockedResponse)
       response = await Director.getPublisher({ token, streamName })
+    })
+
+    then('I get the publish connection path', async () => {
+      expect(response).toBeDefined()
+      expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
+    })
+  })
+
+  test('Publish to an existing stream name, valid token and custom live websocket domain', ({ given, when, then }) => {
+    let token
+    let streamName
+    let response
+    const mockedResponse = {
+      data: {
+        status: 'success',
+        data: {
+          subscribeRequiresAuth: false,
+          wsUrl: 'wss://live-west.millicast.com/ws/v2/pub/12345',
+          urls: [
+            'wss://test.com/ws/v2/pub/12345'
+          ],
+          jwt: dummyToken,
+          streamAccountId: 'Existing_accountId'
+        }
+      }
+    }
+    given('I have a valid token and an existing stream name', async () => {
+      token = 'Valid_token'
+      streamName = 'Existing_stream_name'
+    })
+
+    when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
+      Director.setLiveDomain('test.com')
+      axios.post.mockResolvedValue(mockedResponse)
+      response = await Director.getPublisher(token, streamName)
     })
 
     then('I get the publish connection path', async () => {
