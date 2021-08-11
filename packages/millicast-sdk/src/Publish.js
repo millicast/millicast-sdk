@@ -117,7 +117,11 @@ export default class Publish extends BaseWebRTC {
     await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
+    const signalingConnectPromise = this.signaling.connect()
+    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP(this.options)
+    const values = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    const localSdp = values[0]
+
     let remoteSdp = await this.signaling.publish(localSdp, this.options.codec, this.options.record)
 
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
