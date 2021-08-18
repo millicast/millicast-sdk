@@ -92,7 +92,8 @@ export default class View extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     logger.debug('Viewer connect options values: ', options)
-    this.options = { ...connectOptions, ...options }
+    let promises
+    this.options = { ...connectOptions, ...options, setSDPToPeer: false }
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
@@ -116,8 +117,16 @@ export default class View extends BaseWebRTC {
     await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
-    const sdpSubscriber = await this.signaling.subscribe(localSdp)
+    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
+    const signalingConnectPromise = this.signaling.connect()
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    const localSdp = promises[0]
+
+    const subscribePromise = this.signaling.subscribe(localSdp)
+    const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
+    promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
+    const sdpSubscriber = promises[0]
+
     reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
     await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)

@@ -25,7 +25,8 @@ const localSDPOptions = {
   simulcast: false,
   scalabilityMode: null,
   disableAudio: false,
-  disableVideo: false
+  disableVideo: false,
+  setSDPToPeer: true
 }
 
 /**
@@ -164,7 +165,7 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
-   * Set SDP information to local peer.
+   * Get the SDP modified depending the options. Optionally set the SDP information to local peer.
    * @param {Object} options
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
@@ -175,6 +176,7 @@ export default class PeerConnection extends EventEmitter {
    * **Only available in Google Chrome.**
    * @param {Boolean} options.disableAudio - True to not support audio.
    * @param {Boolean} options.disableVideo - True to not support video.
+   * @param {Boolean} options.setSDPToPeer - True to set the SDP to local peer.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
   async getRTCLocalSDP (options = localSDPOptions) {
@@ -205,8 +207,10 @@ export default class PeerConnection extends EventEmitter {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
 
-    await this.peer.setLocalDescription(this.sessionDescription)
-    logger.info('Peer local description set')
+    if (options.setSDPToPeer) {
+      await this.peer.setLocalDescription(this.sessionDescription)
+      logger.info('Peer local description set')
+    }
 
     return this.sessionDescription.sdp
   }
