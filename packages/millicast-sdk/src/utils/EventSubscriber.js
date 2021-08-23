@@ -2,13 +2,13 @@ import Logger from '../Logger'
 import EventEmitter from 'events'
 
 const logger = Logger.get('EventSubscriber')
-export const eventsLocation = 'wss://streamevents.millicast.com/ws'
 export const recordSeparator = '\x1E'
 
 export default class EventSubscriber extends EventEmitter {
-  constructor () {
+  constructor (eventsLocation) {
     super()
     this.webSocket = null
+    this.eventsLocation = eventsLocation
   }
 
   /**
@@ -41,7 +41,7 @@ export default class EventSubscriber extends EventEmitter {
     if (this.webSocket?.readyState !== WebSocket.CONNECTING && this.webSocket?.readyState !== WebSocket.OPEN) {
       return new Promise((resolve, reject) => {
         logger.info('Starting events WebSocket handshake.')
-        this.webSocket = new WebSocket(eventsLocation)
+        this.webSocket = new WebSocket(this.eventsLocation)
         this.webSocket.onopen = () => {
           logger.info('Connection established with events WebSocket.')
           const handshakeRequest = {

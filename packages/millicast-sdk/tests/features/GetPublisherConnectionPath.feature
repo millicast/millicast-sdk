@@ -19,3 +19,13 @@ Feature: As a user I want to publish to a Millicast Stream so I can get a connec
     Given I have a valid token and an existing stream name
     When I request a connection path to Director API
     Then I get the publish connection path
+
+  Scenario: Publish with an existing stream name, valid token and options as object
+    Given I have a valid token and an existing stream name
+    When I request a connection path to Director API using options object
+    Then I get the publish connection path
+
+  Scenario: Publish to an existing stream name, valid token and custom live websocket domain
+    Given I have a valid token and an existing stream name
+    When I set a custom live websocket domain and I request a connection path to Director API
+    Then I get the publish connection path

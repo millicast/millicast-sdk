@@ -15,6 +15,9 @@ export const webRTCEvents = {
   connectionStateChange: 'connectionStateChange'
 }
 
+export const defaultTurnServerLocation = 'https://turn.millicast.com/webrtc/_turn'
+let turnServerLocation = defaultTurnServerLocation
+
 const localSDPOptions = {
   stereo: false,
   mediaStream: null,
@@ -38,6 +41,25 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
+  }
+
+  /**
+   * Set TURN server location.
+   *
+   * @param {String} url - New TURN location
+   */
+  static setTurnServerLocation (url) {
+    turnServerLocation = url
+  }
+
+  /**
+   * Get current TURN location.
+   *
+   * By default, https://turn.millicast.com/webrtc/_turn is the current TURN location.
+   * @returns {String} TURN url
+   */
+  static getTurnServerLocation () {
+    return turnServerLocation
   }
 
   /**
@@ -91,10 +113,11 @@ export default class PeerConnection extends EventEmitter {
 
   /**
    * Get Ice servers from a Millicast signaling server.
-   * @param {String} location - URL of signaling server where Ice servers will be obtained.
+   * @param {String} location - *Deprecated, use .setTurnServerLocation() method instead* URL of signaling server where Ice servers will be obtained.
    * @returns {Promise<Array<RTCIceServer>>} Promise object which represents a list of Ice servers.
    */
-  async getRTCIceServers (location = 'https://turn.millicast.com/webrtc/_turn') {
+  async getRTCIceServers (location) {
+    location = location ?? turnServerLocation
     logger.info('Getting RTC ICE servers')
     logger.debug('RTC ICE servers request location: ', location)
 
@@ -216,7 +239,7 @@ export default class PeerConnection extends EventEmitter {
     }
 
     logger.info('Updating bitrate to value: ', bitrate)
-    this.peer = await this.getRTCPeer()
+    this.sessionDescription = await this.peer.createOffer()
     await this.peer.setLocalDescription(this.sessionDescription)
     const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
     await this.setRTCRemoteSDP(sdp)
