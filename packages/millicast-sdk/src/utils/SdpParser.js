@@ -96,7 +96,7 @@ export default class SdpParser {
   static setStereo (sdp) {
     logger.info('Replacing SDP response for support stereo')
     sdp = sdp.replace(
-      'useinbandfec=1',
+      /useinbandfec=1/g,
       'useinbandfec=1; stereo=1'
     )
     logger.info('Replaced SDP response for support stereo')
