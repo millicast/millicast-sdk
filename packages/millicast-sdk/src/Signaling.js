@@ -116,7 +116,7 @@ export default class Signaling extends EventEmitter {
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)
@@ -170,17 +170,22 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Subscriber role.
    * @param {String} sdp - The SDP information created by your offer.
+   * @param {Boolean} vad - Enable VAD multiplexing for secondary sources.
+   * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
+   * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe (sdp) {
+  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = { sdp, streamId: this.streamName }
+    const data = { sdp, streamId: this.streamName, pinnedSourceId, excludedSourceIds }
+
+    if (vad) { data.vad = true }
 
     try {
       await this.connect()
@@ -204,10 +209,11 @@ export default class Signaling extends EventEmitter {
    * @param {String} sdp - The SDP information created by your offer.
    * @param {VideoCodec} [codec="h264"] - Codec for publish stream.
    * @param {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+   * @param {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
    * @example const response = await millicastSignaling.publish(sdp, 'h264')
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish (sdp, codec = VideoCodec.H264, record = null) {
+  async publish (sdp, codec = VideoCodec.H264, record = null, sourceId = null) {
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${codec}`)
     logger.debug('Publishing local description: ', sdp)
 
@@ -225,7 +231,8 @@ export default class Signaling extends EventEmitter {
     const data = {
       name: this.streamName,
       sdp,
-      codec
+      codec,
+      sourceId
     }
 
     if (record !== null) {
