@@ -198,10 +198,10 @@ export default class PeerConnection extends EventEmitter {
 
     this.sessionDescription = response
     if (!options.disableAudio) {
-      this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
       if (options.stereo) {
         this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
       }
+      this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
     }
     if (!options.disableVideo && options.simulcast) {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
