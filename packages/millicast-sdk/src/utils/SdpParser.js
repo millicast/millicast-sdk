@@ -96,10 +96,27 @@ export default class SdpParser {
   static setStereo (sdp) {
     logger.info('Replacing SDP response for support stereo')
     sdp = sdp.replace(
-      'useinbandfec=1',
+      /useinbandfec=1/g,
       'useinbandfec=1; stereo=1'
     )
     logger.info('Replaced SDP response for support stereo')
+    logger.debug('New SDP value: ', sdp)
+    return sdp
+  }
+
+  /**
+   * Parse SDP for support dtx.
+   * @param {String} sdp - Current SDP.
+   * @returns {String} SDP parsed with dtx support.
+   * @example SdpParser.setDTX(sdp)
+   */
+  static setDTX (sdp) {
+    logger.info('Replacing SDP response for support dtx')
+    sdp = sdp.replace(
+      'useinbandfec=1',
+      'useinbandfec=1; usedtx=1'
+    )
+    logger.info('Replaced SDP response for support dtx')
     logger.debug('New SDP value: ', sdp)
     return sdp
   }

@@ -41,8 +41,12 @@ export default class View extends BaseWebRTC {
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} options - General subscriber options.
+   * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
+   * @param {Number} multiplexedAudioTracks - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+   * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
+   * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
@@ -92,7 +96,8 @@ export default class View extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     logger.debug('Viewer connect options values: ', options)
-    this.options = { ...connectOptions, ...options }
+    let promises
+    this.options = { ...connectOptions, ...options, setSDPToPeer: false }
     if (this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
@@ -116,8 +121,16 @@ export default class View extends BaseWebRTC {
     await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
 
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
-    const sdpSubscriber = await this.signaling.subscribe(localSdp)
+    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
+    const signalingConnectPromise = this.signaling.connect()
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    const localSdp = promises[0]
+
+    const subscribePromise = this.signaling.subscribe(localSdp, this.options.multiplexedAudioTracks > 0, this.options.pinnedSourceId, this.options.excludedSourceIds)
+    const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
+    promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
+    const sdpSubscriber = promises[0]
+
     reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
     await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)

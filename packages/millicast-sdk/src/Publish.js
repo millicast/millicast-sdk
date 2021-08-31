@@ -43,6 +43,9 @@ export default class Publish extends BaseWebRTC {
    *
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
+   * @param {String} options.sourceId - Source unique id. Only avialable if stream is multisource.
+   * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
+   * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
@@ -84,7 +87,8 @@ export default class Publish extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     logger.debug('Broadcast option values: ', options)
-    this.options = { ...connectOptions, ...options }
+    let promises
+    this.options = { ...connectOptions, ...options, setSDPToPeer: false }
     if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
@@ -117,8 +121,15 @@ export default class Publish extends BaseWebRTC {
     await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
 
-    const localSdp = await this.webRTCPeer.getRTCLocalSDP(this.options)
-    let remoteSdp = await this.signaling.publish(localSdp, this.options.codec, this.options.record)
+    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP(this.options)
+    const signalingConnectPromise = this.signaling.connect()
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    const localSdp = promises[0]
+
+    const publishPromise = this.signaling.publish(localSdp, this.options.codec, this.options.record, this.options.sourceId)
+    const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
+    promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
+    let remoteSdp = promises[0]
 
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
       remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
