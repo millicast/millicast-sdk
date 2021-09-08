@@ -208,8 +208,11 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
 
 const parseIncomingDirectorResponse = (directorResponse) => {
   if (Director.getLiveDomain()) {
-    const domainRegex = /(?<=\/\/)(.*?)(?=\/)/
-    const urlsParsed = directorResponse.data.urls.map(url => url.replace(domainRegex, Director.getLiveDomain()))
+    const domainRegex = /\/\/(.*?)\//
+    const urlsParsed = directorResponse.data.urls.map(url => {
+      const matched = domainRegex.exec(url)
+      return url.replace(matched[1], Director.getLiveDomain())
+    })
     directorResponse.data.urls = urlsParsed
   }
   return directorResponse
