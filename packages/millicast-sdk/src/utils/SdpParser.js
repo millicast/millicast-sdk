@@ -13,6 +13,15 @@ const lastPayloadTypeUpperRange = 127
 const payloadTypeLowerRange = Array.from({ length: (lastPayloadTypeLowerRange - firstPayloadTypeLowerRange) + 1 }, (_, i) => i + firstPayloadTypeLowerRange)
 const payloadTypeUppperRange = Array.from({ length: (lastPayloadTypeUpperRange - firstPayloadTypeUpperRange) + 1 }, (_, i) => i + firstPayloadTypeUpperRange)
 
+const firstHeaderExtensionIdLowerRange = 1
+const lastHeaderExtensionIdLowerRange = 14
+
+const firstHeaderExtensionIdUpperRange = 16
+const lastHeaderExtensionIdUpperRange = 255
+
+const headerExtensionIdLowerRange = Array.from({ length: (lastHeaderExtensionIdLowerRange - firstHeaderExtensionIdLowerRange) + 1 }, (_, i) => i + firstHeaderExtensionIdLowerRange)
+const headerExtensionIdUppperRange = Array.from({ length: (lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange) + 1 }, (_, i) => i + firstHeaderExtensionIdUpperRange)
+
 /**
  * Simplify SDP parser.
  *
@@ -118,6 +127,26 @@ export default class SdpParser {
     )
     logger.info('Replaced SDP response for support dtx')
     logger.debug('New SDP value: ', sdp)
+    return sdp
+  }
+
+  /**
+   * Mangle SDP for adding absolute capture time header extension.
+   * @param {String} sdp - Current SDP.
+   * @returns {String} SDP mungled with abs-catpure-time header extension.
+   * @example SdpParser.setAbsoluteCaptureTime(sdp)
+   */
+  static setAbsoluteCaptureTime(sdp) {
+    const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
+    const header = "a=extmap:" + id + " http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n";
+
+    const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm
+
+    sdp = sdp.replaceAll(regex,(match,p1,p2)=>p1+header+p2);
+
+    logger.info('Replaced SDP response for support dtx')
+    logger.debug('New SDP value: ', sdp)
+
     return sdp
   }
 
@@ -237,6 +266,26 @@ export default class SdpParser {
     }
 
     return ptAvailable
+  }
+
+  /**
+   * Gets all available header extension IDs of the current Session Description.
+   *
+   * @param {String} sdp - Current SDP.
+   * @returns {Array<Number>} All available header extension IDs.
+   */
+  static getAvailableHeaderExtensionIdRange (sdp) {
+    const regex = /a=extmap:(\d+)(?:.*)\r\n/gm
+
+    const matches = sdp.matchAll(regex)
+    let idAvailable = headerExtensionIdLowerRange.concat(headerExtensionIdUppperRange)
+
+    for (const match of matches) {
+      const usedNumbers = match[1].split(' ').map(n => parseInt(n))
+      idAvailable = idAvailable.filter(n => !usedNumbers.includes(n))
+    }
+
+    return idAvailable
   }
 }
 

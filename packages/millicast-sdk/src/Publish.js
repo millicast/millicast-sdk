@@ -46,6 +46,7 @@ export default class Publish extends BaseWebRTC {
    * @param {String} options.sourceId - Source unique id. Only avialable if stream is multisource.
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
    * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
