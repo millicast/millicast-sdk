@@ -136,15 +136,15 @@ export default class SdpParser {
    * @returns {String} SDP mungled with abs-catpure-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  static setAbsoluteCaptureTime(sdp) {
+  static setAbsoluteCaptureTime (sdp) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
-    const header = "a=extmap:" + id + " http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n";
+    const header = 'a=extmap:' + id + ' http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n'
 
     const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm
 
-    sdp = sdp.replaceAll(regex,(match,p1,p2)=>p1+header+p2);
+    sdp = sdp.replace(regex, (match, p1, p2) => p1 + header + p2)
 
-    logger.info('Replaced SDP response for support dtx')
+    logger.info('Replaced SDP response for set absolute capture time')
     logger.debug('New SDP value: ', sdp)
 
     return sdp
