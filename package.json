@@ -19,7 +19,8 @@
     "test": "lerna run test --stream",
     "build-docs": "lerna run build-docs",
     "start-docs": "lerna run start-docs --stream",
-    "publish": "lerna publish from-git"
+    "publish": "lerna publish from-git",
+    "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "devDependencies": {
     "@lerna/publish": "^4.0.0",
