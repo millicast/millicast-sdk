@@ -210,7 +210,9 @@ export default class PeerConnection extends EventEmitter {
     if (!options.disableVideo && options.simulcast) {
       this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
     }
-
+    if (options.absCaptureTime) {
+      this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp)
+    }
     if (options.setSDPToPeer) {
       await this.peer.setLocalDescription(this.sessionDescription)
       logger.info('Peer local description set')

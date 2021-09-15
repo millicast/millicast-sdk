@@ -33,7 +33,8 @@ class MillicastViewTest {
 
       const options = {
         disableVideo: this.disableVideo,
-        disableAudio: this.disableAudio
+        disableAudio: this.disableAudio,
+        absCaptureTime: true
       }
       this.millicastView.on('connectionStateChange', (state) => {
         console.log('Event from connectionStateChange: ', state)

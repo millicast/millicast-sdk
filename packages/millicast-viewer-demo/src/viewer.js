@@ -2,6 +2,8 @@ import { View, Director, Logger } from "@millicast/sdk";
 
 window.Logger = Logger
 
+Logger.setLevel(Logger.DEBUG);
+
 //Get our url
 const href = new URL(window.location.href);
 //Get or set Defaults
@@ -144,8 +146,9 @@ const subscribe = async () => {
     const options = {
       disableVideo: disableVideo,
       disableAudio: disableAudio,
+      absCaptureTime: true,
     };
-    millicastView = newViewer()
+    window.millicastView = millicastView = newViewer()
     await millicastView.connect(options);
   } catch (error) {
     if (!autoReconnect) return;
