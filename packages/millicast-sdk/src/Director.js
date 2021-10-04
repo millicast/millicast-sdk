@@ -8,7 +8,7 @@ const streamTypes = {
 }
 
 let liveWebsocketDomain = ''
-export const defaultApiEndpoint = 'https://director.millicast.com'
+export const defaultApiEndpoint = process.env.MILLICAST_DIRECTOR_ENDPOINT || 'https://director.millicast.com'
 let apiEndpoint = defaultApiEndpoint
 
 /**

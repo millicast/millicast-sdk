@@ -8,7 +8,7 @@ const logger = Logger.get('StreamEvents')
 const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
-export const defaultEventsLocation = 'wss://streamevents.millicast.com/ws'
+export const defaultEventsLocation = process.env.MILLICAST_EVENTS_LOCATION || 'wss://streamevents.millicast.com/ws'
 let eventsLocation = defaultEventsLocation
 
 const errorMsg = 'You need to initialize stream event with StreamEvents.init()'

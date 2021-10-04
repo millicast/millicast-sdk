@@ -15,7 +15,7 @@ export const webRTCEvents = {
   connectionStateChange: 'connectionStateChange'
 }
 
-export const defaultTurnServerLocation = 'https://turn.millicast.com/webrtc/_turn'
+export const defaultTurnServerLocation = process.env.MILLICAST_TURN_SERVER_LOCATION || 'https://turn.millicast.com/webrtc/_turn'
 let turnServerLocation = defaultTurnServerLocation
 
 const localSDPOptions = {
