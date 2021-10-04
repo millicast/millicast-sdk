@@ -4,6 +4,10 @@ import { babel } from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
+import injectProcessEnv from 'rollup-plugin-inject-process-env'
+
+import getEnvironment from './env'
+const environment = getEnvironment()
 
 export default [
   // browser-friendly UMD build
@@ -19,6 +23,9 @@ export default [
       commonjs({
         include: [/node_modules/, /src/],
         transformMixedEsModules: true
+      }),
+      injectProcessEnv({
+        ...environment
       }),
       babel({
         babelHelpers: 'runtime',
@@ -44,6 +51,9 @@ export default [
       commonjs({
         include: [/node_modules/, /src/],
         transformMixedEsModules: true
+      }),
+      injectProcessEnv({
+        ...environment
       }),
       babel({
         babelHelpers: 'bundled',
