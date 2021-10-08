@@ -45,9 +45,10 @@ export default class View extends BaseWebRTC {
    * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
-   * @param {Number} multiplexedAudioTracks - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+   * @param {Number} [multiplexedAudioTracks - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
    * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
    * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
+   * @param {Array<String>} [options.events] - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers").* 
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
@@ -127,7 +128,7 @@ export default class View extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const subscribePromise = this.signaling.subscribe(localSdp, this.options.multiplexedAudioTracks > 0, this.options.pinnedSourceId, this.options.excludedSourceIds)
+    const subscribePromise = this.signaling.subscribe(localSdp, this.options.multiplexedAudioTracks > 0, this.options.pinnedSourceId, this.options.excludedSourceIds, this.options.events)
     const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
@@ -139,4 +140,20 @@ export default class View extends BaseWebRTC {
     this.setReconnect()
     logger.info('Connected to streamName: ', this.streamName)
   }
+
+  /**
+   * Select the simulcast encoding layer and svc layers for the main video track
+   * @param {Object} [layer]			- leave empty for automatic layer selection based on bandwidth estimation.
+   * @param {String} [layer.encodingId]		- rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @param {Number} [layer.spatialLayerId]	- The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [layer.temporalLayerId]	- The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [layer.maxSpatialLayerId]	- Max spatial layer id (default: unlimited)
+   * @param {Number} [layer.maxTemporalLayerId]	- Max temporal layer id (default: unlimited)
+   */
+  async select (layer = {}) {
+    logger.debug('Viewer select layer values: ', options)
+    await this.signaling.cmd('select', layer)
+    logger.info('Connected to streamName: ', this.streamName)
+  }
 }
+

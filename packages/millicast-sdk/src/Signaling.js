@@ -173,7 +173,7 @@ export default class Signaling extends EventEmitter {
    * @param {Boolean} vad - Enable VAD multiplexing for secondary sources.
    * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
    * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
-   * @param {Array<String>} events - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers").
+   * @param {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
@@ -264,4 +264,16 @@ export default class Signaling extends EventEmitter {
       throw e
     }
   }
+
+  /**
+   * Send command to the server.
+   * @param {String} cmd - Command name.
+   * @param {Object} [data] - Command parameters.
+   * @return {Promise<Objec>} Promise object which represents the command response.
+   */
+  async cmd (cmd, data) {
+    logger.info(`Sending cmd: ${cmd}`)
+
+    return this.transactionManager.cmd('cmd', data)
+   }
 }
