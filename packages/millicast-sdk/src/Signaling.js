@@ -116,7 +116,7 @@ export default class Signaling extends EventEmitter {
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)
@@ -173,10 +173,11 @@ export default class Signaling extends EventEmitter {
    * @param {Boolean} vad - Enable VAD multiplexing for secondary sources.
    * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
    * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
+   * @param {Boolean} layerEvents - Enable receving video layer info events from server. 
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null) {
+  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null, layerEvents = false) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
@@ -186,6 +187,7 @@ export default class Signaling extends EventEmitter {
     const data = { sdp, streamId: this.streamName, pinnedSourceId, excludedSourceIds }
 
     if (vad) { data.vad = true }
+    if (layerEvents) { data.layerEvents = true }
 
     try {
       await this.connect()
