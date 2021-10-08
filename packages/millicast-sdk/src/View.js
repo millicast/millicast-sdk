@@ -155,5 +155,34 @@ export default class View extends BaseWebRTC {
     await this.signaling.cmd('select', layer)
     logger.info('Connected to streamName: ', this.streamName)
   }
+
+  /**
+   * Start projecting source in selected media ids.
+   * @param {String} sourceId			        - Selected source id.
+   * @param {Array<Object>} mapping		        - Mapping of the source track ids to the receiver mids
+   * @param {String} mapping.trackId	                - Track id from the source (received on the "active" event)
+   * @param {String} mapping.mediaId	                - mid value of the rtp receiver in which the media is going to be projected.
+   * @param {Object} [mapping.layer]	                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
+   * @param {String} [mappinglayer.encodingId]		- rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @param {Number} [mappinglayer.spatialLayerId]	- The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [mappinglayer.temporalLayerId]	- The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [mappinglayer.maxSpatialLayerId]	- Max spatial layer id (default: unlimited)
+   * @param {Number} [mappinglayer.maxTemporalLayerId]	- Max temporal layer id (default: unlimited)
+   */
+  async project (sourceId, mappings) {
+    logger.debug('Viewer project source:%s layer mappings: ',sourceId, mappings)
+    await this.signaling.cmd('project', layer)
+    logger.info('Projection done')
+  }
+
+  /**
+   * Stop projecting attached source in selected media ids.
+   * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
+   */
+  async unproject (mediaIds) {
+    logger.debug('Viewer unproject mediaIds: ', mediaIds)
+    await this.signaling.cmd('project', layer)
+    logger.info('Unprojection done')
+  }
 }
 
