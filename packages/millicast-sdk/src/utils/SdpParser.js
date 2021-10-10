@@ -1,4 +1,4 @@
-import SemanticSDP from 'semantic-sdp'
+import {SDPInfo, MediaInfo} from 'semantic-sdp'
 import Logger from '../Logger'
 import UserAgent from './UserAgent'
 
@@ -163,7 +163,7 @@ export default class SdpParser {
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
       const browserData = new UserAgent()
-      const offer = SemanticSDP.SDPInfo.parse(sdp)
+      const offer = SDPInfo.parse(sdp)
       const videoOffer = offer.getMedia('video')
 
       logger.info('Setting video bitrate')
@@ -286,6 +286,44 @@ export default class SdpParser {
     }
 
     return idAvailable
+  }
+
+  /**
+   * Renegotiate remote sdp based on previous description.
+   * This function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media
+   * 
+   * @param {String} localDescription - Updated local sdp
+   * @param {String} remoteDescription - Previous remote sdp 
+   */
+  static renegotiate(localDescription, remoteDescription) {
+    const offer = SDPInfo.parse(localDescription)
+    const answer = SDPInfo.parse(remoteDescription)
+
+    //Check all transceivers on the offer are on the answer
+    for (const offeredMedia of offer.getMedias()) {
+      //Get associated mid on the answer
+      let answeredMedia = answer.getMediaById(offeredMedia.getId())
+      //If not found in answer
+      if (!answeredMedia) {
+          //Create new one
+          answeredMedia = new MediaInfo(offeredMedia.getId(),offeredMedia.getMedia())
+          //Find first media line for same kind
+          const first = answer.getMedia(offeredMedia.getMedia())
+          //If found
+          if (first) {
+            //Copy codec info
+            answeredMedia.setCodecs(first.getCodecs())
+            //Copy extension info
+            for (const {id,extension} of first.getExtensions())
+                //Add it
+                answeredMedia.addExtension(id, extension)
+          }
+          //Add it to answer
+          answer.addMedia(answeredMedia)
+      }
+    }
+
+    return answer.toString();
   }
 }
 

@@ -157,6 +157,17 @@ export default class View extends BaseWebRTC {
   }
 
   /**
+   * Add remote receving track.
+   * @param {String} media - Media kind ('audio' | 'video').
+   * @return {Array<MediaStream>} streams - Streams the stream will belong to.
+   */
+  addRemoteTrack(media, streams)
+  {
+    this.info('Viewer adding remote % track', media)
+    return this.webRTCPeer.addRemoteTrack(media, streams)
+  }
+
+  /**
    * Start projecting source in selected media ids.
    * @param {String} sourceId			        - Selected source id.
    * @param {Array<Object>} mapping		        - Mapping of the source track ids to the receiver mids
