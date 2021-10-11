@@ -306,15 +306,15 @@ export default class SdpParser {
       //If not found in answer
       if (!answeredMedia) {
           //Create new one
-          answeredMedia = new MediaInfo(offeredMedia.getId(),offeredMedia.getMedia())
+          answeredMedia = new MediaInfo(offeredMedia.getId(),offeredMedia.getType())
           //Find first media line for same kind
-          const first = answer.getMedia(offeredMedia.getMedia())
+          const first = answer.getMedia(offeredMedia.getType())
           //If found
           if (first) {
             //Copy codec info
             answeredMedia.setCodecs(first.getCodecs())
             //Copy extension info
-            for (const {id,extension} of first.getExtensions())
+            for (const [id,extension] of first.getExtensions())
                 //Add it
                 answeredMedia.addExtension(id, extension)
           }

@@ -161,9 +161,8 @@ export default class View extends BaseWebRTC {
    * @param {String} media - Media kind ('audio' | 'video').
    * @return {Array<MediaStream>} streams - Streams the stream will belong to.
    */
-  addRemoteTrack(media, streams)
-  {
-    this.info('Viewer adding remote % track', media)
+  addRemoteTrack(media, streams) {
+    logger.info('Viewer adding remote % track', media)
     return this.webRTCPeer.addRemoteTrack(media, streams)
   }
 
@@ -180,9 +179,9 @@ export default class View extends BaseWebRTC {
    * @param {Number} [mappinglayer.maxSpatialLayerId]	- Max spatial layer id (default: unlimited)
    * @param {Number} [mappinglayer.maxTemporalLayerId]	- Max temporal layer id (default: unlimited)
    */
-  async project (sourceId, mappings) {
-    logger.debug('Viewer project source:%s layer mappings: ',sourceId, mappings)
-    await this.signaling.cmd('project', layer)
+  async project (sourceId, mapping) {
+    logger.debug('Viewer project source:%s layer mappings: ',sourceId, mapping)
+    await this.signaling.cmd('project', {sourceId,mapping})
     logger.info('Projection done')
   }
 
@@ -192,7 +191,7 @@ export default class View extends BaseWebRTC {
    */
   async unproject (mediaIds) {
     logger.debug('Viewer unproject mediaIds: ', mediaIds)
-    await this.signaling.cmd('project', layer)
+    await this.signaling.cmd('unproject', {mediaIds})
     logger.info('Unprojection done')
   }
 }

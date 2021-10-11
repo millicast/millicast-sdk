@@ -274,6 +274,6 @@ export default class Signaling extends EventEmitter {
   async cmd (cmd, data) {
     logger.info(`Sending cmd: ${cmd}`)
 
-    return this.transactionManager.cmd('cmd', data)
+    return this.transactionManager.cmd(cmd, data)
    }
 }

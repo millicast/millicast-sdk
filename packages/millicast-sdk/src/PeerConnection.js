@@ -490,6 +490,7 @@ const addPeerEvents = (instanceClass, peer) => {
     }
   }
   peer.onnegotiationneeded = async (event) => {
+    if (!peer.remoteDescription) return;
     logger.info('Peer onnegotiationneeded, updating local description')
     await peer.setLocalDescription();
     const sdp = SdpParser.renegotiate(peer.localDescription.sdp, peer.remoteDescription.sdp)
