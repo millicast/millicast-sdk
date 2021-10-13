@@ -41,6 +41,20 @@ export const AudioCodec = {
 }
 
 /**
+ * @typedef {Object} SignalingSubscribeOptions
+ * @property {String} vad - Enable VAD multiplexing for secondary sources.
+ * @property {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
+ * @property {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
+ */
+
+/**
+ * @typedef {Object} SignalingPublishOptions
+ * @property {VideoCodec} [codec="h264"] - Codec for publish stream.
+ * @property {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+ * @property {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
+ */
+
+/**
  * @class Signaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
@@ -170,22 +184,23 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Subscriber role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {Boolean} vad - Enable VAD multiplexing for secondary sources.
-   * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
+   * @param {SignalingSubscribeOptions | Boolean} options - Signaling Subscribe Options or *Deprecated Enable VAD multiplexing for secondary sources.*
+   * @param {String} pinnedSourceId - *Deprecated, use options parameter instead* Id of the main source that will be received by the default MediaStream.
+   * @param {Array<String>} excludedSourceIds - *Deprecated, use options parameter instead* Do not receive media from the these source ids.
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null) {
+  async subscribe (sdp, options, pinnedSourceId = null, excludedSourceIds = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
+    const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = { sdp, streamId: this.streamName, pinnedSourceId, excludedSourceIds }
+    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds }
 
-    if (vad) { data.vad = true }
+    if (optionsParsed.vad) { data.vad = true }
 
     try {
       await this.connect()
@@ -207,36 +222,38 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {VideoCodec} [codec="h264"] - Codec for publish stream.
-   * @param {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-   * @param {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
-   * @example const response = await millicastSignaling.publish(sdp, 'h264')
+   * @param {SignalingPublishOptions | VideoCodec} options - Signaling Publish Options or *Deprecated Codec for publish stream (h264 default).*
+   * @param {Boolean} [record] - *Deprecated, use options parameter instead* Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+   * @param {String} [sourceId] - *Deprecated, use options parameter instead* Source unique id. **Only available in Tokens with multisource enabled.***
+   * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish (sdp, codec = VideoCodec.H264, record = null, sourceId = null) {
-    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${codec}`)
+  async publish (sdp, options, record = null, sourceId = null) {
+    const optionsParsed = getPublishOptions(options, record, sourceId)
+
+    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
 
     const videoCodecs = Object.values(VideoCodec)
-    if (videoCodecs.indexOf(codec) === -1) {
+    if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
       logger.error('Invalid codec. Possible values are: ', videoCodecs)
       throw new Error(`Invalid codec. Possible values are: ${videoCodecs}`)
     }
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
-    if (codec === VideoCodec.AV1) {
+    if (optionsParsed.codec === VideoCodec.AV1) {
       sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
     }
 
     const data = {
       name: this.streamName,
       sdp,
-      codec,
-      sourceId
+      codec: optionsParsed.codec,
+      sourceId: optionsParsed.sourceId
     }
 
-    if (record !== null) {
-      data.record = record
+    if (optionsParsed.record !== null) {
+      data.record = optionsParsed.record
     }
 
     try {
@@ -245,13 +262,8 @@ export default class Signaling extends EventEmitter {
       const result = await this.transactionManager.cmd('publish', data)
 
       // Signaling server returns 'AV1' instead of 'AV1X'
-      if (codec === VideoCodec.AV1) {
+      if (optionsParsed.codec === VideoCodec.AV1) {
         result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
-      }
-
-      // remove a=extmap-allow-mixed for Chrome < M71
-      if (result.sdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
-        result.sdp = SdpParser.removeSdpLine(result.sdp, 'a=extmap-allow-mixed')
       }
 
       logger.info('Command sent, publisherId: ', result.publisherId)
@@ -262,4 +274,29 @@ export default class Signaling extends EventEmitter {
       throw e
     }
   }
+}
+
+const getSubscribeOptions = (options, legacyPinnedSourceId, legacyExcludedSourceIds) => {
+  let parsedOptions = (typeof options === 'object') ? options : {}
+  if (Object.keys(parsedOptions).length === 0) {
+    parsedOptions = {
+      vad: options,
+      pinnedSourceId: legacyPinnedSourceId,
+      excludedSourceIds: legacyExcludedSourceIds
+    }
+  }
+  return parsedOptions
+}
+
+const getPublishOptions = (options, legacyRecord, legacySourceId) => {
+  let parsedOptions = (typeof options === 'object') ? options : {}
+  if (Object.keys(parsedOptions).length === 0) {
+    const defaultCodec = VideoCodec.H264
+    parsedOptions = {
+      codec: options ?? defaultCodec,
+      record: legacyRecord,
+      sourceId: legacySourceId
+    }
+  }
+  return parsedOptions
 }
