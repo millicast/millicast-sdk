@@ -15,7 +15,17 @@ Feature: As a user I want to signal Millicast Server so I can offer publishing a
     When I offer my local sdp with vp9 codec
     Then returns a filtered sdp to offer to remote peer
 
-  Scenario: Offer a SDP with no previous connection and av1 codec
+  Scenario: Offer a SDP with no previous connection and av1 codec and browser supports av1x
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp with av1 codec
+    Then returns a filtered sdp to offer to remote peer
+
+  Scenario: Offer a SDP with no previous connection and av1 codec and browser supports av1
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp with av1 codec
+    Then returns a filtered sdp to offer to remote peer
+
+  Scenario: Offer a SDP with no previous connection and av1 codec and browser does not have getCapabilities 
     Given a local sdp and no previous connection to server
     When I offer my local sdp with av1 codec
     Then returns a filtered sdp to offer to remote peer

@@ -4,6 +4,27 @@ import TransactionManager from 'transaction-manager'
 import Signaling from '../../../src/Signaling'
 const feature = loadFeature('../OfferPublishingStream.feature', { loadRelativePath: true, errors: true })
 
+global.RTCRtpSender = {
+  getCapabilities: jest.fn()
+}
+
+beforeEach(() => {
+  jest.restoreAllMocks()
+  const browserCapabilities = {
+    codecs: [
+      { clockRate: 90000, mimeType: 'video/VP8' },
+      { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=0' },
+      { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=2' },
+      { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f' },
+      { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
+      { clockRate: 90000, mimeType: 'video/H265' },
+      { clockRate: 90000, mimeType: 'video/AV1X' }
+    ],
+    headerExtensions: []
+  }
+  jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
+})
+
 defineFeature(feature, test => {
   const publishWebSocketLocation = 'ws://localhost:8080'
   const streamName = 'MyStreamName'
@@ -316,7 +337,7 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Offer a SDP with no previous connection and av1 codec', ({ given, when, then }) => {
+  test('Offer a SDP with no previous connection and av1 codec and browser supports av1x', ({ given, when, then }) => {
     let response
 
     given('a local sdp and no previous connection to server', async () => {
@@ -342,6 +363,68 @@ defineFeature(feature, test => {
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()
       expect(response).toMatch('AV1X/90000')
+      expect(response).not.toMatch(/H264|VP8|VP9/)
+    })
+  })
+
+  test('Offer a SDP with no previous connection and av1 codec and browser supports av1', ({ given, when, then }) => {
+    let response
+
+    given('a local sdp and no previous connection to server', async () => {
+      jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ codecs: [{ clockRate: 90000, mimeType: 'video/AV1' }] })
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: offerSdp('av1'),
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer my local sdp with av1 codec', async () => {
+      const signaling = new Signaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      response = await signaling.publish(localSdp, 'av1')
+    })
+
+    then('returns a filtered sdp to offer to remote peer', async () => {
+      expect(response).toBeDefined()
+      expect(response).toMatch('AV1/90000')
+      expect(response).not.toMatch(/H264|VP8|VP9/)
+    })
+  })
+
+  test('Offer a SDP with no previous connection and av1 codec and browser does not have getCapabilities', ({ given, when, then }) => {
+    let response
+
+    given('a local sdp and no previous connection to server', async () => {
+      jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue(undefined)
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: offerSdp('av1'),
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer my local sdp with av1 codec', async () => {
+      const signaling = new Signaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      response = await signaling.publish(localSdp, 'av1')
+    })
+
+    then('returns a filtered sdp to offer to remote peer', async () => {
+      expect(response).toBeDefined()
+      expect(response).toMatch('AV1/90000')
       expect(response).not.toMatch(/H264|VP8|VP9/)
     })
   })

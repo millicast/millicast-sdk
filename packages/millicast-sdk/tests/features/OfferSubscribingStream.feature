@@ -4,6 +4,11 @@ Feature: As a user I want to signal Millicast Server so I can offer subscribing 
     Given a local sdp and no previous connection to server
     When I offer my local sdp
     Then returns a filtered sdp to offer to remote peer
+  
+  Scenario: Offer a SDP with no previous connection and browser does not support getCapabilities
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp
+    Then returns a filtered sdp to offer to remote peer
 
   Scenario: Offer a SDP with previous connection
     Given a local sdp and a previous active connection to server

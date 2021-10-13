@@ -192,8 +192,12 @@ export default class Signaling extends EventEmitter {
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
 
-      // Signaling server returns 'AV1' instead of 'AV1X'
-      result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
+      // Check browser supports AV1X
+      const AV1X = RTCRtpReceiver.getCapabilities?.('video')?.codecs?.find?.(codec => codec.mimeType === 'video/AV1X')
+      if (AV1X) {
+        // Signaling server returns 'AV1' instead of 'AV1X'
+        result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
+      }
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
@@ -244,9 +248,13 @@ export default class Signaling extends EventEmitter {
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
 
-      // Signaling server returns 'AV1' instead of 'AV1X'
       if (codec === VideoCodec.AV1) {
-        result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
+        // Check browser supports AV1X
+        const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(codec => codec.mimeType === 'video/AV1X')
+        if (AV1X) {
+          // Signaling server returns 'AV1' instead of 'AV1X'
+          result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
+        }
       }
 
       // remove a=extmap-allow-mixed for Chrome < M71
