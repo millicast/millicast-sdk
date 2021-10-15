@@ -162,7 +162,6 @@ export default class SdpParser {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
     } else {
-      const browserData = new UserAgent()
       const offer = SemanticSDP.SDPInfo.parse(sdp)
       const videoOffer = offer.getMedia('video')
 
