@@ -174,17 +174,23 @@ export default class Signaling extends EventEmitter {
    * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
    * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
    * @param {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
+   * @param {Object} [layer]                    - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
+   * @param {String} [layer.encodingId]         - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @param {Number} [layer.spatialLayerId]     - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [layer.temporalLayerId]    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [layer.maxSpatialLayerId]  - Max spatial layer id (default: unlimited)
+   * @param {Number} [layer.maxTemporalLayerId] - Max temporal layer id (default: unlimited)
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null, events = null) {
+  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null, events = null, layer = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = { sdp, streamId: this.streamName, pinnedSourceId, excludedSourceIds }
+    const data = { sdp, streamId: this.streamName, pinnedSourceId, excludedSourceIds, layer }
 
     if (vad) { data.vad = true }
     if (Array.isArray(events)) { data.events = events }
@@ -275,5 +281,5 @@ export default class Signaling extends EventEmitter {
     logger.info(`Sending cmd: ${cmd}`)
 
     return this.transactionManager.cmd(cmd, data)
-   }
+  }
 }
