@@ -207,12 +207,10 @@ export default class Signaling extends EventEmitter {
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
 
-      // Check browser supports AV1X
+      // Check if browser supports AV1X
       const AV1X = RTCRtpReceiver.getCapabilities?.('video')?.codecs?.find?.(codec => codec.mimeType === 'video/AV1X')
-      if (AV1X) {
-        // Signaling server returns 'AV1' instead of 'AV1X'
-        result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
-      }
+      // Signaling server returns 'AV1'. If browser supports AV1X, we change it to AV1X
+      result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
