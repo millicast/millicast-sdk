@@ -44,7 +44,7 @@
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "js-logger": "^1.6.1",
@@ -63,6 +63,7 @@
     "@babel/runtime": "^7.13.10",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
     "babel-jest": "^26.6.3",
     "clean-jsdoc-theme": "^3.1.2",
