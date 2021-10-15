@@ -162,6 +162,60 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Offer a SDP with no previous connection and options as object', ({ given, when, then }) => {
+    let localSdp
+    let response
+
+    given('a local sdp and no previous connection to server', async () => {
+      localSdp = `v=0
+        o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
+        s=
+        c=IN IP4 host.anywhere.com
+        t=0 0
+        m=audio 49170 RTP/AVP 0
+        a=rtpmap:0 PCMU/8000
+        m=video 51372 RTP/AVP 31
+        a=rtpmap:31 H261/90000
+        m=video 53000 RTP/AVP 32
+        a=rtpmap:32 MPV/90000
+        a=fmtp:124 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=4d001f
+        a=rtpmap:119 rtx/90000
+        a=fmtp:119 apt=124
+        a=rtpmap:123 H264/90000
+        a=rtcp-fb:123 goog-remb
+        a=rtcp-fb:123 transport-cc
+        a=rtcp-fb:123 ccm fir
+        a=rtcp-fb:123 nack
+        a=rtcp-fb:123 nack pli
+      `
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: offerSdp,
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer my local sdp using options object', async () => {
+      const signaling = new Signaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      const signalingSubscribeOptions = {
+        vad: true
+      }
+      response = await signaling.subscribe(localSdp, signalingSubscribeOptions)
+    })
+
+    then('returns a filtered sdp to offer to remote peer', async () => {
+      expect(response).toBeDefined()
+      expect(response).toBe(offerSdp)
+    })
+  })
+
   test('Offer a SDP with previous connection', ({ given, when, then }) => {
     let localSdp
     let response

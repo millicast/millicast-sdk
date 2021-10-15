@@ -429,6 +429,39 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Offer a SDP with no previous connection and options as object', ({ given, when, then }) => {
+    let response
+
+    given('a local sdp and no previous connection to server', async () => {
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: offerSdp('av1'),
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer my local sdp using options object', async () => {
+      const signaling = new Signaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      const signalingPublishOptions = {
+        codec: 'av1'
+      }
+      response = await signaling.publish(localSdp, signalingPublishOptions)
+    })
+
+    then('returns a filtered sdp to offer to remote peer', async () => {
+      expect(response).toBeDefined()
+      expect(response).toMatch('AV1X/90000')
+      expect(response).not.toMatch(/H264|VP8|VP9/)
+    })
+  })
+
   test('Offer a SDP with no codec', ({ given, when, then }) => {
     let response
 
@@ -453,34 +486,6 @@ defineFeature(feature, test => {
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
-      expect(response).toBeDefined()
-      expect(response).toBe(offerSdp())
-    })
-  })
-  test('Signaling returns SDP with extmap-allow-mixed', ({ given, when, then }) => {
-    let response
-
-    given('I have not previous connection to server', async () => {
-      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
-        return {
-          feedId: 12345,
-          publisherId,
-          sdp: `${offerSdp()}\na=extmap-allow-mixed`,
-          streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
-        }
-      })
-    })
-
-    when('I offer a sdp', async () => {
-      const signaling = new Signaling({
-        streamName: streamName,
-        url: publishWebSocketLocation
-      })
-      response = await signaling.publish(localSdp)
-    })
-
-    then('returns a filtered sdp to offer without extmap-allow-mixed', async () => {
       expect(response).toBeDefined()
       expect(response).toBe(offerSdp())
     })
