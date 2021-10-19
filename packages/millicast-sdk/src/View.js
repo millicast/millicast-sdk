@@ -158,7 +158,7 @@ export default class View extends BaseWebRTC {
    */
   async select (layer = {}) {
     logger.debug('Viewer select layer values: ', layer)
-    await this.signaling.cmd('select', layer)
+    await this.signaling.cmd('select', { layer })
     logger.info('Connected to streamName: ', this.streamName)
   }
 
