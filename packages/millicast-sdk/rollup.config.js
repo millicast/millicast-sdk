@@ -5,6 +5,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
 import injectProcessEnv from 'rollup-plugin-inject-process-env'
+import json from '@rollup/plugin-json'
 
 import getEnvironment from './env'
 const environment = getEnvironment()
@@ -24,6 +25,7 @@ export default [
         include: [/node_modules/, /src/],
         transformMixedEsModules: true
       }),
+      json(),
       injectProcessEnv({
         ...environment
       }),
@@ -52,6 +54,7 @@ export default [
         include: [/node_modules/, /src/],
         transformMixedEsModules: true
       }),
+      json(),
       injectProcessEnv({
         ...environment
       }),
