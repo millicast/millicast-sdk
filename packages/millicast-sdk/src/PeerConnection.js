@@ -222,6 +222,15 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
+   * Add remote receving track.
+   * @param {String} media - Media kind ('audio' | 'video').
+   * @return {Array[MediaStream]} streams - Streams the stream will belong to.
+   */
+  addRemoteTrack (media, streams) {
+    return this.peer.addTransceiver(media, { direction: 'recvonly', streams }).track
+  }
+
+  /**
    * Update remote SDP information to restrict bandwidth.
    * @param {String} sdp - Remote SDP.
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
@@ -479,6 +488,15 @@ const addPeerEvents = (instanceClass, peer) => {
       */
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }
+  }
+  peer.onnegotiationneeded = async (event) => {
+    if (!peer.remoteDescription) return
+    logger.info('Peer onnegotiationneeded, updating local description')
+    await peer.setLocalDescription()
+    const sdp = SdpParser.renegotiate(peer.localDescription.sdp, peer.remoteDescription.sdp)
+    logger.info('Peer onnegotiationneeded, updating remote description', sdp)
+    await peer.setRemoteDescription({ type: 'answer', sdp })
+    logger.info('Peer onnegotiationneeded, renegotiation done')
   }
 }
 
