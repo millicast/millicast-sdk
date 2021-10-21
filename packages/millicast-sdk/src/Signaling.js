@@ -47,7 +47,7 @@ export const AudioCodec = {
  * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
  * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
  * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
-*/
+ */
 
 /**
  * @typedef {Object} SignalingSubscribeOptions
@@ -56,7 +56,7 @@ export const AudioCodec = {
  * @property {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
  * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
  * @property {LayerInfo} layer - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
- /
+ */
 
 /**
  * @typedef {Object} SignalingPublishOptions
