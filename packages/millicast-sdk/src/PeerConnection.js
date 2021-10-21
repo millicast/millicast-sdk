@@ -224,7 +224,7 @@ export default class PeerConnection extends EventEmitter {
   /**
    * Add remote receving track.
    * @param {String} media - Media kind ('audio' | 'video').
-   * @return {Array[MediaStream]} streams - Streams the stream will belong to.
+   * @return {Array<MediaStream>} streams - Streams the stream will belong to.
    */
   addRemoteTrack (media, streams) {
     return this.peer.addTransceiver(media, { direction: 'recvonly', streams }).track
