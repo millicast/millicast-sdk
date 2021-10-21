@@ -130,7 +130,7 @@ export default class Signaling extends EventEmitter {
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)
@@ -201,6 +201,7 @@ export default class Signaling extends EventEmitter {
     const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds }
 
     if (optionsParsed.vad) { data.vad = true }
+    if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
 
     try {
       await this.connect()
@@ -276,6 +277,18 @@ export default class Signaling extends EventEmitter {
       logger.error('Error sending publish command, error: ', e)
       throw e
     }
+  }
+
+  /**
+   * Send command to the server.
+   * @param {String} cmd - Command name.
+   * @param {Object} [data] - Command parameters.
+   * @return {Promise<Objec>} Promise object which represents the command response.
+   */
+  async cmd (cmd, data) {
+    logger.info(`Sending cmd: ${cmd}`)
+
+    return this.transactionManager.cmd(cmd, data)
   }
 }
 
