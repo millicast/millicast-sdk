@@ -50,12 +50,7 @@ export default class View extends BaseWebRTC {
    * @param {Array<String>} [options.excludedSourceIds] - Do not receive media from the these source ids.
    * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers").*
    * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
-   * @param {Object} [options.layer]                    - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {String} [options.layer.encodingId]         - rid value of the simulcast encoding of the track  (default: automatic selection)
-   * @param {Number} [options.layer.spatialLayerId]     - The spatial layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [options.layer.temporalLayerId]    - The temporaral layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [options.layer.maxSpatialLayerId]  - Max spatial layer id (default: unlimited)
-   * @param {Number} options.[layer.maxTemporalLayerId] - Max temporal layer id (default: unlimited)
+   * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
@@ -149,12 +144,7 @@ export default class View extends BaseWebRTC {
 
   /**
    * Select the simulcast encoding layer and svc layers for the main video track
-   * @param {Object} [layer]                        - leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {String} [layer.encodingId]             - rid value of the simulcast encoding of the track  (default: automatic selection)
-   * @param {Number} [layer.spatialLayerId]         - The spatial layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [layer.temporalLayerId]        - The temporaral layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [layer.maxSpatialLayerId]      - Max spatial layer id (default: unlimited)
-   * @param {Number} [layer.maxTemporalLayerId]     - Max temporal layer id (default: unlimited)
+   * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
    */
   async select (layer = {}) {
     logger.debug('Viewer select layer values: ', layer)
@@ -179,12 +169,7 @@ export default class View extends BaseWebRTC {
    * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
    * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
    * @param {String} mapping.mediaId                   - mid value of the rtp receiver in which the media is going to be projected.
-   * @param {Object} [mapping.layer]                   - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
-   * @param {String} [mappinglayer.encodingId]         - rid value of the simulcast encoding of the track  (default: automatic selection)
-   * @param {Number} [mappinglayer.spatialLayerId]     - The spatial layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [mappinglayer.temporalLayerId]    - The temporaral layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [mappinglayer.maxSpatialLayerId]  - Max spatial layer id (default: unlimited)
-   * @param {Number} [mappinglayer.maxTemporalLayerId] - Max temporal layer id (default: unlimited)
+   * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
    */
   async project (sourceId, mapping) {
     for (const map of mapping) {
