@@ -48,6 +48,7 @@
 		"buffer": "^6.0.3",
 		"events": "^3.3.0",
 		"js-logger": "^1.6.1",
+		"jsdoc-i18n-plugin": "^0.0.3",
 		"jwt-decode": "^3.1.2",
 		"re-emitter": "^1.1.4",
 		"semantic-sdp": "^3.22.0",

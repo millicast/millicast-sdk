@@ -1,0 +1,18 @@
+{
+    "<p>Callback invoke when new user count is received.</p>": "<p>Callback invoke when new user count is received.</p>",
+    "<p>Stream identifier with the following format <code>accountId/streamName</code>.</p>": "<p>Stream identifier with the following format <code>accountId/streamName</code>.</p>",
+    "<p>Current amount of viewers of the stream.</p>": "<p>Current amount of viewers of the stream.</p>",
+    "<p>Error message.</p>": "<p>Error message.</p>",
+    "<p>Lets you to subscribe to stream events like receive the amount of viewers of a stream.</p>\n<p>This events are handled via a WebSocket with Millicast server.</p>": "<p>Lets you to subscribe to stream events like receive the amount of viewers of a stream.</p>\n<p>This events are handled via a WebSocket with Millicast server.</p>",
+    "<p>Initializes the connection with Millicast Stream Event.</p>": "<p>Initializes the connection with Millicast Stream Event.</p>",
+    "<p>Promise object which represents the StreamEvents instance\nonce the connection with the Millicast stream events is done.</p>": "<p>Promise object which represents the StreamEvents instance\nonce the connection with the Millicast stream events is done.</p>",
+    "<p>Set Websocket Stream Events location.</p>": "<p>Set Websocket Stream Events location.</p>",
+    "<p>New Stream Events location</p>": "<p>New Stream Events location</p>",
+    "<p>Get current Websocket Stream Events location.</p>\n<p>By default, wss://streamevents.millicast.com/ws is the location.</p>": "<p>Get current Websocket Stream Events location.</p>\n<p>By default, wss://streamevents.millicast.com/ws is the location.</p>",
+    "<p>Stream Events location</p>": "<p>Stream Events location</p>",
+    "<p>Subscribes to User Count event and invokes the callback once a new message is available.</p>": "<p>Subscribes to User Count event and invokes the callback once a new message is available.</p>",
+    "<p>Millicast Account Id.</p>": "<p>Millicast Account Id.</p>",
+    "<p>Millicast Stream Name.</p>": "<p>Millicast Stream Name.</p>",
+    "<p>Callback function executed when a new message is available.</p>": "<p>Callback function executed when a new message is available.</p>",
+    "<p>Stop listening to stream events connected.</p>": "<p>Stop listening to stream events connected.</p>"
+}
