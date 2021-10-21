@@ -41,6 +41,20 @@ export const AudioCodec = {
 }
 
 /**
+ * @typedef {Object} SignalingSubscribeOptions
+ * @property {String} vad - Enable VAD multiplexing for secondary sources.
+ * @property {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
+ * @property {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
+ */
+
+/**
+ * @typedef {Object} SignalingPublishOptions
+ * @property {VideoCodec} [codec="h264"] - Codec for publish stream.
+ * @property {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+ * @property {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
+ */
+
+/**
  * @class Signaling
  * @extends EventEmitter
  * @classdesc Starts WebSocket connection and manages the messages between peers.
@@ -170,38 +184,34 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Subscriber role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {Boolean} vad - Enable VAD multiplexing for secondary sources.
-   * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
-   * @param {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
-   * @param {Object} [layer]                    - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {String} [layer.encodingId]         - rid value of the simulcast encoding of the track  (default: automatic selection)
-   * @param {Number} [layer.spatialLayerId]     - The spatial layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [layer.temporalLayerId]    - The temporaral layer id to send to the outgoing stream (default: max layer available)
-   * @param {Number} [layer.maxSpatialLayerId]  - Max spatial layer id (default: unlimited)
-   * @param {Number} [layer.maxTemporalLayerId] - Max temporal layer id (default: unlimited)
+   * @param {SignalingSubscribeOptions | Boolean} options - Signaling Subscribe Options or *Deprecated Enable VAD multiplexing for secondary sources.*
+   * @param {String} pinnedSourceId - *Deprecated, use options parameter instead* Id of the main source that will be received by the default MediaStream.
+   * @param {Array<String>} excludedSourceIds - *Deprecated, use options parameter instead* Do not receive media from the these source ids.
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe (sdp, vad = 0, pinnedSourceId = null, excludedSourceIds = null, events = null, layer = null) {
+  async subscribe (sdp, options, pinnedSourceId = null, excludedSourceIds = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
+    const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = { sdp, streamId: this.streamName, pinnedSourceId, excludedSourceIds, layer }
+    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds }
 
-    if (vad) { data.vad = true }
-    if (Array.isArray(events)) { data.events = events }
+    if (optionsParsed.vad) { data.vad = true }
+    if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
 
     try {
       await this.connect()
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
 
-      // Signaling server returns 'AV1' instead of 'AV1X'
-      result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
+      // Check if browser supports AV1X
+      const AV1X = RTCRtpReceiver.getCapabilities?.('video')?.codecs?.find?.(codec => codec.mimeType === 'video/AV1X')
+      // Signaling server returns 'AV1'. If browser supports AV1X, we change it to AV1X
+      result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
@@ -215,36 +225,38 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {VideoCodec} [codec="h264"] - Codec for publish stream.
-   * @param {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-   * @param {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
-   * @example const response = await millicastSignaling.publish(sdp, 'h264')
+   * @param {SignalingPublishOptions | VideoCodec} options - Signaling Publish Options or *Deprecated Codec for publish stream (h264 default).*
+   * @param {Boolean} [record] - *Deprecated, use options parameter instead* Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+   * @param {String} [sourceId] - *Deprecated, use options parameter instead* Source unique id. **Only available in Tokens with multisource enabled.***
+   * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish (sdp, codec = VideoCodec.H264, record = null, sourceId = null) {
-    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${codec}`)
+  async publish (sdp, options, record = null, sourceId = null) {
+    const optionsParsed = getPublishOptions(options, record, sourceId)
+
+    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
 
     const videoCodecs = Object.values(VideoCodec)
-    if (videoCodecs.indexOf(codec) === -1) {
+    if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
       logger.error('Invalid codec. Possible values are: ', videoCodecs)
       throw new Error(`Invalid codec. Possible values are: ${videoCodecs}`)
     }
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
-    if (codec === VideoCodec.AV1) {
+    if (optionsParsed.codec === VideoCodec.AV1) {
       sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
     }
 
     const data = {
       name: this.streamName,
       sdp,
-      codec,
-      sourceId
+      codec: optionsParsed.codec,
+      sourceId: optionsParsed.sourceId
     }
 
-    if (record !== null) {
-      data.record = record
+    if (optionsParsed.record !== null) {
+      data.record = optionsParsed.record
     }
 
     try {
@@ -252,14 +264,10 @@ export default class Signaling extends EventEmitter {
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
 
-      // Signaling server returns 'AV1' instead of 'AV1X'
-      if (codec === VideoCodec.AV1) {
-        result.sdp = SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X')
-      }
-
-      // remove a=extmap-allow-mixed for Chrome < M71
-      if (result.sdp?.indexOf('\na=extmap-allow-mixed') !== -1) {
-        result.sdp = SdpParser.removeSdpLine(result.sdp, 'a=extmap-allow-mixed')
+      if (optionsParsed.codec === VideoCodec.AV1) {
+        // If browser supports AV1X, we change from AV1 to AV1X
+        const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(codec => codec.mimeType === 'video/AV1X')
+        result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
       }
 
       logger.info('Command sent, publisherId: ', result.publisherId)
@@ -282,4 +290,29 @@ export default class Signaling extends EventEmitter {
 
     return this.transactionManager.cmd(cmd, data)
   }
+}
+
+const getSubscribeOptions = (options, legacyPinnedSourceId, legacyExcludedSourceIds) => {
+  let parsedOptions = (typeof options === 'object') ? options : {}
+  if (Object.keys(parsedOptions).length === 0) {
+    parsedOptions = {
+      vad: options,
+      pinnedSourceId: legacyPinnedSourceId,
+      excludedSourceIds: legacyExcludedSourceIds
+    }
+  }
+  return parsedOptions
+}
+
+const getPublishOptions = (options, legacyRecord, legacySourceId) => {
+  let parsedOptions = (typeof options === 'object') ? options : {}
+  if (Object.keys(parsedOptions).length === 0) {
+    const defaultCodec = VideoCodec.H264
+    parsedOptions = {
+      codec: options ?? defaultCodec,
+      record: legacyRecord,
+      sourceId: legacySourceId
+    }
+  }
+  return parsedOptions
 }
