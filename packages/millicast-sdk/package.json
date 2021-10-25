@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -52,7 +52,7 @@
     "re-emitter": "^1.1.4",
     "semantic-sdp": "^3.22.0",
     "transaction-manager": "^2.1.3",
-    "ua-parser-js": "^0.7.28"
+    "ua-parser-js": "^0.7.30"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
