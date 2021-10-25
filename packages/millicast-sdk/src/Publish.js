@@ -109,7 +109,7 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-    const recordingAvailable = jwtDecode(publisherData.jwt).millicast.record
+    const recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
     if (this.options.record && !recordingAvailable) {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')
