@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode'
 import reemit from 're-emitter'
+import { atob } from 'Base64'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { VideoCodec } from './Signaling'

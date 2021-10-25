@@ -45,6 +45,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.21.4",
+		"Base64": "^1.1.0",
 		"buffer": "^6.0.3",
 		"events": "^3.3.0",
 		"js-logger": "^1.6.1",
