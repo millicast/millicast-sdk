@@ -14,6 +14,13 @@ let eventsLocation = defaultEventsLocation
 const errorMsg = 'You need to initialize stream event with StreamEvents.init()'
 
 /**
+ * @typedef {Object} OnUserCountOptions
+ * @property {String} accountId - Millicast Account Id.
+ * @property {String} streamName - Millicast Stream Name.
+ * @property {onUserCountCallback} callback - Callback function executed when a new message is available.
+ */
+
+/**
  * Callback invoke when new user count is received.
  *
  * @callback onUserCountCallback
@@ -70,9 +77,9 @@ export default class StreamEvents {
 
   /**
    * Subscribes to User Count event and invokes the callback once a new message is available.
-   * @param {String} accountId - Millicast Account Id.
-   * @param {String} streamName - Millicast Stream Name.
-   * @param {onUserCountCallback} callback - Callback function executed when a new message is available.
+   * @param {OnUserCountOptions | String} options - Millicast options or *Deprecated Millicast Account Id.*
+   * @param {String} [streamName] - *Deprecated, use options parameter instead* Millicast Stream Name.
+   * @param {onUserCountCallback} [callback] - *Deprecated, use options parameter instead* Callback function executed when a new message is available.
    * @example
    * import StreamEvents from '@millicast/sdk'
    *
@@ -80,25 +87,29 @@ export default class StreamEvents {
    * const streamEvents = await StreamEvents.init()
    * const accountId = "Publisher account ID"
    * const streamName = "Stream Name"
+   * const options = {
+   *    accountId, 
+   *    streamName,
+   *    callback: (data) => {
+   *      if (data.error) {
+   *        console.error("Handle error: ", error)
+   *      } else {
+   *        console.log("Viewers: ", data.count)
+   *      }
+   *    }
+   *  }
    *
    * //Initializes the user count event
-   * streamEvents.onUserCount(accountId, streamName, (data) => {
-   *  if (data.error) {
-   *    console.error("Handle error: ", error)
-   *  }
-   *  else {
-   *    console.log("Viewers: ", data.count)
-   *  }
-   * })
+   * streamEvents.onUserCount(options)
    */
-  onUserCount (accountId, streamName, callback) {
+  onUserCount (options, streamName = null, callback = null) {
     if (!this.eventSubscriber) {
       logger.error(errorMsg)
       throw new Error(errorMsg)
     }
-
-    logger.info(`Starting user count. AccountId: ${accountId}, streamName: ${streamName}`)
-    const streamId = `${accountId}/${streamName}`
+    const optionsParsed = getOnUserCountOptions(options, streamName, callback)
+    logger.info(`Starting user count. AccountId: ${optionsParsed.accountId}, streamName: ${optionsParsed.streamName}`)
+    const streamId = `${optionsParsed.accountId}/${optionsParsed.streamName}`
     const requestInvocationId = invocationId++
     const userCountRequest = {
       arguments: [[streamId]],
@@ -109,7 +120,7 @@ export default class StreamEvents {
     }
     this.eventSubscriber.subscribe(userCountRequest)
     this.eventSubscriber.on('message', (response) => {
-      handleStreamCountResponse(streamId, requestInvocationId, response, callback)
+      handleStreamCountResponse(streamId, requestInvocationId, response, optionsParsed.callback)
     })
   }
 
@@ -150,4 +161,16 @@ const handleStreamCountResponse = (streamIdConstraint, invocationIdConstraint, r
     default:
       break
   }
+}
+
+const getOnUserCountOptions = (options, legacyStreamName, legacyCallback) => {
+  let parsedOptions = (typeof options === 'object') ? options : {}
+  if (Object.keys(parsedOptions).length === 0) {
+    parsedOptions = {
+      accountId: options,
+      streamName: legacyStreamName,
+      callback: legacyCallback
+    }
+  }
+  return parsedOptions
 }
