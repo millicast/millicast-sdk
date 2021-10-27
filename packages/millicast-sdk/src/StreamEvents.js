@@ -88,7 +88,7 @@ export default class StreamEvents {
    * const accountId = "Publisher account ID"
    * const streamName = "Stream Name"
    * const options = {
-   *    accountId, 
+   *    accountId,
    *    streamName,
    *    callback: (data) => {
    *      if (data.error) {

@@ -336,7 +336,7 @@ defineFeature(feature, test => {
     })
 
     when('I subscribe to onUserCount event passing params as an object', () => {
-      streamEvents.onUserCount({accountId, streamName, callback: handler})
+      streamEvents.onUserCount({ accountId, streamName, callback: handler })
       server.send(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"${accountId}/${streamName}","count":1}]}${recordSeparator}`)
     })
 
