@@ -322,4 +322,27 @@ defineFeature(feature, test => {
       expect(currentWebSocket).toMatchObject(streamEvents.eventSubscriber.webSocket)
     })
   })
+
+  test('Subscribe to onUserCount event with object param', ({ given, when, then }) => {
+    let accountId
+    let streamName
+    let streamEvents
+
+    given('an instanced StreamEvents and existing accountId and streamName', async () => {
+      accountId = 'AccountID'
+      streamName = 'StreamName'
+      server.on('connection', () => server.send(`{}${recordSeparator}`))
+      streamEvents = await StreamEvents.init()
+    })
+
+    when('I subscribe to onUserCount event passing params as an object', () => {
+      streamEvents.onUserCount({ accountId, streamName, callback: handler })
+      server.send(`{"type":1,"target":"SubscribeViewerCountResponse","arguments":[{"streamId":"${accountId}/${streamName}","count":1}]}${recordSeparator}`)
+    })
+
+    then('callback with count result is executed', () => {
+      expect(handler).toBeCalledTimes(1)
+      expect(handler).toBeCalledWith({ streamId: `${accountId}/${streamName}`, count: 1 })
+    })
+  })
 })
