@@ -167,10 +167,13 @@ const getOnUserCountOptions = (options, legacyStreamName, legacyCallback) => {
   let parsedOptions = (typeof options === 'object') ? options : {}
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
-      accountId: process.env.MILLICAST_FIXED_ACCOUNT_ID || options,
+      accountId: options,
       streamName: legacyStreamName,
       callback: legacyCallback
     }
+  }
+  if (process.env.MILLICAST_FIXED_ACCOUNT_ID) {
+    parsedOptions = { ...parsedOptions, accountId: process.env.MILLICAST_FIXED_ACCOUNT_ID }
   }
   return parsedOptions
 }

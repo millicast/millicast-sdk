@@ -199,9 +199,13 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       streamName: options,
-      streamAccountId: process.env.MILLICAST_FIXED_ACCOUNT_ID || legacyStreamAccountId,
+      streamAccountId: legacyStreamAccountId,
       subscriberToken: legacySubscriberToken
     }
+  }
+  console.log('APP ID - - -- - - - ', process.env.MILLICAST_FIXED_ACCOUNT_ID)
+  if (process.env.MILLICAST_FIXED_ACCOUNT_ID) {
+    parsedOptions = { ...parsedOptions, streamAccountId: process.env.MILLICAST_FIXED_ACCOUNT_ID }
   }
   return parsedOptions
 }
