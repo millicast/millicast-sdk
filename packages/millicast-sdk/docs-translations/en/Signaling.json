@@ -32,5 +32,9 @@
     "<p>Establish WebRTC connection with Millicast Server as Publisher role.</p>": "<p>Establish WebRTC connection with Millicast Server as Publisher role.</p>",
     "<p>Signaling Publish Options or <em>Deprecated Codec for publish stream (h264 default).</em></p>": "<p>Signaling Publish Options or <em>Deprecated Codec for publish stream (h264 default).</em></p>",
     "<p><em>Deprecated, use options parameter instead</em> Enable stream recording. If record is not provided, use default Token configuration. <strong>Only available in Tokens with recording enabled.</strong></p>": "<p><em>Deprecated, use options parameter instead</em> Enable stream recording. If record is not provided, use default Token configuration. <strong>Only available in Tokens with recording enabled.</strong></p>",
-    "<p><em>Deprecated, use options parameter instead</em> Source unique id. <strong>Only available in Tokens with multisource enabled.</strong>*</p>": "<p><em>Deprecated, use options parameter instead</em> Source unique id. <strong>Only available in Tokens with multisource enabled.</strong>*</p>"
+    "<p><em>Deprecated, use options parameter instead</em> Source unique id. <strong>Only available in Tokens with multisource enabled.</strong>*</p>": "<p><em>Deprecated, use options parameter instead</em> Source unique id. <strong>Only available in Tokens with multisource enabled.</strong>*</p>",
+    "<p>Send command to the server.</p>": "<p>Send command to the server.</p>",
+    "<p>Command name.</p>": "<p>Command name.</p>",
+    "<p>Command parameters.</p>": "<p>Command parameters.</p>",
+    "<p>Promise object which represents the command response.</p>": "<p>Promise object which represents the command response.</p>"
 }
