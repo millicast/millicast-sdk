@@ -40,15 +40,22 @@ export default class View extends BaseWebRTC {
    * Connects to an active stream as subscriber.
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
-   * @param {Object} options - General subscriber options.
-   * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.
-   * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to receive video stream.
-   * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to receive audio stream.
-   * @param {Number} multiplexedAudioTracks - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
-   * @param {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
-   * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
+   * @param {Object} [options]                          - General subscriber options.
+   * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+   * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
+   * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
+   * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+   * @param {String} [options.pinnedSourceId]           - Id of the main source that will be received by the default MediaStream.
+   * @param {Array<String>} [options.excludedSourceIds] - Do not receive media from the these source ids.
+   * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers").*
+   * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
+   * @param {Object} [options.layer]                    - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
+   * @param {String} [options.layer.encodingId]         - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @param {Number} [options.layer.spatialLayerId]     - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [options.layer.temporalLayerId]    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [options.layer.maxSpatialLayerId]  - Max spatial layer id (default: unlimited)
+   * @param {Number} options.[layer.maxTemporalLayerId] - Max temporal layer id (default: unlimited)
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
@@ -138,5 +145,76 @@ export default class View extends BaseWebRTC {
 
     this.setReconnect()
     logger.info('Connected to streamName: ', this.streamName)
+  }
+
+  /**
+   * Select the simulcast encoding layer and svc layers for the main video track
+   * @param {Object} [layer]                        - leave empty for automatic layer selection based on bandwidth estimation.
+   * @param {String} [layer.encodingId]             - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @param {Number} [layer.spatialLayerId]         - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [layer.temporalLayerId]        - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [layer.maxSpatialLayerId]      - Max spatial layer id (default: unlimited)
+   * @param {Number} [layer.maxTemporalLayerId]     - Max temporal layer id (default: unlimited)
+   */
+  async select (layer = {}) {
+    logger.debug('Viewer select layer values: ', layer)
+    await this.signaling.cmd('select', { layer })
+    logger.info('Connected to streamName: ', this.streamName)
+  }
+
+  /**
+   * Add remote receving track.
+   * @param {String} media - Media kind ('audio' | 'video').
+   * @return {Array<MediaStream>} streams - Streams the stream will belong to.
+   */
+  addRemoteTrack (media, streams) {
+    logger.info('Viewer adding remote % track', media)
+    return this.webRTCPeer.addRemoteTrack(media, streams)
+  }
+
+  /**
+   * Start projecting source in selected media ids.
+   * @param {String} sourceId                          - Selected source id.
+   * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
+   * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
+   * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
+   * @param {String} mapping.mediaId                   - mid value of the rtp receiver in which the media is going to be projected.
+   * @param {Object} [mapping.layer]                   - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
+   * @param {String} [mappinglayer.encodingId]         - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @param {Number} [mappinglayer.spatialLayerId]     - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [mappinglayer.temporalLayerId]    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @param {Number} [mappinglayer.maxSpatialLayerId]  - Max spatial layer id (default: unlimited)
+   * @param {Number} [mappinglayer.maxTemporalLayerId] - Max temporal layer id (default: unlimited)
+   */
+  async project (sourceId, mapping) {
+    for (const map of mapping) {
+      if (!map.trackId && !map.media) {
+        logger.error('Error in projection mapping, trackId or mediaId must be set')
+        throw new Error('Error in projection mapping, trackId or mediaId must be set')
+      }
+      if (!map.mediaId) {
+        logger.error('Error in projection mapping, mediaId must be set')
+        throw new Error('Error in projection mapping, mediaId must be set')
+      }
+      const peer = this.webRTCPeer.getRTCPeer()
+      // Check we have the mediaId in the transceivers
+      if (!peer.getTransceivers().find(t => t.mid === map.mediaId)) {
+        logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
+        throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
+      }
+    }
+    logger.debug('Viewer project source:%s layer mappings: ', sourceId, mapping)
+    await this.signaling.cmd('project', { sourceId, mapping })
+    logger.info('Projection done')
+  }
+
+  /**
+   * Stop projecting attached source in selected media ids.
+   * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
+   */
+  async unproject (mediaIds) {
+    logger.debug('Viewer unproject mediaIds: ', mediaIds)
+    await this.signaling.cmd('unproject', { mediaIds })
+    logger.info('Unprojection done')
   }
 }
