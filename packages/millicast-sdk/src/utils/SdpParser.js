@@ -144,7 +144,27 @@ export default class SdpParser {
 
     sdp = sdp.replace(regex, (match, p1, p2) => p1 + header + p2)
 
-    logger.info('Replaced SDP response for set absolute capture time')
+    logger.info('Replaced SDP response for setting absolute capture time')
+    logger.debug('New SDP value: ', sdp)
+
+    return sdp
+  }
+
+  /**
+   * Mangle SDP for adding dependency descriptor header extension.
+   * @param {String} sdp - Current SDP.
+   * @returns {String} SDP mungled with abs-catpure-time header extension.
+   * @example SdpParser.setAbsoluteCaptureTime(sdp)
+   */
+  static setDependencyDescriptor (sdp) {
+    const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
+    const header = 'a=extmap:' + id + ' https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension\r\n'
+
+    const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm
+
+    sdp = sdp.replace(regex, (match, p1, p2) => p1 + header + p2)
+
+    logger.info('Replaced SDP response for setting depency descriptor')
     logger.debug('New SDP value: ', sdp)
 
     return sdp

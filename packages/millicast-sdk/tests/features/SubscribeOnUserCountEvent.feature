@@ -69,3 +69,8 @@ Feature: As a user I want to subscribe to onUserCount event so I can see how man
     Given I am connected to server
     When I want to reconnect
     Then reconnection is ignored
+
+  Scenario: Subscribe to onUserCount event with object param
+    Given an instanced StreamEvents and existing accountId and streamName
+    When I subscribe to onUserCount event passing params as an object
+    Then callback with count result is executed
