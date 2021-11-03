@@ -175,6 +175,8 @@ export default class PeerConnection extends EventEmitter {
    * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
    * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
+   * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+   * @param {Boolean} options.dependencyDescriptor - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
    * @param {Boolean} options.disableAudio - True to not support audio.
    * @param {Boolean} options.disableVideo - True to not support video.
    * @param {Boolean} options.setSDPToPeer - True to set the SDP to local peer.
@@ -213,6 +215,10 @@ export default class PeerConnection extends EventEmitter {
     if (options.absCaptureTime) {
       this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp)
     }
+    if (options.dependencyDescriptor) {
+      this.sessionDescription.sdp = SdpParser.setDependencyDescriptor(this.sessionDescription.sdp)
+    }
+
     if (options.setSDPToPeer) {
       await this.peer.setLocalDescription(this.sessionDescription)
       logger.info('Peer local description set')
