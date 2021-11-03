@@ -18,5 +18,6 @@
     "<p>Selected scalability mode. You can get the available capabilities using <a href=\"PeerConnection#.getCapabilities\">PeerConnection.getCapabilities</a> method.\n<strong>Only available in Google Chrome.</strong></p>": "<p>Selected scalability mode. You can get the available capabilities using <a href=\"PeerConnection#.getCapabilities\">PeerConnection.getCapabilities</a> method.\n<strong>Only available in Google Chrome.</strong></p>",
     "<p>Options to configure the new RTCPeerConnection.</p>": "<p>Options to configure the new RTCPeerConnection.</p>",
     "<p>Enable stream recording. If record is not provided, use default Token configuration. <strong>Only available in Tokens with recording enabled.</strong></p>": "<p>Enable stream recording. If record is not provided, use default Token configuration. <strong>Only available in Tokens with recording enabled.</strong></p>",
-    "<p>Promise object which resolves when the broadcast started successfully.</p>": "<p>Promise object which resolves when the broadcast started successfully.</p>"
+    "<p>Promise object which resolves when the broadcast started successfully.</p>": "<p>Promise object which resolves when the broadcast started successfully.</p>",
+    "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>"
 }

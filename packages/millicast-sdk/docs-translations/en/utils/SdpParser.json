@@ -32,5 +32,6 @@
     "<p>returns true if MediaStream has more than 2 channels.</p>": "<p>returns true if MediaStream has more than 2 channels.</p>",
     "<p>Renegotiate remote sdp based on previous description.\nThis function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media</p>": "<p>Renegotiate remote sdp based on previous description.\nThis function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media</p>",
     "<p>Updated local sdp</p>": "<p>Updated local sdp</p>",
-    "<p>Previous remote sdp</p>": "<p>Previous remote sdp</p>"
+    "<p>Previous remote sdp</p>": "<p>Previous remote sdp</p>",
+    "<p>Mangle SDP for adding dependency descriptor header extension.</p>": "<p>Mangle SDP for adding dependency descriptor header extension.</p>"
 }

@@ -58,5 +58,7 @@
     "<p>PeerConnection instance.</p>": "<p>PeerConnection instance.</p>",
     "<p>Peer instance.</p>": "<p>Peer instance.</p>",
     "<p>New track event.</p>": "<p>New track event.</p>",
-    "<p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>": "<p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>"
+    "<p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>": "<p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>",
+    "<p>True to modify SDP for supporting absolute capture time header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting absolute capture time header extension. Otherwise False.</p>",
+    "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>"
 }

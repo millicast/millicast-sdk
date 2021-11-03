@@ -36,5 +36,12 @@
     "<p>Send command to the server.</p>": "<p>Send command to the server.</p>",
     "<p>Command name.</p>": "<p>Command name.</p>",
     "<p>Command parameters.</p>": "<p>Command parameters.</p>",
-    "<p>Promise object which represents the command response.</p>": "<p>Promise object which represents the command response.</p>"
+    "<p>Promise object which represents the command response.</p>": "<p>Promise object which represents the command response.</p>",
+    "<p>rid value of the simulcast encoding of the track  (default: automatic selection)</p>": "<p>rid value of the simulcast encoding of the track  (default: automatic selection)</p>",
+    "<p>The spatial layer id to send to the outgoing stream (default: max layer available)</p>": "<p>The spatial layer id to send to the outgoing stream (default: max layer available)</p>",
+    "<p>The temporaral layer id to send to the outgoing stream (default: max layer available)</p>": "<p>The temporaral layer id to send to the outgoing stream (default: max layer available)</p>",
+    "<p>Max spatial layer id (default: unlimited)</p>": "<p>Max spatial layer id (default: unlimited)</p>",
+    "<p>Max temporal layer id (default: unlimited)</p>": "<p>Max temporal layer id (default: unlimited)</p>",
+    "<p>Override which events will be delivered by the server (&quot;active&quot; | &quot;inactive&quot; | &quot;vad&quot; | &quot;layers&quot;).</p>": "<p>Override which events will be delivered by the server (&quot;active&quot; | &quot;inactive&quot; | &quot;vad&quot; | &quot;layers&quot;).</p>",
+    "<p>Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.</p>": "<p>Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.</p>"
 }
