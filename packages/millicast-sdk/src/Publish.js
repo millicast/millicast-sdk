@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode'
 import reemit from 're-emitter'
+import { atob } from 'Base64'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { VideoCodec } from './Signaling'
@@ -110,7 +111,7 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-    const recordingAvailable = jwtDecode(publisherData.jwt).millicast.record
+    const recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
     if (this.options.record && !recordingAvailable) {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')

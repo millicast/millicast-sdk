@@ -8,7 +8,7 @@ const streamTypes = {
 }
 
 let liveWebsocketDomain = ''
-export const defaultApiEndpoint = 'https://director.millicast.com'
+export const defaultApiEndpoint = process.env.MILLICAST_DIRECTOR_ENDPOINT || 'https://director.millicast.com'
 let apiEndpoint = defaultApiEndpoint
 
 /**
@@ -202,6 +202,9 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
       streamAccountId: legacyStreamAccountId,
       subscriberToken: legacySubscriberToken
     }
+  }
+  if (process.env.MILLICAST_FIXED_ACCOUNT_ID) {
+    parsedOptions = { ...parsedOptions, streamAccountId: process.env.MILLICAST_FIXED_ACCOUNT_ID }
   }
   return parsedOptions
 }
