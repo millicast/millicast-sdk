@@ -3,14 +3,23 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": ["src"],
+    "include": [
+      "src"
+    ],
     "includePattern": ".+\\.js(doc|x)?$",
     "excludePattern": "(^|\\/|\\\\)_"
   },
   "plugins": [
     "plugins/markdown",
-    "node_modules/jsdoc-export-default-interop/dist/index"
+    "node_modules/jsdoc-export-default-interop/dist/index",
+    "node_modules/jsdoc-i18n-plugin/index.js"
   ],
+  "i18n": {
+    "locale": "en",
+    "directory": "docs-translations/",
+    "srcDir": "src/",
+    "extension": ".json"
+  },
   "opts": {
     "template": "node_modules/clean-jsdoc-theme",
     "encoding": "utf8",

@@ -1,0 +1,19 @@
+{
+    "<p>Callback invoke when a new connection path is needed.</p>": "<p>Callback invoke when a new connection path is needed.</p>",
+    "<p>Promise object which represents the result of getting the new connection path.</p>\n<p>You can use your own token generator or use the <a href='Director'>Director available methods</a>.</p>": "<p>Promise object which represents the result of getting the new connection path.</p>\n<p>You can use your own token generator or use the <a href='Director'>Director available methods</a>.</p>",
+    "<p>Base class for common actions about peer connection and reconnect mechanism for Publishers and Viewer instances.</p>": "<p>Base class for common actions about peer connection and reconnect mechanism for Publishers and Viewer instances.</p>",
+    "<p>Millicast existing stream name.</p>": "<p>Millicast existing stream name.</p>",
+    "<p>Callback function executed when a new token is needed.</p>": "<p>Callback function executed when a new token is needed.</p>",
+    "<p>Logger instance from the extended classes.</p>": "<p>Logger instance from the extended classes.</p>",
+    "<p>Enable auto reconnect.</p>": "<p>Enable auto reconnect.</p>",
+    "<p>Get current RTC peer connection.</p>": "<p>Get current RTC peer connection.</p>",
+    "<p>Object which represents the RTCPeerConnection.</p>": "<p>Object which represents the RTCPeerConnection.</p>",
+    "<p>Stops connection.</p>": "<p>Stops connection.</p>",
+    "<p>Get if the current connection is active.</p>": "<p>Get if the current connection is active.</p>",
+    "<ul>\n<li>True if connected, false if not.</li>\n</ul>": "<ul>\n<li>True if connected, false if not.</li>\n</ul>",
+    "<p>Sets reconnection if autoReconnect is enabled.</p>": "<p>Sets reconnection if autoReconnect is enabled.</p>",
+    "<p>Reconnects to last broadcast.</p>": "<p>Reconnects to last broadcast.</p>",
+    "<p>Emits with every reconnection attempt made when an active stream\nstopped unexpectedly.</p>": "<p>Emits with every reconnection attempt made when an active stream\nstopped unexpectedly.</p>",
+    "<p>Next retry interval in milliseconds.</p>": "<p>Next retry interval in milliseconds.</p>",
+    "<p>Error object with cause of failure.</p>": "<p>Error object with cause of failure.</p>"
+}

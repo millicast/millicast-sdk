@@ -4,7 +4,11 @@ import { babel } from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
+import injectProcessEnv from 'rollup-plugin-inject-process-env'
 import json from '@rollup/plugin-json'
+
+import getEnvironment from './env'
+const environment = getEnvironment()
 
 export default [
   // browser-friendly UMD build
@@ -22,6 +26,9 @@ export default [
         transformMixedEsModules: true
       }),
       json(),
+      injectProcessEnv({
+        ...environment
+      }),
       babel({
         babelHelpers: 'runtime',
         presets: ['@babel/preset-env'],
@@ -48,6 +55,9 @@ export default [
         transformMixedEsModules: true
       }),
       json(),
+      injectProcessEnv({
+        ...environment
+      }),
       babel({
         babelHelpers: 'bundled',
         presets: [['@babel/preset-env', { targets: { node: 6 } }]],
