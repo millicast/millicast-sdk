@@ -1,6 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
 import { recordSeparator } from '../../../src/utils/EventSubscriber'
+import config from '../../../src/config'
 
 const feature = loadFeature('../SubscribeOnUserCountEvent.feature', { loadRelativePath: true, errors: true })
 
@@ -68,7 +69,7 @@ defineFeature(feature, test => {
     let streamEvents
 
     given('an instanced StreamEvents and existing accountId and streamName', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       streamEvents = await StreamEvents.init()
@@ -93,7 +94,7 @@ defineFeature(feature, test => {
     let streamEvents
 
     given('an instanced StreamEvents and existing accountId and two streamNames', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamNameOne = 'StreamNameOne'
       streamNameTwo = 'StreamNameTwo'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
@@ -121,7 +122,7 @@ defineFeature(feature, test => {
     let streamEvents
 
     given('I am subscribed to onUserCount with valid accountId and streamName', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       streamEvents = await StreamEvents.init()
@@ -143,7 +144,7 @@ defineFeature(feature, test => {
     let streamName
 
     given('I am subscribed to onUserCount with valid accountId and streamName', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       const streamEvents = await StreamEvents.init()
@@ -164,7 +165,7 @@ defineFeature(feature, test => {
     let streamName
 
     given('I am subscribed to onUserCount with valid accountId and streamName', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       const streamEvents = await StreamEvents.init()
@@ -227,7 +228,7 @@ defineFeature(feature, test => {
     let streamName
 
     given('an already subscribed StreamEvents instance', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       const streamEvents = await StreamEvents.init()
@@ -249,7 +250,7 @@ defineFeature(feature, test => {
     let streamName
 
     given('I am subscribed to onUserCount with valid accountId and streamName', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       const streamEvents = await StreamEvents.init()
@@ -329,7 +330,7 @@ defineFeature(feature, test => {
     let streamEvents
 
     given('an instanced StreamEvents and existing accountId and streamName', async () => {
-      accountId = 'AccountID'
+      accountId = config.MILLICAST_FIXED_ACCOUNT_ID || 'AccountID'
       streamName = 'StreamName'
       server.on('connection', () => server.send(`{}${recordSeparator}`))
       streamEvents = await StreamEvents.init()
