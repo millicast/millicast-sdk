@@ -4,11 +4,8 @@ import { babel } from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
-import injectProcessEnv from 'rollup-plugin-inject-process-env'
 import json from '@rollup/plugin-json'
-
-import getEnvironment from './env'
-const environment = getEnvironment()
+import replace from '@rollup/plugin-replace'
 
 export default [
   // browser-friendly UMD build
@@ -26,8 +23,14 @@ export default [
         transformMixedEsModules: true
       }),
       json(),
-      injectProcessEnv({
-        ...environment
+      replace({
+        values: {
+          'process.env.MILLICAST_DIRECTOR_ENDPOINT': undefined,
+          'process.env.MILLICAST_TURN_SERVER_LOCATION': undefined,
+          'process.env.MILLICAST_EVENTS_LOCATION': undefined,
+          'process.env.MILLICAST_FIXED_ACCOUNT_ID': undefined
+        },
+        preventAssignment: true
       }),
       babel({
         babelHelpers: 'runtime',
@@ -55,9 +58,6 @@ export default [
         transformMixedEsModules: true
       }),
       json(),
-      injectProcessEnv({
-        ...environment
-      }),
       babel({
         babelHelpers: 'bundled',
         presets: [['@babel/preset-env', { targets: { node: 6 } }]],
