@@ -7,6 +7,7 @@ import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './Signaling'
 import mozGetCapabilities from './utils/FirefoxCapabilities'
+import config from './config'
 
 const logger = Logger.get('PeerConnection')
 
@@ -15,7 +16,7 @@ export const webRTCEvents = {
   connectionStateChange: 'connectionStateChange'
 }
 
-export const defaultTurnServerLocation = process.env.MILLICAST_TURN_SERVER_LOCATION || 'https://turn.millicast.com/webrtc/_turn'
+export const defaultTurnServerLocation = config.MILLICAST_TURN_SERVER_LOCATION
 let turnServerLocation = defaultTurnServerLocation
 
 const localSDPOptions = {

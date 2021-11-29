@@ -1,5 +1,6 @@
 import Logger from './Logger'
 import EventSubscriber from './utils/EventSubscriber'
+import config from './config'
 
 const USER_COUNT_TARGET = 'SubscribeViewerCount'
 const USER_COUNT_TARGET_RESPONSE = 'SubscribeViewerCountResponse'
@@ -8,7 +9,7 @@ const logger = Logger.get('StreamEvents')
 const messageType = { REQUEST: 1, RESPONSE: 3 }
 let invocationId = 0
 
-export const defaultEventsLocation = process.env.MILLICAST_EVENTS_LOCATION || 'wss://streamevents.millicast.com/ws'
+export const defaultEventsLocation = config.MILLICAST_EVENTS_LOCATION
 let eventsLocation = defaultEventsLocation
 
 const errorMsg = 'You need to initialize stream event with StreamEvents.init()'
@@ -172,8 +173,8 @@ const getOnUserCountOptions = (options, legacyStreamName, legacyCallback) => {
       callback: legacyCallback
     }
   }
-  if (process.env.MILLICAST_FIXED_ACCOUNT_ID) {
-    parsedOptions = { ...parsedOptions, accountId: process.env.MILLICAST_FIXED_ACCOUNT_ID }
+  if (config.MILLICAST_FIXED_ACCOUNT_ID) {
+    parsedOptions = { ...parsedOptions, accountId: config.MILLICAST_FIXED_ACCOUNT_ID }
   }
   return parsedOptions
 }

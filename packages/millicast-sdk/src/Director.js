@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Logger from './Logger'
+import config from './config'
 
 const logger = Logger.get('Director')
 const streamTypes = {
@@ -8,7 +9,7 @@ const streamTypes = {
 }
 
 let liveWebsocketDomain = ''
-export const defaultApiEndpoint = process.env.MILLICAST_DIRECTOR_ENDPOINT || 'https://director.millicast.com'
+export const defaultApiEndpoint = config.MILLICAST_DIRECTOR_ENDPOINT
 let apiEndpoint = defaultApiEndpoint
 
 /**
@@ -203,8 +204,8 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
       subscriberToken: legacySubscriberToken
     }
   }
-  if (process.env.MILLICAST_FIXED_ACCOUNT_ID) {
-    parsedOptions = { ...parsedOptions, streamAccountId: process.env.MILLICAST_FIXED_ACCOUNT_ID }
+  if (config.MILLICAST_FIXED_ACCOUNT_ID) {
+    parsedOptions = { ...parsedOptions, streamAccountId: config.MILLICAST_FIXED_ACCOUNT_ID }
   }
   return parsedOptions
 }
