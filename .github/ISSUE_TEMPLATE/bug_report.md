@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: bug
-assignees: emilsas, R-Delfino95
+assignees: murillo128, R-Delfino95
 
 ---
 
