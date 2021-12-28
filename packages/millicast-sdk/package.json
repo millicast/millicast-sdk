@@ -57,6 +57,7 @@
 		"ua-parser-js": "^0.7.30"
 	},
 	"devDependencies": {
+		"core-js": "^3.20.1",
 		"@babel/core": "^7.13.10",
 		"@babel/helpers": "^7.13.10",
 		"@babel/plugin-transform-modules-commonjs": "^7.13.8",
