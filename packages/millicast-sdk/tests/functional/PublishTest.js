@@ -7,6 +7,7 @@ const tokenGenerator = () => millicast.Director.getPublisher({ token, streamName
 
 class MillicastPublishTest {
   constructor () {
+    millicast.Logger.setLevel(millicast.Logger.DEBUG)
     this.streamCount = null
     this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
   }

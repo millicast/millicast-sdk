@@ -5,6 +5,7 @@ const streamName = window.streamName
 
 class MillicastViewTest {
   constructor () {
+    millicast.Logger.setLevel(millicast.Logger.DEBUG)
     const href = new URL(window.location.href)
     this.streamAccountId = (href.searchParams.get('streamAccountId')) ? href.searchParams.get('streamAccountId') : accountId
     this.streamName = (href.searchParams.get('streamName')) ? href.searchParams.get('streamName') : streamName
