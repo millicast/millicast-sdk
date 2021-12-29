@@ -24,7 +24,22 @@ export default [
       json(),
       babel({
         babelHelpers: 'runtime',
-        presets: ['@babel/preset-env'],
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                safari: '12',
+                firefox: '66'
+              },
+              useBuiltIns: 'usage',
+              corejs: {
+                version: pkg.devDependencies['core-js'],
+                proposals: false
+              }
+            }
+          ]
+        ],
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
       }),
@@ -50,7 +65,23 @@ export default [
       json(),
       babel({
         babelHelpers: 'bundled',
-        presets: [['@babel/preset-env', { targets: { node: 6 } }]],
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                node: 6,
+                safari: '12',
+                firefox: '66'
+              },
+              useBuiltIns: 'usage',
+              corejs: {
+                version: pkg.devDependencies['core-js'],
+                proposals: false
+              }
+            }
+          ]
+        ],
         exclude: ['/node_modules/**']
       })
     ]
