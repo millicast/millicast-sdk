@@ -155,9 +155,10 @@ export default class View extends BaseWebRTC {
   /**
    * Add remote receving track.
    * @param {String} media - Media kind ('audio' | 'video').
-   * @return {Array<MediaStream>} streams - Streams the stream will belong to.
+   * @param {Array<MediaStream>} streams - Streams the track will belong to.
+   * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
-  addRemoteTrack (media, streams) {
+  async addRemoteTrack (media, streams) {
     logger.info('Viewer adding remote % track', media)
     return this.webRTCPeer.addRemoteTrack(media, streams)
   }
