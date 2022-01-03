@@ -231,10 +231,18 @@ export default class PeerConnection extends EventEmitter {
   /**
    * Add remote receving track.
    * @param {String} media - Media kind ('audio' | 'video').
-   * @return {Array<MediaStream>} streams - Streams the stream will belong to.
+   * @param {Array<MediaStream>} streams - Streams the track will belong to.
+   * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
-  addRemoteTrack (media, streams) {
-    return this.peer.addTransceiver(media, { direction: 'recvonly', streams }).track
+  async addRemoteTrack (media, streams) {
+    return new Promise((resolve, reject) => {
+      try {
+        const transceiver = this.peer.addTransceiver(media, { direction: 'recvonly', streams })
+        transceiver.resolve = resolve
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 
   /**
@@ -466,6 +474,14 @@ const addPeerEvents = (instanceClass, peer) => {
   peer.ontrack = (event) => {
     logger.info('New track from peer.')
     logger.debug('Track event value: ', event)
+
+    // Listen for remote tracks events for resolving pending addRemoteTrack calls.
+    if (event?.transceiver?.resolve) {
+      const resolve = event.transceiver.resolve
+      delete (event.transceiver.resolve)
+      resolve(event.transceiver)
+    }
+
     /**
      * New track event.
      *
