@@ -237,8 +237,12 @@ export default class PeerConnection extends EventEmitter {
   async addRemoteTrack (media, streams) {
     return new Promise((resolve, reject) => {
       try {
-        const transceiver = this.peer.addTransceiver(media, { direction: 'recvonly', streams })
+        const transceiver = this.peer.addTransceiver(media, { direction: 'recvonly' })
+        for (const stream of streams) {
+          stream.addTrack(transceiver.receiver.track)
+        }
         transceiver.resolve = resolve
+        transceiver.streams = streams
       } catch (e) {
         reject(e)
       }
