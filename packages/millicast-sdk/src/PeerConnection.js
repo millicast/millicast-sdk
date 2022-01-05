@@ -237,8 +237,12 @@ export default class PeerConnection extends EventEmitter {
   async addRemoteTrack (media, streams) {
     return new Promise((resolve, reject) => {
       try {
-        const transceiver = this.peer.addTransceiver(media, { direction: 'recvonly', streams })
+        const transceiver = this.peer.addTransceiver(media, { direction: 'recvonly' })
+        for (const stream of streams) {
+          stream.addTrack(transceiver.receiver.track)
+        }
         transceiver.resolve = resolve
+        transceiver.streams = streams
       } catch (e) {
         reject(e)
       }
@@ -515,8 +519,10 @@ const addPeerEvents = (instanceClass, peer) => {
   peer.onnegotiationneeded = async (event) => {
     if (!peer.remoteDescription) return
     logger.info('Peer onnegotiationneeded, updating local description')
-    await peer.setLocalDescription()
-    const sdp = SdpParser.renegotiate(peer.localDescription.sdp, peer.remoteDescription.sdp)
+    const offer = await peer.createOffer()
+    logger.info('Peer onnegotiationneeded, got local offer', offer.sdp)
+    await peer.setLocalDescription(offer)
+    const sdp = SdpParser.renegotiate(offer.sdp, peer.remoteDescription.sdp)
     logger.info('Peer onnegotiationneeded, updating remote description', sdp)
     await peer.setRemoteDescription({ type: 'answer', sdp })
     logger.info('Peer onnegotiationneeded, renegotiation done')
