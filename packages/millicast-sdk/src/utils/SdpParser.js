@@ -321,7 +321,7 @@ export default class SdpParser {
       if (!answeredMedia) {
         // Create new one
         answeredMedia = new MediaInfo(offeredMedia.getId(), offeredMedia.getType())
-        //Set direction
+        // Set direction
         answeredMedia.setDirection(Direction.reverse(offeredMedia.getDirection()))
         // Find first media line for same kind
         const first = answer.getMedia(offeredMedia.getType())
