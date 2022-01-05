@@ -519,8 +519,10 @@ const addPeerEvents = (instanceClass, peer) => {
   peer.onnegotiationneeded = async (event) => {
     if (!peer.remoteDescription) return
     logger.info('Peer onnegotiationneeded, updating local description')
-    await peer.setLocalDescription()
-    const sdp = SdpParser.renegotiate(peer.localDescription.sdp, peer.remoteDescription.sdp)
+    const offer = await peer.createOffer()
+    logger.info('Peer onnegotiationneeded, got local offer',offer.sdp)
+    await peer.setLocalDescription(offer)
+    const sdp = SdpParser.renegotiate(offer.sdp, peer.remoteDescription.sdp)
     logger.info('Peer onnegotiationneeded, updating remote description', sdp)
     await peer.setRemoteDescription({ type: 'answer', sdp })
     logger.info('Peer onnegotiationneeded, renegotiation done')

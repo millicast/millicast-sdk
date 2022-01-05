@@ -1,4 +1,4 @@
-import { SDPInfo, MediaInfo } from 'semantic-sdp'
+import { SDPInfo, MediaInfo, Direction } from 'semantic-sdp'
 import Logger from '../Logger'
 import UserAgent from './UserAgent'
 
@@ -321,6 +321,8 @@ export default class SdpParser {
       if (!answeredMedia) {
         // Create new one
         answeredMedia = new MediaInfo(offeredMedia.getId(), offeredMedia.getType())
+        //Set direction
+        answeredMedia.setDirection(Direction.reverse(offeredMedia.getDirection()))
         // Find first media line for same kind
         const first = answer.getMedia(offeredMedia.getType())
         // If found
