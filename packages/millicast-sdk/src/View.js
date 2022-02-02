@@ -169,7 +169,7 @@ export default class View extends BaseWebRTC {
    * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
    * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
    * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
-   * @param {String} mapping.mediaId                   - mid value of the rtp receiver in which the media is going to be projected.
+   * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
    * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
    */
   async project (sourceId, mapping) {
@@ -178,13 +178,9 @@ export default class View extends BaseWebRTC {
         logger.error('Error in projection mapping, trackId or mediaId must be set')
         throw new Error('Error in projection mapping, trackId or mediaId must be set')
       }
-      if (!map.mediaId) {
-        logger.error('Error in projection mapping, mediaId must be set')
-        throw new Error('Error in projection mapping, mediaId must be set')
-      }
       const peer = this.webRTCPeer.getRTCPeer()
       // Check we have the mediaId in the transceivers
-      if (!peer.getTransceivers().find(t => t.mid === map.mediaId)) {
+      if (map.mediaId && !peer.getTransceivers().find(t => t.mid === map.mediaId)) {
         logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
         throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
       }
