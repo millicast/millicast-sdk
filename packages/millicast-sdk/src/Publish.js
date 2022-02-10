@@ -3,7 +3,7 @@ import reemit from 're-emitter'
 import { atob } from 'Base64'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
-import Signaling, { VideoCodec } from './Signaling'
+import Signaling, { signalingEvents, VideoCodec } from './Signaling'
 import { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('Publish')
 
@@ -60,8 +60,10 @@ export default class Publish extends BaseWebRTC {
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+   * @param {Array<String>} [options.events] - Specify which events will be delivered by the server (any of "active" | "inactive").*
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
+   * @fires Signaling#broadcastEvent
    * @example await publish.connect(options)
    * @example
    * import Publish from '@millicast/sdk'
@@ -123,6 +125,7 @@ export default class Publish extends BaseWebRTC {
 
     await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
+    reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
     const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP(this.options)
     const signalingConnectPromise = this.signaling.connect()
