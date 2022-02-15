@@ -69,3 +69,8 @@ Feature: As a user I want to signal Millicast Server so I can offer publishing a
     Given I have not previous connection to server
     When I offer a sdp
     Then returns a filtered sdp to offer to remote peer
+
+  Scenario: Offer a SDP with no previous connection and desired events
+    Given a local sdp and no previous connection to server
+    When I offer my local sdp and I set the events active and inactive as events that i want to get
+    Then returns a filtered sdp to offer to remote peer

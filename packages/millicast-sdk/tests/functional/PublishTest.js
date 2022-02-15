@@ -8,6 +8,7 @@ const tokenGenerator = () => millicast.Director.getPublisher({ token, streamName
 class MillicastPublishTest {
   constructor () {
     millicast.Logger.setLevel(millicast.Logger.DEBUG)
+    millicast.Director.setEndpoint(window.directorEndpoint)
     this.streamCount = null
     this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
   }
@@ -79,8 +80,12 @@ class MillicastPublishTest {
         codec: this.selectedCodec,
         scalabilityMode: this.selectedScalabilityMode === 'none' ? null : this.selectedScalabilityMode,
         record: false,
-        absCaptureTime: true
+        absCaptureTime: true,
+        events: ['active', 'inactive']
       }
+      this.millicastPublish.on('broadcastEvent', (data) => {
+        console.log('Broadcast Event: ', data)
+      })
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
           const viewLink = `http://localhost:10002/?streamAccountId=${accountId}&streamId=${streamName}`
