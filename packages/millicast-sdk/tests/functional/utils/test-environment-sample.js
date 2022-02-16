@@ -2,3 +2,4 @@
 window.accountId = ''
 window.streamName = ''
 window.token = ''
+window.directorEndpoint = 'https://director.millicast.com'

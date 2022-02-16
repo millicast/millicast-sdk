@@ -490,4 +490,38 @@ defineFeature(feature, test => {
       expect(response).toBe(offerSdp())
     })
   })
+
+  test('Offer a SDP with no previous connection and desired events', ({ given, when, then }) => {
+    let response
+
+    given('a local sdp and no previous connection to server', async () => {
+      jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
+        return {
+          feedId: 12345,
+          publisherId,
+          sdp: offerSdp('av1'),
+          streamId: `${accountId}/${streamName}`,
+          uuid: 'feeds://uuid1234/5678'
+        }
+      })
+    })
+
+    when('I offer my local sdp and I set the events active and inactive as events that i want to get', async () => {
+      const signaling = new Signaling({
+        streamName: streamName,
+        url: publishWebSocketLocation
+      })
+      const signalingPublishOptions = {
+        codec: 'av1',
+        events: ['active', 'inactive']
+      }
+      response = await signaling.publish(localSdp, signalingPublishOptions)
+    })
+
+    then('returns a filtered sdp to offer to remote peer', async () => {
+      expect(response).toBeDefined()
+      expect(response).toMatch('AV1X/90000')
+      expect(response).not.toMatch(/H264|VP8|VP9/)
+    })
+  })
 })

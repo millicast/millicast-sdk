@@ -123,6 +123,7 @@ export default class View extends BaseWebRTC {
 
     await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
     reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
+    reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
     const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
     const signalingConnectPromise = this.signaling.connect()
@@ -133,8 +134,6 @@ export default class View extends BaseWebRTC {
     const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
-
-    reemit(this.signaling, this, [signalingEvents.broadcastEvent])
 
     await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
 
