@@ -151,4 +151,10 @@ export default class Publish extends BaseWebRTC {
     this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
     super.reconnect()
   }
+
+  testMigration () {
+    this.signaling.emit('migrate')
+  }
+
+  replaceConnection () {}
 }

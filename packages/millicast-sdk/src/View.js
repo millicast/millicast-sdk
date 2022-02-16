@@ -198,4 +198,8 @@ export default class View extends BaseWebRTC {
     await this.signaling.cmd('unproject', { mediaIds })
     logger.info('Unprojection done')
   }
+
+  testMigration () {
+    this.signaling.emit('migrate')
+  }
 }

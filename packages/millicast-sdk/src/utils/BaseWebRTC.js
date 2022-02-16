@@ -81,6 +81,7 @@ export default class BaseWebRTC extends EventEmitter {
    * Sets reconnection if autoReconnect is enabled.
    */
   setReconnect () {
+    this.signaling.on('migrate', () => this.replaceConnection())
     if (this.autoReconnect) {
       this.signaling.on(signalingEvents.connectionError, () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
