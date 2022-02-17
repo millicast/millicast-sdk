@@ -111,8 +111,8 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-    this.recordingOptions = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
-    if (this.options.record && !this.recordingOptions) {
+    this.recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
+    if (this.options.record && !this.recordingAvailable) {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')
     }
@@ -149,8 +149,11 @@ export default class Publish extends BaseWebRTC {
     super.reconnect()
   }
 
+  /**
+   * Initialize recording in an active stream.
+   */
   async record () {
-    if (this.recordingOptions) {
+    if (this.recordingAvailable) {
       await this.signaling.cmd('record')
       logger.info('Broadcaster start recording')
     } else {
@@ -158,8 +161,11 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
+  /**
+   * Finalize recording in an active stream.
+   */
   async unrecord () {
-    if (this.recordingOptions) {
+    if (this.recordingAvailable) {
       await this.signaling.cmd('unrecord')
       logger.info('Broadcaster stop recording')
     } else {
