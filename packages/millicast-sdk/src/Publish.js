@@ -60,7 +60,6 @@ export default class Publish extends BaseWebRTC {
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-   * @param {Object} recordingAvailable - Have a object if record is available
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @example await publish.connect(options)
@@ -112,8 +111,8 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-    this.recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
-    if (this.options.record && !this.recordingAvailable) {
+    this.recordingOptions = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
+    if (this.options.record && !this.recordingOptions) {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')
     }
@@ -151,7 +150,7 @@ export default class Publish extends BaseWebRTC {
   }
 
   async record () {
-    if (this.recordingAvailable) {
+    if (this.recordingOptions) {
       await this.signaling.cmd('record')
       logger.info('Broadcaster start recording')
     } else {
@@ -160,7 +159,7 @@ export default class Publish extends BaseWebRTC {
   }
 
   async unrecord () {
-    if (this.recordingAvailable) {
+    if (this.recordingOptions) {
       await this.signaling.cmd('unrecord')
       logger.info('Broadcaster stop recording')
     } else {
