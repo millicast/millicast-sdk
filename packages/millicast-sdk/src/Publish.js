@@ -4,7 +4,7 @@ import { atob } from 'Base64'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents, VideoCodec } from './Signaling'
-import { webRTCEvents } from './PeerConnection'
+import PeerConnection, { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('Publish')
 
 const connectOptions = {
@@ -156,5 +156,41 @@ export default class Publish extends BaseWebRTC {
     this.signaling.emit('migrate')
   }
 
-  replaceConnection () {}
+  async replaceConnection () {
+    logger.info('Migrating the current connection')
+    this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
+    let promises
+    const publisherData = await this.tokenGenerator()
+
+    const webRTCPeerMigration = new PeerConnection()
+    const signalingMigration = new Signaling({
+      streamName: this.streamName,
+      url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
+    })
+
+    await webRTCPeerMigration.createRTCPeer(this.options.peerConfig)
+    reemit(webRTCPeerMigration, this, [webRTCEvents.connectionStateChange])
+    reemit(signalingMigration, this, [signalingEvents.broadcastEvent])
+
+    const getLocalSDPPromise = webRTCPeerMigration.getRTCLocalSDP(this.options)
+    const signalingConnectPromise = signalingMigration.connect()
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    const localSdp = promises[0]
+
+    const publishPromise = signalingMigration.publish(localSdp, this.options)
+    const setLocalDescriptionPromise = webRTCPeerMigration.peer.setLocalDescription(webRTCPeerMigration.sessionDescription)
+    promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
+    let remoteSdp = promises[0]
+
+    if (!this.options.disableVideo && this.options.bandwidth > 0) {
+      remoteSdp = webRTCPeerMigration.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
+    }
+
+    await webRTCPeerMigration.setRTCRemoteSDP(remoteSdp)
+
+    this.signaling = signalingMigration
+    this.webRTCPeer = webRTCPeerMigration
+    this.setReconnect()
+    logger.info('Current connection migrated')
+  }
 }

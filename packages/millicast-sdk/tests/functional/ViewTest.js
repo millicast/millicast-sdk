@@ -43,11 +43,11 @@ class MillicastViewTest {
       })
       await this.millicastView.connect(options)
 
-      this.millicastView.webRTCPeer.initStats()
-      this.millicastView.webRTCPeer.on('stats', (stats) => {
-        this.stats = stats
-        this.loadStatsInTable(stats)
-      })
+      // this.millicastView.webRTCPeer.initStats()
+      // this.millicastView.webRTCPeer.on('stats', (stats) => {
+      //   this.stats = stats
+      //   this.loadStatsInTable(stats)
+      // })
     } catch (error) {
       console.log('There was an error while trying to connect with the publisher')
       this.millicastView.reconnect()

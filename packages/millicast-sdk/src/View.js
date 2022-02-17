@@ -202,4 +202,8 @@ export default class View extends BaseWebRTC {
   testMigration () {
     this.signaling.emit('migrate')
   }
+
+  replaceConnection () {
+    logger.info('Migrating the current connection')
+  }
 }
