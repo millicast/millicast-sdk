@@ -82,8 +82,6 @@ export default class SdpParser {
             'a=ssrc:' + rtx + ' mslabel:' + mslabel + '\r\n' +
             'a=ssrc:' + rtx + ' label:' + label + '\r\n'
       }
-      // Conference flag
-      sdp += 'a=x-google-flag:conference\r\n'
       // Add SIM group
       sdp += 'a=ssrc-group:SIM ' + ssrcs.join(' ') + '\r\n'
 
