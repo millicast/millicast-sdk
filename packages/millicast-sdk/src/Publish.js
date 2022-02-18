@@ -91,60 +91,8 @@ export default class Publish extends BaseWebRTC {
    * }
    */
   async connect (options = connectOptions) {
-    logger.debug('Broadcast option values: ', options)
-    let promises
     this.options = { ...connectOptions, ...options, setSDPToPeer: false }
-    if (!this.options.mediaStream) {
-      logger.error('Error while broadcasting. MediaStream required')
-      throw new Error('MediaStream required')
-    }
-    if (this.isActive()) {
-      logger.warn('Broadcast currently working')
-      throw new Error('Broadcast currently working')
-    }
-    let publisherData
-    try {
-      publisherData = await this.tokenGenerator()
-    } catch (error) {
-      logger.error('Error generating token.')
-      throw error
-    }
-    if (!publisherData) {
-      logger.error('Error while broadcasting. Publisher data required')
-      throw new Error('Publisher data required')
-    }
-    const recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
-    if (this.options.record && !recordingAvailable) {
-      logger.error('Error while broadcasting. Record option detected but recording is not available')
-      throw new Error('Record option detected but recording is not available')
-    }
-    this.signaling = new Signaling({
-      streamName: this.streamName,
-      url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
-    })
-
-    await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
-    reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
-    reemit(this.signaling, this, [signalingEvents.broadcastEvent])
-
-    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP(this.options)
-    const signalingConnectPromise = this.signaling.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
-
-    const publishPromise = this.signaling.publish(localSdp, this.options)
-    const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
-    promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
-    let remoteSdp = promises[0]
-
-    if (!this.options.disableVideo && this.options.bandwidth > 0) {
-      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
-    }
-
-    await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
-
-    this.setReconnect()
-    logger.info('Broadcasting to streamName: ', this.streamName)
+    await initConnection({ migrate: false, instance: this })
   }
 
   reconnect () {
@@ -159,38 +107,77 @@ export default class Publish extends BaseWebRTC {
   async replaceConnection () {
     logger.info('Migrating the current connection')
     this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
-    let promises
-    const publisherData = await this.tokenGenerator()
-
-    const webRTCPeerMigration = new PeerConnection()
-    const signalingMigration = new Signaling({
-      streamName: this.streamName,
-      url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
-    })
-
-    await webRTCPeerMigration.createRTCPeer(this.options.peerConfig)
-    reemit(webRTCPeerMigration, this, [webRTCEvents.connectionStateChange])
-    reemit(signalingMigration, this, [signalingEvents.broadcastEvent])
-
-    const getLocalSDPPromise = webRTCPeerMigration.getRTCLocalSDP(this.options)
-    const signalingConnectPromise = signalingMigration.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
-
-    const publishPromise = signalingMigration.publish(localSdp, this.options)
-    const setLocalDescriptionPromise = webRTCPeerMigration.peer.setLocalDescription(webRTCPeerMigration.sessionDescription)
-    promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
-    let remoteSdp = promises[0]
-
-    if (!this.options.disableVideo && this.options.bandwidth > 0) {
-      remoteSdp = webRTCPeerMigration.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
-    }
-
-    await webRTCPeerMigration.setRTCRemoteSDP(remoteSdp)
-
-    this.signaling = signalingMigration
-    this.webRTCPeer = webRTCPeerMigration
-    this.setReconnect()
+    await initConnection({ migrate: true, instance: this })
     logger.info('Current connection migrated')
   }
+}
+
+const initConnection = async (data) => {
+  logger.debug('Broadcast option values: ', data.instance.options)
+  let promises
+  if (!data.instance.options.mediaStream) {
+    logger.error('Error while broadcasting. MediaStream required')
+    throw new Error('MediaStream required')
+  }
+  if (!data.migrate && data.instance.isActive()) {
+    logger.warn('Broadcast currently working')
+    throw new Error('Broadcast currently working')
+  }
+  let publisherData
+  try {
+    publisherData = await data.instance.tokenGenerator()
+  } catch (error) {
+    logger.error('Error generating token.')
+    throw error
+  }
+  if (!publisherData) {
+    logger.error('Error while broadcasting. Publisher data required')
+    throw new Error('Publisher data required')
+  }
+  const recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
+  if (data.instance.options.record && !recordingAvailable) {
+    logger.error('Error while broadcasting. Record option detected but recording is not available')
+    throw new Error('Record option detected but recording is not available')
+  }
+
+  const signalingInstance = new Signaling({
+    streamName: data.instance.streamName,
+    url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
+  })
+  const webRTCPeerInstance = data.migrate ? new PeerConnection() : data.instance.webRTCPeer
+
+  await webRTCPeerInstance.createRTCPeer(data.instance.options.peerConfig)
+  reemit(webRTCPeerInstance, data.instance, [webRTCEvents.connectionStateChange])
+  reemit(signalingInstance, data.instance, [signalingEvents.broadcastEvent])
+
+  const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(data.instance.options)
+  const signalingConnectPromise = signalingInstance.connect()
+  promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+  const localSdp = promises[0]
+
+  const publishPromise = signalingInstance.publish(localSdp, data.instance.options)
+  const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
+  promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
+  let remoteSdp = promises[0]
+
+  if (!data.instance.options.disableVideo && data.instance.options.bandwidth > 0) {
+    remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, data.instance.options.bandwidth)
+  }
+
+  await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
+
+  logger.info('Broadcasting to streamName: ', data.instance.options.streamName)
+
+  let oldSignaling = data.migrate ? data.instance.signaling : null
+  let oldWebRTCPeer = data.migrate ? data.instance.webRTCPeer : null
+  if (data.migrate) {
+    oldSignaling = data.instance.signaling
+    oldWebRTCPeer = data.instance.webRTCPeer
+  }
+  data.instance.signaling = signalingInstance
+  data.instance.webRTCPeer = webRTCPeerInstance
+  oldSignaling?.close?.()
+  oldWebRTCPeer?.closeRTCPeer?.()
+
+  data.instance.setReconnect()
 }
