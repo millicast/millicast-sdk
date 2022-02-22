@@ -2,7 +2,7 @@ import reemit from 're-emitter'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { webRTCEvents } from './PeerConnection'
+import PeerConnection, { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('View')
 
 const connectOptions = {
@@ -98,47 +98,8 @@ export default class View extends BaseWebRTC {
    * }
    */
   async connect (options = connectOptions) {
-    logger.debug('Viewer connect options values: ', options)
-    let promises
     this.options = { ...connectOptions, ...options, setSDPToPeer: false }
-    if (this.isActive()) {
-      logger.warn('Viewer currently subscribed')
-      throw new Error('Viewer currently subscribed')
-    }
-    let subscriberData
-    try {
-      subscriberData = await this.tokenGenerator()
-    } catch (error) {
-      logger.error('Error generating token.')
-      throw error
-    }
-    if (!subscriberData) {
-      logger.error('Error while subscribing. Subscriber data required')
-      throw new Error('Subscriber data required')
-    }
-    this.signaling = new Signaling({
-      streamName: this.streamName,
-      url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
-    })
-
-    await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
-    reemit(this.webRTCPeer, this, Object.values(webRTCEvents))
-    reemit(this.signaling, this, [signalingEvents.broadcastEvent])
-
-    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP({ ...this.options, stereo: true })
-    const signalingConnectPromise = this.signaling.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
-
-    const subscribePromise = this.signaling.subscribe(localSdp, { ...this.options, vad: this.options.multiplexedAudioTracks > 0 })
-    const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
-    promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
-    const sdpSubscriber = promises[0]
-
-    await this.webRTCPeer.setRTCRemoteSDP(sdpSubscriber)
-
-    this.setReconnect()
-    logger.info('Connected to streamName: ', this.streamName)
+    await initConnection({ migrate: false, instance: this })
   }
 
   /**
@@ -199,11 +160,61 @@ export default class View extends BaseWebRTC {
     logger.info('Unprojection done')
   }
 
-  testMigration () {
-    this.signaling.emit('migrate')
+  async replaceConnection () {
+    logger.info('Migrating current connection')
+    await initConnection({ migrate: true, instance: this })
+    logger.info('Current connection migrated')
   }
+}
 
-  replaceConnection () {
-    logger.info('Migrating the current connection')
+const initConnection = async (data) => {
+  logger.debug('Viewer connect options values: ', data.instance.options)
+  let promises
+  if (!data.migrate && data.instance.isActive()) {
+    logger.warn('Viewer currently subscribed')
+    throw new Error('Viewer currently subscribed')
   }
+  let subscriberData
+  try {
+    subscriberData = await data.instance.tokenGenerator()
+  } catch (error) {
+    logger.error('Error generating token.')
+    throw error
+  }
+  if (!subscriberData) {
+    logger.error('Error while subscribing. Subscriber data required')
+    throw new Error('Subscriber data required')
+  }
+  const signalingInstance = new Signaling({
+    streamName: data.instance.streamName,
+    url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
+  })
+  const webRTCPeerInstance = data.migrate ? new PeerConnection() : data.instance.webRTCPeer
+
+  await webRTCPeerInstance.createRTCPeer(data.instance.options.peerConfig)
+  reemit(webRTCPeerInstance, data.instance, Object.values(webRTCEvents))
+  reemit(signalingInstance, data.instance, [signalingEvents.broadcastEvent])
+
+  const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...data.instance.options, stereo: true })
+  const signalingConnectPromise = signalingInstance.connect()
+  promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+  const localSdp = promises[0]
+
+  const subscribePromise = signalingInstance.subscribe(localSdp, { ...data.instance.options, vad: data.instance.options.multiplexedAudioTracks > 0 })
+  const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
+  promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
+  const sdpSubscriber = promises[0]
+
+  await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
+
+  logger.info('Connected to streamName: ', data.instance.streamName)
+
+  const oldSignaling = data.migrate ? data.instance.signaling : null
+  const oldWebRTCPeer = data.migrate ? data.instance.webRTCPeer : null
+  data.instance.signaling = signalingInstance
+  data.instance.webRTCPeer = webRTCPeerInstance
+  oldSignaling?.close?.()
+  oldWebRTCPeer?.closeRTCPeer?.()
+
+  data.instance.setReconnect()
 }

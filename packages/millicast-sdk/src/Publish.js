@@ -101,7 +101,7 @@ export default class Publish extends BaseWebRTC {
   }
 
   async replaceConnection () {
-    logger.info('Migrating the current connection')
+    logger.info('Migrating current connection')
     this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
     await initConnection({ migrate: true, instance: this })
     logger.info('Current connection migrated')
@@ -162,14 +162,10 @@ const initConnection = async (data) => {
 
   await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
 
-  logger.info('Broadcasting to streamName: ', data.instance.options.streamName)
+  logger.info('Broadcasting to streamName: ', data.instance.streamName)
 
-  let oldSignaling = data.migrate ? data.instance.signaling : null
-  let oldWebRTCPeer = data.migrate ? data.instance.webRTCPeer : null
-  if (data.migrate) {
-    oldSignaling = data.instance.signaling
-    oldWebRTCPeer = data.instance.webRTCPeer
-  }
+  const oldSignaling = data.migrate ? data.instance.signaling : null
+  const oldWebRTCPeer = data.migrate ? data.instance.webRTCPeer : null
   data.instance.signaling = signalingInstance
   data.instance.webRTCPeer = webRTCPeerInstance
   oldSignaling?.close?.()
