@@ -194,7 +194,7 @@ class MillicastPublishTest {
   }
 
   testMigrate () {
-    this.millicastPublish.testMigration()
+    this.millicastPublish.signaling.emit('migrate')
   }
 
   testStopStats () {

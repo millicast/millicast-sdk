@@ -100,10 +100,6 @@ export default class Publish extends BaseWebRTC {
     super.reconnect()
   }
 
-  testMigration () {
-    this.signaling.emit('migrate')
-  }
-
   async replaceConnection () {
     logger.info('Migrating the current connection')
     this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
