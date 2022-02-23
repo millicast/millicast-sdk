@@ -217,38 +217,4 @@ defineFeature(feature, test => {
       expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
     })
   })
-
-  // test('Subscribe to an existing stream, static accountId and no token', ({ given, when, then }) => {
-  //   let accountId
-  //   let streamName
-  //   let response
-  //   const mockedResponse = {
-  //     data: {
-  //       status: 'success',
-  //       data: {
-  //         wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
-  //         urls: [
-  //           'wss://test.com/ws/v2/sub/12345'
-  //         ],
-  //         jwt: dummyToken,
-  //         streamAccountId: 'Existing_accountId'
-  //       }
-  //     }
-  //   }
-  //   given('I have an existing stream name, no token and a static account ID configured', async () => {
-  //     accountId = 'Existing_accountId'
-  //     streamName = 'Existing_stream_name'
-  //   })
-
-  //   when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
-  //     Director.setLiveDomain('test.com')
-  //     axios.post.mockResolvedValue(mockedResponse)
-  //     response = await Director.getSubscriber(streamName, accountId)
-  //   })
-
-  //   then('I get the subscriber connection path', async () => {
-  //     expect(response).toBeDefined()
-  //     expect(response).toEqual(expect.objectContaining(mockedResponse.data.data))
-  //   })
-  // })
 })
