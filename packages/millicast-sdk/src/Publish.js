@@ -106,6 +106,30 @@ export default class Publish extends BaseWebRTC {
     await initConnection({ migrate: true, instance: this })
     logger.info('Current connection migrated')
   }
+
+  /**
+ * Initialize recording in an active stream.
+ */
+  async record () {
+    if (this.recordingAvailable) {
+      await this.signaling.cmd('record')
+      logger.info('Broadcaster start recording')
+    } else {
+      logger.error('Record not available')
+    }
+  }
+
+  /**
+   * Finalize recording in an active stream.
+   */
+  async unrecord () {
+    if (this.recordingAvailable) {
+      await this.signaling.cmd('unrecord')
+      logger.info('Broadcaster stop recording')
+    } else {
+      logger.error('Unrecord not available')
+    }
+  }
 }
 
 const initConnection = async (data) => {
