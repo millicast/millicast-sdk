@@ -99,7 +99,7 @@ export default class View extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     this.options = { ...connectOptions, ...options, setSDPToPeer: false }
-    await this.initConnection({ migrate: false, instance: this })
+    await this.initConnection({ migrate: false })
   }
 
   /**
@@ -162,19 +162,19 @@ export default class View extends BaseWebRTC {
 
   async replaceConnection () {
     logger.info('Migrating current connection')
-    await this.initConnection({ migrate: true, instance: this })
+    await this.initConnection({ migrate: true })
   }
 
   async initConnection (data) {
-    logger.debug('Viewer connect options values: ', data.instance.options)
+    logger.debug('Viewer connect options values: ', this.options)
     let promises
-    if (!data.migrate && data.instance.isActive()) {
+    if (!data.migrate && this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
     let subscriberData
     try {
-      subscriberData = await data.instance.tokenGenerator()
+      subscriberData = await this.tokenGenerator()
     } catch (error) {
       logger.error('Error generating token.')
       throw error
@@ -184,41 +184,41 @@ export default class View extends BaseWebRTC {
       throw new Error('Subscriber data required')
     }
     const signalingInstance = new Signaling({
-      streamName: data.instance.streamName,
+      streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
-    const webRTCPeerInstance = data.migrate ? new PeerConnection() : data.instance.webRTCPeer
+    const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
-    await webRTCPeerInstance.createRTCPeer(data.instance.options.peerConfig)
+    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
-    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, data.instance, Object.values(webRTCEvents))
-    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, data.instance, [signalingEvents.broadcastEvent])
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
+    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...data.instance.options, stereo: true })
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const subscribePromise = signalingInstance.subscribe(localSdp, { ...data.instance.options, vad: data.instance.options.multiplexedAudioTracks > 0 })
+    const subscribePromise = signalingInstance.subscribe(localSdp, { ...this.options, vad: this.options.multiplexedAudioTracks > 0 })
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 
-    logger.info('Connected to streamName: ', data.instance.streamName)
+    logger.info('Connected to streamName: ', this.streamName)
 
-    let oldSignaling = data.instance.signaling
-    let oldWebRTCPeer = data.instance.webRTCPeer
-    data.instance.signaling = signalingInstance
-    data.instance.webRTCPeer = webRTCPeerInstance
-    data.instance.setReconnect()
+    let oldSignaling = this.signaling
+    let oldWebRTCPeer = this.webRTCPeer
+    this.signaling = signalingInstance
+    this.webRTCPeer = webRTCPeerInstance
+    this.setReconnect()
 
     if (data.migrate) {
-      data.instance.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         if (state === 'connected') {
           setTimeout(() => {
             oldSignaling?.close?.()
