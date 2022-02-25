@@ -109,7 +109,7 @@ class MillicastPublishTest {
       })
 
       // Start Stats
-      // this.testGetStats()
+      this.testGetStats()
     } catch (error) {
       console.log('There was an error while trying to broadcast: ', error)
     }
