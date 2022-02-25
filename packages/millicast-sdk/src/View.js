@@ -163,7 +163,6 @@ export default class View extends BaseWebRTC {
   async replaceConnection () {
     logger.info('Migrating current connection')
     await initConnection({ migrate: true, instance: this })
-    logger.info('Current connection migrated')
   }
 }
 
@@ -209,12 +208,19 @@ const initConnection = async (data) => {
 
   logger.info('Connected to streamName: ', data.instance.streamName)
 
-  const oldSignaling = data.migrate ? data.instance.signaling : null
-  const oldWebRTCPeer = data.migrate ? data.instance.webRTCPeer : null
+  const oldSignaling = data.instance.signaling
+  const oldWebRTCPeer = data.instance.webRTCPeer
   data.instance.signaling = signalingInstance
   data.instance.webRTCPeer = webRTCPeerInstance
-  oldSignaling?.close?.()
-  oldWebRTCPeer?.closeRTCPeer?.()
-
   data.instance.setReconnect()
+
+  if (data.migrate) {
+    data.instance.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      if (state === 'connected') {
+        oldSignaling?.close?.()
+        oldWebRTCPeer?.closeRTCPeer?.()
+        logger.info('Current connection migrated')
+      }
+    })
+  }
 }
