@@ -142,7 +142,7 @@ export default class Signaling extends EventEmitter {
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad" | "layers")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)

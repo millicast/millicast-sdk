@@ -43,5 +43,6 @@
     "<p>Max spatial layer id (default: unlimited)</p>": "<p>Max spatial layer id (default: unlimited)</p>",
     "<p>Max temporal layer id (default: unlimited)</p>": "<p>Max temporal layer id (default: unlimited)</p>",
     "<p>Override which events will be delivered by the server (&quot;active&quot; | &quot;inactive&quot; | &quot;vad&quot; | &quot;layers&quot;).</p>": "<p>Override which events will be delivered by the server (&quot;active&quot; | &quot;inactive&quot; | &quot;vad&quot; | &quot;layers&quot;).</p>",
-    "<p>Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.</p>": "<p>Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.</p>"
+    "<p>Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.</p>": "<p>Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.</p>",
+    "<p>Override which events will be delivered by the server (&quot;active&quot; | &quot;inactive&quot;).</p>": "<p>Override which events will be delivered by the server (&quot;active&quot; | &quot;inactive&quot;).</p>"
 }

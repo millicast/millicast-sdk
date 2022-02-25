@@ -54,6 +54,10 @@ class MillicastViewTest {
     }
   }
 
+  testMigrate () {
+    this.millicastView.signaling.emit('migrate')
+  }
+
   addStreamToVideoTag (event) {
     this.addStream(event.streams[0])
   }

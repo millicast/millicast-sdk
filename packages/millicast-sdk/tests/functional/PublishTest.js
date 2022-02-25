@@ -193,6 +193,10 @@ class MillicastPublishTest {
     document.getElementById('stats').classList.add('show')
   }
 
+  testMigrate () {
+    this.millicastPublish.signaling.emit('migrate')
+  }
+
   testStopStats () {
     this.millicastPublish.webRTCPeer.stopStats()
     document.getElementById('stats').classList.remove('show')

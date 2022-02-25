@@ -35,5 +35,8 @@
     "<p>mid value of the rtp receiver in which the media is going to be projected.</p>": "<p>mid value of the rtp receiver in which the media is going to be projected.</p>",
     "<p>Select the simulcast encoding layer and svc layers, only applicable to video tracks.</p>": "<p>Select the simulcast encoding layer and svc layers, only applicable to video tracks.</p>",
     "<p>Stop projecting attached source in selected media ids.</p>": "<p>Stop projecting attached source in selected media ids.</p>",
-    "<p>mid value of the receivers that are going to be detached.</p>": "<p>mid value of the receivers that are going to be detached.</p>"
+    "<p>mid value of the receivers that are going to be detached.</p>": "<p>mid value of the receivers that are going to be detached.</p>",
+    "<p>Streams the track will belong to.</p>": "<p>Streams the track will belong to.</p>",
+    "<p>Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.</p>": "<p>Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.</p>",
+    "<p>mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.</p>": "<p>mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.</p>"
 }
