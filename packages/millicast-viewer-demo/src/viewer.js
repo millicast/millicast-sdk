@@ -51,6 +51,9 @@ let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
 
+video.addEventListener('loadedmetadata', (event) => {
+  Logger.log("loadedmetadata",event);
+});
 // MillicastView object
 let millicastView = null
 
@@ -64,7 +67,6 @@ const newViewer = () => {
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
   });
-  
   millicastView.on("track", (event) => {
     addStream(event.streams[0]);
   });
@@ -120,7 +122,19 @@ const addStream = (stream) => {
       video.removeAttribute("autoplay");
     }
 
-    video.srcObject = stream;
+    //If we already had a a stream
+    if (video.srcObject) {
+       //Create temporal video element and switch streams when we have valid data
+       const tmp = document.createElement("video")
+       tmp.srcObject = stream;
+       tmp.addEventListener('loadedmetadata', (event) => {
+         Logger.log("loadedmetadata tmp",event);
+         video.srcObject = stream;
+       });
+    } else {
+       video.srcObject = stream;
+    }
+    
     if (audio) audio.parentNode.removeChild(audio);
   }
 };

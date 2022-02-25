@@ -99,7 +99,7 @@ export default class View extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     this.options = { ...connectOptions, ...options, setSDPToPeer: false }
-    await initConnection({ migrate: false, instance: this })
+    await this.initConnection({ migrate: false, instance: this })
   }
 
   /**
@@ -162,65 +162,76 @@ export default class View extends BaseWebRTC {
 
   async replaceConnection () {
     logger.info('Migrating current connection')
-    await initConnection({ migrate: true, instance: this })
+    await this.initConnection({ migrate: true, instance: this })
   }
-}
 
-const initConnection = async (data) => {
-  logger.debug('Viewer connect options values: ', data.instance.options)
-  let promises
-  if (!data.migrate && data.instance.isActive()) {
-    logger.warn('Viewer currently subscribed')
-    throw new Error('Viewer currently subscribed')
-  }
-  let subscriberData
-  try {
-    subscriberData = await data.instance.tokenGenerator()
-  } catch (error) {
-    logger.error('Error generating token.')
-    throw error
-  }
-  if (!subscriberData) {
-    logger.error('Error while subscribing. Subscriber data required')
-    throw new Error('Subscriber data required')
-  }
-  const signalingInstance = new Signaling({
-    streamName: data.instance.streamName,
-    url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
-  })
-  const webRTCPeerInstance = data.migrate ? new PeerConnection() : data.instance.webRTCPeer
-
-  await webRTCPeerInstance.createRTCPeer(data.instance.options.peerConfig)
-  reemit(webRTCPeerInstance, data.instance, Object.values(webRTCEvents))
-  reemit(signalingInstance, data.instance, [signalingEvents.broadcastEvent])
-
-  const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...data.instance.options, stereo: true })
-  const signalingConnectPromise = signalingInstance.connect()
-  promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-  const localSdp = promises[0]
-
-  const subscribePromise = signalingInstance.subscribe(localSdp, { ...data.instance.options, vad: data.instance.options.multiplexedAudioTracks > 0 })
-  const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
-  promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
-  const sdpSubscriber = promises[0]
-
-  await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
-
-  logger.info('Connected to streamName: ', data.instance.streamName)
-
-  const oldSignaling = data.instance.signaling
-  const oldWebRTCPeer = data.instance.webRTCPeer
-  data.instance.signaling = signalingInstance
-  data.instance.webRTCPeer = webRTCPeerInstance
-  data.instance.setReconnect()
-
-  if (data.migrate) {
-    data.instance.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
-      if (state === 'connected') {
-        oldSignaling?.close?.()
-        oldWebRTCPeer?.closeRTCPeer?.()
-        logger.info('Current connection migrated')
-      }
+  async initConnection (data) {
+    logger.debug('Viewer connect options values: ', data.instance.options)
+    let promises
+    if (!data.migrate && data.instance.isActive()) {
+      logger.warn('Viewer currently subscribed')
+      throw new Error('Viewer currently subscribed')
+    }
+    let subscriberData
+    try {
+      subscriberData = await data.instance.tokenGenerator()
+    } catch (error) {
+      logger.error('Error generating token.')
+      throw error
+    }
+    if (!subscriberData) {
+      logger.error('Error while subscribing. Subscriber data required')
+      throw new Error('Subscriber data required')
+    }
+    const signalingInstance = new Signaling({
+      streamName: data.instance.streamName,
+      url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
+    const webRTCPeerInstance = data.migrate ? new PeerConnection() : data.instance.webRTCPeer
+
+    await webRTCPeerInstance.createRTCPeer(data.instance.options.peerConfig)
+    // Stop emiting events from the previous instances
+    this.stopReemitingWebRTCPeerInstanceEvents?.()
+    this.stopReemitingSignalingInstanceEvents?.()
+    // And start emitting from the new ones
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, data.instance, Object.values(webRTCEvents))
+    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, data.instance, [signalingEvents.broadcastEvent])
+
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...data.instance.options, stereo: true })
+    const signalingConnectPromise = signalingInstance.connect()
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    const localSdp = promises[0]
+
+    const subscribePromise = signalingInstance.subscribe(localSdp, { ...data.instance.options, vad: data.instance.options.multiplexedAudioTracks > 0 })
+    const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
+    promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
+    const sdpSubscriber = promises[0]
+
+    await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
+
+    logger.info('Connected to streamName: ', data.instance.streamName)
+
+    let oldSignaling = data.instance.signaling
+    let oldWebRTCPeer = data.instance.webRTCPeer
+    data.instance.signaling = signalingInstance
+    data.instance.webRTCPeer = webRTCPeerInstance
+    data.instance.setReconnect()
+
+    if (data.migrate) {
+      data.instance.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+        if (state === 'connected') {
+          setTimeout(() => {
+            oldSignaling?.close?.()
+            oldWebRTCPeer?.closeRTCPeer?.()
+            oldSignaling = oldWebRTCPeer = null
+            logger.info('Current connection migrated')
+          }, 1000)
+        } else if (['disconnected', 'failed', 'closed'].includes(state)) {
+          oldSignaling?.close?.()
+          oldWebRTCPeer?.closeRTCPeer?.()
+          oldSignaling = oldWebRTCPeer = null
+        }
+      })
+    }
   }
-}
+};
