@@ -125,11 +125,35 @@ const addStream = (stream) => {
     //If we already had a a stream
     if (video.srcObject) {
        //Create temporal video element and switch streams when we have valid data
-       const tmp = document.createElement("video")
+       const tmp = video.cloneNode(true);
+       //Override the muted attribute with current muted state
+       tmp.muted = video.muted;
+       //Set same volume
+       tmp.volume = video.volume;
+       //Set new stream
        tmp.srcObject = stream;
+       //Replicate playback state
+       if (video.playing) {
+          try { tmp.play(); } catch (e) {}
+        } else if (video.paused) {
+          try{ tmp.paused(); } catch (e) {}
+       }
+       //Replace the video when media has started playing              
        tmp.addEventListener('loadedmetadata', (event) => {
          Logger.log("loadedmetadata tmp",event);
-         video.srcObject = stream;
+          video.parentNode.replaceChild(tmp, video);
+          //Pause previous video to avoid duplicated audio until the old PC is closed
+          try { video.pause(); } catch (e) {}
+          //If it was in full screen
+	  if (document.fullscreenElement == video) {
+            try { video.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
+	  }
+          //If it was in picture in picture mode
+          if (document.pictureInPictureElement == video) {
+            try { video.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
+          }
+          //Replace js objects too
+          video = tmp;
        });
     } else {
        video.srcObject = stream;
