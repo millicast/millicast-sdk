@@ -146,11 +146,11 @@ const addStream = (stream) => {
           try { video.pause(); } catch (e) {}
           //If it was in full screen
 	  if (document.fullscreenElement == video) {
-            try { video.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
+            try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
 	  }
           //If it was in picture in picture mode
           if (document.pictureInPictureElement == video) {
-            try { video.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
+            try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
           }
           //Replace js objects too
           video = tmp;
