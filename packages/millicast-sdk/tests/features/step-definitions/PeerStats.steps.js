@@ -1,6 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import Publish from '../../../src/Publish'
-import PeerConnection from '../../../src/PeerConnection'
 import PeerConnectionStats, { peerConnectionStatsEvents } from '../../../src/PeerConnectionStats'
 import '../../../src/Signaling'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
@@ -27,7 +26,6 @@ const handler = jest.fn()
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
   jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue(rawStats)
 })
 

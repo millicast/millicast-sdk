@@ -8,7 +8,7 @@ const logger = Logger.get('View')
 const connectOptions = {
   disableVideo: false,
   disableAudio: false,
-  peerConfig: null
+  peerConfig: {}
 }
 
 /**
@@ -175,6 +175,8 @@ export default class View extends BaseWebRTC {
     let subscriberData
     try {
       subscriberData = await this.tokenGenerator()
+      //  Set the iceServers from the subscribe data into the peerConfig
+      this.options.peerConfig.iceServers = subscriberData?.iceServers
     } catch (error) {
       logger.error('Error generating token.')
       throw error

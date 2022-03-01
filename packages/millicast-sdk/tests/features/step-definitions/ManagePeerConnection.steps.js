@@ -5,10 +5,6 @@ import './__mocks__/MockMediaStream'
 const feature = loadFeature('../ManagePeerConnection.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  beforeEach(() => {
-    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-  })
-
   afterEach(async () => {
     jest.restoreAllMocks()
   })
@@ -18,7 +14,6 @@ defineFeature(feature, test => {
     let peer = null
 
     given('I have no configuration', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       peerConnection = new PeerConnection()
     })
 
@@ -37,7 +32,6 @@ defineFeature(feature, test => {
     let peer = null
 
     given('I have no configuration', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       peerConnection = new PeerConnection()
     })
 
@@ -78,7 +72,6 @@ defineFeature(feature, test => {
     let peerConnection = null
 
     given('I have a RTC peer', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       peerConnection = new PeerConnection()
       await peerConnection.createRTCPeer()
       peerConnection.on(webRTCEvents.connectionStateChange, handler)

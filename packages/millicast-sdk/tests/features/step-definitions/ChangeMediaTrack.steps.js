@@ -6,10 +6,6 @@ import './__mocks__/MockBrowser'
 const feature = loadFeature('../ChangeMediaTrack.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  beforeEach(() => {
-    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-  })
-
   afterEach(async () => {
     jest.restoreAllMocks()
   })

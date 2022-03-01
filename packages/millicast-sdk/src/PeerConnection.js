@@ -1,4 +1,3 @@
-import axios from 'axios'
 import EventEmitter from 'events'
 import reemit from 're-emitter'
 import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnectionStats'
@@ -71,7 +70,6 @@ export default class PeerConnection extends EventEmitter {
   async createRTCPeer (config = null) {
     logger.info('Creating new RTCPeerConnection')
     logger.debug('RTC configuration provided by user: ', config)
-    config = await this.getRTCConfiguration(config)
     this.peer = instanceRTCPeerConnection(this, config)
   }
 
@@ -99,51 +97,6 @@ export default class PeerConnection extends EventEmitter {
     this.peer = null
     this.stopStats()
     this.emit(webRTCEvents.connectionStateChange, 'closed')
-  }
-
-  /**
-   * Get default RTC configuration with ICE servers from Milicast signaling server and merge it with the user configuration provided. User configuration has priority over defaults.
-   * @param {RTCConfiguration} config - Options to configure the new RTCPeerConnection.
-   * @returns {Promise<RTCConfiguration>} Promise object which represents the RTCConfiguration.
-   */
-  async getRTCConfiguration (config) {
-    logger.info('Getting RTC configuration')
-    const configParsed = config ?? {}
-    configParsed.iceServers = configParsed.iceServers ?? await this.getRTCIceServers()
-    return configParsed
-  }
-
-  /**
-   * Get Ice servers from a Millicast signaling server.
-   * @param {String} location - *Deprecated, use .setTurnServerLocation() method instead* URL of signaling server where Ice servers will be obtained.
-   * @returns {Promise<Array<RTCIceServer>>} Promise object which represents a list of Ice servers.
-   */
-  async getRTCIceServers (location) {
-    location = location ?? turnServerLocation
-    logger.info('Getting RTC ICE servers')
-    logger.debug('RTC ICE servers request location: ', location)
-
-    const iceServers = []
-    try {
-      const { data } = await axios.put(location)
-      logger.debug('RTC ICE servers response: ', data)
-      if (data.s === 'ok') {
-        // call returns old format, this updates URL to URLS in credentials path.
-        for (const credentials of data.v.iceServers) {
-          const url = credentials.url
-          if (url) {
-            credentials.urls = url
-            delete credentials.url
-          }
-          iceServers.push(credentials)
-        }
-        logger.info('RTC ICE servers successfully obtained.')
-      }
-    } catch (e) {
-      logger.error('Error while getting RTC ICE servers: ', e.response.data)
-    }
-
-    return iceServers
   }
 
   /**
