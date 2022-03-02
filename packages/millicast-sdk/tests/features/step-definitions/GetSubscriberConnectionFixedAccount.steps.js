@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import mockFetchJsonReturnValue from './__mocks__/Fetch'
+import { mockFetchJsonReturnValue } from './__mocks__/Fetch'
 import Director from '../../../src/Director'
 const feature = loadFeature('../GetSubscriberConnectionFixedAccount.feature', { loadRelativePath: true, errors: true })
 
