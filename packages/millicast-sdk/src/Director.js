@@ -166,9 +166,9 @@ export default class Director {
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
     const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
-    let headers = {}
+    let headers = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
-      headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
     const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
