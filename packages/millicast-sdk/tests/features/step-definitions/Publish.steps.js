@@ -21,11 +21,6 @@ const mockTokenGenerator = jest.fn(() => {
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
-beforeEach(() => {
-  jest.restoreAllMocks()
-  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-})
-
 defineFeature(feature, test => {
   test('Instance publisher without streamName', ({ given, when, then }) => {
     let expectError

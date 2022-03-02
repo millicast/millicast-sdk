@@ -15,7 +15,7 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: null
+  peerConfig: {}
 }
 
 /**
@@ -144,6 +144,8 @@ export default class Publish extends BaseWebRTC {
     let publisherData
     try {
       publisherData = await this.tokenGenerator()
+      //  Set the iceServers from the publish data into the peerConfig
+      this.options.peerConfig.iceServers = publisherData?.iceServers
     } catch (error) {
       logger.error('Error generating token.')
       throw error

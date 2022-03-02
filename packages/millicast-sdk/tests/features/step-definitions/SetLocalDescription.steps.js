@@ -6,10 +6,6 @@ import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../SetLocalDescription.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  beforeEach(() => {
-    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-  })
-
   afterEach(async () => {
     jest.restoreAllMocks()
     changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')

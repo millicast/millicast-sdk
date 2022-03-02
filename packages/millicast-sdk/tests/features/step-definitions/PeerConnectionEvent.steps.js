@@ -6,10 +6,6 @@ import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConne
 const feature = loadFeature('../PeerConnectionEvent.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  beforeEach(() => {
-    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-  })
-
   afterEach(async () => {
     jest.restoreAllMocks()
   })

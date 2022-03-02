@@ -1,15 +1,10 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import BaseWebRTC from '../../../src/utils/BaseWebRTC'
-import PeerConnection from '../../../src/PeerConnection'
 import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 const feature = loadFeature('../BaseWebRTC.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  beforeEach(() => {
-    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-  })
-
   afterEach(async () => {
     jest.restoreAllMocks()
   })
@@ -19,7 +14,6 @@ defineFeature(feature, test => {
     let peer = null
 
     given('I have a BaseWebRTC instanced and existing peer', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       baseWebRTC = new BaseWebRTC('test', () => {}, null, false)
       await baseWebRTC.webRTCPeer.createRTCPeer()
     })
@@ -38,7 +32,6 @@ defineFeature(feature, test => {
     let peer = null
 
     given('I have a BaseWebRTC instanced and no existing peer', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       baseWebRTC = new BaseWebRTC('test', () => {}, null, false)
       baseWebRTC.webRTCPeer = null
     })

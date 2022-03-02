@@ -1,4 +1,3 @@
-import axios from 'axios'
 import Logger from './Logger'
 import config from './config'
 
@@ -115,10 +114,11 @@ export default class Director {
     const optionsParsed = getPublisherOptions(options, streamName, streamType)
     logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
     const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
-    const headers = { Authorization: `Bearer ${optionsParsed.token}` }
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
     const url = `${this.getEndpoint()}/api/director/publish`
     try {
-      let { data } = await axios.post(url, payload, { headers })
+      let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      data = await data.json()
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting publisher response: ', data)
       return data.data
@@ -172,7 +172,8 @@ export default class Director {
     }
     const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
-      let { data } = await axios.post(url, payload, { headers })
+      let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      data = await data.json()
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
       return data.data
