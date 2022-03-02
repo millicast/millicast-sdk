@@ -168,7 +168,7 @@ export default class Director {
     const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
     let headers = {}
     if (optionsParsed.subscriberToken) {
-      headers = { Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+      headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
     const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
