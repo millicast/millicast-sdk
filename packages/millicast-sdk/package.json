@@ -18,6 +18,7 @@
 		"build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
 		"start-docs": "npm run build-docs && serve docs",
 		"pretest": "npm run build",
+		"postinstall": "node node_modules/puppeteer/install.js",
 		"test": "jest"
 	},
 	"babel": {
