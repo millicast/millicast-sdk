@@ -19,5 +19,8 @@
     "<p>Options to configure the new RTCPeerConnection.</p>": "<p>Options to configure the new RTCPeerConnection.</p>",
     "<p>Enable stream recording. If record is not provided, use default Token configuration. <strong>Only available in Tokens with recording enabled.</strong></p>": "<p>Enable stream recording. If record is not provided, use default Token configuration. <strong>Only available in Tokens with recording enabled.</strong></p>",
     "<p>Promise object which resolves when the broadcast started successfully.</p>": "<p>Promise object which resolves when the broadcast started successfully.</p>",
-    "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>"
+    "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>",
+    "<p>Specify which events will be delivered by the server (any of &quot;active&quot; | &quot;inactive&quot;).*</p>": "<p>Specify which events will be delivered by the server (any of &quot;active&quot; | &quot;inactive&quot;).*</p>",
+    "<p>Initialize recording in an active stream.</p>": "<p>Initialize recording in an active stream.</p>",
+    "<p>Finalize recording in an active stream.</p>": "<p>Finalize recording in an active stream.</p>"
 }

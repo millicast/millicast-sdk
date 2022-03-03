@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection, { webRTCEvents } from '../../../src/PeerConnection'
+import { webRTCEvents } from '../../../src/PeerConnection'
 import Signaling, { signalingEvents } from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
@@ -24,7 +24,6 @@ const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
   jest.spyOn(Signaling.prototype, 'connect').mockImplementation(jest.fn)
   jest.spyOn(Signaling.prototype, 'publish').mockResolvedValue('SDP')
   jest.isolateModules(() => {

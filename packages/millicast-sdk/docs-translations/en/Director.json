@@ -25,5 +25,6 @@
     "<p>Millicast options or <em>Deprecated Millicast publisher Stream Name.</em></p>": "<p>Millicast options or <em>Deprecated Millicast publisher Stream Name.</em></p>",
     "<p><em>Deprecated, use options parameter instead</em> Millicast Account ID.</p>": "<p><em>Deprecated, use options parameter instead</em> Millicast Account ID.</p>",
     "<p><em>Deprecated, use options parameter instead</em> Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.</p>": "<p><em>Deprecated, use options parameter instead</em> Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.</p>",
-    "<p>Promise object which represents the result of getting the subscribe connection data.</p>": "<p>Promise object which represents the result of getting the subscribe connection data.</p>"
+    "<p>Promise object which represents the result of getting the subscribe connection data.</p>": "<p>Promise object which represents the result of getting the subscribe connection data.</p>",
+    "<p>Object which represents a list of Ice servers.</p>": "<p>Object which represents a list of Ice servers.</p>"
 }

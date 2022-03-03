@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   /////////////////////////
   const tokenGenerator = () => Director.getPublisher(publishToken, streamName)
-  const millicastPublishUserMedia = await MillicastPublishUserMedia.build({ streamName }, tokenGenerator, true)
+  const millicastPublishUserMedia = window.millicastPublish = await MillicastPublishUserMedia.build({ streamName }, tokenGenerator, true)
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
 

@@ -1,6 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import View from '../../../src/View'
-import PeerConnection from '../../../src/PeerConnection'
 import Signaling from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
@@ -16,11 +15,6 @@ const mockTokenGenerator = jest.fn(() => {
     ],
     jwt: 'this-is-a-jwt-dummy-token'
   }
-})
-
-beforeEach(() => {
-  jest.restoreAllMocks()
-  jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
 })
 
 defineFeature(feature, test => {

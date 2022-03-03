@@ -5,10 +5,6 @@ import './__mocks__/MockRTCPeerConnection'
 const feature = loadFeature('../SetRemoteDescription.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  beforeEach(() => {
-    jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
-  })
-
   afterEach(async () => {
     jest.restoreAllMocks()
   })
@@ -18,7 +14,6 @@ defineFeature(feature, test => {
     const sdp = 'My SDP'
 
     given('I got the peer', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       await peerConnection.createRTCPeer()
     })
 
@@ -37,7 +32,6 @@ defineFeature(feature, test => {
     let responseError
 
     given('I got the peer', async () => {
-      jest.spyOn(PeerConnection.prototype, 'getRTCIceServers').mockReturnValue([])
       await peerConnection.createRTCPeer()
     })
 

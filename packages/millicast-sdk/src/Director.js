@@ -1,4 +1,3 @@
-import axios from 'axios'
 import Logger from './Logger'
 import config from './config'
 
@@ -16,6 +15,7 @@ let apiEndpoint = defaultApiEndpoint
  * @typedef {Object} MillicastDirectorResponse
  * @property {Array<String>} urls - WebSocket available URLs.
  * @property {String} jwt - Access token for signaling initialization.
+ * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
  */
 
 /**
@@ -115,10 +115,11 @@ export default class Director {
     const optionsParsed = getPublisherOptions(options, streamName, streamType)
     logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
     const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
-    const headers = { Authorization: `Bearer ${optionsParsed.token}` }
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
     const url = `${this.getEndpoint()}/api/director/publish`
     try {
-      let { data } = await axios.post(url, payload, { headers })
+      let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      data = await data.json()
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting publisher response: ', data)
       return data.data
@@ -166,13 +167,14 @@ export default class Director {
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
     const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
-    let headers = {}
+    let headers = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
-      headers = { Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
     const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
-      let { data } = await axios.post(url, payload, { headers })
+      let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      data = await data.json()
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
       return data.data

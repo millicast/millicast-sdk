@@ -3,8 +3,8 @@ import reemit from 're-emitter'
 import { atob } from 'Base64'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
-import Signaling, { VideoCodec } from './Signaling'
-import { webRTCEvents } from './PeerConnection'
+import Signaling, { signalingEvents, VideoCodec } from './Signaling'
+import PeerConnection, { webRTCEvents } from './PeerConnection'
 const logger = Logger.get('Publish')
 
 const connectOptions = {
@@ -15,7 +15,7 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: null
+  peerConfig: {}
 }
 
 /**
@@ -60,8 +60,10 @@ export default class Publish extends BaseWebRTC {
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+   * @param {Array<String>} [options.events] - Specify which events will be delivered by the server (any of "active" | "inactive").*
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
+   * @fires Signaling#broadcastEvent
    * @example await publish.connect(options)
    * @example
    * import Publish from '@millicast/sdk'
@@ -89,20 +91,61 @@ export default class Publish extends BaseWebRTC {
    * }
    */
   async connect (options = connectOptions) {
-    logger.debug('Broadcast option values: ', options)
-    let promises
     this.options = { ...connectOptions, ...options, setSDPToPeer: false }
+    await this.initConnection({ migrate: false })
+  }
+
+  reconnect () {
+    this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
+    super.reconnect()
+  }
+
+  async replaceConnection () {
+    logger.info('Migrating current connection')
+    this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
+    await this.initConnection({ migrate: true })
+  }
+
+  /**
+ * Initialize recording in an active stream.
+ */
+  async record () {
+    if (this.recordingAvailable) {
+      await this.signaling.cmd('record')
+      logger.info('Broadcaster start recording')
+    } else {
+      logger.error('Record not available')
+    }
+  }
+
+  /**
+   * Finalize recording in an active stream.
+   */
+  async unrecord () {
+    if (this.recordingAvailable) {
+      await this.signaling.cmd('unrecord')
+      logger.info('Broadcaster stop recording')
+    } else {
+      logger.error('Unrecord not available')
+    }
+  }
+
+  async initConnection (data) {
+    logger.debug('Broadcast option values: ', this.options)
+    let promises
     if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
     }
-    if (this.isActive()) {
+    if (!data.migrate && this.isActive()) {
       logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
     }
     let publisherData
     try {
       publisherData = await this.tokenGenerator()
+      //  Set the iceServers from the publish data into the peerConfig
+      this.options.peerConfig.iceServers = publisherData?.iceServers
     } catch (error) {
       logger.error('Error generating token.')
       throw error
@@ -116,36 +159,53 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')
     }
-    this.signaling = new Signaling({
+
+    const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
     })
+    const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
-    await this.webRTCPeer.createRTCPeer(this.options.peerConfig)
-    reemit(this.webRTCPeer, this, [webRTCEvents.connectionStateChange])
+    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
+    // Stop emiting events from the previous instances
+    this.stopReemitingWebRTCPeerInstanceEvents?.()
+    this.stopReemitingSignalingInstanceEvents?.()
+    // And start emitting from the new ones
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, [webRTCEvents.connectionStateChange])
+    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
-    const getLocalSDPPromise = this.webRTCPeer.getRTCLocalSDP(this.options)
-    const signalingConnectPromise = this.signaling.connect()
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.options)
+    const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const publishPromise = this.signaling.publish(localSdp, this.options)
-    const setLocalDescriptionPromise = this.webRTCPeer.peer.setLocalDescription(this.webRTCPeer.sessionDescription)
+    const publishPromise = signalingInstance.publish(localSdp, this.options)
+    const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
 
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
-      remoteSdp = this.webRTCPeer.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
+      remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }
 
-    await this.webRTCPeer.setRTCRemoteSDP(remoteSdp)
+    await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
 
-    this.setReconnect()
     logger.info('Broadcasting to streamName: ', this.streamName)
-  }
 
-  reconnect () {
-    this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
-    super.reconnect()
+    let oldSignaling = this.signaling
+    let oldWebRTCPeer = this.webRTCPeer
+    this.signaling = signalingInstance
+    this.webRTCPeer = webRTCPeerInstance
+    this.setReconnect()
+
+    if (data.migrate) {
+      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+        if (['connected', 'disconnected', 'failed', 'closed'].includes(state)) {
+          oldSignaling?.close?.()
+          oldWebRTCPeer?.closeRTCPeer?.()
+          oldSignaling = oldWebRTCPeer = null
+        }
+      })
+    }
   }
-}
+};

@@ -63,6 +63,7 @@ export const AudioCodec = {
  * @property {VideoCodec} [codec="h264"] - Codec for publish stream.
  * @property {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
  * @property {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
+ * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive").
  */
 
 /**
@@ -141,7 +142,7 @@ export default class Signaling extends EventEmitter {
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad" | "layers")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)
@@ -269,7 +270,9 @@ export default class Signaling extends EventEmitter {
     if (optionsParsed.record !== null) {
       data.record = optionsParsed.record
     }
-
+    if (Array.isArray(optionsParsed.events)) {
+      data.events = optionsParsed.events
+    }
     try {
       await this.connect()
       logger.info('Sending publish command')

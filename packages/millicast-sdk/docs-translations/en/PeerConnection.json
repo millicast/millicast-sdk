@@ -60,5 +60,7 @@
     "<p>New track event.</p>": "<p>New track event.</p>",
     "<p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>": "<p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>",
     "<p>True to modify SDP for supporting absolute capture time header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting absolute capture time header extension. Otherwise False.</p>",
-    "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>"
+    "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>": "<p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p>",
+    "<p>Streams the track will belong to.</p>": "<p>Streams the track will belong to.</p>",
+    "<p>Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.</p>": "<p>Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.</p>"
 }
