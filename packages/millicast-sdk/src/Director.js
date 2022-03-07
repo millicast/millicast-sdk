@@ -15,6 +15,7 @@ let apiEndpoint = defaultApiEndpoint
  * @typedef {Object} MillicastDirectorResponse
  * @property {Array<String>} urls - WebSocket available URLs.
  * @property {String} jwt - Access token for signaling initialization.
+ * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
  */
 
 /**

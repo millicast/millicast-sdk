@@ -6,7 +6,6 @@ import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './Signaling'
 import mozGetCapabilities from './utils/FirefoxCapabilities'
-import config from './config'
 
 const logger = Logger.get('PeerConnection')
 
@@ -14,9 +13,6 @@ export const webRTCEvents = {
   track: 'track',
   connectionStateChange: 'connectionStateChange'
 }
-
-export const defaultTurnServerLocation = config.MILLICAST_TURN_SERVER_LOCATION
-let turnServerLocation = defaultTurnServerLocation
 
 const localSDPOptions = {
   stereo: false,
@@ -42,25 +38,6 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
-  }
-
-  /**
-   * Set TURN server location.
-   *
-   * @param {String} url - New TURN location
-   */
-  static setTurnServerLocation (url) {
-    turnServerLocation = url
-  }
-
-  /**
-   * Get current TURN location.
-   *
-   * By default, https://turn.millicast.com/webrtc/_turn is the current TURN location.
-   * @returns {String} TURN url
-   */
-  static getTurnServerLocation () {
-    return turnServerLocation
   }
 
   /**
