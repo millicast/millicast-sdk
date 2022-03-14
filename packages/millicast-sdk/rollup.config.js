@@ -5,6 +5,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
 import json from '@rollup/plugin-json'
+import filesize from 'rollup-plugin-filesize'
 
 export default [
   // browser-friendly UMD build
@@ -47,7 +48,8 @@ export default [
       cleanup({
         comments: 'none',
         sourcemap: false
-      })
+      }),
+      filesize()
     ]
   },
   {
@@ -83,7 +85,8 @@ export default [
           ]
         ],
         exclude: ['/node_modules/**']
-      })
+      }),
+      filesize()
     ]
   }
 ]
