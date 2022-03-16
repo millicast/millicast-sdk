@@ -86,6 +86,11 @@ export default [
         ],
         exclude: ['/node_modules/**']
       }),
+      terser(),
+      cleanup({
+        comments: 'none',
+        sourcemap: false
+      }),
       filesize()
     ]
   }
