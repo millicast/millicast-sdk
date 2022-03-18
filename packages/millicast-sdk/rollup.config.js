@@ -30,7 +30,7 @@ export default [
             '@babel/preset-env',
             {
               targets: {
-                safari: '12',
+                safari: '11',
                 firefox: '66'
               },
               useBuiltIns: 'usage',
@@ -73,7 +73,7 @@ export default [
             {
               targets: {
                 node: 6,
-                safari: '12',
+                safari: '11',
                 firefox: '66'
               },
               useBuiltIns: 'usage',
