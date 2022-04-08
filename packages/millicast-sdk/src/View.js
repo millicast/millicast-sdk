@@ -19,7 +19,7 @@ const connectOptions = {
  *
  * Before you can view an active broadcast, you will need:
  *
- * - A connection path that you can get from {@link Director} module or from your own implementation based on [Get a Connection Path](https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#get-connection-paths-sect).
+ * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
  * @param {String} streamName - Millicast existing Stream Name where you want to connect.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.

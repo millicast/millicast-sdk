@@ -5,6 +5,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
 import json from '@rollup/plugin-json'
+import filesize from 'rollup-plugin-filesize'
 
 export default [
   // browser-friendly UMD build
@@ -29,7 +30,7 @@ export default [
             '@babel/preset-env',
             {
               targets: {
-                safari: '12',
+                safari: '11',
                 firefox: '66'
               },
               useBuiltIns: 'usage',
@@ -47,7 +48,8 @@ export default [
       cleanup({
         comments: 'none',
         sourcemap: false
-      })
+      }),
+      filesize()
     ]
   },
   {
@@ -71,7 +73,7 @@ export default [
             {
               targets: {
                 node: 6,
-                safari: '12',
+                safari: '11',
                 firefox: '66'
               },
               useBuiltIns: 'usage',
@@ -83,7 +85,13 @@ export default [
           ]
         ],
         exclude: ['/node_modules/**']
-      })
+      }),
+      terser(),
+      cleanup({
+        comments: 'none',
+        sourcemap: false
+      }),
+      filesize()
     ]
   }
 ]

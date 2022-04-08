@@ -137,7 +137,7 @@ export default class Signaling extends EventEmitter {
            *
            * Stopped - Fires when the live stream has been disconnected and is no longer available.
            *
-           * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
+           * More information here: {@link https://docs.millicast.com/docs/web-draft#broadcast-events}
            *
            * @event Signaling#broadcastEvent
            * @type {Object}
