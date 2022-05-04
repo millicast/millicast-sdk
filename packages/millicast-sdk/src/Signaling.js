@@ -227,6 +227,7 @@ export default class Signaling extends EventEmitter {
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
+      this.subscriberId = result.subscriberId
       return result.sdp
     } catch (e) {
       logger.error('Error sending view command, error: ', e)
