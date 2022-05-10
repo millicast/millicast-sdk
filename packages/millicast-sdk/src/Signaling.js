@@ -88,6 +88,7 @@ export default class Signaling extends EventEmitter {
     this.wsUrl = options.url
     this.webSocket = null
     this.transactionManager = null
+    this.serverId = null
   }
 
   /**
@@ -137,7 +138,7 @@ export default class Signaling extends EventEmitter {
            *
            * Stopped - Fires when the live stream has been disconnected and is no longer available.
            *
-           * More information here: {@link https://dash.millicast.com/docs.html?pg=how-to-broadcast-in-js#broadcast-events-sect}
+           * More information here: {@link https://docs.millicast.com/docs/web-draft#broadcast-events}
            *
            * @event Signaling#broadcastEvent
            * @type {Object}
@@ -227,6 +228,7 @@ export default class Signaling extends EventEmitter {
 
       logger.info('Command sent, subscriberId: ', result.subscriberId)
       logger.debug('Command result: ', result)
+      this.serverId = result.subscriberId
       return result.sdp
     } catch (e) {
       logger.error('Error sending view command, error: ', e)
@@ -286,6 +288,7 @@ export default class Signaling extends EventEmitter {
 
       logger.info('Command sent, publisherId: ', result.publisherId)
       logger.debug('Command result: ', result)
+      this.serverId = result.publisherId
       return result.sdp
     } catch (e) {
       logger.error('Error sending publish command, error: ', e)
