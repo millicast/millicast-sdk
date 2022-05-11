@@ -75,10 +75,11 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     console.log('enter')
     // Add listener of broacastEvent to get UserCount
     console.log(millicastPublishUserMedia._events, 'publisher user media')
-    millicastPublishUserMedia.on('broadcastEvent', (data) => {
-      console.log(data, 'broadcastEvent')
-      if (data.name === 'viewercount') {
-        userCount.innerHTML = count
+    millicastPublishUserMedia.on('broadcastEvent', (event) => {
+      const {name, data} = event
+      console.log(event, 'broadcastEvent')
+      if (name === 'viewercount') {
+        userCount.innerHTML = data.viewercount
       }
     })
   }
