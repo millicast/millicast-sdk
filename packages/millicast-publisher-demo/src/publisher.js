@@ -72,7 +72,6 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //////
 
   function setUserCount() {
-    console.log('enter')
     // Add listener of broacastEvent to get UserCount
     console.log(millicastPublishUserMedia._events, 'publisher user media')
     millicastPublishUserMedia.on('broadcastEvent', (event) => {
