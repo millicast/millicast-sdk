@@ -3,7 +3,7 @@ import { Director, Logger, StreamEvents } from "@millicast/sdk"
 
 window.Logger = Logger
 
-const streamName = process.env.MILLICAST_STREAM_NAME
+const streamName = process.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
 const accountId = process.env.MILLICAST_ACCOUNT_ID
 const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
 const disableVideo = false
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       href = href.substring(0, href.lastIndexOf('/') + 1);
     }
 
-    let viewerUrl = `https://viewer.millicast.com/v2?streamId=${accountId}/${streamName}`;
+    let viewerUrl = `https://viewer.millicast.com/?streamId=${accountId}/${streamName}`;
 
     if (disableVideo === true) {
       viewerUrl = `${viewerUrl}&disableVideo=${disableVideo}`
