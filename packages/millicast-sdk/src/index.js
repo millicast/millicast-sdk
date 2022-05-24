@@ -4,7 +4,6 @@ import Signaling from './Signaling'
 import Director from './Director'
 import Publish from './Publish'
 import View from './View'
-import StreamEvents from './StreamEvents'
 
 export {
   Logger,
@@ -12,6 +11,5 @@ export {
   Signaling,
   Director,
   Publish,
-  View,
-  StreamEvents
+  View
 }

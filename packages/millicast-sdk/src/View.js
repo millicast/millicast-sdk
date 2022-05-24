@@ -48,7 +48,7 @@ export default class View extends BaseWebRTC {
    * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
    * @param {String} [options.pinnedSourceId]           - Id of the main source that will be received by the default MediaStream.
    * @param {Array<String>} [options.excludedSourceIds] - Do not receive media from the these source ids.
-   * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers").*
+   * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount").*
    * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
    * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.

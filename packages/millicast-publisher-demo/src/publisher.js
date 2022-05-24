@@ -1,5 +1,5 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { Director, Logger, StreamEvents } from "@millicast/sdk"
+import { Director, Logger } from "@millicast/sdk"
 
 window.Logger = Logger
 
@@ -71,12 +71,17 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   //////
 
-  // Add UserCount event listener
-  const events = await StreamEvents.init()
-  events.onUserCount(accountId, streamName, ({count}) => {
-    userCount.innerHTML = count
-  })
-  
+  function setUserCount() {
+    // Add listener of broacastEvent to get UserCount
+    console.log(millicastPublishUserMedia._events, 'publisher user media')
+    millicastPublishUserMedia.on('broadcastEvent', (event) => {
+      const {name, data} = event
+      console.log(event, 'broadcastEvent')
+      if (name === 'viewercount') {
+        userCount.innerHTML = data.viewercount
+      }
+    })
+  }
   //////
 
   function handleOrientation() {
@@ -128,12 +133,14 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   const millicastPublishUserMedia = window.millicastPublish = await MillicastPublishUserMedia.build({ streamName }, tokenGenerator, true)
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
+  const events = ['viewercount']
 
   const BroadcastMillicastStream = async () => {
     try{
-      await millicastPublishUserMedia.connect({ bandwidth, codec: 'av1' })
+      await millicastPublishUserMedia.connect({ bandwidth, codec: 'av1', events: events })
       isBroadcasting = true;
       broadcastHandler();
+      setUserCount();
     }
     catch(error){
       console.log(error);

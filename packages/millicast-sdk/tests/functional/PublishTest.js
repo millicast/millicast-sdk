@@ -9,7 +9,6 @@ class MillicastPublishTest {
   constructor () {
     millicast.Logger.setLevel(millicast.Logger.DEBUG)
     millicast.Director.setEndpoint(window.directorEndpoint)
-    this.streamCount = null
     this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
   }
 
@@ -81,10 +80,14 @@ class MillicastPublishTest {
         scalabilityMode: this.selectedScalabilityMode === 'none' ? null : this.selectedScalabilityMode,
         record: false,
         absCaptureTime: true,
-        events: ['active', 'inactive']
+        events: ['active', 'inactive', 'viewercount']
       }
       this.millicastPublish.on('broadcastEvent', (data) => {
         console.log('Broadcast Event: ', data)
+        // Getting User Count from broadcastEvent.
+        if (data.name === 'viewercount') {
+          document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
+        }
       })
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
@@ -102,12 +105,6 @@ class MillicastPublishTest {
         this.loadStatsInTable(stats)
       })
 
-      // Subscribing to User Count Event.
-      this.streamCount = await millicast.StreamEvents.init()
-      this.streamCount.onUserCount(accountId, streamName, data => {
-        document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
-      })
-
       // Start Stats
       this.testGetStats()
     } catch (error) {
@@ -117,7 +114,6 @@ class MillicastPublishTest {
 
   testStop () {
     this.millicastPublish.stop()
-    this.streamCount.stop()
     this.testStopStats()
     console.log('Broadcast stopped')
     document.getElementById('broadcast-status-label').innerHTML = 'READY!'
