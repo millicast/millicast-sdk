@@ -138,12 +138,14 @@ export default class Signaling extends EventEmitter {
            *
            * Stopped - Fires when the live stream has been disconnected and is no longer available.
            *
+           * Viewercount - Fires when the viewer count changes.
+           *
            * More information here: {@link https://docs.millicast.com/docs/web-draft#broadcast-events}
            *
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount")} name - Event name.
            * @property {String|Date|Array|Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)

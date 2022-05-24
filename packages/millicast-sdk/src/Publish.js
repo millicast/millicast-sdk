@@ -60,7 +60,7 @@ export default class Publish extends BaseWebRTC {
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-   * @param {Array<String>} [options.events] - Specify which events will be delivered by the server (any of "active" | "inactive").*
+   * @param {Array<String>} [options.events] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @fires Signaling#broadcastEvent
