@@ -56,11 +56,6 @@ export default class PeerConnection extends EventEmitter {
    */
   getRTCPeer () {
     logger.info('Getting RTC Peer')
-    if (this.peer) {
-      const connectionState = getConnectionState(this.peer)
-      const { currentLocalDescription, currentRemoteDescription } = this.peer
-      logger.debug('getRTCPeer return: ', { connectionState, currentLocalDescription, currentRemoteDescription })
-    }
     return this.peer
   }
 
