@@ -13,7 +13,7 @@
     ]
   },
   "scripts": {
-    "prepare": "lerna bootstrap",
+    "prepare": "lerna bootstrap --ci",
     "build": "lerna run build",
     "start": "lerna run start --parallel",
     "test": "lerna run test --stream",

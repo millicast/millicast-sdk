@@ -1,88 +1,88 @@
 {
-	"name": "@millicast/sdk",
-	"version": "0.1.29",
-	"description": "SDK for building a realtime broadcaster using the Millicast platform.",
-	"keywords": [
-		"sdk",
-		"millicast",
-		"webrtc",
-		"realtime",
-		"streaming"
-	],
-	"main": "dist/millicast.cjs.js",
-	"module": "dist/millicast.esm.js",
-	"browser": "dist/millicast.umd.js",
-	"scripts": {
-		"build": "rollup -c",
-		"start": "rollup -c -w",
-		"build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
-		"start-docs": "npm run build-docs && serve docs",
-		"pretest": "npm run build",
-		"test": "jest"
-	},
-	"babel": {
-		"env": {
-			"test": {
-				"presets": [
-					[
-						"@babel/preset-env",
-						{
-							"targets": {
-								"node": 12
-							}
-						}
-					]
-				]
-			}
-		}
-	},
-	"author": "Millicast, Inc.",
-	"homepage": "https://github.com/millicast/millicast-sdk#readme",
-	"license": "See in LICENSE file",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/millicast/millicast-sdk.git"
-	},
-	"dependencies": {
-		"Base64": "^1.1.0",
-		"buffer": "^6.0.3",
-		"events": "^3.3.0",
-		"js-logger": "^1.6.1",
-		"jsdoc-i18n-plugin": "^0.0.3",
-		"jwt-decode": "^3.1.2",
-		"re-emitter": "^1.1.4",
-		"semantic-sdp": "^3.22.0",
-		"transaction-manager": "^2.1.3",
-		"ua-parser-js": "^0.7.30"
-	},
-	"devDependencies": {
-		"@babel/core": "^7.13.10",
-		"@babel/helpers": "^7.13.10",
-		"@babel/plugin-transform-modules-commonjs": "^7.13.8",
-		"@babel/plugin-transform-runtime": "^7.13.10",
-		"@babel/preset-env": "^7.13.10",
-		"@babel/runtime": "^7.13.10",
-		"@rollup/plugin-babel": "^5.3.0",
-		"@rollup/plugin-commonjs": "^17.1.0",
-		"@rollup/plugin-json": "^4.1.0",
-		"@rollup/plugin-node-resolve": "^11.2.0",
-		"babel-jest": "^26.6.3",
-		"clean-jsdoc-theme": "^3.1.2",
-		"core-js": "^3.20.1",
-		"dotenv": "^8.2.0",
-		"jest": "^26.6.3",
-		"jest-cucumber": "^3.0.1",
-		"jest-puppeteer": "^4.4.0",
-		"jest-websocket-mock": "^2.2.0",
-		"jsdoc": "^3.6.10",
-		"jsdoc-export-default-interop": "^0.3.1",
-		"mock-socket": "^9.0.3",
-		"puppeteer": "^2.1.1",
-		"rollup": "^2.41.1",
-		"rollup-plugin-cleanup": "^3.2.1",
-		"rollup-plugin-filesize": "^9.1.2",
-		"rollup-plugin-terser": "^7.0.2",
-		"serve": "^13.0.2",
-		"underscore": "^1.13.1"
-	}
+  "name": "@millicast/sdk",
+  "version": "0.1.29",
+  "description": "SDK for building a realtime broadcaster using the Millicast platform.",
+  "keywords": [
+    "sdk",
+    "millicast",
+    "webrtc",
+    "realtime",
+    "streaming"
+  ],
+  "main": "dist/millicast.cjs.js",
+  "module": "dist/millicast.esm.js",
+  "browser": "dist/millicast.umd.js",
+  "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -c -w",
+    "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
+    "start-docs": "npm run build-docs && serve docs",
+    "pretest": "npm run build",
+    "test": "jest"
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": 12
+              }
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "author": "Millicast, Inc.",
+  "homepage": "https://github.com/millicast/millicast-sdk#readme",
+  "license": "See in LICENSE file",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/millicast/millicast-sdk.git"
+  },
+  "dependencies": {
+    "Base64": "^1.1.0",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "js-logger": "^1.6.1",
+    "jsdoc-i18n-plugin": "^0.0.3",
+    "jwt-decode": "^3.1.2",
+    "re-emitter": "^1.1.4",
+    "semantic-sdp": "^3.22.0",
+    "transaction-manager": "^2.1.3",
+    "ua-parser-js": "^0.7.30"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/helpers": "^7.13.10",
+    "@babel/plugin-transform-modules-commonjs": "^7.13.8",
+    "@babel/plugin-transform-runtime": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
+    "@babel/runtime": "^7.13.10",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "babel-jest": "^26.6.3",
+    "clean-jsdoc-theme": "^3.1.2",
+    "core-js": "^3.20.1",
+    "dotenv": "^8.2.0",
+    "jest": "^26.6.3",
+    "jest-cucumber": "^3.0.1",
+    "jest-puppeteer": "^4.4.0",
+    "jest-websocket-mock": "^2.2.0",
+    "jsdoc": "^3.6.10",
+    "jsdoc-export-default-interop": "^0.3.1",
+    "mock-socket": "^9.0.3",
+    "puppeteer": "^2.1.1",
+    "rollup": "^2.41.1",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-filesize": "^9.1.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "serve": "^13.0.2",
+    "underscore": "^1.13.1"
+  }
 }

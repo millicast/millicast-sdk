@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   const BroadcastMillicastStream = async () => {
     try{
-      await millicastPublishUserMedia.connect({ bandwidth, codec: 'av1', events: events })
+      await millicastPublishUserMedia.connect({ bandwidth, events: events })
       isBroadcasting = true;
       broadcastHandler();
       setUserCount();

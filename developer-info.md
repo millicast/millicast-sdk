@@ -10,7 +10,7 @@ This project is built with [Lerna](https://lerna.js.org/) and contains the follo
 ## Development
 Asumming that you have Node 12.10.x or newer and `npm` installed, install the required dependencies running:
 ```sh
-$ npm install
+$ npm ci
 ```
 ### Building packages
 As the project is built using [Lerna](https://lerna.js.org/), we can rely on it to manage our packages dependencies, so you just need to run at project's root directory
