@@ -10,10 +10,10 @@ export default class UserAgent extends UAParser {
   isChrome () {
     const browserData = this.getBrowser()
     if (!browserData.name) {
-    	return false;
+      return false
     }
     const osData = this.getOS()
-	
+
     let osAllowed = true
     const regex = new RegExp(chromeExcludedOS.join('|'), 'i')
     osAllowed = !regex.test(osData.name)
@@ -24,7 +24,7 @@ export default class UserAgent extends UAParser {
   isFirefox () {
     const browserData = this.getBrowser()
     if (!browserData.name) {
-    	return false;
+      return false
     }
     return browserData.name.match(/Firefox/i)
   }
