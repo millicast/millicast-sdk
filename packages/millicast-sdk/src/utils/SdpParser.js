@@ -51,17 +51,12 @@ export default class SdpParser {
 
     try {
       const reg1 = /m=video.*?a=ssrc:(\d*) cname:(.+?)\r\n/s
-      const reg2 = /m=video.*?a=ssrc:(\d*) mslabel:(.+?)\r\n/s
-      const reg3 = /m=video.*?a=ssrc:(\d*) msid:(.+?)\r\n/s
-      const reg4 = /m=video.*?a=ssrc:(\d*) label:(.+?)\r\n/s
-      // Get ssrc and cname
+      const reg2 = /m=video.*?a=ssrc:(\d*) msid:(.+?)\r\n/s
+      // Get ssrc and cname and msid
       const res = reg1.exec(sdp)
       const ssrc = res[1]
       const cname = res[2]
-      // Get other params
-      const mslabel = reg2.exec(sdp)[2]
-      const msid = reg3.exec(sdp)[2]
-      const label = reg4.exec(sdp)[2]
+      const msid = reg2.exec(sdp)[2]
       // Add simulcasts ssrcs
       const num = 2
       const ssrcs = [ssrc]
@@ -75,12 +70,8 @@ export default class SdpParser {
         sdp += 'a=ssrc-group:FID ' + ssrc + ' ' + rtx + '\r\n' +
             'a=ssrc:' + ssrc + ' cname:' + cname + '\r\n' +
             'a=ssrc:' + ssrc + ' msid:' + msid + '\r\n' +
-            'a=ssrc:' + ssrc + ' mslabel:' + mslabel + '\r\n' +
-            'a=ssrc:' + ssrc + ' label:' + label + '\r\n' +
             'a=ssrc:' + rtx + ' cname:' + cname + '\r\n' +
-            'a=ssrc:' + rtx + ' msid:' + msid + '\r\n' +
-            'a=ssrc:' + rtx + ' mslabel:' + mslabel + '\r\n' +
-            'a=ssrc:' + rtx + ' label:' + label + '\r\n'
+            'a=ssrc:' + rtx + ' msid:' + msid + '\r\n'
       }
       // Add SIM group
       sdp += 'a=ssrc-group:SIM ' + ssrcs.join(' ') + '\r\n'
