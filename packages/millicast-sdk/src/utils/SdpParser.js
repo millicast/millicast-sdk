@@ -51,14 +51,12 @@ export default class SdpParser {
 
     try {
       const reg1 = /m=video.*?a=ssrc:(\d*) cname:(.+?)\r\n/s
-      const reg2 = /m=video.*?a=ssrc:(\d*) mslabel:(.+?)\r\n/s
-      const reg3 = /m=video.*?a=ssrc:(\d*) msid:(.+?)\r\n/s
-      const reg4 = /m=video.*?a=ssrc:(\d*) label:(.+?)\r\n/s
+      const reg2 = /m=video.*?a=ssrc:(\d*) msid:(.+?)\r\n/s
       // Get ssrc and cname and msid
       const res = reg1.exec(sdp)
       const ssrc = res[1]
       const cname = res[2]
-      const msid = reg3.exec(sdp)[2]
+      const msid = reg2.exec(sdp)[2]
       // Add simulcasts ssrcs
       const num = 2
       const ssrcs = [ssrc]
