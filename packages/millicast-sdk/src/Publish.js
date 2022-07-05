@@ -184,6 +184,12 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
 
+    let oldSignaling = this.signaling
+    let oldWebRTCPeer = this.webRTCPeer
+    this.signaling = signalingInstance
+    this.webRTCPeer = webRTCPeerInstance
+    this.setReconnect()
+    
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
       remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }
@@ -191,12 +197,6 @@ export default class Publish extends BaseWebRTC {
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
 
     logger.info('Broadcasting to streamName: ', this.streamName)
-
-    let oldSignaling = this.signaling
-    let oldWebRTCPeer = this.webRTCPeer
-    this.signaling = signalingInstance
-    this.webRTCPeer = webRTCPeerInstance
-    this.setReconnect()
 
     if (data.migrate) {
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
