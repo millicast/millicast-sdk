@@ -203,6 +203,12 @@ export default class View extends BaseWebRTC {
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
+    
+    let oldSignaling = this.signaling
+    let oldWebRTCPeer = this.webRTCPeer
+    this.signaling = signalingInstance
+    this.webRTCPeer = webRTCPeerInstance
+    this.setReconnect()
 
     const subscribePromise = signalingInstance.subscribe(localSdp, { ...this.options, vad: this.options.multiplexedAudioTracks > 0 })
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
@@ -212,12 +218,6 @@ export default class View extends BaseWebRTC {
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 
     logger.info('Connected to streamName: ', this.streamName)
-
-    let oldSignaling = this.signaling
-    let oldWebRTCPeer = this.webRTCPeer
-    this.signaling = signalingInstance
-    this.webRTCPeer = webRTCPeerInstance
-    this.setReconnect()
 
     if (data.migrate) {
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
