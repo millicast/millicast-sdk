@@ -9,6 +9,9 @@ export default class UserAgent extends UAParser {
 
   isChrome () {
     const browserData = this.getBrowser()
+    if (!browserData.name) {
+      return false
+    }
     const osData = this.getOS()
 
     let osAllowed = true
@@ -20,7 +23,9 @@ export default class UserAgent extends UAParser {
 
   isFirefox () {
     const browserData = this.getBrowser()
-
+    if (!browserData.name) {
+      return false
+    }
     return browserData.name.match(/Firefox/i)
   }
 }
