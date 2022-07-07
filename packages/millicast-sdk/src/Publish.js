@@ -179,7 +179,10 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const publishPromise = signalingInstance.publish(localSdp, this.options)
+    let oldSignaling = this.signaling
+    this.signaling = signalingInstance
+
+    const publishPromise = this.signaling.publish(localSdp, this.options)
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
@@ -192,9 +195,7 @@ export default class Publish extends BaseWebRTC {
 
     logger.info('Broadcasting to streamName: ', this.streamName)
 
-    let oldSignaling = this.signaling
     let oldWebRTCPeer = this.webRTCPeer
-    this.signaling = signalingInstance
     this.webRTCPeer = webRTCPeerInstance
     this.setReconnect()
 
