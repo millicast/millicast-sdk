@@ -12,6 +12,7 @@
   "main": "dist/millicast.cjs.js",
   "module": "dist/millicast.esm.js",
   "browser": "dist/millicast.umd.js",
+  "millicastdebug": "dist/millicast.debug.umd.js",
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
