@@ -446,6 +446,7 @@ const addPeerEvents = (instanceClass, peer) => {
     logger.info('Peer onnegotiationneeded, updating local description')
     const offer = await peer.createOffer()
     logger.info('Peer onnegotiationneeded, got local offer', offer.sdp)
+    offer.sdp = SdpParser.updateMissingVideoExtensions(offer.sdp, peer.remoteDescription.sdp)
     await peer.setLocalDescription(offer)
     const sdp = SdpParser.renegotiate(offer.sdp, peer.remoteDescription.sdp)
     logger.info('Peer onnegotiationneeded, updating remote description', sdp)
