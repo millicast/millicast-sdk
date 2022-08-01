@@ -93,5 +93,44 @@ export default [
       }),
       filesize()
     ]
+  },
+  // Debug version
+  {
+    input: 'src/index.js',
+    output: {
+      name: 'millicast-debug',
+      file: pkg.millicastdebug,
+      format: 'umd',
+      sourcemap: true
+    },
+    plugins: [
+      nodeResolve({ browser: true, preferBuiltins: false }),
+      commonjs({
+        include: [/node_modules/, /src/],
+        transformMixedEsModules: true
+      }),
+      json(),
+      babel({
+        babelHelpers: 'runtime',
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                safari: '11',
+                firefox: '66'
+              },
+              useBuiltIns: 'usage',
+              corejs: {
+                version: pkg.devDependencies['core-js'],
+                proposals: false
+              }
+            }
+          ]
+        ],
+        exclude: ['/node_modules/**'],
+        plugins: ['@babel/plugin-transform-runtime']
+      })
+    ]
   }
 ]

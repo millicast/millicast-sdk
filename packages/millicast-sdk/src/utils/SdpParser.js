@@ -331,6 +331,35 @@ export default class SdpParser {
 
     return answer.toString()
   }
+
+  /**
+   * Adds missing extensions of each video section in the localDescription
+   * @param {String} localDescription - Previous local sdp
+   * @param {String} remoteDescription - Remote sdp
+   * @returns {String} SDP updated with missing extensions.
+   */
+  static updateMissingVideoExtensions (localDescription, remoteDescription) {
+    const offer = SDPInfo.parse(localDescription)
+    const answer = SDPInfo.parse(remoteDescription)
+    // Get extensions of answer
+    const remoteVideoExtensions = answer.getMediasByType('video')[0]?.getExtensions()
+    if (!remoteVideoExtensions && !remoteVideoExtensions.length) {
+      return
+    }
+    for (const offeredMedia of offer.getMediasByType('video')) {
+      const offerExtensions = offeredMedia.getExtensions()
+      remoteVideoExtensions.forEach((val, key) => {
+        // If the extension is not present in offer then add it
+        if (!offerExtensions.get(key)) {
+          const id = offeredMedia.getId()
+          const header = 'a=extmap:' + key + ' ' + val + '\r\n'
+          const regex = new RegExp('(a=mid:' + id + '\r\n(?:.*\r\n)*?)', 'g')
+          localDescription = localDescription.replace(regex, (_, p1, p2) => p1 + header)
+        }
+      })
+    }
+    return localDescription
+  }
 }
 
 /**

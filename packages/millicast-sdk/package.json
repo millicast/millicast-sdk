@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -12,6 +12,7 @@
   "main": "dist/millicast.cjs.js",
   "module": "dist/millicast.esm.js",
   "browser": "dist/millicast.umd.js",
+  "millicastdebug": "dist/millicast.debug.umd.js",
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
