@@ -22,8 +22,9 @@ export default class MillicastMedia {
         channelCount: { ideal: 2 },
       },
       video: {
-        height: 1080,
-        width: 1920,
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 24 },
       },
     };
     /*Apply Options*/
