@@ -33,5 +33,9 @@
     "<p>Renegotiate remote sdp based on previous description.\nThis function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media</p>": "<p>Renegotiate remote sdp based on previous description.\nThis function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media</p>",
     "<p>Updated local sdp</p>": "<p>Updated local sdp</p>",
     "<p>Previous remote sdp</p>": "<p>Previous remote sdp</p>",
-    "<p>Mangle SDP for adding dependency descriptor header extension.</p>": "<p>Mangle SDP for adding dependency descriptor header extension.</p>"
+    "<p>Mangle SDP for adding dependency descriptor header extension.</p>": "<p>Mangle SDP for adding dependency descriptor header extension.</p>",
+    "<p>Adds missing extensions of each video section in the localDescription</p>": "<p>Adds missing extensions of each video section in the localDescription</p>",
+    "<p>Previous local sdp</p>": "<p>Previous local sdp</p>",
+    "<p>Remote sdp</p>": "<p>Remote sdp</p>",
+    "<p>SDP updated with missing extensions.</p>": "<p>SDP updated with missing extensions.</p>"
 }
