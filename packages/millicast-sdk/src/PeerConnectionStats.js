@@ -142,6 +142,7 @@ const addOutboundRtpReport = (report, previousStats, statsObject) => {
   const additionalData = getBaseRtpReportData(report, mediaType)
   additionalData.totalBytesSent = report.bytesSent
   additionalData.id = report.id
+  additionalData.mid = report.mid
 
   const previousBytesSent = previousStats ? previousStats[mediaType].outbounds.find(x => x.id === additionalData.id)?.totalBytesSent ?? 0 : null
   additionalData.bitrate = previousBytesSent ? 8 * (report.bytesSent - previousBytesSent) : 0
@@ -176,6 +177,7 @@ const addInboundRtpReport = (report, previousStats, statsObject) => {
   additionalData.totalPacketsLost = report.packetsLost
   additionalData.jitter = report.jitter
   additionalData.id = report.id
+  additionalData.mid = report.mid
 
   additionalData.bitrate = 0
   additionalData.packetsLostRatioPerSecond = 0
