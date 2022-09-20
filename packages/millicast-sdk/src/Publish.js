@@ -107,11 +107,12 @@ export default class Publish extends BaseWebRTC {
   }
 
   /**
- * Initialize recording in an active stream.
+ * Initialize recording in an active stream and change the current record option.
  */
   async record () {
     if (this.recordingAvailable) {
-      await this.signaling.cmd('record')
+      this.options.record = true
+      await this.signaling?.cmd('record')
       logger.info('Broadcaster start recording')
     } else {
       logger.error('Record not available')
@@ -119,11 +120,12 @@ export default class Publish extends BaseWebRTC {
   }
 
   /**
-   * Finalize recording in an active stream.
+   * Finalize recording in an active stream and change the current record option.
    */
   async unrecord () {
     if (this.recordingAvailable) {
-      await this.signaling.cmd('unrecord')
+      this.options.record = false
+      await this.signaling?.cmd('unrecord')
       logger.info('Broadcaster stop recording')
     } else {
       logger.error('Unrecord not available')
