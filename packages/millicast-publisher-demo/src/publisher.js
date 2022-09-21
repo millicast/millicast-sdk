@@ -205,9 +205,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     millicastPublishUserMedia.mediaManager.constraints = {
       audio: !disableAudio ? a : false,
       video: !disableVideo ? {
-        width: {min: 640, max: 1280, ideal: 1280},
-        height: {min: 480, max: 720, ideal: 720},
-        frameRate: {min: 10, max: 60, ideal: 24},
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 24 },
       } : false,
     };
     try{
