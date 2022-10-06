@@ -110,7 +110,7 @@ defineFeature(feature, test => {
       multiopusSdp = SdpParser.setMultiopus(localSdp, null)
     })
 
-    then('returns the sdp with multiopus', async () => {
+    then('returns the sdp with multiopus updated', async () => {
       expect(multiopusSdp).not.toBe(localSdp)
       expect(multiopusSdp).toMatch('multiopus/48000/6')
     })
