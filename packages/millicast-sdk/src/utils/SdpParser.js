@@ -227,7 +227,7 @@ export default class SdpParser {
    */
   static setMultiopus (sdp, mediaStream) {
     const browserData = new UserAgent()
-    if (browserData.isChrome() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
+    if (!browserData.isFirefox && (!mediaStream || hasAudioMultichannel(mediaStream))) {
       if (!sdp.includes('multiopus/48000/6')) {
         logger.info('Setting multiopus')
         // Find the audio m-line
