@@ -14,11 +14,6 @@ Install all dependencies using:
 npm ci
 ```
 
-Create `dist` folder using command:
-```sh
-npm run prepare
-```
-
 ## Run
 To start running this demo, the following command will publish the app at `http://localhost:10001` and enter in watching mode.
 ```sh

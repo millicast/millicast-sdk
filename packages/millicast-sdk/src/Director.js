@@ -175,6 +175,10 @@ export default class Director {
     try {
       let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       data = await data.json()
+      if (data.status === 'fail') {
+        const error = { response: data }
+        throw error
+      }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
       return data.data
