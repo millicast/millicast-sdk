@@ -119,7 +119,7 @@ export default class BaseWebRTC extends EventEmitter {
       }
     } catch (error) {
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
-      logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. Error was: `, error)
+      logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
       /**
        * Emits with every reconnection attempt made when an active stream
        * stopped unexpectedly.
