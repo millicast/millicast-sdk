@@ -141,7 +141,7 @@ export default class Signaling extends EventEmitter {
            *
            * Viewercount - Fires when the viewer count changes.
            *
-           * More information here: {@link https://docs.millicast.com/docs/web-draft#broadcast-events}
+           * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
            *
            * @event Signaling#broadcastEvent
            * @type {Object}

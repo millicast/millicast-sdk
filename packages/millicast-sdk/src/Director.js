@@ -37,7 +37,7 @@ let apiEndpoint = defaultApiEndpoint
  * For security reasosn all calls will return a [JWT](https://jwt.io) token forn authentication including the required
  * socket path to connect with.
  *
- * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.millicast.com/docs/managing-your-tokens).
+ * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
  * @namespace
  */
 
