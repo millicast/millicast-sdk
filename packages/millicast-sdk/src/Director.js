@@ -37,7 +37,7 @@ let apiEndpoint = defaultApiEndpoint
  * For security reasosn all calls will return a [JWT](https://jwt.io) token forn authentication including the required
  * socket path to connect with.
  *
- * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.millicast.com/docs/managing-your-tokens).
+ * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
  * @namespace
  */
 
@@ -120,11 +120,15 @@ export default class Director {
     try {
       let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       data = await data.json()
+      if (data.status === 'fail') {
+        const error = new Error(data.data.message)
+        throw error
+      }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting publisher response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting publisher connection path: ', e.response?.data)
+      logger.error('Error while getting publisher connection path. ', e)
       throw e
     }
   }
@@ -175,11 +179,15 @@ export default class Director {
     try {
       let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       data = await data.json()
+      if (data.status === 'fail') {
+        const error = new Error(data.data.message)
+        throw error
+      }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting subscriber connection path: ', e.response?.data)
+      logger.error('Error while getting subscriber connection path. ', e)
       throw e
     }
   }

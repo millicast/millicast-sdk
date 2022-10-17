@@ -7,12 +7,16 @@
 This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
 
 ## Table of Contents
-* [Installation](#installation)
-* [Basic Usage](#basic-usage)
-* [API Reference](#api-reference)
-* [Samples](#samples)
-* [SDK developer information](#sdk-developer-information)
-* [License](#license)
+- [Millicast SDK for JavaScript](#millicast-sdk-for-javascript)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+    - [Publisher app](#publisher-app)
+    - [Viewer app](#viewer-app)
+  - [API Reference](#api-reference)
+  - [Samples](#samples)
+  - [SDK developer information](#sdk-developer-information)
+  - [License](#license)
 
 
 ## Installation
@@ -25,7 +29,7 @@ Or if you are building an application with Node.js, you can install the SDK pack
 
 
 ```sh
-$ npm i --save @millicast/sdk
+npm i --save @millicast/sdk
 ```
 
 ## Basic Usage
