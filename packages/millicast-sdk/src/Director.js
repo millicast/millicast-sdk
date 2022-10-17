@@ -175,11 +175,15 @@ export default class Director {
     try {
       let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       data = await data.json()
+      if (data.status === 'fail') {
+        const error = new Error(data.data.message)
+        throw error
+      }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
       return data.data
     } catch (e) {
-      logger.error('Error while getting subscriber connection path: ', e.response?.data)
+      logger.error('Error while getting subscriber connection path. ', e)
       throw e
     }
   }
