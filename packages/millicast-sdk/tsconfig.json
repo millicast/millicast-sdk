@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "allowJs": true,
+    "declaration": true
+  },
+  "references": [{ "path": "./src" }, { "path": "./tests" }],
+  "include": [],
+  "exclude": ["node_modules/**/*"]
+}
