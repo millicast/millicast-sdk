@@ -3,9 +3,11 @@
     "composite": true,
     "incremental": true,
     "allowJs": true,
-    "declaration": true
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "strict": false
   },
-  "references": [{ "path": "./src" }, { "path": "./tests" }],
-  "include": [],
-  "exclude": ["node_modules/**/*"]
+  "include": ["./src"],
+  "exclude": ["./node_modules/**/*"]
 }
