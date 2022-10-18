@@ -37,6 +37,15 @@ export default class View extends BaseWebRTC {
   }
 
   /**
+   * @typedef {Object} LayerInfo
+   * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
+   * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+   */
+
+  /**
    * Connects to an active stream as subscriber.
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.

@@ -95,7 +95,7 @@ export default class Publish extends BaseWebRTC {
     await this.initConnection({ migrate: false })
   }
 
-  reconnect () {
+  async reconnect () {
     this.options.mediaStream = this.webRTCPeer?.getTracks() ?? this.options.mediaStream
     super.reconnect()
   }

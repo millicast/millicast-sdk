@@ -187,7 +187,7 @@ const Logger = {
    * Callback which handles log messages.
    *
    * @callback loggerHandler
-   * @param {Any[]} messages         - Arguments object with the supplied log messages.
+   * @param {any[]} messages         - Arguments object with the supplied log messages.
    * @param {Object} context
    * @param {LogLevel} context.level - The currrent log level.
    * @param {String?} context.name   - The optional current logger name.

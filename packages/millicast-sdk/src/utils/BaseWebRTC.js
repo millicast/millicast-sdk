@@ -6,6 +6,13 @@ const maxReconnectionInterval = 32000
 const baseInterval = 1000
 
 /**
+ * @typedef {Object} MillicastDirectorResponse
+ * @property {Array<String>} urls - WebSocket available URLs.
+ * @property {String} jwt - Access token for signaling initialization.
+ * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
+ */
+
+/**
  * Callback invoke when a new connection path is needed.
  *
  * @callback tokenGeneratorCallback
