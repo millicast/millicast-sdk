@@ -15,7 +15,7 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
     - [Viewer app](#viewer-app)
   - [API Reference](#api-reference)
   - [Samples](#samples)
-  - [React Native](#react-native)
+  - [React Native integration](#react-native-integration)
   - [SDK developer information](#sdk-developer-information)
   - [License](#license)
 
