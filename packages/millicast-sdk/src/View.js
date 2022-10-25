@@ -176,6 +176,7 @@ export default class View extends BaseWebRTC {
 
   async initConnection (data) {
     logger.debug('Viewer connect options values: ', this.options)
+    this.stopReconnection = false
     let promises
     if (!data.migrate && this.isActive()) {
       logger.warn('Viewer currently subscribed')
