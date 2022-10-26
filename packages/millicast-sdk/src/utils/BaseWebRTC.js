@@ -51,6 +51,7 @@ export default class BaseWebRTC extends EventEmitter {
     this.reconnectionInterval = baseInterval
     this.alreadyDisconnected = false
     this.firstReconnection = true
+    this.stopReconnection = false
     this.tokenGenerator = tokenGenerator
     this.options = null
   }
@@ -71,6 +72,7 @@ export default class BaseWebRTC extends EventEmitter {
     this.webRTCPeer.closeRTCPeer()
     this.signaling?.close()
     this.signaling = null
+    this.stopReconnection = true
     this.webRTCPeer = new PeerConnection()
   }
 
@@ -117,7 +119,7 @@ export default class BaseWebRTC extends EventEmitter {
    */
   async reconnect () {
     try {
-      if (!this.isActive()) {
+      if (!this.isActive() && !this.stopReconnection) {
         this.stop()
         await this.connect(this.options)
         this.alreadyDisconnected = false

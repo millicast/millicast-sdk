@@ -134,6 +134,7 @@ export default class Publish extends BaseWebRTC {
 
   async initConnection (data) {
     logger.debug('Broadcast option values: ', this.options)
+    this.stopReconnection = false
     let promises
     if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')

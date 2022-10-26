@@ -162,7 +162,7 @@ defineFeature(feature, test => {
     })
 
     when('reconnection is called and fails', () => {
-      jest.spyOn(publisher, 'connect').mockImplementation(() => { throw new Error(errorMessage) })
+      jest.spyOn(publisher, 'connect').mockImplementation(() => { publisher.stopReconnection = false; throw new Error(errorMessage) })
       publisher.reconnect()
     })
 
