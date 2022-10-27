@@ -2,7 +2,7 @@ import { Director, View } from './millicast.esm.js'
 
 // Config data
 const accountId = 'ACCOUNT_ID'
-const streamName = 'STREAM_NAM'
+const streamName = 'STREAM_NAME'
 
 // Global state
 const sources = new Set()
