@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+    <script src="multi.js" module type="module"></script>
+    <style>
+      body {
+        background: #e2e1e0;
+      text-align: center;
+      margin: 0px;
+      padding: 0px;
+      color: #555;
+      font-family: 'Roboto';
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+    }
+
+    #remoteVideos {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(3, 1fr);
+      margin: 1rem;
+    }
+  </style>
+</head>
+  <body>
+    <h1>Multiview Example</h1>
+    <div id="remoteVideos"></div>
+  </body>
+</html>
