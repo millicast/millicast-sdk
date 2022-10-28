@@ -160,18 +160,22 @@ export default class PeerConnection extends EventEmitter {
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack (media, streams) {
-    return new Promise((resolve, reject) => {
+    const transceiver = await (new Promise((resolve, reject) => {
       try {
-        const transceiver = this.peer.addTransceiver(media, { direction: 'recvonly' })
-        for (const stream of streams) {
-          stream.addTrack(transceiver.receiver.track)
-        }
+        const transceiver = this.peer.addTransceiver(media, {
+          direction: 'recvonly'
+        })
+
         transceiver.resolve = resolve
         transceiver.streams = streams
       } catch (e) {
         reject(e)
       }
-    })
+    }))
+    for (const stream of streams) {
+      stream.addTrack(transceiver.receiver.track)
+    }
+    return transceiver
   }
 
   /**

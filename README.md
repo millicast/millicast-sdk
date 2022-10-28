@@ -15,6 +15,8 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
     - [Viewer app](#viewer-app)
   - [API Reference](#api-reference)
   - [Samples](#samples)
+  - [JS Frameworks](#js-frameworks)
+    - [React Native](#react-native)
   - [SDK developer information](#sdk-developer-information)
   - [License](#license)
 
@@ -116,6 +118,17 @@ You can clone this repo and following the steps indicated in each example:
 * [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
 * [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
 * [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
+
+## JS Frameworks
+
+This section is intended to explain how properly integrate this SDK with different JS frameworks, with links to official guides that will contain a more step by step oriented explanation on how to do it. 
+
+Right now, we only have a React Native guide.
+
+### React Native Integration
+This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose. 
+
+Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.dolby.io/streaming-apis/docs/rn)!
 
 ## SDK developer information
 To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/developer-info.md)

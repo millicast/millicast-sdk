@@ -305,7 +305,7 @@ export default class Signaling extends EventEmitter {
    * Send command to the server.
    * @param {String} cmd - Command name.
    * @param {Object} [data] - Command parameters.
-   * @return {Promise<Objec>} Promise object which represents the command response.
+   * @return {Promise<Object>} Promise object which represents the command response.
    */
   async cmd (cmd, data) {
     logger.info(`Sending cmd: ${cmd}`)

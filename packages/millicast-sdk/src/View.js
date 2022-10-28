@@ -37,6 +37,15 @@ export default class View extends BaseWebRTC {
   }
 
   /**
+   * @typedef {Object} LayerInfo
+   * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
+   * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+   */
+
+  /**
    * Connects to an active stream as subscriber.
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
@@ -140,12 +149,12 @@ export default class View extends BaseWebRTC {
       }
       const peer = this.webRTCPeer.getRTCPeer()
       // Check we have the mediaId in the transceivers
-      if (map.mediaId && !peer.getTransceivers().find(t => t.mid === map.mediaId)) {
+      if (map.mediaId && !peer.getTransceivers().find(t => t.mid === map.mediaId.toString())) {
         logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
         throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
       }
     }
-    logger.debug('Viewer project source:%s layer mappings: ', sourceId, mapping)
+    logger.debug('Viewer project source: layer mappings: ', sourceId, mapping)
     await this.signaling.cmd('project', { sourceId, mapping })
     logger.info('Projection done')
   }
@@ -167,6 +176,7 @@ export default class View extends BaseWebRTC {
 
   async initConnection (data) {
     logger.debug('Viewer connect options values: ', this.options)
+    this.stopReconnection = false
     let promises
     if (!data.migrate && this.isActive()) {
       logger.warn('Viewer currently subscribed')
