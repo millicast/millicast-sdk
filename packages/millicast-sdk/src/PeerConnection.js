@@ -489,6 +489,7 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
 }
 
 const addReceiveTransceivers = (peer, options) => {
+  const browserData = new UserAgent()
   if (!options.disableVideo) {
     const transceiver = peer.addTransceiver('video', {
       direction: 'recvonly'
@@ -497,7 +498,7 @@ const addReceiveTransceivers = (peer, options) => {
       transceiver.setCodecPreferences(RTCRtpReceiver
         .getCapabilities('video')
         .codecs
-        .filter(codec=>codec.mimeType!="video/H264" || codec.sdpFmtpLine.includes("profile-level-id=4")));
+        .filter(codec => codec.mimeType !== 'video/H264' || codec.sdpFmtpLine.includes('profile-level-id=4')))
     }
   }
   if (!options.disableAudio) {

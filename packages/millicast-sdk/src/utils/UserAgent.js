@@ -28,4 +28,12 @@ export default class UserAgent extends UAParser {
     }
     return browserData.name.match(/Firefox/i)
   }
+
+  isOpera () {
+    const browserData = this.getBrowser()
+    if (!browserData.name) {
+      return false
+    }
+    return browserData.name.match(/Opera/i)
+  }
 }
