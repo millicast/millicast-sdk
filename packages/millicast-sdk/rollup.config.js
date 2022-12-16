@@ -6,6 +6,7 @@ import { terser } from 'rollup-plugin-terser'
 import cleanup from 'rollup-plugin-cleanup'
 import json from '@rollup/plugin-json'
 import filesize from 'rollup-plugin-filesize'
+import dts from 'rollup-plugin-dts'
 
 export default [
   // browser-friendly UMD build
@@ -93,6 +94,11 @@ export default [
       }),
       filesize()
     ]
+  },
+  {
+    input: './src/types/millicast.d.ts',
+    output: [{ file: pkg.maintypes, format: 'es' }],
+    plugins: [dts()]
   },
   // Debug version
   {
