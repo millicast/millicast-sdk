@@ -157,7 +157,7 @@ declare module '@millicast/sdk' {
      */
     setHandler: (handler: (messages: any[], context: any, level: LogLevel, name: string | null) => any, level: LogLevel) => void;
     useDefaults(options?: import("js-logger").ILoggerOpts): void;
-	  createDefaultHandler(options?: import("js-logger").CreateDefaultHandlerOptions): import("js-logger").ILogHandler;
+	  createDefaultHandler(options?: any): import("js-logger").ILogHandler;
     static get TRACE(): import("js-logger").ILogLevel;
     static get DEBUG(): import("js-logger").ILogLevel;
     static get INFO(): import("js-logger").ILogLevel;
