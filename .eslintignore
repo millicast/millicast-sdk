@@ -1,5 +1,6 @@
 .vscode
 .github
+/**/*.d.ts
 node_modules/**
 dist
 coverage/**
