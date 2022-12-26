@@ -29,7 +29,7 @@ defineFeature(feature, test => {
     then('the web page title says "PuppeteerJest"', async () => {
       await expect(page.title()).resolves.toMatch('PuppeteerJest')
     })
-  })
+  }, 50000)
 
   test('SDK loaded', ({ given, when, then }) => {
     let millicastModule = null
@@ -47,5 +47,5 @@ defineFeature(feature, test => {
     then('returns an instance of "millicast"', () => {
       expect(millicastModule).toBeDefined()
     })
-  })
+  }, 50000)
 })
