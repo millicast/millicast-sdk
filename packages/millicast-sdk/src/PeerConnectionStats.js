@@ -22,30 +22,38 @@ const logger = Logger.get('PeerConnectionStats')
 
 /**
  * @typedef {Object} TrackReport
- * @property {Array<Object>} inbounds - Parsed information of each inbound-rtp.
- * @property {String} inbounds.id - inbound-rtp Id.
- * @property {Number} inbounds.jitter - Current Jitter measured in seconds.
- * @property {String} [inbounds.mimeType] - Mime type if related report had codec report associated.
- * @property {Number} [inbounds.framesPerSecond] - Current framerate if it's video report.
- * @property {Number} [inbounds.frameHeight] - Current frame height if it's video report.
- * @property {Number} [inbounds.frameWidth] - Current frame width if it's video report.
- * @property {Number} inbounds.timestamp - Timestamp of report.
- * @property {Number} inbounds.totalBytesReceived - Total bytes received is an integer value which indicates the total number of bytes received so far from this synchronization source.
- * @property {Number} inbounds.totalPacketsReceived - Total packets received indicates the total number of packets of any kind that have been received on the connection described by the pair of candidates.
- * @property {Number} inbounds.totalPacketsLost - Total packets lost.
- * @property {Number} inbounds.packetsLostRatioPerSecond - Total packet lost ratio per second.
- * @property {Number} inbounds.packetsLostDeltaPerSecond - Total packet lost delta per second.
- * @property {Number} inbounds.bitrate - Current bitrate in bits per second.
- * @property {Array<Object>} outbounds - Parsed information of each outbound-rtp.
- * @property {String} outbounds.id - outbound-rtp Id.
- * @property {String} [outbounds.mimeType] - Mime type if related report had codec report associated.
- * @property {Number} [outbounds.framesPerSecond] - Current framerate if it's video report.
- * @property {Number} [outbounds.frameHeight] - Current frame height if it's video report.
- * @property {Number} [outbounds.frameWidth] - Current frame width if it's video report.
- * @property {String} [outbounds.qualityLimitationReason] - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
- * @property {Number} outbounds.timestamp - Timestamp of report.
- * @property {Number} outbounds.totalBytesSent - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
- * @property {Number} outbounds.bitrate - Current bitrate in bits per second.
+ * @property {Array<InboundStats>} inbounds - Parsed information of each inbound-rtp.
+ * @property {Array<OutboundStats>} outbounds - Parsed information of each outbound-rtp.
+ */
+
+/**
+ * @typedef {Object} InboundStats
+ * @property {String} id - inbound-rtp Id.
+ * @property {Number} jitter - Current Jitter measured in seconds.
+ * @property {String} [mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [framesPerSecond] - Current framerate if it's video report.
+ * @property {Number} [frameHeight] - Current frame height if it's video report.
+ * @property {Number} [frameWidth] - Current frame width if it's video report.
+ * @property {Number} timestamp - Timestamp of report.
+ * @property {Number} totalBytesReceived - Total bytes received is an integer value which indicates the total number of bytes received so far from this synchronization source.
+ * @property {Number} totalPacketsReceived - Total packets received indicates the total number of packets of any kind that have been received on the connection described by the pair of candidates.
+ * @property {Number} totalPacketsLost - Total packets lost.
+ * @property {Number} packetsLostRatioPerSecond - Total packet lost ratio per second.
+ * @property {Number} packetsLostDeltaPerSecond - Total packet lost delta per second.
+ * @property {Number} bitrate - Current bitrate in bits per second.
+ */
+
+/**
+ * @typedef {Object} OutboundStats
+ * @property {String} id - outbound-rtp Id.
+ * @property {String} [mimeType] - Mime type if related report had codec report associated.
+ * @property {Number} [framesPerSecond] - Current framerate if it's video report.
+ * @property {Number} [frameHeight] - Current frame height if it's video report.
+ * @property {Number} [frameWidth] - Current frame width if it's video report.
+ * @property {String} [qualityLimitationReason] - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
+ * @property {Number} timestamp - Timestamp of report.
+ * @property {Number} totalBytesSent - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
+ * @property {Number} bitrate - Current bitrate in bits per second.
  */
 
 export const peerConnectionStatsEvents = {

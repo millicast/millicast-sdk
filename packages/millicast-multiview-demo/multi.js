@@ -1,4 +1,4 @@
-import { Director, View } from './millicast.esm.js'
+import { Director, View } from 'https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.esm.js'
 
 // Config data
 const accountId = 'ACCOUNT_ID'

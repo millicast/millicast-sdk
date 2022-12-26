@@ -489,10 +489,17 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
 }
 
 const addReceiveTransceivers = (peer, options) => {
+  const browserData = new UserAgent()
   if (!options.disableVideo) {
-    peer.addTransceiver('video', {
+    const transceiver = peer.addTransceiver('video', {
       direction: 'recvonly'
     })
+    if (browserData.isOpera()) {
+      transceiver.setCodecPreferences(RTCRtpReceiver
+        .getCapabilities('video')
+        .codecs
+        .filter(codec => codec.mimeType !== 'video/H264' || codec.sdpFmtpLine.includes('profile-level-id=4')))
+    }
   }
   if (!options.disableAudio) {
     peer.addTransceiver('audio', {
