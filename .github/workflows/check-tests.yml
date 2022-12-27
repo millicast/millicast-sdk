@@ -4,7 +4,6 @@ on:
   push:
     branches: 
       - main
-      - fix/puppeteer-tests
 
   pull_request:
     branches: 
