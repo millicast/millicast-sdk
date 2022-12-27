@@ -57,18 +57,8 @@ jobs:
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Install 🔧
-        uses: ianwalter/playwright-container@43940dfa7d309fe3569b9df407ae9e84dcbf2e7f
-        env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
-          PUPPETEER_EXECUTABLE_PATH: '/opt/playwright-browsers/chromium-857950/chrome-linux/chrome'
-        with:
-          args: cd packages/millicast-sdk && npm install
-      
       - name: Test 🧪
-        uses: ianwalter/playwright-container@43940dfa7d309fe3569b9df407ae9e84dcbf2e7f
-        env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
-          PUPPETEER_EXECUTABLE_PATH: '/opt/playwright-browsers/chromium-857950/chrome-linux/chrome'
-        with: 
-          args: cd packages/millicast-sdk && npm test
+        working-directory: './packages/millicast-sdk'
+        run: |
+          npm install
+          npm test
