@@ -4,6 +4,7 @@ on:
   push:
     branches: 
       - main
+      - fix/puppeteer-tests
 
   pull_request:
     branches: 
@@ -56,8 +57,20 @@ jobs:
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Install 🔧
+        working-directory: './packages/millicast-sdk'
+        uses: ianwalter/playwright-container@43940dfa7d309fe3569b9df407ae9e84dcbf2e7f
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+          PUPPETEER_EXECUTABLE_PATH: '/opt/playwright-browsers/chromium-857950/chrome-linux/chrome'
+        with:
+          args: npm install
+      
       - name: Test 🧪
         working-directory: './packages/millicast-sdk'
-        run: |
-          npm install
-          npm test
+        uses: ianwalter/playwright-container@43940dfa7d309fe3569b9df407ae9e84dcbf2e7f
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+          PUPPETEER_EXECUTABLE_PATH: '/opt/playwright-browsers/chromium-857950/chrome-linux/chrome'
+        with: 
+          args: npm test
