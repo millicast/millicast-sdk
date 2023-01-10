@@ -14,6 +14,9 @@
     "node_modules/jsdoc-export-default-interop/dist/index",
     "node_modules/jsdoc-i18n-plugin/index.js"
   ],
+  "markdown": {
+    "idInHeadings": true 
+  },
   "i18n": {
     "locale": "en",
     "directory": "docs-translations/",

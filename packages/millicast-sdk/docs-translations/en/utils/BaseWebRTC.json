@@ -15,5 +15,8 @@
     "<p>Reconnects to last broadcast.</p>": "<p>Reconnects to last broadcast.</p>",
     "<p>Emits with every reconnection attempt made when an active stream\nstopped unexpectedly.</p>": "<p>Emits with every reconnection attempt made when an active stream\nstopped unexpectedly.</p>",
     "<p>Next retry interval in milliseconds.</p>": "<p>Next retry interval in milliseconds.</p>",
-    "<p>Error object with cause of failure.</p>": "<p>Error object with cause of failure.</p>"
+    "<p>Error object with cause of failure.</p>": "<p>Error object with cause of failure.</p>",
+    "<p>WebSocket available URLs.</p>": "<p>WebSocket available URLs.</p>",
+    "<p>Access token for signaling initialization.</p>": "<p>Access token for signaling initialization.</p>",
+    "<p>Object which represents a list of Ice servers.</p>": "<p>Object which represents a list of Ice servers.</p>"
 }
