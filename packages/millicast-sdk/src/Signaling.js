@@ -137,7 +137,7 @@ export default class Signaling extends EventEmitter {
            *
            * Inactive - Fires when the stream has stopped broadcasting, but is still available.
            *
-           * Stopped - Fires when the live stream has been disconnected and is no longer available.
+           * Stopped - This event is not currently used, but is reserved for future usage.
            *
            * Viewercount - Fires when the viewer count changes.
            *
