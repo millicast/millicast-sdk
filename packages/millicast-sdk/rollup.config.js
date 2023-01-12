@@ -96,7 +96,7 @@ export default [
     ]
   },
   {
-    input: './src/types/millicast.d.ts',
+    input: './src/types/index.d.ts',
     output: [{ file: pkg.maintypes, format: 'es' }],
     plugins: [dts()]
   },
