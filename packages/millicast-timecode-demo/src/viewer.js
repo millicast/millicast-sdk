@@ -1,4 +1,5 @@
 import { View, Director, Logger } from "@millicast/sdk";
+import { initializeMetadataPlayer } from "./player";
 
 window.Logger = Logger
 
@@ -50,6 +51,8 @@ const disableFull =
 let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
+const canvas = document.querySelector("canvas");
+let metadataPlayer;
 
 video.addEventListener('loadedmetadata', (event) => {
   Logger.log("loadedmetadata",event);
@@ -68,7 +71,8 @@ const newViewer = () => {
     }
   });
   millicastView.on("track", (event) => {
-    addStream(event.streams[0]);
+    if (event.track.kind === 'video')
+      addStream(event.streams[0], event.receiver);
   });
 
   return millicastView
@@ -99,7 +103,7 @@ const toggleFullscreen = () => {
   }
 };
 
-const addStream = (stream) => {
+const addStream = (stream, receiver) => {
   //Create new video element
   playing = true;
 
@@ -135,7 +139,9 @@ const addStream = (stream) => {
        //Replace the video when media has started playing              
        tmp.addEventListener('loadedmetadata', (event) => {
          Logger.log("loadedmetadata tmp",event);
+          metadataPlayer?.(); // unmount current player
           video.parentNode.replaceChild(tmp, video);
+          metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver);
           //Pause previous video to avoid duplicated audio until the old PC is closed
           try { video.pause(); } catch (e) {}
           //If it was in full screen
@@ -150,7 +156,9 @@ const addStream = (stream) => {
           video = tmp;
        });
     } else {
+       metadataPlayer?.(); // unmount current player
        video.srcObject = stream;
+       metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
     }
 };
 
@@ -176,6 +184,9 @@ const subscribe = async () => {
       disableVideo: disableVideo,
       disableAudio: disableAudio,
       absCaptureTime: true,
+      peerConfig: {
+        encodedInsertableStreams: true,
+      },
     };
     window.millicastView = millicastView = newViewer()
     await millicastView.connect(options);

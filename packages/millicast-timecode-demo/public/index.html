@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Millicast - Realtime Streaming Demo (Viewer)</title>
+    <title>Millicast - Timecode Extraction Demo</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -232,7 +232,10 @@
                     <i class="fas fa-volume-mute" style=""></i>
                 </button>
             </div>-->
-          <video autoplay playsinline controls muted></video>
+          <div id="viewport">
+            <video autoplay playsinline muted></video>
+            <canvas></canvas>
+          </div>
         </div>
       </section>
     </div>

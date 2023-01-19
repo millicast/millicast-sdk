@@ -22,12 +22,12 @@ if (process.env.ROLLUP_WATCH) {
   ]
 }
 
-export default [
+const getBundleConfig = (name, input) => (
   {
-    input: 'src/viewer.js',
+    input,
     output: {
-      name: 'viewer',
-      file: 'dist/viewer.umd.js',
+      name,
+      file: `dist/${name}.umd.js`,
       format: 'umd',
       globals: {
         'millicast-sdk': 'millicastSdkJs'
@@ -56,4 +56,9 @@ export default [
       ...watchPlugins
     ]
   }
+)
+
+export default [
+  getBundleConfig('viewer', 'src/viewer.js'),
+  getBundleConfig('worker', 'src/worker.ts'),
 ]
