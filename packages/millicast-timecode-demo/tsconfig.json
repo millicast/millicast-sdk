@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2015", "es2016", "es2017", "es2018", "es2019", "es2020", "es2022", "DOM"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+  }
+}
