@@ -42,10 +42,9 @@ export default [
         ...environment
       }),
       babel({
-        babelHelpers: 'runtime',
+        babelHelpers: 'bundled',
         presets: ['@babel/preset-env'],
         exclude: ['/node_modules/**'],
-        plugins: ['@babel/plugin-transform-runtime']
       }),
       terser(),
       cleanup({
