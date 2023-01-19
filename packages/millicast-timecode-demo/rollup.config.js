@@ -1,3 +1,4 @@
+import typescript from '@rollup/plugin-typescript'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import injectProcessEnv from 'rollup-plugin-inject-process-env'
@@ -33,6 +34,7 @@ export default [
       }
     },
     plugins: [
+      typescript(),
       nodeResolve({ preferBuiltins: false }),
       commonjs({
         include: [/node_modules/, /src/],
