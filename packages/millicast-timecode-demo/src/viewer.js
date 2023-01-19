@@ -102,13 +102,7 @@ const toggleFullscreen = () => {
 const addStream = (stream) => {
   //Create new video element
   playing = true;
-  const audio = document.querySelector("audio");
 
-  if (disableVideo) {
-    if (audio) audio.srcObject = stream;
-    if (video) video.parentNode.removeChild(video);
-    togglePlay();
-  } else {
     //Set same id
     video.id = stream.id;
     //Set src stream
@@ -158,9 +152,6 @@ const addStream = (stream) => {
     } else {
        video.srcObject = stream;
     }
-    
-    if (audio) audio.parentNode.removeChild(audio);
-  }
 };
 
 let isSubscribed = false
