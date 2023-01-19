@@ -54,6 +54,9 @@ let video = document.querySelector("video");
 const canvas = document.querySelector("canvas");
 let metadataPlayer;
 
+const vidPlaceholder = document.querySelector("#vidPlaceholder");
+const vidContainer = document.querySelector("#vidContainer");
+
 video.addEventListener('loadedmetadata', (event) => {
   Logger.log("loadedmetadata",event);
 });
@@ -159,6 +162,9 @@ const addStream = (stream, receiver) => {
        metadataPlayer?.(); // unmount current player
        video.srcObject = stream;
        metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
+
+       vidPlaceholder.style.display = 'none'
+       vidContainer.style.display = null
     }
 };
 

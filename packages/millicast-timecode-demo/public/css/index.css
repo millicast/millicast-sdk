@@ -19,7 +19,7 @@ google-cast-launcher {
   font-size: 15px;
 }
 
-#vidContainer {
+#vidContainer, #vidPlaceholder {
   position: fixed;
   bottom: 0;
   top: 0;
@@ -30,6 +30,16 @@ google-cast-launcher {
 
   text-align:center;
   margin:0 auto;
+}
+
+#vidPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.45em;
+  cursor: default;
 }
 
 
