@@ -42,7 +42,6 @@ You will need a Millicast account and a valid publishing token that you can find
 
 ### Publisher app
 
-
 ```javascript
 import { Director, Publish } from '@millicast/sdk'
 //Define callback for generate new tokens
@@ -73,42 +72,49 @@ try {
 
 ### Viewer app
 
-`index.html`
+In vanilla JavaScript:
+
+`viewer.html`
 ```html
 <html>
   <head>
-    ...
+    <!-- Import the Millicast JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js"></script>
   </head>
+
   <body>
-    <video id="my-video"></video>
-    
-    <script src='viewer.js'></script>
+    <video id="my-video" controls autoplay muted></video>
+
+    <script type="module">
+      // Get media element
+      const video = document.getElementById('my-video')
+
+      // Set the credentials for the streaming
+      let yourStreamName = "..."
+      let yourStreamAccountId = "..."
+
+      // Define callback for generate new token
+      const tokenGenerator = () => millicast.Director.getSubscriber({
+        streamName: yourStreamName,
+        streamAccountId: yourStreamAccountId
+      })
+
+      // Create a new instance
+      const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
+
+      // Start connection to publisher
+      try {
+        await millicastView.connect()
+      } catch (e) {
+        console.log('Connection failed, handle error', e)
+      }
+    </script>
   </body>
 </html>
 ```
-`viewer.js`
-```javascript
-import { Director, View } from '@millicast/sdk'
 
-// Get Media Element
-const video = document.getElementById('my-video')
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
 
-//Define callback for generate new token
-const tokenGenerator = () => Director.getSubscriber({
-    streamName: 'my-stream-name', 
-    streamAccountId: 'my-account-id'
-  })
-
-//Create a new instance
-const millicastView = new View(streamName, tokenGenerator, video)
-
-//Start connection to publisher
-try {
-  await millicastView.connect()
-} catch (e) {
-  console.log('Connection failed, handle error', e)
-}
-```
 ## API Reference
 You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
 
