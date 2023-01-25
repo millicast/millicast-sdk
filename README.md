@@ -42,32 +42,51 @@ You will need a Millicast account and a valid publishing token that you can find
 
 ### Publisher app
 
-```javascript
-import { Director, Publish } from '@millicast/sdk'
-//Define callback for generate new tokens
-const tokenGenerator = () => Director.getPublisher({
-    token: 'my-publishing-token', 
-    streamName: 'my-stream-name'
-  })
+In vanilla JavaScript:
 
-//Create a new instance
-const millicastPublish = new Publish(streamName, tokenGenerator)
+`publisher.html`
 
-//Get User camera and microphone
-const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+```html
+<html>
+  <head>
+    <!-- Import the Millicast JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js"></script>
+  </head>
 
-//Publishing Options
-const broadcastOptions = {
-  mediaStream
-}
+  <body>
+    <script type="module">
+      const yourPublishingToken = "..."
+      const yourStreamName = "..."
 
-//Start broadcast
-try {
-  await millicastPublish.connect(broadcastOptions)
-} catch (e) {
-  console.log('Connection failed, handle error', e)
-}
+      // Define callback for generate new tokens
+      const tokenGenerator = () => millicast.Director.getPublisher({
+        token: yourPublishingToken,
+        streamName: yourStreamName
+      })
+
+      // Create a new instance
+      const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
+
+      // Get user camera and microphone
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+
+      // Publishing options
+      const broadcastOptions = {
+        mediaStream
+      }
+
+      // Start broadcast
+      try {
+        await millicastPublish.connect(broadcastOptions)
+      } catch (e) {
+        console.log('Connection failed, handle error', e)
+      }
+    </script>
+  </body>
+</html>
 ```
+
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
 
 
 ### Viewer app
@@ -75,6 +94,7 @@ try {
 In vanilla JavaScript:
 
 `viewer.html`
+
 ```html
 <html>
   <head>
@@ -90,8 +110,8 @@ In vanilla JavaScript:
       const video = document.getElementById('my-video')
 
       // Set the credentials for the streaming
-      let yourStreamName = "..."
-      let yourStreamAccountId = "..."
+      const yourStreamName = "..."
+      const yourStreamAccountId = "..."
 
       // Define callback for generate new token
       const tokenGenerator = () => millicast.Director.getSubscriber({
