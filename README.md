@@ -42,73 +42,99 @@ You will need a Millicast account and a valid publishing token that you can find
 
 ### Publisher app
 
+In vanilla JavaScript:
 
-```javascript
-import { Director, Publish } from '@millicast/sdk'
-//Define callback for generate new tokens
-const tokenGenerator = () => Director.getPublisher({
-    token: 'my-publishing-token', 
-    streamName: 'my-stream-name'
-  })
+`publisher.html`
 
-//Create a new instance
-const millicastPublish = new Publish(streamName, tokenGenerator)
+```html
+<html>
+  <head>
+    <!-- Import the Millicast JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js"></script>
+  </head>
 
-//Get User camera and microphone
-const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+  <body>
+    <script type="module">
+      const yourPublishingToken = "..."
+      const yourStreamName = "..."
 
-//Publishing Options
-const broadcastOptions = {
-  mediaStream
-}
+      // Define callback for generate new tokens
+      const tokenGenerator = () => millicast.Director.getPublisher({
+        token: yourPublishingToken,
+        streamName: yourStreamName
+      })
 
-//Start broadcast
-try {
-  await millicastPublish.connect(broadcastOptions)
-} catch (e) {
-  console.log('Connection failed, handle error', e)
-}
+      // Create a new instance
+      const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
+
+      // Get user camera and microphone
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+
+      // Publishing options
+      const broadcastOptions = {
+        mediaStream
+      }
+
+      // Start broadcast
+      try {
+        await millicastPublish.connect(broadcastOptions)
+      } catch (e) {
+        console.log('Connection failed, handle error', e)
+      }
+    </script>
+  </body>
+</html>
 ```
+
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
 
 
 ### Viewer app
 
-`index.html`
+In vanilla JavaScript:
+
+`viewer.html`
+
 ```html
 <html>
   <head>
-    ...
+    <!-- Import the Millicast JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js"></script>
   </head>
+
   <body>
-    <video id="my-video"></video>
-    
-    <script src='viewer.js'></script>
+    <video id="my-video" controls autoplay muted></video>
+
+    <script type="module">
+      // Get media element
+      const video = document.getElementById('my-video')
+
+      // Set the credentials for the streaming
+      const yourStreamName = "..."
+      const yourStreamAccountId = "..."
+
+      // Define callback for generate new token
+      const tokenGenerator = () => millicast.Director.getSubscriber({
+        streamName: yourStreamName,
+        streamAccountId: yourStreamAccountId
+      })
+
+      // Create a new instance
+      const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
+
+      // Start connection to publisher
+      try {
+        await millicastView.connect()
+      } catch (e) {
+        console.log('Connection failed, handle error', e)
+      }
+    </script>
   </body>
 </html>
 ```
-`viewer.js`
-```javascript
-import { Director, View } from '@millicast/sdk'
 
-// Get Media Element
-const video = document.getElementById('my-video')
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
 
-//Define callback for generate new token
-const tokenGenerator = () => Director.getSubscriber({
-    streamName: 'my-stream-name', 
-    streamAccountId: 'my-account-id'
-  })
-
-//Create a new instance
-const millicastView = new View(streamName, tokenGenerator, video)
-
-//Start connection to publisher
-try {
-  await millicastView.connect()
-} catch (e) {
-  console.log('Connection failed, handle error', e)
-}
-```
 ## API Reference
 You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
 
