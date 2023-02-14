@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
+import UserAgent from './utils/UserAgent'
 
 const logger = Logger.get('Signaling')
 
@@ -254,6 +255,11 @@ export default class Signaling extends EventEmitter {
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
+
+    const browserData = new UserAgent()
+    if (browserData.isSafari()) {
+      VideoCodec.H265 = 'h265'
+    }
 
     const videoCodecs = Object.values(VideoCodec)
     if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
