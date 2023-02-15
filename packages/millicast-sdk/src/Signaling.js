@@ -21,6 +21,7 @@ export const signalingEvents = {
  * @property {String} VP9
  * @property {String} H264
  * @property {String} AV1
+ * @property {String} H265 - Only available in Safari
  */
 export const VideoCodec = {
   VP8: 'vp8',
