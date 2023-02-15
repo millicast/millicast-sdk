@@ -26,7 +26,7 @@ export const VideoCodec = {
   VP8: 'vp8',
   VP9: 'vp9',
   H264: 'h264',
-  AV1: 'av1'
+  AV1: 'av1',
 }
 
 /**
@@ -91,6 +91,10 @@ export default class Signaling extends EventEmitter {
     this.transactionManager = null
     this.serverId = null
     this.clusterId = null
+    const browserData = new UserAgent()
+    if (browserData.isSafari()) {
+      VideoCodec.H265 = 'h265'
+    }
   }
 
   /**
@@ -255,11 +259,6 @@ export default class Signaling extends EventEmitter {
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
-
-    const browserData = new UserAgent()
-    if (browserData.isSafari()) {
-      VideoCodec.H265 = 'h265'
-    }
 
     const videoCodecs = Object.values(VideoCodec)
     if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
