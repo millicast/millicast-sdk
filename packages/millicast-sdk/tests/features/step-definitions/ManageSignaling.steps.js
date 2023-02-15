@@ -1,7 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
 import Signaling from '../../../src/Signaling'
+import './__mocks__/MockBrowser'
+import { WebSocket } from 'mock-socket'
 const feature = loadFeature('../ManageSignaling.feature', { loadRelativePath: true, errors: true })
+
+global.WebSocket = WebSocket
 
 defineFeature(feature, test => {
   const publishWebSocketLocation = 'ws://localhost:8080'
