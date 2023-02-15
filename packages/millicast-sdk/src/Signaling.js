@@ -27,7 +27,7 @@ export const VideoCodec = {
   VP8: 'vp8',
   VP9: 'vp9',
   H264: 'h264',
-  AV1: 'av1',
+  AV1: 'av1'
 }
 
 /**
