@@ -94,6 +94,7 @@ export default class PeerConnection extends EventEmitter {
    * Get the SDP modified depending the options. Optionally set the SDP information to local peer.
    * @param {Object} options
    * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
+   * @param {Boolean} options.atmos - True to modify SDP for atmos support stereo. Otherwise False.
    * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.*
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
@@ -144,13 +145,18 @@ export default class PeerConnection extends EventEmitter {
     if (options.dependencyDescriptor) {
       this.sessionDescription.sdp = SdpParser.setDependencyDescriptor(this.sessionDescription.sdp)
     }
+    let sdp = this.sessionDescription.sdp
+    if (!options.disableAudio && options.atmos) {
+      sdp = SdpParser.setAtmosRemote(sdp)
+      this.sessionDescription.sdp = SdpParser.setAtmosLocal(this.sessionDescription.sdp)
+    }
 
     if (options.setSDPToPeer) {
-      await this.peer.setLocalDescription(this.sessionDescription)
+      await this.peer.setLocalDescription(this.sessionDescription.sdp)
       logger.info('Peer local description set')
     }
 
-    return this.sessionDescription.sdp
+    return sdp
   }
 
   /**
@@ -165,7 +171,6 @@ export default class PeerConnection extends EventEmitter {
         const transceiver = this.peer.addTransceiver(media, {
           direction: 'recvonly'
         })
-
         transceiver.resolve = resolve
         transceiver.streams = streams
       } catch (e) {
@@ -483,7 +488,10 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
       }
     }
 
-    peer.addTransceiver(track, initOptions)
+    const transceiver = peer.addTransceiver(track, initOptions)
+    if (options.hooks?.transceiver) {
+      options.hooks?.transceiver(transceiver)
+    }
     logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
   }
 }
@@ -500,16 +508,25 @@ const addReceiveTransceivers = (peer, options) => {
         .codecs
         .filter(codec => codec.mimeType !== 'video/H264' || codec.sdpFmtpLine.includes('profile-level-id=4')))
     }
+    if (options.hooks?.transceiver) {
+      options.hooks?.transceiver(transceiver)
+    }
   }
   if (!options.disableAudio) {
-    peer.addTransceiver('audio', {
+    const transceiver = peer.addTransceiver('audio', {
       direction: 'recvonly'
     })
+    if (options.hooks?.transceiver) {
+      options.hooks?.transceiver(transceiver)
+    }
   }
   for (let i = 0; i < options.multiplexedAudioTracks; i++) {
-    peer.addTransceiver('audio', {
+    const transceiver = peer.addTransceiver('audio', {
       direction: 'recvonly'
     })
+    if (options.hooks?.transceiver) {
+      options.hooks?.transceiver(transceiver)
+    }
   }
 }
 

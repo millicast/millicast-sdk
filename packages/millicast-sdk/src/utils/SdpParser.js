@@ -252,6 +252,75 @@ export default class SdpParser {
   }
 
   /**
+   * Parse SDP for support atmos.
+   *
+   * **Only available in Google Chrome.**
+   * @param {String} sdp - Current SDP.
+   * @param {MediaStream} mediaStream - MediaStream offered in the stream.
+   * @returns {String} SDP parsed with multiopus support.
+   * @example SdpParser.setMultiopus(sdp, mediaStream)
+   */
+  static setAtmosLocal (sdp, mediaStream) {
+    const browserData = new UserAgent()
+    if (!browserData.isFirefox() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
+      if (!sdp.includes('L16/48000/2')) {
+        logger.info('Setting atmos localy')
+        // Find the audio m-line
+        const res = /m=audio 9 UDP\/TLS\/RTP\/SAVPF (.*)\r\n/.exec(sdp)
+        // Get audio line
+        const audio = res[0]
+        // Get free payload number for multiopus
+        const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
+        // Add l16 for atmos
+        const l16 = audio.replace('\r\n', ' ') + pt + '\r\n' +
+              'a=rtpmap:' + pt + ' L16/48000/2\r\n' +
+              'a=fmtp:' + pt + ' ptime=20\r\n'
+        // Change sdp
+        sdp = sdp.replace(audio, l16)
+        logger.info('Atmos local offer created')
+        logger.debug('SDP parsed for atmos l16: ', sdp)
+      } else {
+        logger.info('Atmos already setted')
+      }
+    }
+    return sdp
+  }
+
+  /**
+   * Parse SDP for support atmos.
+   *
+   * **Only available in Google Chrome.**
+   * @param {String} sdp - Current SDP.
+   * @param {MediaStream} mediaStream - MediaStream offered in the stream.
+   * @returns {String} SDP parsed with multiopus support.
+   * @example SdpParser.setMultiopus(sdp, mediaStream)
+   */
+  static setAtmosRemote (sdp, mediaStream) {
+    const browserData = new UserAgent()
+    if (!browserData.isFirefox() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
+      if (!sdp.includes('ec-3/90000')) {
+        logger.info('Setting atmos localy')
+        // Find the audio m-line
+        const res = /m=audio 9 UDP\/TLS\/RTP\/SAVPF (.*)\r\n/.exec(sdp)
+        // Get audio line
+        const audio = res[0]
+        // Get free payload number for multiopus
+        const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
+        // Add ec3
+        const atmos = audio.replace('\r\n', ' ') + pt + '\r\n' +
+              'a=rtpmap:' + pt + ' ec-3/48000\r\n'
+        // Change sdp
+        sdp = sdp.replace(audio, atmos)
+        logger.info('Atmos remote offer created')
+        logger.debug('SDP parsed for atmos ec3: ', sdp)
+      } else {
+        logger.info('Atmos already setted')
+      }
+    }
+    return sdp
+  }
+
+  /**
    * Gets all available payload type IDs of the current Session Description.
    *
    * @param {String} sdp - Current SDP.
