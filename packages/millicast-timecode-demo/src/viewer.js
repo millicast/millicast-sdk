@@ -52,6 +52,7 @@ let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
 const canvas = document.querySelector("canvas");
+canvas.style.display = "none";
 let metadataPlayer;
 
 const vidPlaceholder = document.querySelector("#vidPlaceholder");
@@ -60,6 +61,27 @@ const vidContainer = document.querySelector("#vidContainer");
 video.addEventListener('loadedmetadata', (event) => {
   Logger.log("loadedmetadata",event);
 });
+
+const playBtn = document.getElementById("playBtn");
+playBtn.addEventListener("click", function() {
+  if (video.paused) {
+    video.play();
+    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+  } else {
+    video.pause();
+    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+  }
+});
+
+const switchElement = document.getElementById("metadata-toggle");
+switchElement.addEventListener("change", function() {
+  if (this.checked) {
+    canvas.style.display = 'block'
+  } else {
+    canvas.style.display = 'none'
+  }
+});
+
 // MillicastView object
 let millicastView = null
 
@@ -81,15 +103,6 @@ const newViewer = () => {
   return millicastView
 }
 
-
-const togglePlay = () => {
-  if (video.paused) {
-    video.play()
-  } else {
-    video.pause();
-  }
-};
-
 const toggleFullscreen = () => {
   let fullIcon = fullBtn.children[0];
   if (!document.fullscreenElement) {
@@ -110,63 +123,70 @@ const addStream = (stream, receiver) => {
   //Create new video element
   playing = true;
 
-    //Set same id
-    video.id = stream.id;
-    //Set src stream
-    //console.log('addStream');
-    if (!muted) {
-      video.removeAttribute("muted");
-    }
-    if (!autoplay) {
-      video.autoplay = false;
-      playing = false;
-      video.removeAttribute("autoplay");
-    }
+  //Set same id
+  video.id = stream.id;
+  //Set src stream
+  //console.log('addStream');
+  if (!muted) {
+    video.removeAttribute("muted");
+  }
+  if (!autoplay) {
+    video.autoplay = false;
+    playing = false;
+    video.removeAttribute("autoplay");
+  }
 
-    //If we already had a a stream
-    if (video.srcObject) {
-       //Create temporal video element and switch streams when we have valid data
-       const tmp = video.cloneNode(true);
-       //Override the muted attribute with current muted state
-       tmp.muted = video.muted;
-       //Set same volume
-       tmp.volume = video.volume;
-       //Set new stream
-       tmp.srcObject = stream;
-       //Replicate playback state
-       if (video.playing) {
-          try { tmp.play(); } catch (e) {}
-        } else if (video.paused) {
-          try{ tmp.paused(); } catch (e) {}
-       }
-       //Replace the video when media has started playing              
-       tmp.addEventListener('loadedmetadata', (event) => {
-         Logger.log("loadedmetadata tmp",event);
-          metadataPlayer?.(); // unmount current player
-          video.parentNode.replaceChild(tmp, video);
-          metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver);
-          //Pause previous video to avoid duplicated audio until the old PC is closed
-          try { video.pause(); } catch (e) {}
-          //If it was in full screen
-	  if (document.fullscreenElement == video) {
-            try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
-	  }
-          //If it was in picture in picture mode
-          if (document.pictureInPictureElement == video) {
-            try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
-          }
-          //Replace js objects too
-          video = tmp;
-       });
-    } else {
-       metadataPlayer?.(); // unmount current player
-       video.srcObject = stream;
-       metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
-
-       vidPlaceholder.style.display = 'none'
-       vidContainer.style.display = null
+  //If we already had a a stream
+  if (video.srcObject) {
+    //Create temporal video element and switch streams when we have valid data
+    const tmp = video.cloneNode(true);
+    //Override the muted attribute with current muted state
+    tmp.muted = video.muted;
+    //Set same volume
+    tmp.volume = video.volume;
+    //Set new stream
+    tmp.srcObject = stream;
+    //Replicate playback state
+    if (video.playing) {
+      try { tmp.play(); } catch (e) {}
+    } else if (video.paused) {
+      try{ tmp.paused(); } catch (e) {}
     }
+    //Replace the video when media has started playing              
+    tmp.addEventListener('loadedmetadata', (event) => {
+      Logger.log("loadedmetadata tmp",event);
+      metadataPlayer?.(); // unmount current player
+      video.parentNode.replaceChild(tmp, video);
+      metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver);
+
+      //Pause previous video to avoid duplicated audio until the old PC is closed
+      try { video.pause(); } catch (e) {}
+      //If it was in full screen
+      if (document.fullscreenElement == video) {
+        try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
+      }
+      //If it was in picture in picture mode
+      if (document.pictureInPictureElement == video) {
+        try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
+      }
+      //Replace js objects too
+      video = tmp;
+    });
+  } else {
+      metadataPlayer?.(); // unmount current player
+      video.srcObject = stream;
+      metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
+
+      vidPlaceholder.style.display = 'none'
+      vidContainer.style.display = null
+  }
 };
+
+export function toggleSwitchBtns() {
+  const toggleSwitch = document.getElementById('metaSwitch')
+  toggleSwitch.style.display = 'block'
+  canvas.style.display = 'none'
+}
 
 let isSubscribed = false
 

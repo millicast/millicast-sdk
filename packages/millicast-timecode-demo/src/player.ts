@@ -1,6 +1,7 @@
-import { matchCanvasResolution, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "h264-frame-parser"
+import { matchCanvasResolution, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "nal-extractor"
 
 import type { Metadata } from "./worker"
+import { toggleSwitchBtns } from "viewer"
 
 export function assertNonNull<T>(x: T | null | undefined): T {
   if (x === null || x === undefined)
@@ -23,16 +24,25 @@ export function initializeMetadataPlayer(
   const clockRate = 90000 // FIXME: ideally grab this from SDP
 
   // begin extracting metadata, request re-render on change
-  const metadataSync = new class extends SimpleMetadataSync<null, Metadata> {
+  const metadataSync = new class extends SimpleMetadataSync<Metadata, Metadata> {
     newFrame(now: DOMHighResTimeStamp, frameMetadata: VideoFrameMetadata) {
       super.newFrame(now, frameMetadata)
       rafHandle.request()
     }
   }(clockRate, video, receiver, worker)
+
   cleanupTasks.push(() => metadataSync.stop())
 
   // monitor for size / resolution changes, request re-render on change
   cleanupTasks.push(monitorNaturalResolution(canvas, () => rafHandle.request()))
+
+  // setTimeout(() => {
+  //   if (!metadataSync.metadata) {
+  //     console.log('no metadata')
+  //     worker.terminate()
+  //     return
+  //   }
+  // }, 6000)
 
   // create RafHandle to manage renders
   const rafHandle = new RafHandle(render)
@@ -56,10 +66,7 @@ export function initializeMetadataPlayer(
     const ats = { ...prevTs, ...ts }
     const fractional = (ts.n_frames * num_units_in_tick * (ts.nuit_field_based_flag ? 2 : 1) + ts.time_offset) / time_scale
 
-    ctx.textBaseline = 'bottom'
-    ctx.textAlign = 'center'
-    ctx.fillStyle = 'white'
-    ctx.font = `bold ${canvas.height * .045}px monospace`
+    
     const textParts: [string, boolean][] = [
       [ ats.hours_value   !== undefined ? `${ats.hours_value.toString().padStart(2, '0')}:` : '', ts.hours_value !== undefined ],
       [ ats.minutes_value !== undefined ? `   ${ats.minutes_value.toString().padStart(2, '0')}:` : '', ts.minutes_value !== undefined ],
@@ -67,6 +74,23 @@ export function initializeMetadataPlayer(
       [                                   `        .${ts.n_frames.toString().padStart(2, '0')}`, true ],
     ]
     const textLength = textParts.map(x => x[0].length).reduce((a, b) => Math.max(a, b))
+
+    ctx.font = `bold ${canvas.height * .045}px monospace`
+    
+    const borderSize = canvas.width * .01;
+    
+    const bgWidth = (textLength * ctx.measureText(' ').width) + (borderSize * 2);
+
+    const bgX = (canvas.width - bgWidth) / 2;
+
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = 'black';
+    ctx.fillRect(bgX, canvas.height * .92,  bgWidth, canvas.height * .07);
+   
+    ctx.textBaseline = 'bottom'
+    ctx.textAlign = 'center'
+    ctx.fillStyle = 'white'
+    
     for (const [text, present] of textParts) {
       ctx.globalAlpha = present ? 1 : 0.5
       ctx.fillText(text.padEnd(textLength), canvas.width * .5, canvas.height * .98)
@@ -74,7 +98,12 @@ export function initializeMetadataPlayer(
   }
 
 
-  metadataSync.ready.then(() =>
-    console.info('Metadata player initialized'))
+  metadataSync.ready.then(() => {
+    console.info('Metadata player initialized')
+    toggleSwitchBtns()
+  } )
+
   return () => [...cleanupTasks].reverse().forEach(x => x())
 }
+
+
