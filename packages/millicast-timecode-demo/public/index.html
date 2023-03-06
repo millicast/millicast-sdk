@@ -224,7 +224,7 @@
           <div>Connecting...</div>
         </div>
         <div id="vidContainer" class="" style="display: none">
-          <!--<div class="vidCtrls footer w-100 mb-2 px-2">
+          <div class="vidCtrls footer w-100 mb-2 px-2">
                 <button id="playBtn" class="btn baseBtn float-left" style="">
                     <i class="fas fa-pause"></i>
                 </button>
@@ -234,10 +234,14 @@
                 <button id="muteBtn" class="btn baseBtn float-right" style="">
                     <i class="fas fa-volume-mute" style=""></i>
                 </button>
-            </div>-->
+                <label id="metaSwitch" class="switch float-right" style="display: none;">
+                  <input type="checkbox" id="metadata-toggle">
+                  <span class="slider round"></span>
+                </label>
+          </div>
           <div id="viewport">
             <video autoplay playsinline muted></video>
-            <canvas></canvas>
+            <canvas style="display: block;"></canvas>
           </div>
         </div>
       </section>

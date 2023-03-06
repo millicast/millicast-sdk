@@ -52,6 +52,7 @@ let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
 const canvas = document.querySelector("canvas");
+canvas.style.display = "none";
 let metadataPlayer;
 
 const vidPlaceholder = document.querySelector("#vidPlaceholder");
@@ -60,6 +61,27 @@ const vidContainer = document.querySelector("#vidContainer");
 video.addEventListener('loadedmetadata', (event) => {
   Logger.log("loadedmetadata",event);
 });
+
+const playBtn = document.getElementById("playBtn");
+playBtn.addEventListener("click", function() {
+  if (video.paused) {
+    video.play();
+    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+  } else {
+    video.pause();
+    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+  }
+});
+
+const switchElement = document.getElementById("metadata-toggle");
+switchElement.addEventListener("change", function() {
+  if (this.checked) {
+    canvas.style.display = 'block'
+  } else {
+    canvas.style.display = 'none'
+  }
+});
+
 // MillicastView object
 let millicastView = null
 
@@ -80,15 +102,6 @@ const newViewer = () => {
 
   return millicastView
 }
-
-
-const togglePlay = () => {
-  if (video.paused) {
-    video.play()
-  } else {
-    video.pause();
-  }
-};
 
 const toggleFullscreen = () => {
   let fullIcon = fullBtn.children[0];
@@ -167,6 +180,12 @@ const addStream = (stream, receiver) => {
     vidContainer.style.display = null
   }
 };
+
+export function toggleSwitchBtns() {
+  const toggleSwitch = document.getElementById('metaSwitch')
+  toggleSwitch.style.display = 'block'
+  canvas.style.display = 'none'
+}
 
 let isSubscribed = false
 

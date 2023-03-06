@@ -2,7 +2,7 @@ import {
   PicStruct, PictureTiming, PictureTimestamp as Timestamp,
   SEIExtractor, SEIMessageType, VUIParameters,
   startMetadataSyncService, MessageData,
-} from "h264-frame-parser"
+} from "nal-extractor"
 
 type TimingInfo = NonNullable<VUIParameters['timing_info']>
 
