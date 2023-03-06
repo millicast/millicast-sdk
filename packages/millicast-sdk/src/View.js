@@ -60,6 +60,9 @@ export default class View extends BaseWebRTC {
    * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount").*
    * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
    * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
+   * @param {Object} [options.forcePlayoutDelay = false]- Ask the server to use the playout delay header extension.
+   * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
+   * @param {Number} [options.forcePlayoutDelay.max]    - Set maximum playout delay value.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
