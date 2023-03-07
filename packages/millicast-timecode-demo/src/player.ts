@@ -1,4 +1,4 @@
-import { matchCanvasResolution, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "nal-extractor"
+import { matchCanvasResolution, MetadataSync, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "nal-extractor"
 
 import type { Metadata } from "./worker"
 import { toggleSwitchBtns } from "viewer"
@@ -29,20 +29,30 @@ export function initializeMetadataPlayer(
       super.newFrame(now, frameMetadata)
       rafHandle.request()
     }
+    async waitMetadata(): Promise<Metadata> {
+      if (this.metadata == undefined) {
+        return new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            clearInterval(interval)
+            reject(new Error('timeout waiting for metadata'))
+          }, 3000)  
+          const interval = setInterval(() => {
+            if (this.metadata !== undefined) {
+              clearTimeout(timeout)
+              clearInterval(interval)
+              resolve(this.metadata)
+            }
+          }, 10)
+        })
+      }
+      return this.metadata!
+    }
   }(clockRate, video, receiver, worker)
 
   cleanupTasks.push(() => metadataSync.stop())
 
   // monitor for size / resolution changes, request re-render on change
   cleanupTasks.push(monitorNaturalResolution(canvas, () => rafHandle.request()))
-
-  // setTimeout(() => {
-  //   if (!metadataSync.metadata) {
-  //     console.log('no metadata')
-  //     worker.terminate()
-  //     return
-  //   }
-  // }, 6000)
 
   // create RafHandle to manage renders
   const rafHandle = new RafHandle(render)
@@ -97,11 +107,18 @@ export function initializeMetadataPlayer(
     }
   }
 
-
   metadataSync.ready.then(() => {
     console.info('Metadata player initialized')
-    toggleSwitchBtns()
   } )
+
+  metadataSync.waitMetadata()
+    .then(() => {
+      console.info('Metadata ready')
+      toggleSwitchBtns()
+  })
+  .catch(err => { 
+    console.info(err) 
+  })
 
   return () => [...cleanupTasks].reverse().forEach(x => x())
 }

@@ -119,6 +119,7 @@ const toggleFullscreen = () => {
   }
 };
 
+
 const addStream = (stream, receiver) => {
   //Create new video element
   playing = true;
@@ -176,7 +177,6 @@ const addStream = (stream, receiver) => {
       metadataPlayer?.(); // unmount current player
       video.srcObject = stream;
       metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
-
       vidPlaceholder.style.display = 'none'
       vidContainer.style.display = null
   }
