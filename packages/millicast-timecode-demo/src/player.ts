@@ -1,4 +1,4 @@
-import { matchCanvasResolution, MetadataSync, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "nal-extractor"
+import { matchCanvasResolution, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "nal-extractor"
 
 import type { Metadata } from "./worker"
 import { toggleSwitchBtns } from "viewer"
@@ -48,7 +48,6 @@ export function initializeMetadataPlayer(
       return this.metadata!
     }
   }(clockRate, video, receiver, worker)
-
   cleanupTasks.push(() => metadataSync.stop())
 
   // monitor for size / resolution changes, request re-render on change
@@ -76,7 +75,6 @@ export function initializeMetadataPlayer(
     const ats = { ...prevTs, ...ts }
     const fractional = (ts.n_frames * num_units_in_tick * (ts.nuit_field_based_flag ? 2 : 1) + ts.time_offset) / time_scale
 
-    
     const textParts: [string, boolean][] = [
       [ ats.hours_value   !== undefined ? `${ats.hours_value.toString().padStart(2, '0')}:` : '', ts.hours_value !== undefined ],
       [ ats.minutes_value !== undefined ? `   ${ats.minutes_value.toString().padStart(2, '0')}:` : '', ts.minutes_value !== undefined ],
@@ -122,5 +120,3 @@ export function initializeMetadataPlayer(
 
   return () => [...cleanupTasks].reverse().forEach(x => x())
 }
-
-
