@@ -119,7 +119,6 @@ const toggleFullscreen = () => {
   }
 };
 
-
 const addStream = (stream, receiver) => {
   //Create new video element
   playing = true;
