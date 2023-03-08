@@ -79,7 +79,7 @@ export function initializeMetadataPlayer(
       [ ats.hours_value   !== undefined ? `${ats.hours_value.toString().padStart(2, '0')}:` : '', ts.hours_value !== undefined ],
       [ ats.minutes_value !== undefined ? `   ${ats.minutes_value.toString().padStart(2, '0')}:` : '', ts.minutes_value !== undefined ],
       [ ats.seconds_value !== undefined ? `      ${ats.seconds_value.toString().padStart(2, '0')}` : '', ts.seconds_value !== undefined ],
-      [                                   `        .${ts.n_frames.toString().padStart(2, '0')}`, true ],
+      [                                   `        :${ts.n_frames.toString().padStart(2, '0')}`, true ],
     ]
     const textLength = textParts.map(x => x[0].length).reduce((a, b) => Math.max(a, b))
 
