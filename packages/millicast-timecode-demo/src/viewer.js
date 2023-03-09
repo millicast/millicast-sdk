@@ -181,8 +181,10 @@ const addStream = (stream, receiver) => {
 
 export function toggleSwitchBtns () {
   const toggleSwitch = document.getElementById('metaSwitch')
+  const metadata = document.getElementById('metadata-toggle')
+  metadata.checked = true
   toggleSwitch.style.display = 'block'
-  canvas.style.display = 'none'
+  canvas.style.display = 'block'
 }
 
 let isSubscribed = false
