@@ -61,15 +61,15 @@ export function initializeMetadataPlayer(
   // render logic
   const ctx = assertNonNull(canvas.getContext('2d', { alpha: false }))
   function render(now: DOMHighResTimeStamp) {
+    if (receiver.track.kind == 'audio') return
     // @ts-expect-error
     video.parentElement.style.aspectRatio = (video.videoWidth / video.videoHeight)
 
     matchCanvasResolution(canvas)
-
+    
     // paint video, then overlay on top
     ctx.globalAlpha = 1
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
     if (!metadataSync.metadata) return
     const { timestamp: ts, lastTimestamp: prevTs, timingInfo: { time_scale, num_units_in_tick } } = metadataSync.metadata
     const ats = { ...prevTs, ...ts }
