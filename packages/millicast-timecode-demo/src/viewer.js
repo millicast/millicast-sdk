@@ -50,7 +50,9 @@ const disableFull =
 // console.log(disableVolume, disablePlay, disableFull);
 let playing = false
 const fullBtn = document.querySelector('#fullBtn')
-let video = document.querySelector('video')
+const video = document.querySelector('video')
+const muteBtn = document.getElementById('muteBtn')
+const playBtn = document.getElementById('playBtn')
 const canvas = document.querySelector('canvas')
 canvas.style.display = 'none'
 let metadataPlayer
@@ -58,18 +60,38 @@ let metadataPlayer
 const vidPlaceholder = document.querySelector('#vidPlaceholder')
 const vidContainer = document.querySelector('#vidContainer')
 
-video.addEventListener('loadedmetadata', (event) => {
-  Logger.log('loadedmetadata', event)
+function waitForLoadedMetadata (videoElement) {
+  return new Promise((resolve) => {
+    videoElement.addEventListener('loadedmetadata', (event) => {
+      Logger.log('loadedmetadata', event)
+      resolve(event)
+    })
+  })
+}
+
+muteBtn.addEventListener('click', function () {
+  const iconElement = muteBtn.querySelector('i')
+  if (video.muted) {
+    video.muted = false
+    iconElement.classList.remove('fa-volume-mute')
+    iconElement.classList.add('fa-volume-up')
+  } else {
+    video.muted = true
+    iconElement.classList.remove('fa-volume-up')
+    iconElement.classList.add('fa-volume-mute')
+  }
 })
 
-const playBtn = document.getElementById('playBtn')
 playBtn.addEventListener('click', function () {
+  const iconElement = playBtn.querySelector('i')
   if (video.paused) {
     video.play()
-    playBtn.innerHTML = '<i class="fas fa-pause"></i>'
+    iconElement.classList.remove('fa-play')
+    iconElement.classList.add('fa-pause')
   } else {
     video.pause()
-    playBtn.innerHTML = '<i class="fas fa-play"></i>'
+    iconElement.classList.remove('fa-pause')
+    iconElement.classList.add('fa-play')
   }
 })
 
@@ -84,7 +106,7 @@ switchElement.addEventListener('change', function () {
 
 // MillicastView object
 let millicastView = null
-
+let videoReceiver = null
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
@@ -96,9 +118,11 @@ const newViewer = () => {
     }
   })
   millicastView.on('track', (event) => {
-    if (event.track.kind === 'video') { addStream(event.streams[0], event.receiver) }
+    if (event.track.kind === 'video') {
+      videoReceiver = event.receiver
+    }
+    addStream(event.streams[0], event.receiver)
   })
-
   return millicastView
 }
 
@@ -138,42 +162,32 @@ const addStream = (stream, receiver) => {
   // If we already had a a stream
   if (video.srcObject) {
     // Create temporal video element and switch streams when we have valid data
-    const tmp = video.cloneNode(true)
-    // Override the muted attribute with current muted state
-    tmp.muted = video.muted
-    // Set same volume
-    tmp.volume = video.volume
-    // Set new stream
-    tmp.srcObject = stream
-    // Replicate playback state
-    if (video.playing) {
-      try { tmp.play() } catch (e) {}
-    } else if (video.paused) {
-      try { tmp.paused() } catch (e) {}
-    }
-    // Replace the video when media has started playing
-    tmp.addEventListener('loadedmetadata', (event) => {
-      Logger.log('loadedmetadata tmp', event)
-      metadataPlayer?.() // unmount current player
-      video.parentNode.replaceChild(tmp, video)
-      metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver)
-      // Pause previous video to avoid duplicated audio until the old PC is closed
-      try { video.pause() } catch (e) {}
-      // If it was in full screen
-      if (document.fullscreenElement == video) {
-        try { document.exitFullscreen(); tmp.requestFullscreen() } catch (e) {}
+    waitForLoadedMetadata(video).then((event) => {
+      const tmp = video.cloneNode(true)
+      // Override the muted attribute with current muted state
+      tmp.muted = video.muted
+      // Set same volume
+      tmp.volume = video.volume
+      // Set new stream
+      tmp.srcObject = stream
+      // Replicate playback state
+      if (video.playing) {
+        try { tmp.play() } catch (e) {}
+      } else if (video.paused) {
+        try { tmp.paused() } catch (e) {}
       }
-      // If it was in picture in picture mode
-      if (document.pictureInPictureElement == video) {
-        try { document.exitPictureInPicture(); tmp.requestPictureInPicture() } catch (e) {}
-      }
-      // Replace js objects too
-      video = tmp
+      // Replace the video when media has started playing
+      tmp.addEventListener('loadedmetadata', (event) => {
+        Logger.log('loadedmetadata tmp', event)
+        // metadataPlayer?.() // unmount current player
+        metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver)
+      })
     })
-  } else {
+  }
+  if (receiver.track.kind === 'video') {
     metadataPlayer?.() // unmount current player
     video.srcObject = stream
-    metadataPlayer = initializeMetadataPlayer(video, canvas, receiver)
+    metadataPlayer = initializeMetadataPlayer(video, canvas, videoReceiver)
     vidPlaceholder.style.display = 'none'
     vidContainer.style.display = null
   }
