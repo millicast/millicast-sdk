@@ -106,7 +106,6 @@ switchElement.addEventListener('change', function () {
 
 // MillicastView object
 let millicastView = null
-let videoReceiver = null
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
@@ -118,9 +117,6 @@ const newViewer = () => {
     }
   })
   millicastView.on('track', (event) => {
-    if (event.track.kind === 'video') {
-      videoReceiver = event.receiver
-    }
     addStream(event.streams[0], event.receiver)
   })
   return millicastView
@@ -187,7 +183,7 @@ const addStream = (stream, receiver) => {
   if (receiver.track.kind === 'video') {
     metadataPlayer?.() // unmount current player
     video.srcObject = stream
-    metadataPlayer = initializeMetadataPlayer(video, canvas, videoReceiver)
+    metadataPlayer = initializeMetadataPlayer(video, canvas, receiver)
     vidPlaceholder.style.display = 'none'
     vidContainer.style.display = null
   }
