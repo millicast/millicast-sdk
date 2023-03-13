@@ -48,6 +48,14 @@ export function initializeMetadataPlayer(
       return this.metadata!
     }
   }(clockRate, video, receiver, worker)
+  
+  if (receiver.track.kind == 'audio') {
+    // Stop videoFrameCallbacks and stop processing them
+    metadataSync.stop();
+    metadataSync.metadata = undefined;
+    return 
+  }
+
   cleanupTasks.push(() => metadataSync.stop())
 
   // monitor for size / resolution changes, request re-render on change
@@ -61,7 +69,6 @@ export function initializeMetadataPlayer(
   // render logic
   const ctx = assertNonNull(canvas.getContext('2d', { alpha: false }))
   function render(now: DOMHighResTimeStamp) {
-    if (receiver.track.kind == 'audio') return
     // @ts-expect-error
     video.parentElement.style.aspectRatio = (video.videoWidth / video.videoHeight)
 
