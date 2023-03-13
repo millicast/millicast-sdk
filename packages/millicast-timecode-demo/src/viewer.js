@@ -60,15 +60,6 @@ let metadataPlayer
 const vidPlaceholder = document.querySelector('#vidPlaceholder')
 const vidContainer = document.querySelector('#vidContainer')
 
-function waitForLoadedMetadata (videoElement) {
-  return new Promise((resolve) => {
-    videoElement.addEventListener('loadedmetadata', (event) => {
-      Logger.log('loadedmetadata', event)
-      resolve(event)
-    })
-  })
-}
-
 muteBtn.addEventListener('click', function () {
   const iconElement = muteBtn.querySelector('i')
   if (video.muted) {
@@ -157,27 +148,24 @@ const addStream = (stream, receiver) => {
 
   // If we already had a a stream
   if (video.srcObject) {
-    // Create temporal video element and switch streams when we have valid data
-    waitForLoadedMetadata(video).then((event) => {
-      const tmp = video.cloneNode(true)
-      // Override the muted attribute with current muted state
-      tmp.muted = video.muted
-      // Set same volume
-      tmp.volume = video.volume
-      // Set new stream
-      tmp.srcObject = stream
-      // Replicate playback state
-      if (video.playing) {
-        try { tmp.play() } catch (e) {}
-      } else if (video.paused) {
-        try { tmp.paused() } catch (e) {}
-      }
-      // Replace the video when media has started playing
-      tmp.addEventListener('loadedmetadata', (event) => {
-        Logger.log('loadedmetadata tmp', event)
-        // metadataPlayer?.() // unmount current player
-        metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver)
-      })
+    const tmp = video.cloneNode(true)
+    // Override the muted attribute with current muted state
+    tmp.muted = video.muted
+    // Set same volume
+    tmp.volume = video.volume
+    // Set new stream
+    tmp.srcObject = stream
+    // Replicate playback state
+    if (video.playing) {
+      try { tmp.play() } catch (e) {}
+    } else if (video.paused) {
+      try { tmp.paused() } catch (e) {}
+    }
+    // Replace the video when media has started playing
+    tmp.addEventListener('loadedmetadata', (event) => {
+      Logger.log('loadedmetadata tmp', event)
+      // metadataPlayer?.() // unmount current player
+      initializeMetadataPlayer(tmp, canvas, receiver)
     })
   }
   if (receiver.track.kind === 'video') {
