@@ -19,3 +19,9 @@ To start running this demo, the following command will publish the app at `http:
 ```sh
 npm start
 ```
+
+## Changes
+If any changes was applied in `public` directory. Make them effective by following command:
+```
+npm run prepare
+```
