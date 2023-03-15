@@ -95,17 +95,17 @@ export default class BaseWebRTC extends EventEmitter {
       this.signaling.on(signalingEvents.connectionError, () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
           this.firstReconnection = false
-          this.reconnect()
+          this.reconnect({ error: 'Connection Error' })
         }
       })
 
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
           this.firstReconnection = false
-          this.reconnect()
+          this.reconnect({ error: 'Disconnected' })
         } else if (state === 'disconnected') {
           this.alreadyDisconnected = true
-          setTimeout(() => this.reconnect(), 1500)
+          setTimeout(() => this.reconnect({ error: 'Disconnected' }), 1500)
         } else {
           this.alreadyDisconnected = false
         }
@@ -117,11 +117,13 @@ export default class BaseWebRTC extends EventEmitter {
    * Reconnects to last broadcast.
    * @fires BaseWebRTC#reconnect
    */
-  async reconnect () {
+  async reconnect (data) {
     try {
       if (!this.isActive() && !this.stopReconnection) {
         this.stop()
-        this.emit('reconnect', { timeout: (this.reconnectionInterval) })
+        if (data?.error) {
+          this.emit('reconnect', { timeout: (this.reconnectionInterval), error: data.error })
+        }
         await this.connect(this.options)
         this.alreadyDisconnected = false
         this.reconnectionInterval = baseInterval
@@ -139,8 +141,7 @@ export default class BaseWebRTC extends EventEmitter {
        * @property {Number} timeout - Next retry interval in milliseconds.
        * @property {Error} error - Error object with cause of failure.
        */
-      this.emit('reconnect', { timeout: this.reconnectionInterval, error })
-      setTimeout(() => this.reconnect(), this.reconnectionInterval)
+      setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
     }
   }
 }
