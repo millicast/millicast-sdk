@@ -121,9 +121,7 @@ export default class BaseWebRTC extends EventEmitter {
     try {
       if (!this.isActive() && !this.stopReconnection) {
         this.stop()
-        if (data?.error) {
-          this.emit('reconnect', { timeout: (this.reconnectionInterval), error: data.error })
-        }
+        this.emit('reconnect', { timeout: (nextReconnectInterval(this.reconnectionInterval)), error: data?.error ? data?.error : new Error() })
         await this.connect(this.options)
         this.alreadyDisconnected = false
         this.reconnectionInterval = baseInterval

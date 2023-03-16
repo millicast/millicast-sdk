@@ -160,7 +160,7 @@ defineFeature(feature, test => {
 
     when('reconnection is called and fails', () => {
       jest.spyOn(viewer, 'connect').mockImplementation(() => { viewer.stopReconnection = false; throw new Error(errorMessage) })
-      viewer.reconnect()
+      viewer.reconnect({ error: new Error(errorMessage) })
     })
 
     then('reconnection is called again in increments of 2 seconds until 32 seconds', async () => {
