@@ -95,17 +95,17 @@ export default class BaseWebRTC extends EventEmitter {
       this.signaling.on(signalingEvents.connectionError, () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
           this.firstReconnection = false
-          this.reconnect()
+          this.reconnect({ error: new Error('Signaling error: wsConnectionError') })
         }
       })
 
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
           this.firstReconnection = false
-          this.reconnect()
+          this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') })
         } else if (state === 'disconnected') {
           this.alreadyDisconnected = true
-          setTimeout(() => this.reconnect(), 1500)
+          setTimeout(() => this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') }), 1500)
         } else {
           this.alreadyDisconnected = false
         }
@@ -116,11 +116,23 @@ export default class BaseWebRTC extends EventEmitter {
   /**
    * Reconnects to last broadcast.
    * @fires BaseWebRTC#reconnect
+   * @param {Object} [data] - This object contains the error property. It may be expanded to contain more information in the future.
+   * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
    */
-  async reconnect () {
+  async reconnect (data) {
     try {
       if (!this.isActive() && !this.stopReconnection) {
         this.stop()
+        /**
+         * Emits with every reconnection attempt made when an active stream
+         * stopped unexpectedly.
+         *
+         * @event BaseWebRTC#reconnect
+         * @type {Object}
+         * @property {Number} timeout - Next retry interval in milliseconds.
+         * @property {Error} error - Error object with cause of failure. Possible errors are: <ul> <li> <code>Signaling error: wsConnectionError</code> if there was an error in the Websocket connection. <li> <code>Connection state change: RTCPeerConnectionState disconnected</code> if there was an error in the RTCPeerConnection. <li> <code>Attempting to reconnect</code> if the reconnect was trigered externally. <li> Or any internal error thrown by either <a href="Publish#connect">Publish.connect</a> or <a href="View#connect">View.connect</a> methods</ul>
+         */
+        this.emit('reconnect', { timeout: (nextReconnectInterval(this.reconnectionInterval)), error: data?.error ? data?.error : new Error('Attempting to reconnect') })
         await this.connect(this.options)
         this.alreadyDisconnected = false
         this.reconnectionInterval = baseInterval
@@ -129,17 +141,7 @@ export default class BaseWebRTC extends EventEmitter {
     } catch (error) {
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
       logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
-      /**
-       * Emits with every reconnection attempt made when an active stream
-       * stopped unexpectedly.
-       *
-       * @event BaseWebRTC#reconnect
-       * @type {Object}
-       * @property {Number} timeout - Next retry interval in milliseconds.
-       * @property {Error} error - Error object with cause of failure.
-       */
-      this.emit('reconnect', { timeout: this.reconnectionInterval, error })
-      setTimeout(() => this.reconnect(), this.reconnectionInterval)
+      setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
     }
   }
 }
