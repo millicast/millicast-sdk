@@ -116,6 +116,8 @@ export default class BaseWebRTC extends EventEmitter {
   /**
    * Reconnects to last broadcast.
    * @fires BaseWebRTC#reconnect
+   * @param {Object} [data] - This object contains the error property. It may be expanded to contain more information in the future.
+   * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
    */
   async reconnect (data) {
     try {
