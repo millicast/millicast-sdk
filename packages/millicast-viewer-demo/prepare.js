@@ -7,7 +7,7 @@ const directorySource = 'public'
 
 function removeDirectory(target){
     if (fs.existsSync(target)){
-        fs.rmdirSync(target, {recursive: true})
+        fs.rm(target, {recursive: true})
     }
 }
 

@@ -15,7 +15,12 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: {}
+  peerConfig: {
+    googDscp: true,
+    googCpuOveruseDetection: true,
+    googCandidatePair: true,
+    googNominatedCandidatePair: true
+  }
 }
 
 /**
@@ -193,7 +198,7 @@ export default class Publish extends BaseWebRTC {
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
       remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }
-
+    console.log('THIS IS THE REMOTE SDP AFTER BITRATE UPDATE', remoteSdp)
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
 
     logger.info('Broadcasting to streamName: ', this.streamName)

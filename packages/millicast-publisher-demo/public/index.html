@@ -63,8 +63,12 @@
     <!-- Video Window -->
     <section id="vidView" class="">
         <div id="vidContainer" class="">
+          <div style="width: 800px;">
             <video id="vidWin" autoplay muted playsinline></video>
+            <canvas id="chart" style="background: white;"></canvas>
+          </div>
         </div>
+        
         <!-- Overlay controls -->
         <div id="controlDisplay" class="">
 
@@ -88,6 +92,7 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-right" id="bandwidthMenu" aria-labelledby="dropdownMenuButton">
                     <div class="dropdown-item fs-15px"  data-rate="unlimited">Maximum Bitrate</div>
+                    <div class="dropdown-item fs-15px"  data-rate="10000">10000 kbps</div>
                     <div class="dropdown-item fs-15px"  data-rate="2000">2000 kbps</div>
                     <div class="dropdown-item fs-15px"  data-rate="1000">1000 kbps</div>
                     <div class="dropdown-item fs-15px"  data-rate="500">500 kbps</div>

@@ -5,6 +5,7 @@ export default class MillicastPublishUserMedia extends Publish {
   constructor(options, tokenGenerator, autoReconnect) {
     super(options.streamName, tokenGenerator, autoReconnect);
     this.mediaManager = new MillicastMedia(options);
+    window.Publish = this
   }
 
   static async build(options, tokenGenerator, autoReconnect = true) {
@@ -40,9 +41,25 @@ export default class MillicastPublishUserMedia extends Publish {
       disableAudio: false,
     }
   ) {
+    console.log({
+      ...options,
+      mediaStream: this.mediaManager.mediaStream,
+      peerConfig: {
+        googDscp: true,
+        googCpuOveruseDetection: true,
+        googCandidatePair: true,
+        googNominatedCandidatePair: true
+      }
+    });
     await super.connect({
       ...options,
       mediaStream: this.mediaManager.mediaStream,
+      peerConfig: {
+        googDscp: true,
+        googCpuOveruseDetection: true,
+        googCandidatePair: true,
+        googNominatedCandidatePair: true
+      }
     });
   }
 
