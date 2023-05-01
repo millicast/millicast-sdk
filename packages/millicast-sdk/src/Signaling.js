@@ -143,7 +143,9 @@ export default class Signaling extends EventEmitter {
            *
            * Inactive - Fires when the stream has stopped broadcasting, but is still available.
            *
-           * Stopped - This event is not currently used, but is reserved for future usage.
+           * Stopped - Fires when the stream has stopped.
+           * @property {Object} data - Custom event data.
+           * @property {String} data.reason - The reason for the stop, which can be one of the following categories: <ul> <li> <code>geoblocked</code> when a new publish for the stream updates the geoblocking information and geoblocks the viewer (rare). <li> <code>stream-stopped</code> the published stream has been stopped and has been idle for a long time. <li> <code>ice-timeout</code> ICE keepalives failed. <li> <code>dtls-closed</code> received a DTLS close from the client (ie. via <code>pc.stop()</code>).  <li> <code>viewer-stopped</code> server is shutting down. <li> <code>unview</code> graceful termination via <code>unview</code> command. <li> <code>conn-closed</code> websocket connection closed.</ul>
            *
            * Viewercount - Fires when the viewer count changes.
            *
