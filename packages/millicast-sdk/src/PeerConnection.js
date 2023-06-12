@@ -184,10 +184,16 @@ export default class PeerConnection extends EventEmitter {
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @return {String} Updated SDP information with new bandwidth restriction.
    */
-  updateBandwidthRestriction (sdp, bitrate) {
+  updateBandwidthRestrictionMax (sdp, bitrate) {
     logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
     return SdpParser.setVideoBitrate(sdp, bitrate)
+  }
+
+  updateBandwidthRestrictionMin (sdp, bitrate) {
+    logger.info('Updating min bitrate with x-google-min-bitrate, bitrate value: ', bitrate)
+    logger.info('SDP value: ', sdp)
+    return SdpParser.setVideoMinBitrate(sdp, bitrate)
   }
 
   /**
@@ -195,7 +201,7 @@ export default class PeerConnection extends EventEmitter {
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
    */
-  async updateBitrate (bitrate = 0) {
+  async updateMaxBitrate (bitrate = 0) {
     if (!this.peer) {
       logger.error('Cannot update bitrate. No peer found.')
       throw new Error('Cannot update bitrate. No peer found.')
@@ -204,9 +210,23 @@ export default class PeerConnection extends EventEmitter {
     logger.info('Updating bitrate to value: ', bitrate)
     this.sessionDescription = await this.peer.createOffer()
     await this.peer.setLocalDescription(this.sessionDescription)
-    const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
+    const sdp = this.updateBandwidthRestrictionMax(this.peer.remoteDescription.sdp, bitrate)
     await this.setRTCRemoteSDP(sdp)
-    logger.info('Bitrate restirctions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
+    logger.info('Max Bitrate restirctions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
+  }
+
+  async updateMinBitrate (bitrate = 0) {
+    if (!this.peer) {
+      logger.error('Cannot update bitrate. No peer found.')
+      throw new Error('Cannot update bitrate. No peer found.')
+    }
+
+    logger.info('Updating bitrate to value: ', bitrate)
+    this.sessionDescription = await this.peer.createOffer()
+    await this.peer.setLocalDescription(this.sessionDescription)
+    const sdp = this.updateBandwidthRestrictionMin(this.peer.remoteDescription.sdp, bitrate)
+    await this.setRTCRemoteSDP(sdp)
+    logger.info('Min Bitrate restirctions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
   }
 
   /**

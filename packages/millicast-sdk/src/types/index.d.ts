@@ -645,7 +645,7 @@ declare module '@millicast/sdk' {
      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
      * @return {String} Updated SDP information with new bandwidth restriction.
      */
-    updateBandwidthRestriction(sdp: string, bitrate: number): string;
+    updateBandwidthRestrictionBSdpLine(sdp: string, bitrate: number): string;
     /**
      * Set SDP information to remote peer with bandwidth restriction.
      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.

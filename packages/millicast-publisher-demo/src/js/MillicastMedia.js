@@ -21,7 +21,8 @@ export default class MillicastMedia {
         echoCancellation: false,
         channelCount: { ideal: 2 },
       },
-      video: {
+      video: 
+      {
         width: { ideal: 1280 },
         height: { ideal: 720 },
         frameRate: { ideal: 24 },

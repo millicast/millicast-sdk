@@ -16,6 +16,7 @@ const disableOrientation = true
 let isBroadcasting = false
 let isVideoMuted = false
 let isAudioMuted = false
+const refreshTime = 200
 
 // Initialize a new chart.js chart
 const ctx = document.getElementById('chart').getContext('2d');
@@ -67,7 +68,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //Signup element
   let signup = document.getElementById('signUpBtn');
   //Bandwidth Video element
-  let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item');
+  let bandwidthElementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item');
+  let minimumGoogleElementList = document.querySelectorAll('#minimumGoogleFlagMenu>.dropdown-item');
 
   // Publish & share sections
   let publishSection = document.getElementById('publishSection'),
@@ -140,27 +142,27 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   const tokenGenerator = () => Director.getPublisher(publishToken, streamName)
   const millicastPublishUserMedia = window.millicastPublish = await MillicastPublishUserMedia.build({ streamName }, tokenGenerator, true)
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
-  let bandwidth = 0
+  let selectedMinimumGoogleFlagButton = document.querySelector('#minimumGoogleFlagMenuButton');
+  let bandwidthSdpBLine = 0
+  let bandwidthSdpGoogleLine = 0
   const events = ['viewercount']
 
   const BroadcastMillicastStream = async () => {
     try {
-      console.log('millicast publish BW', bandwidth);
-      await millicastPublishUserMedia.connect({ bandwidth, events: events })
+      console.log('millicast publish BW restrictions', {max: bandwidthSdpBLine, min: bandwidthSdpGoogleLine });
+      await millicastPublishUserMedia.connect({ bandwidth: {max: bandwidthSdpBLine, min: bandwidthSdpGoogleLine }, events: events })
+      isBroadcasting = true
 
       // Create a new PerformanceObserver object to track WebRTC stats
       const observer = new PerformanceObserver((list) => {
         processStats(list.getEntries());
       });
 
-      // Start observing the "RTCVideoSender" entry type
-      observer.observe({ entryTypes: ['RTCVideoSender', 'media'] });
-
       // Retrieve the WebRTC stats every second
+      broadcastHandler();
       setInterval(() => {
         onRefresh(observer)
-      }, 500);
-      broadcastHandler();
+      }, refreshTime);
       setUserCount();
     }
     catch (error) {
@@ -173,15 +175,15 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
   const onSetVideoBandwidth = async (evt) => {
     selectedBandwidthBtn.disabled = true;
-    bandwidth = evt.target.dataset.rate;
-    selectedBandwidthBtn.innerHTML = bandwidth === 0 ? 'Maximum Bitrate' : `${bandwidth} kbps`;
+    bandwidthSdpBLine = evt.target.dataset.rate;
+    selectedBandwidthBtn.innerHTML = bandwidthSdpBLine === 0 ? 'Maximum Bitrate' : `${bandwidthSdpBLine} kbps`;
 
     if (!millicastPublishUserMedia.isActive()) {
       selectedBandwidthBtn.disabled = false;
     }
     else {
       try {
-        await millicastPublishUserMedia.webRTCPeer.updateBitrate(bandwidth)
+        await millicastPublishUserMedia.webRTCPeer.updateMaxBitrate(bandwidthSdpBLine)
         console.log('Bitrate updated')
       }
       catch (e) {
@@ -190,8 +192,26 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     }
     selectedBandwidthBtn.disabled = false;
   }
+  
+  const onSetVideoMinimumBitrateGoogle = async (evt) => {
+    selectedMinimumGoogleFlagButton.disabled = true;
+    bandwidthSdpGoogleLine = evt.target.dataset.rate;
+    selectedMinimumGoogleFlagButton.innerHTML = bandwidthSdpGoogleLine === 0 ? 'Maximum Bitrate' : `${bandwidthSdpGoogleLine} kbps`;
 
-
+    if (!millicastPublishUserMedia.isActive()) {
+      selectedMinimumGoogleFlagButton.disabled = false;
+    }
+    else {
+      try {
+        await millicastPublishUserMedia.webRTCPeer.updateMinBitrate(bandwidthSdpGoogleLine)
+        console.log('Bitrate updated')
+      }
+      catch (e) {
+        onSetSessionDescriptionError(e)
+      }
+    }
+    selectedMinimumGoogleFlagButton.disabled = false;
+  }
 
   /////////////////////////
 
@@ -205,13 +225,20 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   async function initUI() {
     if (disableVideo === true) {
       selectedBandwidthBtn.classList.add('d-none');
+      selectedMinimumGoogleFlagButton.classList.add('d-none');
     }
-    selectedBandwidthBtn.innerHTML = bandwidth === 0 ? 'Maximum Bitrate' : `${bandwidth} kbps`;
-    if (bandwidth !== 0) onSetVideoBandwidth();
-    elementList.forEach(function (el) {
+    // selectedBandwidthBtn.innerHTML = bandwidthSdpBLine === 0 ? 'Maximum Bitrate' : `${bandwidthSdpBLine} kbps`;
+    // selectedMinimumGoogleFlagButton.innerHTML = bandwidthSdpGoogleLine === 0 ? 'Minimum Bitrate' : `${bandwidthSdpGoogleLine} kbps`;
+    if (bandwidthSdpBLine !== 0) onSetVideoBandwidth();
+    if (bandwidthSdpGoogleLine !== 0) onSetVideoBandwidth();
+    bandwidthElementList.forEach(function (el) {
       el.classList.add('btn');
       el.addEventListener('click', onSetVideoBandwidth)
     });
+    minimumGoogleElementList.forEach(function (el) {
+      el.classList.add('btn');
+      el.addEventListener('click', onSetVideoMinimumBitrateGoogle)
+    });    
     let a = true;
     //stereo support
     if (!disableStereo) {
@@ -376,7 +403,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   }
 
   function showViewerUrl() {
+    console.log(publishSection.classList);
     publishSection.classList.add('d-none');
+    console.log(publishSection.classList);
     let href = (location.href).split('?')[0];
     if (href.indexOf('htm') > -1) {
       href = href.substring(0, href.lastIndexOf('/') + 1);
@@ -463,26 +492,6 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 })
 
-function updateChart() {
-  // Get the latest bitrate value from your WebRTC stats
-  const latestBitrate = // Your code to get the latest bitrate value
-
-    // Add the new data point to the chart
-    chart.data.datasets[0].data.push({
-      x: Date.now(),
-      y: latestBitrate
-    });
-
-  // Limit the chart to 20 data points
-  if (chart.data.datasets[0].data.length > 20) {
-    chart.data.datasets[0].data.splice(0, 1);
-  }
-
-  // Update the chart
-  chart.update();
-}
-
-
 function createChart(ctx) {
 
   const options = {
@@ -521,6 +530,7 @@ function createChart(ctx) {
           borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1,
           fill: false,
+          pointStyle: false
         },
         {
           label: 'Bitrate in bits/s',
@@ -529,6 +539,7 @@ function createChart(ctx) {
           borderColor: 'rgba(100, 255, 132, 1)',
           borderWidth: 1,
           fill: false,
+          pointStyle: false
         },
         {
           label: 'availableOutgoingBitrate',
@@ -537,36 +548,48 @@ function createChart(ctx) {
           borderColor: 'rgba(0, 50, 132, 1)',
           borderWidth: 1,
           fill: false,
+          pointStyle: false
         },
       ],
     },
     options: options,
   });
-
   return chart;
 }
 
 let bytesSent = 0;
+const maxSampleSize = 300
+let sample = 0
+let samplePerSecond =  1 / (refreshTime / 1000)
 function processStats(stats) {
   stats.forEach((stat) => {
     if (stat.type === "outbound-rtp" && stat.kind === "video") {
-      console.log(stat);
       const targetBitrate = stat.targetBitrate;
       const newBytesSent = stat.bytesSent;
-      const bytesSentPerSecond = (newBytesSent - bytesSent) * 8 / 0.5 // bytes/s -> bits/s -> interval
+      let bytesSentPerSecond = (newBytesSent - bytesSent) * 8 / (refreshTime / 1000) // bytes/s -> bits/s -> interval
       bytesSent = newBytesSent
-      chart.data.datasets[0].data.push({ x: chart.data.datasets[0].data.length, y: targetBitrate })
-      chart.data.datasets[1].data.push({ x: chart.data.datasets[1].data.length, y: bytesSentPerSecond }) 
+      if (bytesSentPerSecond < 0) {
+        bytesSentPerSecond = 0
+      }
+      chart.data.datasets[0].data.push({ x: sample / samplePerSecond, y: targetBitrate })
+      chart.data.datasets[1].data.push({ x: sample / samplePerSecond, y: bytesSentPerSecond })
+      if (chart.data.datasets[0].data.length >= maxSampleSize) {
+        chart.data.datasets[1].data = chart.data.datasets[1].data.slice(-maxSampleSize)
+        chart.data.datasets[0].data = chart.data.datasets[0].data.slice(-maxSampleSize)
+      }
       chart.update();
     }
     if (stat.type === "candidate-pair") {
-      console.log(stat);
       const availableOutgoingBitrate = stat.availableOutgoingBitrate;
-      chart.data.datasets[2].data.push({ x: chart.data.datasets[2].data.length, y: availableOutgoingBitrate })
+      chart.data.datasets[2].data.push({ x: sample / samplePerSecond, y: availableOutgoingBitrate })
+      if (chart.data.datasets[2].data.length >= maxSampleSize) {
+        chart.data.datasets[2].data = chart.data.datasets[2].data.slice(-maxSampleSize)
+      }
       chart.update();
     }
   }
   )
+  sample += 1
 }
 
 

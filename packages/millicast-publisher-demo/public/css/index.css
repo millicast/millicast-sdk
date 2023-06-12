@@ -161,9 +161,9 @@ Black faded bars in control display for video.
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#camListBtn p, #micListBtn p, #bandwidthMenuButton {
-  font-size: 0.77rem;
-}
+/* #camListBtn p, #micListBtn p, #bandwidthMenuButton { */
+  /* font-size: 0.77rem; */
+/* } */
 
 /* overage cover for lists (hack) */
 #vidCtrlView .boxCover {

@@ -9,18 +9,16 @@ const logger = Logger.get('Publish')
 
 const connectOptions = {
   mediaStream: null,
-  bandwidth: 0,
+  bandwidth: {
+    max: 0,
+    min: 0
+  },
   disableVideo: false,
   disableAudio: false,
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: {
-    googDscp: true,
-    googCpuOveruseDetection: true,
-    googCandidatePair: true,
-    googNominatedCandidatePair: true
-  }
+  peerConfig: {}
 }
 
 /**
@@ -195,10 +193,13 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
 
-    if (!this.options.disableVideo && this.options.bandwidth > 0) {
-      remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
+    if (!this.options.disableVideo && this.options.bandwidth.max > 0) {
+      remoteSdp = webRTCPeerInstance.updateBandwidthRestrictionMax(remoteSdp, this.options.bandwidth.max)
     }
-    console.log('THIS IS THE REMOTE SDP AFTER BITRATE UPDATE', remoteSdp)
+    if (!this.options.disableVideo && this.options.bandwidth.min > 0) {
+      remoteSdp = webRTCPeerInstance.updateBandwidthRestrictionMin(remoteSdp, this.options.bandwidth.min)
+    }
+    console.log('THIS IS THE REMOTE SDP AFTER BITRATE UPDATES', remoteSdp)
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
 
     logger.info('Broadcasting to streamName: ', this.streamName)

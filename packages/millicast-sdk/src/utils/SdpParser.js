@@ -181,6 +181,11 @@ export default class SdpParser {
     return sdp
   }
 
+  static setVideoMinBitrate (sdp, bitrate) {
+    sdp = sdp + 'a=fmtp:102 x-google-min-bitrate=' + bitrate + '\r\n'
+    return sdp
+  }
+
   /**
    * Remove SDP line.
    * @param {String} sdp - Current SDP.

@@ -36,7 +36,10 @@ export default class MillicastPublishUserMedia extends Publish {
 
   async connect(
     options = {
-      bandwidth: 0,
+      bandwidth: {
+        max:0,
+        min:0,
+      },
       disableVideo: false,
       disableAudio: false,
     }
@@ -44,22 +47,10 @@ export default class MillicastPublishUserMedia extends Publish {
     console.log({
       ...options,
       mediaStream: this.mediaManager.mediaStream,
-      peerConfig: {
-        googDscp: true,
-        googCpuOveruseDetection: true,
-        googCandidatePair: true,
-        googNominatedCandidatePair: true
-      }
     });
     await super.connect({
       ...options,
       mediaStream: this.mediaManager.mediaStream,
-      peerConfig: {
-        googDscp: true,
-        googCpuOveruseDetection: true,
-        googCandidatePair: true,
-        googNominatedCandidatePair: true
-      }
     });
   }
 
