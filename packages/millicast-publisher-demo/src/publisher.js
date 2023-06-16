@@ -8,7 +8,7 @@ window.Logger = Logger
 const streamName = process.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
 const accountId = process.env.MILLICAST_ACCOUNT_ID
 const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
-const directorUrl = process.env.MILLICAST_DIRECTOR_URL
+const directorUrl = process.env.MILLICAST_DIRECTOR_URL ?? null
 const disableVideo = false
 const disableAudio = false
 const disableStereo = false
@@ -138,7 +138,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
 
   /////////////////////////
-  Director.setEndpoint(directorUrl)
+  if (directorUrl) {
+    Director.setEndpoint(directorUrl)
+  }
   const tokenGenerator = () => Director.getPublisher(publishToken, streamName)
   const millicastPublishUserMedia = window.millicastPublish = await MillicastPublishUserMedia.build({ streamName }, tokenGenerator, true)
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');

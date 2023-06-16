@@ -44,10 +44,6 @@ export default class MillicastPublishUserMedia extends Publish {
       disableAudio: false,
     }
   ) {
-    console.log({
-      ...options,
-      mediaStream: this.mediaManager.mediaStream,
-    });
     await super.connect({
       ...options,
       mediaStream: this.mediaManager.mediaStream,
