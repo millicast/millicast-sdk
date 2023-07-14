@@ -143,7 +143,7 @@ export default class Signaling extends EventEmitter {
            *
            * Inactive - Fires when the stream has stopped broadcasting, but is still available.
            *
-           * Stopped - Fires when the stream has stopped for a given reason
+           * Stopped - Fires when the stream has stopped for a given reason.
            *
            * Vad - Fires when using multiplexed tracks for audio.
            *
