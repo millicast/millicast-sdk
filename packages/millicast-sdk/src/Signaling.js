@@ -143,7 +143,13 @@ export default class Signaling extends EventEmitter {
            *
            * Inactive - Fires when the stream has stopped broadcasting, but is still available.
            *
-           * Stopped - This event is not currently used, but is reserved for future usage.
+           * Stopped - Fires when the stream has stopped for a given reason.
+           *
+           * Vad - Fires when using multiplexed tracks for audio.
+           *
+           * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
+           *
+           * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
            *
            * Viewercount - Fires when the viewer count changes.
            *
@@ -153,7 +159,7 @@ export default class Signaling extends EventEmitter {
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
            * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount")} name - Event name.
-           * @property {String|Date|Array|Object} data - Custom event data.
+           * @property {Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)
         })
