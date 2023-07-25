@@ -52,6 +52,7 @@ export default class BaseWebRTC extends EventEmitter {
     this.alreadyDisconnected = false
     this.firstReconnection = true
     this.stopReconnection = false
+    this.isReconnecting = false
     this.tokenGenerator = tokenGenerator
     this.options = null
   }
@@ -121,6 +122,7 @@ export default class BaseWebRTC extends EventEmitter {
    */
   async reconnect (data) {
     try {
+      this.isReconnecting = true
       if (!this.isActive() && !this.stopReconnection) {
         this.stop()
         /**
@@ -137,6 +139,7 @@ export default class BaseWebRTC extends EventEmitter {
         this.alreadyDisconnected = false
         this.reconnectionInterval = baseInterval
         this.firstReconnection = true
+        this.isReconnecting = false
       }
     } catch (error) {
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
