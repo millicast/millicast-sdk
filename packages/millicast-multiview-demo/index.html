@@ -4,7 +4,7 @@
     <script src="multi.js" module type="module"></script>
     <style>
       body {
-        background: #e2e1e0;
+      background: #e2e1e0;
       text-align: center;
       margin: 0px;
       padding: 0px;
@@ -12,21 +12,47 @@
       font-family: 'Roboto';
     }
 
-    video {
-      width: 100%;
-      height: 100%;
+    #remoteVideos {
+      flex-wrap: wrap;
+      margin: 1rem;
     }
 
-    #remoteVideos {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(3, 1fr);
+    #mainVideo {
       margin: 1rem;
+    }
+    
+    #mainVideo video {
+      justify-content: center;
+      width: 600px;
+      height: 400px;
+      cursor: pointer;
+    }
+
+    /* make video elements more small */
+    #remoteVideos video {
+      width: 300px;
+      height: 200px;
+      margin: 1rem;
+      cursor: pointer;
+    }
+
+    #dropDownSelector {
+      display: block;
     }
   </style>
 </head>
   <body>
     <h1>Multiview Example</h1>
+    <div id="mainVideo"></div>
     <div id="remoteVideos"></div>
+    <div class="dropdown">
+      <p>Choose a stream and layer to view</p>
+      <select id="sourcesDropDown">
+        <option hidden selected>Select a source</option>
+      </select>
+      <select id="layersDropDown">
+        <option hidden selected>Select a layer</option>
+      </select>
+    </div>
   </body>
 </html>
