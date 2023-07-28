@@ -122,8 +122,8 @@ export default class BaseWebRTC extends EventEmitter {
    */
   async reconnect (data) {
     try {
-      this.isReconnecting = true
-      if (!this.isActive() && !this.stopReconnection) {
+      logger.info('Attempting to reconnect...')
+      if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
         this.stop()
         /**
          * Emits with every reconnection attempt made when an active stream
@@ -135,6 +135,7 @@ export default class BaseWebRTC extends EventEmitter {
          * @property {Error} error - Error object with cause of failure. Possible errors are: <ul> <li> <code>Signaling error: wsConnectionError</code> if there was an error in the Websocket connection. <li> <code>Connection state change: RTCPeerConnectionState disconnected</code> if there was an error in the RTCPeerConnection. <li> <code>Attempting to reconnect</code> if the reconnect was trigered externally. <li> Or any internal error thrown by either <a href="Publish#connect">Publish.connect</a> or <a href="View#connect">View.connect</a> methods</ul>
          */
         this.emit('reconnect', { timeout: (nextReconnectInterval(this.reconnectionInterval)), error: data?.error ? data?.error : new Error('Attempting to reconnect') })
+        this.isReconnecting = true
         await this.connect(this.options)
         this.alreadyDisconnected = false
         this.reconnectionInterval = baseInterval
@@ -142,6 +143,7 @@ export default class BaseWebRTC extends EventEmitter {
         this.isReconnecting = false
       }
     } catch (error) {
+      this.isReconnecting = false
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
       logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
       setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
