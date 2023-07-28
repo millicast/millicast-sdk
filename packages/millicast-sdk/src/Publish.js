@@ -159,10 +159,7 @@ export default class Publish extends BaseWebRTC {
           this.stopReconnection = true
         } else {
           // should reconnect with exponential back off
-          if (!this.isReconnecting) {
-            logger.warn('Retrying...')
-            this.reconnect()
-          }
+          this.reconnect()
         }
       }
       throw error
