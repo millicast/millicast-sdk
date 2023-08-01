@@ -1,8 +1,8 @@
-import { Director, View } from 'https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.esm.js'
+import { Director, View } from "@millicast/sdk"
 
 // Config data
-const accountId = 'ACCOUNT_ID'
-const streamName = 'STREAM_NAME'
+const accountId = process.env.MILLICAST_ACCOUNT_ID
+const streamName = process.env.MILLICAST_STREAM_NAME
 
 // This will store the main transceiver video mid
 const mainTransceiver = '0'
@@ -12,6 +12,9 @@ let sourcesTracks = {}
 
 // This will store a mapping: transceiver video mid => source id
 let transceiverToSourceIdMap = {}
+
+// This will store a mapping: transceiver video mid => active layers 
+let transceiverToLayersMap = {}
 
 // Create a new viewer instance
 const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
@@ -141,6 +144,8 @@ const layersDropDown = document.getElementById('layersDropDown')
 const updateLayers = (layers) => {
   const sourceId = sourcesDropDown.value === 'main' ? null : sourcesDropDown.value
 
+  transceiverToLayersMap = layers
+
   const videoMediaId = sourcesTracks[sourceId]?.find(track => track.media === 'video').mediaId || null
   const activeLayers = layers[videoMediaId]?.active || []
   
@@ -203,7 +208,14 @@ const removeSourceOption = (sourceId) => {
 }
 
 sourcesDropDown.addEventListener('change', () => {
-  layersDropDown.innerHTML = ''
+  const sourceId = sourcesDropDown.value === 'main' ? null : sourcesDropDown.value
+  const videoMediaId = sourcesTracks[sourceId].find(track => track.trackId === 'video').mediaId
+
+  const sourceActiveLayers = transceiverToLayersMap[videoMediaId]?.active || []
+
+  layersDropDown.innerHTML = `<option hidden selected>Select a source</option>` + sourceActiveLayers.map(layer => {
+    return `<option value="${layer.id}">${layer.width}p</option>`
+  }).join('')
 })
 
 layersDropDown.addEventListener('change', (event) => {
