@@ -14,7 +14,7 @@ npm ci
 ```
 
 ## Run
-To start running this demo, the following command will publish the app at `http://localhost:10002` and enter in watching mode.
+To start running this demo, the following command will publish the app at `http://localhost:10005` and enter in watching mode.
 ```sh
 npm start
 ```

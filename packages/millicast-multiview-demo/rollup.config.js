@@ -16,7 +16,7 @@ if (process.env.ROLLUP_WATCH) {
     serve({
       open: true,
       contentBase: 'dist',
-      port: 10002
+      port: 10005
     })
   ]
 }
