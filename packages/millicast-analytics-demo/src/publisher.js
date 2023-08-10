@@ -64,7 +64,7 @@ const parseOnMigrate = (event) => {
   console.log('Publisher onMigrate:', stats)
 }
 
-export async function publish (video) {
+async function publish (video) {
   const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
 
   // Initialize local video
@@ -78,12 +78,23 @@ export async function publish (video) {
   // Start broadcast
   try {
     await millicast.connect(broadcastOptions)
+    return true
   } catch (e) {
     console.error('Connection failed, handle error', e)
   }
 }
 
-export function getStats () {
+async function unpublish (video) {
+  try {
+    await millicast.stop()
+    video.srcObject = null
+    return true
+  } catch (e) {
+    console.log('Disconnection failed, handle error', e)
+  }
+}
+
+function getStats () {
   // Initialize stats
   millicast.webRTCPeer.initStats()
 
@@ -98,7 +109,27 @@ export function getStats () {
   millicast.webRTCPeer.on('migrate', parseOnMigrate)
 }
 
-export function stopStats () {
+function stopStats () {
   millicast.webRTCPeer.stopStats()
   millicast.webRTCPeer.removeAllListeners('stats')
+}
+
+async function stopPublisher (event, video) {
+  if (await unpublish(video)) {
+    stopStats()
+
+    event.target.innerText = 'Publish'
+    event.target.removeEventListener('click', (e) => stopPublisher(e, video))
+    event.target.addEventListener('click', (e) => startPublisher(e, video))
+  }
+}
+
+export async function startPublisher (event, video) {
+  if (await publish(video)) {
+    getStats()
+
+    event.target.innerText = 'Unpublish'
+    event.target.removeEventListener('click', (e) => startPublisher(e, video))
+    event.target.addEventListener('click', (e) => stopPublisher(e, video))
+  }
 }
