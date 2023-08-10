@@ -1,21 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Collector PoC</title>
-    <!-- MILLICAST -->
-    <script src="./analytics.umd.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Collector PoC</title>
+  <!-- MILLICAST -->
+  <script src="./analytics.umd.js"></script>
+  <link rel="shortcut icon" href="#" />
+  <style>
+    body {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial;
+      margin: 0;
+    }
+    .container {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr 1fr;
+      padding: 0 20px;
+    }
+    .video-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    p {
+      font-size: 32px;
+      font-weight: 500;
+      margin: 15px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      margin: 0 10px;
+    }
+    button {
+      font-size: 20px;
+      margin: 10px;
+      height: 35px;
+      border-radius: 5px;
+      border: 1px solid black;
+    }
+    button:active {
+      scale: 98.5%;
+    }
+  </style>
 </head>
 <body>
-    <div>
-        <video id="my-video" controls autoplay muted></video>
-        <video id="remote-video" controls autoplay muted></video>
+  <div class="container">
+    <div class="video-container">
+      <p>Publisher</p>
+      <video id="my-video" controls autoplay muted></video>
+      <button id='publish'>Publish</button>
     </div>
-    <div>
-        <button id='get-stats'>Get Stats</button>
-        <button id='subscribe'>Subscribe</button>
-        <button id='publish'>Publish</button>
+    <div class="video-container">
+      <p>Subscriber</p>
+      <video id="remote-video" controls autoplay muted></video>
+      <button id='subscribe'>Subscribe</button>
     </div>
+  </div>
+  <div>
+    <button id='get-stats'>Get stats</button>
+  </div>
 </body>
 </html>

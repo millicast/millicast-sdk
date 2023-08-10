@@ -1,17 +1,8 @@
-import { View, Publish, Director } from '@millicast/sdk'
+import { View, Director } from '@millicast/sdk'
+import * as publisher from './publisher.js'
 
 // initial schema
 const subscriberStats = {
-  connectionStateChanged: {
-    connected: 0,
-    disconnected: 0,
-    failed: 0,
-    closed: 0
-  },
-  reconnect: 0,
-  migrate: 0
-}
-const publisherStats = {
   connectionStateChanged: {
     connected: 0,
     disconnected: 0,
@@ -32,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   // Config data
   const accountId = process.env.MILLICAST_ACCOUNT_ID
   const streamName = process.env.MILLICAST_STREAM_NAME
-  const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
   const directorUrl = process.env.MILLICAST_DIRECTOR_URL
 
   // Define callback for generate new token
@@ -54,33 +44,6 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
   }
 
-  // Define callback for generate new token
-  const tokenGeneratorPublisher = () => Director.getPublisher({
-    token: publishToken,
-    streamName: streamName
-  })
-
-  const millicastPublish = new Publish(streamName, tokenGeneratorPublisher)
-
-  async function publish () {
-    const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-
-    // Initialize local video
-    myVideo.srcObject = mediaStream
-    myVideo.play()
-
-    // Publishing options
-    const broadcastOptions = {
-      mediaStream: mediaStream
-    }
-    // Start broadcast
-    try {
-      await millicastPublish.connect(broadcastOptions)
-    } catch (e) {
-      console.error('Connection failed, handle error', e)
-    }
-  }
-
   const parseStatsSubscriber = (stats) => {
     subscriberStats.totalRoundTripTime = stats.totalRoundTripTime
     subscriberStats.currentRoundTripTime = stats.currentRoundTripTime
@@ -93,17 +56,6 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     subscriberStats.bitrate = stats.video.inbounds[0].bitrate
 
     console.log('Subscriber stats:', subscriberStats)
-  }
-
-  const parseStatsPublisher = (stats) => {
-    publisherStats.totalRoundTripTime = stats.totalRoundTripTime
-    publisherStats.currentRoundTripTime = stats.currentRoundTripTime
-    publisherStats.availableOutgoingBitrate = stats.availableOutgoingBitrate
-    publisherStats.resolution = stats.video.outbounds[0].frameWidth * stats.video.outbounds[0].frameHeight
-    publisherStats.bitrate = stats.video.outbounds[0].bitrate
-    publisherStats.qualityLimitationReason = stats.video.outbounds[0].qualityLimitationReason
-
-    console.log('Publisher stats:', publisherStats)
   }
 
   const parseOnConnectionStateChangeSubscriber = (event) => {
@@ -127,37 +79,10 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     console.log('Subscriber onConnectionStateChanged:', subscriberStats)
   }
 
-  const parseOnConnectionStateChangePublisher = (event) => {
-    switch (event) {
-      case 'connected':
-        publisherStats.connectionStateChanged.connected = publisherStats.connectionStateChanged.connected + 1
-        break
-      case 'disconnected':
-        publisherStats.connectionStateChanged.disconnected = publisherStats.connectionStateChanged.disconnected + 1
-        break
-      case 'failed':
-        publisherStats.connectionStateChanged.failed = publisherStats.connectionStateChanged.failed + 1
-        break
-      case 'closed':
-        publisherStats.connectionStateChanged.closed = publisherStats.connectionStateChanged.closed + 1
-        break
-      default:
-        break
-    }
-
-    console.log('Publisher onConnectionStateChanged:', publisherStats)
-  }
-
   const parseOnReconnectSubscriber = (event) => {
     subscriberStats.reconnect = subscriberStats.reconnect + 1
 
     console.log('Subscriber onReconnect:', subscriberStats)
-  }
-
-  const parseOnReconnectPublisher = (event) => {
-    publisherStats.reconnect = publisherStats.reconnect + 1
-
-    console.log('Publisher onReconnect:', publisherStats)
   }
 
   const parseOnMigrateSubscriber = (event) => {
@@ -166,22 +91,15 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     console.log('Subscriber onMigrate:', subscriberStats)
   }
 
-  const parseOnMigratePublisher = (event) => {
-    publisherStats.migrate = publisherStats.migrate + 1
-
-    console.log('Publisher onMigrate:', publisherStats)
-  }
-
   function stopStats (e) {
     console.log('Stop stats...')
 
     millicastView.webRTCPeer.stopStats()
     millicastView.webRTCPeer.removeAllListeners('stats')
 
-    millicastPublish.webRTCPeer.stopStats()
-    millicastPublish.webRTCPeer.removeAllListeners('stats')
+    publisher.stopStats()
 
-    e.target.innerText = 'Get Stats'
+    e.target.innerText = 'Get stats'
     e.target.removeEventListener('click', stopStats)
     e.target.addEventListener('click', getStats)
   }
@@ -190,30 +108,27 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   function getStats (e) {
     // Initialize stats
     millicastView.webRTCPeer.initStats()
-    millicastPublish.webRTCPeer.initStats()
 
     console.log('Getting stats...')
 
     // set 'stats' listener
     millicastView.webRTCPeer.on('stats', parseStatsSubscriber)
-    millicastPublish.webRTCPeer.on('stats', parseStatsPublisher)
 
     // set 'connectionStateChange' listener
     millicastView.webRTCPeer.on('connectionStateChange', parseOnConnectionStateChangeSubscriber)
-    millicastPublish.webRTCPeer.on('connectionStateChange', parseOnConnectionStateChangePublisher)
 
     // set 'reconnect' & 'migrate' listeners
     millicastView.webRTCPeer.on('reconnect', parseOnReconnectSubscriber)
     millicastView.webRTCPeer.on('migrate', parseOnMigrateSubscriber)
-    millicastPublish.webRTCPeer.on('reconnect', parseOnReconnectPublisher)
-    millicastPublish.webRTCPeer.on('migrate', parseOnMigratePublisher)
 
-    e.target.innerText = 'Stop Stats'
+    publisher.getStats()
+
+    e.target.innerText = 'Stop stats'
     e.target.removeEventListener('click', getStats)
     e.target.addEventListener('click', stopStats)
   }
 
   document.getElementById('get-stats').addEventListener('click', getStats)
   document.getElementById('subscribe').addEventListener('click', subscribe)
-  document.getElementById('publish').addEventListener('click', publish)
+  document.getElementById('publish').addEventListener('click', (event) => publisher.publish(myVideo))
 })
