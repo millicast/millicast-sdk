@@ -21,12 +21,12 @@ if (process.env.ROLLUP_WATCH) {
   ]
 }
 
-export default [
-  {
-    input: 'src/analytics.js',
+function buildConfig (fileName) {
+  return {
+    input: `src/${fileName}.js`,
     output: {
-      name: 'viewer',
-      file: 'dist/analytics.umd.js',
+      name: `${fileName}`,
+      file: `dist/${fileName}.umd.js`,
       format: 'umd',
       globals: {
         'millicast-sdk': 'millicastSdkJs'
@@ -55,4 +55,10 @@ export default [
       ...watchPlugins
     ]
   }
+}
+
+export default [
+  buildConfig('analytics'),
+  buildConfig('subscriber'),
+  buildConfig('publisher')
 ]
