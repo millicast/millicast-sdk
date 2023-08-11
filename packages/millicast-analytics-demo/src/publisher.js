@@ -11,16 +11,22 @@ const stats = {
   migrate: 0
 }
 
-const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
-const streamName = process.env.MILLICAST_STREAM_NAME
+let millicast
+let broadcaster
 
-// Define callback for generate new token
-const tokenGenerator = () => Director.getPublisher({
-  token: publishToken,
-  streamName: streamName
+document.addEventListener('DOMContentLoaded', async (event) => {
+  const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
+  const streamName = process.env.MILLICAST_STREAM_NAME
+
+  // Define callback for generate new token
+  const tokenGenerator = () => Director.getPublisher({
+    token: publishToken,
+    streamName: streamName
+  })
+
+  broadcaster = document.getElementById('broadcaster')
+  millicast = new Publish(streamName, tokenGenerator)
 })
-
-const millicast = new Publish(streamName, tokenGenerator)
 
 const parseStats = (newStats) => {
   stats.totalRoundTripTime = newStats.totalRoundTripTime
@@ -64,12 +70,12 @@ const parseOnMigrate = (event) => {
   console.log('Publisher onMigrate:', stats)
 }
 
-async function publish (video) {
+async function publish () {
   const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
 
   // Initialize local video
-  video.srcObject = mediaStream
-  video.play()
+  broadcaster.srcObject = mediaStream
+  broadcaster.play()
 
   // Publishing options
   const broadcastOptions = {
@@ -84,10 +90,11 @@ async function publish (video) {
   }
 }
 
-async function unpublish (video) {
+async function unpublish () {
   try {
     await millicast.stop()
-    video.srcObject = null
+    broadcaster.pause()
+    broadcaster.srcObject = null
     return true
   } catch (e) {
     console.log('Disconnection failed, handle error', e)
@@ -114,22 +121,22 @@ function stopStats () {
   millicast.webRTCPeer.removeAllListeners('stats')
 }
 
-async function stopPublisher (event, video) {
-  if (await unpublish(video)) {
+async function stop (event) {
+  if (await unpublish()) {
     stopStats()
 
     event.target.innerText = 'Publish'
-    event.target.removeEventListener('click', (e) => stopPublisher(e, video))
-    event.target.addEventListener('click', (e) => startPublisher(e, video))
+    event.target.removeEventListener('click', stop)
+    event.target.addEventListener('click', start)
   }
 }
 
-export async function startPublisher (event, video) {
-  if (await publish(video)) {
+export async function start (event) {
+  if (await publish()) {
     getStats()
 
     event.target.innerText = 'Unpublish'
-    event.target.removeEventListener('click', (e) => startPublisher(e, video))
-    event.target.addEventListener('click', (e) => stopPublisher(e, video))
+    event.target.removeEventListener('click', start)
+    event.target.addEventListener('click', stop)
   }
 }

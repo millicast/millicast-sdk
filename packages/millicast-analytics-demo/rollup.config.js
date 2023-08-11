@@ -59,5 +59,6 @@ function buildConfig (fileName) {
 
 export default [
   buildConfig('analytics'),
-  buildConfig('subscriber')
+  buildConfig('subscriber'),
+  buildConfig('publisher')
 ]

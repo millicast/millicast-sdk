@@ -7,6 +7,7 @@
   <!-- MILLICAST -->
   <script src="./analytics.umd.js"></script>
   <script src="./subscriber.umd.js"></script>
+  <script src="./publisher.umd.js"></script>
   <link rel="shortcut icon" href="#" />
   <style>
     body {
@@ -56,12 +57,12 @@
   <div class="container">
     <div class="video-container">
       <p>Publisher</p>
-      <video id="my-video" controls autoplay muted></video>
+      <video id="broadcaster" controls autoplay muted></video>
       <button id='publish'>Publish</button>
     </div>
     <div class="video-container">
       <p>Subscriber</p>
-      <video id="remote-video" controls autoplay muted></video>
+      <video id="viewer" controls autoplay muted></video>
       <button id='subscribe'>Subscribe</button>
     </div>
   </div>

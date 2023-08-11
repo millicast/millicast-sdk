@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     streamAccountId: accountId
   })
 
-  const remoteVideo = document.getElementById('remote-video')
-  millicast = new View(streamName, tokenGenerator, remoteVideo)
+  const viewer = document.getElementById('viewer')
+  millicast = new View(streamName, tokenGenerator, viewer)
 })
 
 const parseStats = (newStats) => {
@@ -112,22 +112,22 @@ function stopStats () {
   millicast.webRTCPeer.removeAllListeners('stats')
 }
 
-async function stopSubscriber (event) {
+async function stop (event) {
   if (await unsubscribe()) {
     stopStats()
 
     event.target.innerText = 'Subscribe'
-    event.target.removeEventListener('click', stopSubscriber)
-    event.target.addEventListener('click', startSubscriber)
+    event.target.removeEventListener('click', stop)
+    event.target.addEventListener('click', start)
   }
 }
 
-export async function startSubscriber (event) {
+export async function start (event) {
   if (await subscribe()) {
     getStats()
 
     event.target.innerText = 'Unsubscribe'
-    event.target.removeEventListener('click', startSubscriber)
-    event.target.addEventListener('click', stopSubscriber)
+    event.target.removeEventListener('click', start)
+    event.target.addEventListener('click', stop)
   }
 }
