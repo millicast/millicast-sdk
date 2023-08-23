@@ -2,7 +2,6 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
-import UserAgent from './utils/UserAgent'
 
 const logger = Logger.get('Signaling')
 
@@ -27,7 +26,8 @@ export const VideoCodec = {
   VP8: 'vp8',
   VP9: 'vp9',
   H264: 'h264',
-  AV1: 'av1'
+  AV1: 'av1',
+  H265: 'h265'
 }
 
 /**
@@ -92,10 +92,6 @@ export default class Signaling extends EventEmitter {
     this.transactionManager = null
     this.serverId = null
     this.clusterId = null
-    const browserData = new UserAgent()
-    if (browserData.isSafari()) {
-      VideoCodec.H265 = 'h265'
-    }
   }
 
   /**
