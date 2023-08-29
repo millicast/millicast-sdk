@@ -20,6 +20,16 @@ Feature: As a user I want to publish a stream without managing connections
     When I broadcast a stream without options
     Then throws an error
 
+  Scenario: Broadcast with invalid codec
+    Given an instance of Publish
+    When I broadcast with unsupported codec
+    Then throws an error
+
+  Scenario: Broadcast with non-default codec
+    Given an instance of Publish
+    When I broadcast a stream with H265 codec
+    Then peer connection state is connected    
+    
   Scenario: Broadcast without connection path
     Given I want to broadcast
     When I instance a Publish with token generator without connection path
