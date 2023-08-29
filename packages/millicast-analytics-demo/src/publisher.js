@@ -11,22 +11,17 @@ const stats = {
   migrate: 0
 }
 
-let millicast
-let broadcaster
+const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
+const streamName = process.env.MILLICAST_STREAM_NAME
 
-document.addEventListener('DOMContentLoaded', async (event) => {
-  const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
-  const streamName = process.env.MILLICAST_STREAM_NAME
-
-  // Define callback for generate new token
-  const tokenGenerator = () => Director.getPublisher({
-    token: publishToken,
-    streamName: streamName
-  })
-
-  broadcaster = document.getElementById('broadcaster')
-  millicast = new Publish(streamName, tokenGenerator)
+// Define callback for generate new token
+const tokenGenerator = () => Director.getPublisher({
+  token: publishToken,
+  streamName: streamName
 })
+
+const broadcaster = document.getElementById('broadcaster')
+const millicast = new Publish(streamName, tokenGenerator)
 
 const parseStats = (newStats) => {
   stats.totalRoundTripTime = newStats.totalRoundTripTime

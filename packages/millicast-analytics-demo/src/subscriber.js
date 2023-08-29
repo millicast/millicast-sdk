@@ -11,21 +11,17 @@ const stats = {
   migrate: 0
 }
 
-let millicast
+const accountId = process.env.MILLICAST_ACCOUNT_ID
+const streamName = process.env.MILLICAST_STREAM_NAME
 
-document.addEventListener('DOMContentLoaded', async (event) => {
-  const accountId = process.env.MILLICAST_ACCOUNT_ID
-  const streamName = process.env.MILLICAST_STREAM_NAME
-
-  // Define callback for generate new token
-  const tokenGenerator = () => Director.getSubscriber({
-    streamName: streamName,
-    streamAccountId: accountId
-  })
-
-  const viewer = document.getElementById('viewer')
-  millicast = new View(streamName, tokenGenerator, viewer)
+// Define callback for generate new token
+const tokenGenerator = () => Director.getSubscriber({
+  streamName: streamName,
+  streamAccountId: accountId
 })
+
+const viewer = document.getElementById('viewer')
+const millicast = new View(streamName, tokenGenerator, viewer)
 
 const parseStats = (newStats) => {
   stats.totalRoundTripTime = newStats.totalRoundTripTime
