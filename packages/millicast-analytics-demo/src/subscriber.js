@@ -8,35 +8,69 @@ const stats = {
     closed: 0
   },
   reconnect: 0,
-  migrate: 0
+  migrate: 0,
+  videoSource: {},
+  audioSource: {}
 }
 
-let millicast
+// document.addEventListener('DOMContentLoaded', async (event) => {
+const accountId = process.env.MILLICAST_ACCOUNT_ID
+const streamName = process.env.MILLICAST_STREAM_NAME
 
-document.addEventListener('DOMContentLoaded', async (event) => {
-  const accountId = process.env.MILLICAST_ACCOUNT_ID
-  const streamName = process.env.MILLICAST_STREAM_NAME
+// Define callback for generate new token
+const tokenGenerator = () => Director.getSubscriber({
+  streamName: streamName,
+  streamAccountId: accountId
+})
 
-  // Define callback for generate new token
-  const tokenGenerator = () => Director.getSubscriber({
-    streamName: streamName,
-    streamAccountId: accountId
-  })
+const viewer = document.getElementById('viewer')
+const millicast = new View(streamName, tokenGenerator, viewer)
+// })
 
-  const viewer = document.getElementById('viewer')
-  millicast = new View(streamName, tokenGenerator, viewer)
+millicast.on('broadcastEvent', (event) => {
+  // Get event name and data
+  const { name, data } = event
+  if (name === 'active') {
+    const sourceId = data.sourceId || 'main'
+    console.log(data)
+    if (sourceId !== 'main') {
+      addRemoteSource(data)
+    }// else {
+    //   const mediaStream = new MediaStream()
+    //   const tracks = data.tracks.map(track => {
+    //     const { media } = track
+    //     const mediaId = media === 'video' ? '0' : '1'
+    //     return {
+    //       ...track,
+    //       mediaId
+    //     }
+    //   })
+    //   viewer.srcObject = mediaStream
+    //   viewer.autoplay = true
+    //   viewer.muted = true
+    //   console.log(viewer)
+    // }
+  }
 })
 
 const parseStats = (newStats) => {
   stats.totalRoundTripTime = newStats.totalRoundTripTime
   stats.currentRoundTripTime = newStats.currentRoundTripTime
   stats.availableOutgoingBitrate = newStats.availableOutgoingBitrate
-  stats.audioPacketsLost = newStats.audio.inbounds[0].totalPacketsLost
-  stats.videoPacketsLost = newStats.video.inbounds[0].totalPacketsLost
-  stats.audioJitter = newStats.audio.inbounds[0].jitter
-  stats.videoJitter = newStats.video.inbounds[0].jitter
-  stats.resolution = newStats.video.inbounds[0].frameWidth * newStats.video.inbounds[0].frameHeight
-  stats.bitrate = newStats.video.inbounds[0].bitrate
+  newStats.video.inbounds.forEach(video => {
+    stats.videoSource['mid_' + video.mid] = {
+      videoPacketsLost: video.totalPacketsLost,
+      videoJitter: video.jitter,
+      resolution: video.frameWidth * video.frameHeight,
+      bitrate: video.bitrate
+    }
+  })
+  newStats.audio.inbounds.forEach(audio => {
+    stats.audioSource['mid_' + audio.mid] = {
+      audioPacketsLost: newStats.audio.inbounds[0].totalPacketsLost,
+      audioJitter: newStats.audio.inbounds[0].jitter
+    }
+  })
 
   console.log('Subscriber stats:', stats)
 }
@@ -130,4 +164,20 @@ export async function start (event) {
     event.target.removeEventListener('click', start)
     event.target.addEventListener('click', stop)
   }
+}
+
+const addRemoteSource = async (data) => {
+  const mediaStream = new MediaStream()
+  const tracksPromises = data.tracks.map(async (track) => {
+    const { media } = track
+    const mediaTransceiver = await millicast.addRemoteTrack(media, [mediaStream])
+    return {
+      ...track,
+      mediaId: mediaTransceiver.mid
+    }
+  })
+
+  const tracks = await Promise.all(tracksPromises)
+
+  await millicast.project(data.sourceId, tracks)
 }
