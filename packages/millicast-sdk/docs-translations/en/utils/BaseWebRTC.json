@@ -27,5 +27,7 @@
     "<p>Test</p>": "<p>Test</p>",
     "<p>The value that this property has is what will be sent in the first reconnect event within the error key of the payload</p>": "<p>The value that this property has is what will be sent in the first reconnect event within the error key of the payload</p>",
     "<p>This object contains the error property that will be sent when trying to reconnect. It may be expanded to contain more information in the future.</p>": "<p>This object contains the error property that will be sent when trying to reconnect. It may be expanded to contain more information in the future.</p>",
-    "<p>The value that this property has is what will be sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload</p>": "<p>The value that this property has is what will be sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload</p>"
+    "<p>The value that this property has is what will be sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload</p>": "<p>The value that this property has is what will be sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload.</p>",
+    "<p>The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload</p>": "<p>The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload.</p>",
+    "<p>This object contains the error property. It may be expanded to contain more information in the future.</p>": "<p>This object contains the error property. It may be expanded to contain more information in the future.</p>"
 }

@@ -20,12 +20,14 @@ defineFeature(feature, test => {
       codecs: [
         { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f' },
         { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
-        { clockRate: 90000, mimeType: 'video/H265', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' }
+        { clockRate: 90000, mimeType: 'video/H265', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
+        { clockRate: 90000, mimeType: 'video/rtx' },
+        { clockRate: 90000, mimeType: 'video/red' }
       ],
       headerExtensions: []
     }
 
-    given('my browser supprots H264, H265', async () => {
+    given('my browser supports H264, H265, red and rtx', async () => {
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
@@ -33,8 +35,11 @@ defineFeature(feature, test => {
       capabilities = PeerConnection.getCapabilities('video')
     })
 
-    then('returns H264 in codecs property', async () => {
-      expect(capabilities.codecs).toEqual([{ codec: 'h264', mimeType: 'video/H264' }])
+    then('returns H264 and H265 in codecs property', async () => {
+      expect(capabilities.codecs).toEqual([
+        { codec: 'h264', mimeType: 'video/H264' },
+        { codec: 'h265', mimeType: 'video/H265' }
+      ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
   })
@@ -55,7 +60,7 @@ defineFeature(feature, test => {
       headerExtensions: []
     }
 
-    given('my browser supprots H264, H265, VP8, VP9 and AV1', async () => {
+    given('my browser supports H264, H265, VP8, VP9 and AV1', async () => {
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
@@ -63,11 +68,12 @@ defineFeature(feature, test => {
       capabilities = PeerConnection.getCapabilities('video')
     })
 
-    then('returns all codecs except H265', async () => {
+    then('returns all codecs', async () => {
       expect(capabilities.codecs).toEqual([
         { codec: 'vp8', mimeType: 'video/VP8' },
         { codec: 'vp9', mimeType: 'video/VP9' },
         { codec: 'h264', mimeType: 'video/H264' },
+        { codec: 'h265', mimeType: 'video/H265' },
         { codec: 'av1', mimeType: 'video/AV1X' }
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
@@ -85,7 +91,7 @@ defineFeature(feature, test => {
       headerExtensions: []
     }
 
-    given('my browser supprots VP9 with scalability modes', async () => {
+    given('my browser supports VP9 with scalability modes', async () => {
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
@@ -112,7 +118,7 @@ defineFeature(feature, test => {
       headerExtensions: []
     }
 
-    given('my browser supprots VP9 with scalability modes repeated', async () => {
+    given('my browser supports VP9 with scalability modes repeated', async () => {
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 

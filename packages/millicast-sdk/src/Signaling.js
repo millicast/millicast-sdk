@@ -2,7 +2,7 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
-import UserAgent from './utils/UserAgent'
+import PeerConnection from './PeerConnection'
 
 const logger = Logger.get('Signaling')
 
@@ -27,7 +27,8 @@ export const VideoCodec = {
   VP8: 'vp8',
   VP9: 'vp9',
   H264: 'h264',
-  AV1: 'av1'
+  AV1: 'av1',
+  H265: 'h265'
 }
 
 /**
@@ -92,10 +93,6 @@ export default class Signaling extends EventEmitter {
     this.transactionManager = null
     this.serverId = null
     this.clusterId = null
-    const browserData = new UserAgent()
-    if (browserData.isSafari()) {
-      VideoCodec.H265 = 'h265'
-    }
   }
 
   /**
@@ -143,7 +140,13 @@ export default class Signaling extends EventEmitter {
            *
            * Inactive - Fires when the stream has stopped broadcasting, but is still available.
            *
-           * Stopped - This event is not currently used, but is reserved for future usage.
+           * Stopped - Fires when the stream has stopped for a given reason.
+           *
+           * Vad - Fires when using multiplexed tracks for audio.
+           *
+           * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
+           *
+           * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
            *
            * Viewercount - Fires when the viewer count changes.
            *
@@ -153,7 +156,7 @@ export default class Signaling extends EventEmitter {
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
            * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount")} name - Event name.
-           * @property {String|Date|Array|Object} data - Custom event data.
+           * @property {Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)
         })
@@ -261,11 +264,17 @@ export default class Signaling extends EventEmitter {
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
+    const supportedVideoCodecs = PeerConnection.getCapabilities?.('video')?.codecs?.map(cdc => cdc.codec) ?? []
 
     const videoCodecs = Object.values(VideoCodec)
     if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
-      logger.error('Invalid codec. Possible values are: ', videoCodecs)
-      throw new Error(`Invalid codec. Possible values are: ${videoCodecs}`)
+      logger.error(`Invalid codec ${optionsParsed.codec}. Possible values are: `, videoCodecs)
+      throw new Error(`Invalid codec ${optionsParsed.codec}. Possible values are: ${videoCodecs}`)
+    }
+
+    if (supportedVideoCodecs.length > 0 && supportedVideoCodecs.indexOf(optionsParsed.codec) === -1) {
+      logger.error(`Unsupported codec ${optionsParsed.codec}. Possible values are: `, supportedVideoCodecs)
+      throw new Error(`Unsupported codec ${optionsParsed.codec}. Possible values are: ${supportedVideoCodecs}`)
     }
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'

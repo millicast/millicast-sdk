@@ -1,0 +1,55 @@
+{
+  "name": "@jamesives/github-pages-deploy-action",
+  "description": "GitHub action for building a project and deploying it to GitHub pages.",
+  "author": "James Ives <iam@jamesiv.es> (https://jamesiv.es)",
+  "version": "4.1.0",
+  "license": "MIT",
+  "main": "lib/lib.js",
+  "types": "lib/lib.d.ts",
+  "scripts": {
+    "build": "rimraf lib && tsc --declaration",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts __tests__/**/*.ts",
+    "lint:format": "prettier --write './**/*.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesIves/github-pages-deploy-action.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JamesIves/github-pages-deploy-action/issues"
+  },
+  "homepage": "https://github.com/JamesIves/github-pages-deploy-action",
+  "keywords": [
+    "actions",
+    "node",
+    "setup",
+    "build",
+    "deploy",
+    "gh-pages",
+    "pages",
+    "github",
+    "deploy",
+    "deployment"
+  ],
+  "dependencies": {
+    "@actions/core": "1.2.6",
+    "@actions/exec": "1.0.4",
+    "@actions/github": "4.0.0",
+    "@actions/io": "1.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "26.0.22",
+    "@types/node": "14.14.37",
+    "eslint": "7.23.0",
+    "eslint-plugin-github": "4.1.2",
+    "eslint-plugin-jest": "24.3.2",
+    "eslint-plugin-prettier": "3.1.2",
+    "jest": "26.6.3",
+    "jest-circus": "26.6.3",
+    "prettier": "2.2.1",
+    "rimraf": "3.0.2",
+    "ts-jest": "26.5.4",
+    "typescript": "4.2.3"
+  }
+}

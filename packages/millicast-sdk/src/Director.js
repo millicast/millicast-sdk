@@ -1,5 +1,6 @@
 import Logger from './Logger'
 import config from './config'
+import FetchError from './utils/FetchError'
 
 const logger = Logger.get('Director')
 const streamTypes = {
@@ -118,10 +119,10 @@ export default class Director {
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
     const url = `${this.getEndpoint()}/api/director/publish`
     try {
-      let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
-      data = await data.json()
+      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      let data = await response.json()
       if (data.status === 'fail') {
-        const error = new Error(data.data.message)
+        const error = new FetchError(data.data.message, response.status)
         throw error
       }
       data = parseIncomingDirectorResponse(data)
@@ -177,10 +178,10 @@ export default class Director {
     }
     const url = `${this.getEndpoint()}/api/director/subscribe`
     try {
-      let data = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
-      data = await data.json()
+      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      let data = await response.json()
       if (data.status === 'fail') {
-        const error = new Error(data.data.message)
+        const error = new FetchError(data.data.message, response.status)
         throw error
       }
       data = parseIncomingDirectorResponse(data)

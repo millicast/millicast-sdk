@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import Publish from '../../../src/Publish'
 import PeerConnection from '../../../src/PeerConnection'
-import Signaling from '../../../src/Signaling'
+import Signaling, { VideoCodec } from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
@@ -266,6 +266,58 @@ defineFeature(feature, test => {
     then('throws an error', async () => {
       expectError.rejects.toThrow(Error)
       expectError.rejects.toThrow('Record option detected but recording is not available')
+    })
+  })
+
+  test('Broadcast with invalid codec', ({ given, when, then }) => {
+    let publisher
+    let expectedError
+
+    given('an instance of Publish', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue(
+        {
+          codecs: [
+            { codec: 'vp8', mimeType: 'video/VP8' },
+            { codec: 'vp9', mimeType: 'video/VP9' },
+            { codec: 'h264', mimeType: 'video/H264' }
+          ],
+          headerExtensions: []
+        })
+    })
+
+    when('I broadcast with unsupported codec', async () => {
+      expectedError = expect(() => publisher.connect({ mediaStream, record: true, codec: VideoCodec.H265 }))
+    })
+
+    then('throws an error', async () => {
+      expectedError.rejects.toThrow(Error)
+    })
+  })
+
+  test('Broadcast with non-default codec', ({ given, when, then }) => {
+    let publisher
+
+    given('an instance of Publish', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue(
+        {
+          codecs: [
+            { codec: 'vp8', mimeType: 'video/VP8' },
+            { codec: 'vp9', mimeType: 'video/VP9' },
+            { codec: 'h264', mimeType: 'video/H264' },
+            { codec: 'h265', mimeType: 'video/H265' }
+          ],
+          headerExtensions: []
+        })
+    })
+
+    when('I broadcast a stream with H265 codec', async () => {
+      await publisher.connect({ mediaStream, codec: VideoCodec.H265 })
+    })
+
+    then('peer connection state is connected', async () => {
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
   })
 })

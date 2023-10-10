@@ -5,3 +5,4 @@ dist
 docs
 .env
 test-environment.js
+**/.DS_Store

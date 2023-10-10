@@ -3,6 +3,8 @@ import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
+import FetchError from './utils/FetchError'
+
 const logger = Logger.get('View')
 
 const connectOptions = {
@@ -192,6 +194,15 @@ export default class View extends BaseWebRTC {
       this.options.peerConfig.iceServers = subscriberData?.iceServers
     } catch (error) {
       logger.error('Error generating token.')
+      if (error instanceof FetchError) {
+        if (error.status === 401) {
+          // should not reconnect
+          this.stopReconnection = true
+        } else {
+          // should reconnect with exponential back off
+          this.reconnect()
+        }
+      }
       throw error
     }
     if (!subscriberData) {
