@@ -4,6 +4,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,6 +34,10 @@ jobs:
       
       - name: Test
         run: npm test
+
+      - name: Install deploy docs deppendencies
+        run: yarn
+        working-directory: ./.github/actions/github-pages-deploy-action-4.1.1
       
       - name: Deploy docs
         uses: "./.github/actions/github-pages-deploy-action-4.1.1"
