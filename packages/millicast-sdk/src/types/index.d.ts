@@ -729,7 +729,7 @@ declare module '@millicast/sdk' {
    */
   /**
    * Simplify API calls to find the best server and region to publish and subscribe to.
-   * For security reasosn all calls will return a [JWT](https://jwt.io) token for authentication including the required
+   * For security reasons all calls will return a [JWT](https://jwt.io) token for authentication including the required
    * socket path to connect with.
    *
    * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
