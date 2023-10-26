@@ -12,7 +12,7 @@ The WebAudio Delay demo application lets you interact with audio delay between b
 
 3. Select the **publishing** tab and copy your `stream name`.
 
-4. Create a `.env` file in the `millicast-webaudio-delay-demo` folder and add the following data to the file: 
+4. Open the Millicast SDK in a code editor, create a `.env` file in the `millicast-webaudio-delay-demo` folder, and add the following data to the file: 
 
 ```sh
 MILLICAST_STREAM_NAME=yourStreamName
