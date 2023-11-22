@@ -998,6 +998,10 @@ declare module '@millicast/sdk' {
      * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
      */
     events?: Array<string>;
+    /**
+     * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal value between the range [-2^31, +2^31 - 1]. For more information, go to [docs](https://docs.dolby.io/streaming-apis/docs).
+     */
+    priority?: Number;
   }
 
   export type ViewProjectSourceMapping = {

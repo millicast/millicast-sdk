@@ -289,6 +289,15 @@ export default class Signaling extends EventEmitter {
       sourceId: optionsParsed.sourceId
     }
 
+    if (
+      optionsParsed.priority &&
+      Number.isInteger(optionsParsed.priority) &&
+      optionsParsed.priority >= -2147483648 &&
+      optionsParsed.priority <= 2147483647
+    ) {
+      data.priority = optionsParsed.priority
+    }
+
     if (optionsParsed.record !== null) {
       data.record = optionsParsed.record
     }
