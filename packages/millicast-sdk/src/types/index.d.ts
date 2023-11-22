@@ -999,7 +999,7 @@ declare module '@millicast/sdk' {
      */
     events?: Array<string>;
     /**
-     * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal value between the range [-2^31, +2^31 - 1]. For more information, go to [docs](https://docs.dolby.io/streaming-apis/docs).
+     * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs).
      */
     priority?: Number;
   }
