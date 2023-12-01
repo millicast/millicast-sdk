@@ -4,7 +4,8 @@ const mozGetCapabilities = kind => {
       codecs: [
         { codec: 'vp8', mimeType: 'video/VP8' },
         { codec: 'vp9', mimeType: 'video/VP9' },
-        { codec: 'h264', mimeType: 'video/H264' }
+        { codec: 'h264', mimeType: 'video/H264' },
+        { codec: 'av1', mimeType: 'video/AV1X' }
       ],
       headerExtensions: []
     }
