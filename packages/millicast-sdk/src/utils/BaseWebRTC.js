@@ -123,7 +123,7 @@ export default class BaseWebRTC extends EventEmitter {
   async reconnect (data) {
     try {
       logger.info('Attempting to reconnect...')
-      if (!this.isActive() && this.autoReconnect && !this.stopReconnection && !this.isReconnecting) {
+      if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
         this.stop()
         /**
          * Emits with every reconnection attempt made when an active stream
