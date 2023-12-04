@@ -201,11 +201,11 @@ export default class View extends BaseWebRTC {
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
-        if (error.status === 401) {
+        if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
           this.stopReconnection = true
         } else {
-          // should reconnect with exponential back off
+          // should reconnect with exponential back off if autoReconnect is true
           this.reconnect()
         }
       }
