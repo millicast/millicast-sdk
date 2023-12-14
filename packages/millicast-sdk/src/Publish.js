@@ -63,6 +63,7 @@ export default class Publish extends BaseWebRTC {
    * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
    * @param {Array<String>} [options.events] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
+   * @param {Number} [options.priority] - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @fires Signaling#broadcastEvent
@@ -154,11 +155,11 @@ export default class Publish extends BaseWebRTC {
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
-        if (error.status === 401) {
+        if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
           this.stopReconnection = true
         } else {
-          // should reconnect with exponential back off
+          // should reconnect with exponential back off if autoReconnect is true
           this.reconnect()
         }
       }

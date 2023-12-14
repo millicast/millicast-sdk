@@ -729,7 +729,7 @@ declare module '@millicast/sdk' {
    */
   /**
    * Simplify API calls to find the best server and region to publish and subscribe to.
-   * For security reasosn all calls will return a [JWT](https://jwt.io) token forn authentication including the required
+   * For security reasons all calls will return a [JWT](https://jwt.io) token for authentication including the required
    * socket path to connect with.
    *
    * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
@@ -998,6 +998,10 @@ declare module '@millicast/sdk' {
      * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
      */
     events?: Array<string>;
+    /**
+     * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
+     */
+    priority?: Number;
   }
 
   export type ViewProjectSourceMapping = {

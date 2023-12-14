@@ -4,6 +4,7 @@ import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
+import UserAgent from './utils/UserAgent'
 
 const logger = Logger.get('View')
 
@@ -192,14 +193,19 @@ export default class View extends BaseWebRTC {
       subscriberData = await this.tokenGenerator()
       //  Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
+      // Only for Safari when iCloud Private Relay is enabled, this policy is needed
+      const browserData = new UserAgent()
+      if (browserData.isSafari()) {
+        this.options.peerConfig.iceTransportPolicy = 'relay'
+      }
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
-        if (error.status === 401) {
+        if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
           this.stopReconnection = true
         } else {
-          // should reconnect with exponential back off
+          // should reconnect with exponential back off if autoReconnect is true
           this.reconnect()
         }
       }
