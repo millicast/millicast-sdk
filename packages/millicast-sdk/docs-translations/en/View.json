@@ -43,5 +43,6 @@
     "<p>Override which events will be delivered by the server (any of &quot;active&quot; | &quot;inactive&quot; | &quot;vad&quot; | &quot;layers&quot; | &quot;viewercount&quot;).*</p>": "<p>Override which events will be delivered by the server (any of &quot;active&quot; | &quot;inactive&quot; | &quot;vad&quot; | &quot;layers&quot; | &quot;viewercount&quot;).*</p>",
     "<p>Ask the server to use the playout delay header extension.</p>": "<p>Ask the server to use the playout delay header extension.</p>",
     "<p>Set minimum playout delay value.</p>": "<p>Set minimum playout delay value.</p>",
-    "<p>Set maximum playout delay value.</p>": "<p>Set maximum playout delay value.</p>"
+    "<p>Set maximum playout delay value.</p>": "<p>Set maximum playout delay value.</p>",
+    "<p>To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true.</p>": "<p>To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true.</p>"
 }
