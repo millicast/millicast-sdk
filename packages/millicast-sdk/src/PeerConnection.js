@@ -4,7 +4,7 @@ import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnection
 import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
-import { VideoCodec, AudioCodec } from './Signaling'
+import { VideoCodec, AudioCodec } from './utils/Codecs'
 import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = Logger.get('PeerConnection')
