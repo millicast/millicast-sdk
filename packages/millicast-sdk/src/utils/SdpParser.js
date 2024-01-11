@@ -103,7 +103,7 @@ export default class SdpParser {
   }
 
   /**
-   * Parse SDP for support dtx.
+   * Parse SDP for support DTX (Discontinuous Transmission). Is an advanced configuration of the opus audio codec that allows for a large reduction in the audio traffic. For example, when a participant is silent, the audio packet won't be transmitted.
    * @param {String} sdp - Current SDP.
    * @returns {String} SDP parsed with dtx support.
    * @example SdpParser.setDTX(sdp)
@@ -122,7 +122,7 @@ export default class SdpParser {
   /**
    * Mangle SDP for adding absolute capture time header extension.
    * @param {String} sdp - Current SDP.
-   * @returns {String} SDP mungled with abs-catpure-time header extension.
+   * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
   static setAbsoluteCaptureTime (sdp) {
@@ -142,7 +142,7 @@ export default class SdpParser {
   /**
    * Mangle SDP for adding dependency descriptor header extension.
    * @param {String} sdp - Current SDP.
-   * @returns {String} SDP mungled with abs-catpure-time header extension.
+   * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
   static setDependencyDescriptor (sdp) {
