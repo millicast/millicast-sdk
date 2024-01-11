@@ -103,7 +103,7 @@ export default class SdpParser {
   }
 
   /**
-   * Parse SDP for support DTX (Discontinuous Transmission). Is an advanced configuration of the opus audio codec that allows for a large reduction in the audio traffic. For example, when a participant is silent, the audio packet won't be transmitted.
+   * Set DTX (Discontinuous Transmission) to the connection. Advanced configuration of the opus audio codec that allows for a large reduction in the audio traffic. For example, when a participant is silent, the audio packets won't be transmitted.
    * @param {String} sdp - Current SDP.
    * @returns {String} SDP parsed with dtx support.
    * @example SdpParser.setDTX(sdp)
