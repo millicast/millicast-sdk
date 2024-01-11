@@ -605,7 +605,7 @@ declare module '@millicast/sdk' {
      * Get the SDP modified depending the options. Optionally set the SDP information to local peer.
      * @param {Object} options
      * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
-     * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.*
+     * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.
      * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
      * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
      * @param {VideoCodec} options.codec - Selected codec for support simulcast.
