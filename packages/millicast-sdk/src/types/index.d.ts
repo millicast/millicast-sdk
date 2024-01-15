@@ -436,9 +436,7 @@ declare module '@millicast/sdk' {
     /**
      * Establish WebRTC connection with Millicast Server as Subscriber role.
      * @param {String} sdp - The SDP information created by your offer.
-     * @param {SignalingSubscribeOptions | Boolean} options - Signaling Subscribe Options or *Deprecated Enable VAD multiplexing for secondary sources.*
-     * @param {String} pinnedSourceId - *Deprecated, use options parameter instead* Id of the main source that will be received by the default MediaStream.
-     * @param {Array<String>} excludedSourceIds - *Deprecated, use options parameter instead* Do not receive media from the these source ids.
+     * @param {SignalingSubscribeOptions} options - Signaling Subscribe Options.
      * @example const response = await millicastSignaling.subscribe(sdp)
      * @return {Promise<String>} Promise object which represents the SDP command response.
      */
@@ -446,9 +444,7 @@ declare module '@millicast/sdk' {
     /**
      * Establish WebRTC connection with Millicast Server as Publisher role.
      * @param {String} sdp - The SDP information created by your offer.
-     * @param {SignalingPublishOptions | VideoCodec} options - Signaling Publish Options or *Deprecated Codec for publish stream (h264 default).*
-     * @param {Boolean} [record] - *Deprecated, use options parameter instead* Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-     * @param {String} [sourceId] - *Deprecated, use options parameter instead* Source unique id. **Only available in Tokens with multisource enabled.***
+     * @param {SignalingPublishOptions} options - Signaling Publish Options.
      * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
      * @return {Promise<String>} Promise object which represents the SDP command response.
      */
@@ -765,9 +761,7 @@ declare module '@millicast/sdk' {
     static getLiveDomain(): string;
     /**
      * Get publisher connection data.
-     * @param {DirectorPublisherOptions | String} options - Millicast options or *Deprecated Millicast Publishing Token.*
-     * @param {String} [streamName] - *Deprecated, use options parameter instead* Millicast Stream Name.
-     * @param {("WebRtc" | "Rtmp")} [streamType] - *Deprecated, use options parameter instead* Millicast Stream Type.
+     * @param {DirectorPublisherOptions} options - Millicast options.
      * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
      * @example const response = await Director.getPublisher(options)
      * @example
@@ -795,9 +789,7 @@ declare module '@millicast/sdk' {
     static getPublisher(options: DirectorPublisherOptions | string, streamName?: string, streamType?: ("WebRtc" | "Rtmp")): Promise<MillicastDirectorResponse>;
     /**
      * Get subscriber connection data.
-     * @param {DirectorSubscriberOptions | String} options - Millicast options or *Deprecated Millicast publisher Stream Name.*
-     * @param {String} [streamAccountId] - *Deprecated, use options parameter instead* Millicast Account ID.
-     * @param {String} [subscriberToken] - *Deprecated, use options parameter instead* Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
+     * @param {DirectorSubscriberOptions | String} options - Millicast options.
      * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
      * @example const response = await Director.getSubscriber(options)
      * @example
