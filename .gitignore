@@ -3,6 +3,7 @@ node_modules
 coverage
 dist
 docs
+docs-translations
 .env
 test-environment.js
 **/.DS_Store
