@@ -1,5 +1,38 @@
 import jsLogger from 'js-logger'
 
+/**
+ * @module Logger
+ * @description Manages all log messages from SDK modules, you can use this logger to add your custom
+ * messages and set your custom log handlers to forward all messages to your own monitoring
+ * system.
+ *
+ * By default all loggers are set in level OFF (Logger.OFF), and there are available
+ * the following log levels.
+ *
+ * This module is based on [js-logger](https://github.com/jonnyreeves/js-logger) you can refer
+ * to its documentation or following our examples.
+ * @example
+ * // Log a message
+ * Logger.info('This is an info log', 445566)
+ * // [Global] 2021-04-05T15:58:44.893Z - This is an info log 445566
+ * @example
+ * // Create a named logger
+ * const myLogger = Logger.get('CustomLogger')
+ * myLogger.setLevel(Logger.WARN)
+ * myLogger.warn('This is a warning log')
+ * // [CustomLogger] 2021-04-05T15:59:53.377Z - This is a warning log
+ * @example
+ * // Profiling
+ * // Start timing something
+ * Logger.time('Timer name')
+ *
+ * // ... some time passes ...
+ *
+ * // Stop timing something.
+ * Logger.timeEnd('Timer name')
+ * // Timer name: 35282.997802734375 ms
+ */
+
 jsLogger.useDefaults({ defaultLevel: jsLogger.TRACE })
 
 const formatter = (messages, context) => {
@@ -50,56 +83,26 @@ const customHandlers = []
 
 /**
  * @typedef {Object} LogLevel
+ * @global
  * @property {Number} value - The numerical representation of the level.
  * @property {String} name - Human readable name of the log level.
  */
 
-/**
- * Manages all log messages from SDK modules, you can use this logger to add your custom
- * messages and set your custom log handlers to forward all messages to your own monitoring
- * system.
- *
- * By default all loggers are set in level OFF (Logger.OFF), and there are available
- * the following log levels.
- *
- * This module is based on [js-logger](https://github.com/jonnyreeves/js-logger) you can refer
- * to its documentation or following our examples.
- *
- *
- * @namespace
- * @property {LogLevel} TRACE - Logger.TRACE
- * @property {LogLevel} DEBUG - Logger.DEBUG
- * @property {LogLevel} INFO  - Logger.INFO
- * @property {LogLevel} TIME  - Logger.TIME
- * @property {LogLevel} WARN  - Logger.WARN
- * @property {LogLevel} ERROR - Logger.ERROR
- * @property {LogLevel} OFF   - Logger.OFF
- * @example
- * // Log a message
- * Logger.info('This is an info log', 445566)
- * // [Global] 2021-04-05T15:58:44.893Z - This is an info log 445566
- * @example
- * // Create a named logger
- * const myLogger = Logger.get('CustomLogger')
- * myLogger.setLevel(Logger.WARN)
- * myLogger.warn('This is a warning log')
- * // [CustomLogger] 2021-04-05T15:59:53.377Z - This is a warning log
- * @example
- * // Profiling
- * // Start timing something
- * Logger.time('Timer name')
- *
- * // ... some time passes ...
- *
- * // Stop timing something.
- * Logger.timeEnd('Timer name')
- * // Timer name: 35282.997802734375 ms
- */
+/** @constant {LogLevel} TRACE - Logger.TRACE */
+/** @constant {LogLevel} DEBUG - Logger.DEBUG */
+/** @constant {LogLevel} INFO  - Logger.INFO */
+/** @constant {LogLevel} TIME  - Logger.TIME */
+/** @constant {LogLevel} WARN  - Logger.WARN */
+/** @constant {LogLevel} ERROR - Logger.ERROR */
+/** @constant {LogLevel} OFF   - Logger.OFF */
+
 const Logger = {
   ...jsLogger,
   enabledFor,
   /**
-   * Get all logs generated during a session.
+   * @function
+   * @name getHistory
+   * @description Get all logs generated during a session.
    * All logs are recollected besides the log level selected by the user.
    * @returns {Array<String>} All logs recollected from level TRACE.
    * @example Logger.getHistory()
@@ -112,19 +115,27 @@ const Logger = {
    */
   getHistory: () => history,
   /**
-   * Get the maximum count of logs preserved during a session.
+   * @function
+   * @name getHistoryMaxSize
+   * @description Get the maximum count of logs preserved during a session.
    * @example Logger.getHistoryMaxSize()
    */
   getHistoryMaxSize: () => maxLogHistorySize,
+
   /**
-   * Set the maximum count of logs to preserve during a session.
+   * @function
+   * @name setHistoryMaxSize
+   * @description Set the maximum count of logs to preserve during a session.
    * By default it is set to 10000.
    * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
    * @example Logger.setHistoryMaxSize(100)
    */
   setHistoryMaxSize: maxSize => { maxLogHistorySize = maxSize },
+
   /**
-   * Set log level to all loggers.
+   * @function
+   * @name setLevel
+   * @description Set log level to all loggers.
    * @param {LogLevel} level - New log level to be set.
    * @example
    * // Global Level
@@ -139,8 +150,11 @@ const Logger = {
       namedLoggerLevels[key] = level
     }
   },
+
   /**
-   * Get global current logger level.
+   * @function
+   * @name getLevel
+   * @description Get global current logger level.
    * Also you can get the level of any particular logger.
    * @returns {LogLevel}
    * @example
@@ -155,8 +169,11 @@ const Logger = {
    * // {value: 5, name: 'WARN'}
    */
   getLevel: () => loggerLevel,
+
   /**
-   * Gets or creates a named logger. Named loggers are used to group log messages
+   * @function
+   * @name get
+   * @description Gets or creates a named logger. Named loggers are used to group log messages
    * that refers to a common context.
    * @param {String} name
    * @returns {Object} Logger object with same properties and functions as Logger except
@@ -187,13 +204,16 @@ const Logger = {
    * Callback which handles log messages.
    *
    * @callback loggerHandler
+   * @global
    * @param {any[]} messages         - Arguments object with the supplied log messages.
    * @param {Object} context
    * @param {LogLevel} context.level - The currrent log level.
    * @param {String?} context.name   - The optional current logger name.
    */
   /**
-   * Add your custom log handler to Logger at the specified level.
+   * @function
+   * @name setHandler
+   * @description Add your custom log handler to Logger at the specified level.
    * @param {loggerHandler} handler  - Your custom log handler function.
    * @param {LogLevel} level         - Log level to filter messages.
    * @example
