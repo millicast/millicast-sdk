@@ -125,6 +125,8 @@ classDiagram
     +time(string)
   }
   EventEmitter <|-- BaseWebRTC
+  EventEmitter <|-- PeerConnection
+  EventEmitter <|-- Signaling
   BaseWebRTC <|-- Publish
   BaseWebRTC <|-- View
   BaseWebRTC *-- PeerConnection
