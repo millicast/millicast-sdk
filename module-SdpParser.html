@@ -31,7 +31,7 @@
 
 
     <title>
-      PeerConnection
+      SdpParser
     </title>
 
     <!--[if lt IE 9]>
@@ -98,7 +98,7 @@
     <div id="main" class="main-content">
       
       <h1 id='page-title' class="page-title">
-        PeerConnection
+        SdpParser
       </h1>
       
 
@@ -113,14 +113,7 @@
 <header>
     
         
-        <h2>
-        
-        PeerConnection
-        
-        </h2>
-        
-        
-            <div class="class-description"><p>Manages WebRTC connection and SDP information between peers.</p></div>
+            
         
     
 </header>
@@ -130,17 +123,11 @@
     <div class="container-overview">
     
         
+            <div class="description"><p>Simplify SDP parser.</p></div>
+        
 
-    
-        <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="PeerConnection">
-        <a href="#PeerConnection">#</a>
-        <span class="type-signature"></span>new PeerConnection<span class="signature">()</span><span class="type-signature"></span>
-    </h4>
-
-    
+        
+            
 
 
 
@@ -188,7 +175,7 @@
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line28">line 28</a>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line25">line 25</a>
             </li></ul></dd>
         </div>
     
@@ -216,31 +203,10 @@
 
 
 
-    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
-        <strong>Example</strong>
-        
-    <div class="rel">
-    <pre class="prettyprint"><code>const peerConnection = new PeerConnection()</code></pre>
-    
-    
-    </div>
-
-    </div>
-
-
-    
-    </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
 
         
-
-
-    <ul>
-        <li>EventEmitter</li>
-    </ul>
-
+    
+    </div>
 
     
 
@@ -262,9 +228,9 @@
 
     
 
-    <h4 class="name" id=".getCapabilities">
-        <a href="#.getCapabilities">#</a>
-        <span class="type-signature">(static) </span>getCapabilities<span class="signature">(kind)</span><span class="type-signature"> &rarr; {<a href="global.html#MillicastCapability">MillicastCapability</a>}</span>
+    <h4 class="name" id="~adaptCodecName">
+        <a href="#~adaptCodecName">#</a>
+        <span class="type-signature">(inner) </span>adaptCodecName<span class="signature">(sdp, codec, newCodecName)</span><span class="type-signature"> &rarr; {String}</span>
     </h4>
 
     
@@ -272,7 +238,7 @@
 
 
     <div class="description">
-        <p>Gets user's browser media capabilities compared with Millicast Media Server support.</p>
+        <p>Replace codec name of a SDP.</p>
     </div>
 
 
@@ -309,177 +275,7 @@
 
         <tr>
             
-                <td class="name"><code>kind</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">"audio"</span>
-|
-
-<span class="param-type">"video"</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Type of media for which you wish to get sender capabilities.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    </div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line255">line 255</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Returns:</strong>
-        
-            
-<div class="param-desc">
-    <p>Object with all capabilities supported by user's browser and Millicast Media Server.</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="global.html#MillicastCapability">MillicastCapability</a></span>
-
-
-    </dd>
-</dl>
-
-            
-    </div>
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="addRemoteTrack">
-        <a href="#addRemoteTrack">#</a>
-        <span class="type-signature">(async) </span>addRemoteTrack<span class="signature">(media, streams)</span><span class="type-signature"> &rarr; {Promise.&lt;RTCRtpTransceiver>}</span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Add remote receving track.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
-        <strong>Parameters:</strong>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>media</code></td>
+                <td class="name"><code>sdp</code></td>
             
 
             <td class="type">
@@ -495,20 +291,20 @@
 
             
 
-            <td class="description last"><p>Media kind ('audio' | 'video').</p></td>
+            <td class="description last"><p>Current SDP.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>streams</code></td>
+                <td class="name"><code>codec</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;MediaStream></span>
+<span class="param-type">String</span>
 
 
             
@@ -518,7 +314,30 @@
 
             
 
-            <td class="description last"><p>Streams the track will belong to.</p></td>
+            <td class="description last"><p>Codec name to be replaced.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newCodecName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>New codec name to replace.</p></td>
         </tr>
 
     
@@ -563,7 +382,7 @@
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line162">line 162</a>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line215">line 215</a>
             </li></ul></dd>
         </div>
     
@@ -594,7 +413,7 @@
         
             
 <div class="param-desc">
-    <p>Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.</p>
+    <p>SDP updated with new codec name.</p>
 </div>
 
 
@@ -605,7 +424,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;RTCRtpTransceiver></span>
+<span class="param-type">String</span>
 
 
     </dd>
@@ -622,9 +441,9 @@
 
     
 
-    <h4 class="name" id="closeRTCPeer">
-        <a href="#closeRTCPeer">#</a>
-        <span class="type-signature">(async) </span>closeRTCPeer<span class="signature">()</span><span class="type-signature"></span>
+    <h4 class="name" id="~getAvailableHeaderExtensionIdRange">
+        <a href="#~getAvailableHeaderExtensionIdRange">#</a>
+        <span class="type-signature">(inner) </span>getAvailableHeaderExtensionIdRange<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {Array.&lt;Number>}</span>
     </h4>
 
     
@@ -632,107 +451,7 @@
 
 
     <div class="description">
-        <p>Close RTC peer connection.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line66">line 66</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-    <div class="method-member-container flex w-100 overflow-auto mt-20">
-        <strong>Fires:</strong>
-            <ul>
-                
-                    <li><a href="PeerConnection.html#event:connectionStateChange">PeerConnection#event:connectionStateChange</a></li>
-                
-            </ul>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="createRTCPeer">
-        <a href="#createRTCPeer">#</a>
-        <span class="type-signature">(async) </span>createRTCPeer<span class="signature">(config)</span><span class="type-signature"></span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Instance new RTCPeerConnection.</p>
+        <p>Gets all available header extension IDs of the current Session Description.</p>
     </div>
 
 
@@ -759,8 +478,6 @@
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -771,13 +488,13 @@
 
         <tr>
             
-                <td class="name"><code>config</code></td>
+                <td class="name"><code>sdp</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">RTCConfiguration</span>
+<span class="param-type">String</span>
 
 
             
@@ -786,14 +503,8 @@
             
 
             
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
 
-            <td class="description last"><p>Peer configuration.</p></td>
+            <td class="description last"><p>Current SDP.</p></td>
         </tr>
 
     
@@ -838,7 +549,7 @@
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line47">line 47</a>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line290">line 290</a>
             </li></ul></dd>
         </div>
     
@@ -864,6 +575,31 @@
 
 
 
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>All available header extension IDs.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Number></span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
 
 
 
@@ -872,9 +608,9 @@
 
     
 
-    <h4 class="name" id="getRTCLocalSDP">
-        <a href="#getRTCLocalSDP">#</a>
-        <span class="type-signature">(async) </span>getRTCLocalSDP<span class="signature">(options)</span><span class="type-signature"> &rarr; {Promise.&lt;String>}</span>
+    <h4 class="name" id="~getAvailablePayloadTypeRange">
+        <a href="#~getAvailablePayloadTypeRange">#</a>
+        <span class="type-signature">(inner) </span>getAvailablePayloadTypeRange<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {Array.&lt;Number>}</span>
     </h4>
 
     
@@ -882,7 +618,7 @@
 
 
     <div class="description">
-        <p>Get the SDP modified depending the options. Optionally set the SDP information to local peer.</p>
+        <p>Gets all available payload type IDs of the current Session Description.</p>
     </div>
 
 
@@ -919,13 +655,13 @@
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>sdp</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">String</span>
 
 
             
@@ -935,9 +671,134 @@
 
             
 
-            <td class="description last">
-                <h6>Properties</h6>
-                
+            <td class="description last"><p>Current SDP.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line269">line 269</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>All available payload type ids.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Number></span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~removeSdpLine">
+        <a href="#~removeSdpLine">#</a>
+        <span class="type-signature">(inner) </span>removeSdpLine<span class="signature">(sdp, sdpLine)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Remove SDP line.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
 
 <table class="params">
     <thead>
@@ -961,13 +822,13 @@
 
         <tr>
             
-                <td class="name"><code>stereo</code></td>
+                <td class="name"><code>sdp</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">String</span>
 
 
             
@@ -977,20 +838,20 @@
 
             
 
-            <td class="description last"><p>True to modify SDP for support stereo. Otherwise False.</p></td>
+            <td class="description last"><p>Current SDP.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>dtx</code></td>
+                <td class="name"><code>sdpLine</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">String</span>
 
 
             
@@ -1000,7 +861,886 @@
 
             
 
-            <td class="description last"><p>True to modify SDP for supporting dtx in opus. Otherwise False.*</p></td>
+            <td class="description last"><p>SDP line to remove.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line194">line 194</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>SDP without the line.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.removeSdpLine(sdp, 'custom line')</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~renegotiate">
+        <a href="#~renegotiate">#</a>
+        <span class="type-signature">(inner) </span>renegotiate<span class="signature">(localDescription, remoteDescription)</span><span class="type-signature"></span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Renegotiate remote sdp based on previous description.
+This function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>localDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Updated local sdp</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>remoteDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Previous remote sdp</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line311">line 311</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setAbsoluteCaptureTime">
+        <a href="#~setAbsoluteCaptureTime">#</a>
+        <span class="type-signature">(inner) </span>setAbsoluteCaptureTime<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Mangle SDP for adding absolute capture time header extension.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sdp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current SDP.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line126">line 126</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>SDP mungled with abs-capture-time header extension.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.setAbsoluteCaptureTime(sdp)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setDependencyDescriptor">
+        <a href="#~setDependencyDescriptor">#</a>
+        <span class="type-signature">(inner) </span>setDependencyDescriptor<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Mangle SDP for adding dependency descriptor header extension.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sdp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current SDP.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line148">line 148</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>SDP mungled with abs-capture-time header extension.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.setAbsoluteCaptureTime(sdp)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setDTX">
+        <a href="#~setDTX">#</a>
+        <span class="type-signature">(inner) </span>setDTX<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Set DTX (Discontinuous Transmission) to the connection. Advanced configuration of the opus audio codec that allows for a large reduction in the audio traffic. For example, when a participant is silent, the audio packets won't be transmitted.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sdp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current SDP.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line107">line 107</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>SDP parsed with dtx support.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.setDTX(sdp)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setMultiopus">
+        <a href="#~setMultiopus">#</a>
+        <span class="type-signature">(inner) </span>setMultiopus<span class="signature">(sdp, mediaStream)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Parse SDP for support multiopus.
+<strong>Only available in Google Chrome.</strong></p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sdp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current SDP.</p></td>
         </tr>
 
     
@@ -1014,9 +1754,6 @@
             
                 
 <span class="param-type">MediaStream</span>
-|
-
-<span class="param-type">Array.&lt;MediaStreamTrack></span>
 
 
             
@@ -1026,8 +1763,186 @@
 
             
 
-            <td class="description last"><p>MediaStream to offer in a stream. This object must have
-1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.</p></td>
+            <td class="description last"><p>MediaStream offered in the stream.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line233">line 233</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>SDP parsed with multiopus support.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.setMultiopus(sdp, mediaStream)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setSimulcast">
+        <a href="#~setSimulcast">#</a>
+        <span class="type-signature">(inner) </span>setSimulcast<span class="signature">(sdp, codec)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Parse SDP for support simulcast.
+<strong>Only available in Google Chrome.</strong></p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sdp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current SDP.</p></td>
         </tr>
 
     
@@ -1040,52 +1955,6 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#VideoCodec">VideoCodec</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Selected codec for support simulcast.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>simulcast</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>True to modify SDP for support simulcast. <strong>Only available in Google Chrome and with H.264 or VP8 video codecs.</strong></p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>scalabilityMode</code></td>
-            
-
-            <td class="type">
-            
-                
 <span class="param-type">String</span>
 
 
@@ -1096,130 +1965,7 @@
 
             
 
-            <td class="description last"><p>Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
-<strong>Only available in Google Chrome.</strong></p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>absCaptureTime</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>True to modify SDP for supporting absolute capture time header extension. Otherwise False.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>dependencyDescriptor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>disableAudio</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>True to not support audio.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>disableVideo</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>True to not support video.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>setSDPToPeer</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>True to set the SDP to local peer.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"><p>Codec.</p></td>
         </tr>
 
     
@@ -1264,7 +2010,7 @@
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line111">line 111</a>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line30">line 30</a>
             </li></ul></dd>
         </div>
     
@@ -1295,7 +2041,7 @@
         
             
 <div class="param-desc">
-    <p>Promise object which represents the SDP information of the created offer.</p>
+    <p>SDP parsed with simulcast support.</p>
 </div>
 
 
@@ -1306,910 +2052,14 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;String></span>
-
-
-    </dd>
-</dl>
-
-            
-    </div>
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getRTCPeer">
-        <a href="#getRTCPeer">#</a>
-        <span class="type-signature"></span>getRTCPeer<span class="signature">()</span><span class="type-signature"> &rarr; {RTCPeerConnection}</span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Get current RTC peer connection.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line57">line 57</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Returns:</strong>
-        
-            
-<div class="param-desc">
-    <p>Object which represents the RTCPeerConnection.</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">RTCPeerConnection</span>
-
-
-    </dd>
-</dl>
-
-            
-    </div>
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getRTCPeerStatus">
-        <a href="#getRTCPeerStatus">#</a>
-        <span class="type-signature"></span>getRTCPeerStatus<span class="signature">()</span><span class="type-signature"> &rarr; (nullable) {RTCPeerConnectionState}</span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Get peer connection state.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line211">line 211</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Returns:</strong>
-        
-            
-<div class="param-desc">
-    <p>Promise object which represents the peer connection state.</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">RTCPeerConnectionState</span>
-
-
-    </dd>
-</dl>
-
-            
-    </div>
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getTracks">
-        <a href="#getTracks">#</a>
-        <span class="type-signature"></span>getTracks<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;MediaStreamTrack>}</span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Get sender tracks</p>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line301">line 301</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Returns:</strong>
-        
-            
-<div class="param-desc">
-    <p>An array with all tracks in sender peer.</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array.&lt;MediaStreamTrack></span>
-
-
-    </dd>
-</dl>
-
-            
-    </div>
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="initStats">
-        <a href="#initStats">#</a>
-        <span class="type-signature"></span>initStats<span class="signature">()</span><span class="type-signature"></span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Initialize the statistics monitoring of the RTCPeerConnection.</p>
-<p>It will be emitted every second.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line340">line 340</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-    <div class="method-member-container flex w-100 overflow-auto mt-20">
-        <strong>Fires:</strong>
-            <ul>
-                
-                    <li><a href="PeerConnection.html#event:stats">PeerConnection#event:stats</a></li>
-                
-            </ul>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
-        <strong>Examples</strong>
-        
-    <div class="rel">
-    <pre class="prettyprint"><code>peerConnection.initStats()</code></pre>
-    
-    
-    </div>
-
-    <div class="rel">
-    <pre class="prettyprint"><code>import Publish from '@millicast/sdk'
-
-//Initialize and connect your Publisher
-const millicastPublish = new Publish(streamName, tokenGenerator)
-await millicastPublish.connect(options)
-
-//Initialize get stats
-millicastPublish.webRTCPeer.initStats()
-
-//Capture new stats from event every second
-millicastPublish.webRTCPeer.on('stats', (stats) => {
-  console.log('Stats from event: ', stats)
-})</code></pre>
-    
-    
-    </div>
-
-    <div class="rel">
-    <pre class="prettyprint"><code>import View from '@millicast/sdk'
-
-//Initialize and connect your Viewer
-const millicastView = new View(streamName, tokenGenerator)
-await millicastView.connect()
-
-//Initialize get stats
-millicastView.webRTCPeer.initStats()
-
-//Capture new stats from event every second
-millicastView.webRTCPeer.on('stats', (stats) => {
-  console.log('Stats from event: ', stats)
-})</code></pre>
-    
-    
-    </div>
-
-    </div>
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="replaceTrack">
-        <a href="#replaceTrack">#</a>
-        <span class="type-signature"></span>replaceTrack<span class="signature">(mediaStreamTrack)</span><span class="type-signature"></span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Replace current audio or video track that is being broadcasted.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
-        <strong>Parameters:</strong>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>mediaStreamTrack</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">MediaStreamTrack</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>New audio or video track to replace the current one.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    </div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line225">line 225</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="setRTCRemoteSDP">
-        <a href="#setRTCRemoteSDP">#</a>
-        <span class="type-signature">(async) </span>setRTCRemoteSDP<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Set SDP information to remote peer.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
-        <strong>Parameters:</strong>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>sdp</code></td>
-            
-
-            <td class="type">
-            
-                
 <span class="param-type">String</span>
 
 
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>New SDP to be set in the remote peer.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    </div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line79">line 79</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Returns:</strong>
-        
-            
-<div class="param-desc">
-    <p>Promise object which resolves when SDP information was successfully set.</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;void></span>
-
-
     </dd>
 </dl>
 
             
     </div>
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="stopStats">
-        <a href="#stopStats">#</a>
-        <span class="type-signature"></span>stopStats<span class="signature">()</span><span class="type-signature"></span>
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Stops the monitoring of RTCPeerConnection statistics.</p>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line356">line 356</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2217,7 +2067,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
         <strong>Example</strong>
         
     <div class="rel">
-    <pre class="prettyprint"><code>peerConnection.stopStats()</code></pre>
+    <pre class="prettyprint"><code>SdpParser.setSimulcast(sdp, 'h264')</code></pre>
     
     
     </div>
@@ -2230,9 +2080,9 @@ millicastView.webRTCPeer.on('stats', (stats) => {
 
     
 
-    <h4 class="name" id="updateBandwidthRestriction">
-        <a href="#updateBandwidthRestriction">#</a>
-        <span class="type-signature"></span>updateBandwidthRestriction<span class="signature">(sdp, bitrate)</span><span class="type-signature"> &rarr; {String}</span>
+    <h4 class="name" id="~setStereo">
+        <a href="#~setStereo">#</a>
+        <span class="type-signature">(inner) </span>setStereo<span class="signature">(sdp)</span><span class="type-signature"> &rarr; {String}</span>
     </h4>
 
     
@@ -2240,7 +2090,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
 
 
     <div class="description">
-        <p>Update remote SDP information to restrict bandwidth.</p>
+        <p>Parse SDP for support stereo.</p>
     </div>
 
 
@@ -2293,30 +2143,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
 
             
 
-            <td class="description last"><p>Remote SDP.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>bitrate</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>New bitrate value in kbps or 0 unlimited bitrate.</p></td>
+            <td class="description last"><p>Current SDP.</p></td>
         </tr>
 
     
@@ -2361,7 +2188,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line182">line 182</a>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line88">line 88</a>
             </li></ul></dd>
         </div>
     
@@ -2392,7 +2219,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
         
             
 <div class="param-desc">
-    <p>Updated SDP information with new bandwidth restriction.</p>
+    <p>SDP parsed with stereo support.</p>
 </div>
 
 
@@ -2414,15 +2241,26 @@ millicastView.webRTCPeer.on('stats', (stats) => {
 
 
 
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.setStereo(sdp)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
 
         
             
 
     
 
-    <h4 class="name" id="updateBitrate">
-        <a href="#updateBitrate">#</a>
-        <span class="type-signature">(async) </span>updateBitrate<span class="signature">(bitrate)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
+    <h4 class="name" id="~setVideoBitrate">
+        <a href="#~setVideoBitrate">#</a>
+        <span class="type-signature">(inner) </span>setVideoBitrate<span class="signature">(sdp, bitrate)</span><span class="type-signature"> &rarr; {String}</span>
     </h4>
 
     
@@ -2430,7 +2268,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
 
 
     <div class="description">
-        <p>Set SDP information to remote peer with bandwidth restriction.</p>
+        <p>Parse SDP for desired bitrate.</p>
     </div>
 
 
@@ -2457,14 +2295,35 @@ millicastView.webRTCPeer.on('stats', (stats) => {
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sdp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current SDP.</p></td>
+        </tr>
+
     
 
         <tr>
@@ -2484,14 +2343,8 @@ millicastView.webRTCPeer.on('stats', (stats) => {
             
 
             
-                <td class="default">
-                
-                    0
-                
-                </td>
-            
 
-            <td class="description last"><p>New bitrate value in kbps or 0 unlimited bitrate.</p></td>
+            <td class="description last"><p>Bitrate value in kbps or 0 for unlimited bitrate.</p></td>
         </tr>
 
     
@@ -2536,7 +2389,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
         <div class="details-item-container">
             <dt class="tag-source">Source:</dt>
             <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line193">line 193</a>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line170">line 170</a>
             </li></ul></dd>
         </div>
     
@@ -2567,7 +2420,7 @@ millicastView.webRTCPeer.on('stats', (stats) => {
         
             
 <div class="param-desc">
-    <p>Promise object which resolves when bitrate was successfully updated.</p>
+    <p>SDP parsed with desired bitrate.</p>
 </div>
 
 
@@ -2578,7 +2431,208 @@ millicastView.webRTCPeer.on('stats', (stats) => {
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;void></span>
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>SdpParser.setVideoBitrate(sdp, 1000)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~updateMissingVideoExtensions">
+        <a href="#~updateMissingVideoExtensions">#</a>
+        <span class="type-signature">(inner) </span>updateMissingVideoExtensions<span class="signature">(localDescription, remoteDescription)</span><span class="type-signature"> &rarr; {String}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Adds missing extensions of each video section in the localDescription</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>localDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Previous local sdp</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>remoteDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Remote sdp</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="utils_SdpParser.js.html">utils/SdpParser.js</a>, <a href="utils_SdpParser.js.html#line353">line 353</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>SDP updated with missing extensions.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
 
 
     </dd>
@@ -2595,319 +2649,6 @@ millicastView.webRTCPeer.on('stats', (stats) => {
 
     
 
-    
-        <h3 class="subsection-title">Events</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id="event:connectionStateChange">
-        <a href="#event:connectionStateChange">#</a>
-        connectionStateChange
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.</p>
-    </div>
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Type:</strong>
-    <ul>
-        <li>
-            
-<span class="param-type">RTCPeerConnectionState</span>
-
-
-        </li>
-    </ul>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line418">line 418</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="event:stats">
-        <a href="#event:stats">#</a>
-        stats
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>Peer connection incoming stats.</p>
-    </div>
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Type:</strong>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="global.html#ConnectionStats">ConnectionStats</a></span>
-
-
-        </li>
-    </ul>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnectionStats.js.html">PeerConnectionStats.js</a>, <a href="PeerConnectionStats.js.html#line80">line 80</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="event:track">
-        <a href="#event:track">#</a>
-        track
-    </h4>
-
-    
-
-
-
-    <div class="description">
-        <p>New track event.</p>
-    </div>
-
-
-
-
-
-    <div class="method-member-container mt-20">
-    <strong>Type:</strong>
-    <ul>
-        <li>
-            
-<span class="param-type">RTCTrackEvent</span>
-
-
-        </li>
-    </ul>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <div class="details-item-container">
-            <dt class="tag-source">Source:</dt>
-            <dd class="tag-source"><ul class="dummy"><li>
-                <a href="PeerConnection.js.html">PeerConnection.js</a>, <a href="PeerConnection.js.html#line406">line 406</a>
-            </li></ul></dd>
-        </div>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
     
 </article>
 

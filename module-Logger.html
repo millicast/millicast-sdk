@@ -31,7 +31,7 @@
 
 
     <title>
-      Home
+      Logger
     </title>
 
     <!--[if lt IE 9]>
@@ -97,170 +97,1826 @@
 
     <div id="main" class="main-content">
       
+      <h1 id='page-title' class="page-title">
+        Logger
+      </h1>
+      
 
       
 
 
 
+
+<section>
+
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Manages all log messages from SDK modules, you can use this logger to add your custom
+messages and set your custom log handlers to forward all messages to your own monitoring
+system.</p>
+<p>By default all loggers are set in level OFF (Logger.OFF), and there are available
+the following log levels.</p>
+<p>This module is based on <a href="https://github.com/jonnyreeves/js-logger">js-logger</a> you can refer
+to its documentation or following our examples.</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line4">line 4</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Examples</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>// Log a message
+Logger.info('This is an info log', 445566)
+// [Global] 2021-04-05T15:58:44.893Z - This is an info log 445566</code></pre>
+    
+    
+    </div>
+
+    <div class="rel">
+    <pre class="prettyprint"><code>// Create a named logger
+const myLogger = Logger.get('CustomLogger')
+myLogger.setLevel(Logger.WARN)
+myLogger.warn('This is a warning log')
+// [CustomLogger] 2021-04-05T15:59:53.377Z - This is a warning log</code></pre>
+    
+    
+    </div>
+
+    <div class="rel">
+    <pre class="prettyprint"><code>// Profiling
+// Start timing something
+Logger.time('Timer name')
+
+// ... some time passes ...
+
+// Stop timing something.
+Logger.timeEnd('Timer name')
+// Timer name: 35282.997802734375 ms</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~DEBUG">
+    <a href="#~DEBUG">#</a>
+    <span class="type-signature">(inner, constant) </span>DEBUG<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.DEBUG</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line93">line 93</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~ERROR">
+    <a href="#~ERROR">#</a>
+    <span class="type-signature">(inner, constant) </span>ERROR<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.ERROR</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line97">line 97</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~INFO">
+    <a href="#~INFO">#</a>
+    <span class="type-signature">(inner, constant) </span>INFO<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.INFO</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line94">line 94</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~OFF">
+    <a href="#~OFF">#</a>
+    <span class="type-signature">(inner, constant) </span>OFF<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.OFF</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line98">line 98</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~TIME">
+    <a href="#~TIME">#</a>
+    <span class="type-signature">(inner, constant) </span>TIME<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.TIME</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line95">line 95</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~TRACE">
+    <a href="#~TRACE">#</a>
+    <span class="type-signature">(inner, constant) </span>TRACE<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.TRACE</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line92">line 92</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~WARN">
+    <a href="#~WARN">#</a>
+    <span class="type-signature">(inner, constant) </span>WARN<span class="type-signature"> :<a href="global.html#LogLevel">LogLevel</a></span>
+</h4>
+
+
+
+
+<div class="description">
+    <p>Logger.WARN</p>
+</div>
+
+
+
+    <div class="member-item-container flex">
+        <strong>Type: </strong>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line96">line 96</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~get">
+        <a href="#~get">#</a>
+        <span class="type-signature">(inner) </span>get<span class="signature">(name)</span><span class="type-signature"> &rarr; {Object}</span>
+    </h4>
+
     
 
 
 
+    <div class="description">
+        <p>Gets or creates a named logger. Named loggers are used to group log messages
+that refers to a common context.</p>
+    </div>
 
 
 
 
 
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line174">line 174</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>Logger object with same properties and functions as Logger except
+history and handlers related functions.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>const myLogger = Logger.get('MyLogger')
+// Set logger level
+myLogger.setLevel(Logger.DEBUG)
+
+myLogger.debug('This is a debug log')
+myLogger.info('This is a info log')
+myLogger.warn('This is a warning log')
+
+// Get logger level
+myLogger.getLevel()
+// {value: 3, name: 'INFO'}</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getHistory">
+        <a href="#~getHistory">#</a>
+        <span class="type-signature">(inner) </span>getHistory<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;String>}</span>
+    </h4>
 
     
 
 
-    <section class="readme">
-        <article><h1 id="millicast-sdk-for-javascript">Millicast SDK for JavaScript</h1>
-<!-- TODO: Add badges: NPM, build, tests, etc. -->
-<p><img src="https://img.shields.io/npm/v/@millicast/sdk" alt="npm (scoped)">
-<img src="https://img.shields.io/github/v/release/millicast/millicast-sdk" alt="GitHub release (latest by date)">
-<a href="https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml"><img src="https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml/badge.svg?branch=main" alt="Check tests"></a></p>
-<p>This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.</p>
-<h2 id="table-of-contents">Table of Contents</h2>
-<ul>
-<li><a href="#millicast-sdk-for-javascript">Millicast SDK for JavaScript</a>
-<ul>
-<li><a href="#table-of-contents">Table of Contents</a></li>
-<li><a href="#installation">Installation</a></li>
-<li><a href="#basic-usage">Basic Usage</a>
-<ul>
-<li><a href="#publisher-app">Publisher app</a></li>
-<li><a href="#viewer-app">Viewer app</a></li>
-</ul>
-</li>
-<li><a href="#api-reference">API Reference</a></li>
-<li><a href="#samples">Samples</a></li>
-<li><a href="#js-frameworks">JS Frameworks</a>
-<ul>
-<li><a href="#react-native">React Native</a></li>
-</ul>
-</li>
-<li><a href="#sdk-developer-information">SDK developer information</a></li>
-<li><a href="#license">License</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="installation">Installation</h2>
-<p>You can use the CDN version of the SDK adding this tag to your document's <code>&lt;head&gt;</code>. Then <code>millicast</code> global variable will be available to use it.</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src='https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js'>&lt;/script>
-</code></pre>
-<p>Or if you are building an application with Node.js, you can install the SDK package to your dependencies.</p>
-<pre class="prettyprint source lang-sh"><code>npm i --save @millicast/sdk
-</code></pre>
-<h2 id="basic-usage">Basic Usage</h2>
-<p>This simple example will show how to broadcast the user camera and microphone to Millicast Media Servers and viewing it.</p>
-<p>You will need a Millicast account and a valid publishing token that you can find it in your dashboard (<a href="https://dash.millicast.com/#/signin">link here</a>).</p>
-<h3 id="publisher-app">Publisher app</h3>
-<p>In vanilla JavaScript:</p>
-<p><code>publisher.html</code></p>
-<pre class="prettyprint source lang-html"><code>&lt;html>
-  &lt;head>
-    &lt;!-- Import the Millicast JS SDK -->
-    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js&quot;>&lt;/script>
-  &lt;/head>
 
-  &lt;body>
-    &lt;script type=&quot;module&quot;>
-      const yourPublishingToken = &quot;...&quot;
-      const yourStreamName = &quot;...&quot;
-
-      // Define callback for generate new tokens
-      const tokenGenerator = () => millicast.Director.getPublisher({
-        token: yourPublishingToken,
-        streamName: yourStreamName
-      })
-
-      // Create a new instance
-      const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
-
-      // Get user camera and microphone
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-
-      // Publishing options
-      const broadcastOptions = {
-        mediaStream
-      }
-
-      // Start broadcast
-      try {
-        await millicastPublish.connect(broadcastOptions)
-      } catch (e) {
-        console.log('Connection failed, handle error', e)
-      }
-    &lt;/script>
-  &lt;/body>
-&lt;/html>
-</code></pre>
-<p>Please be sure to set up the credentials filling up the <code>yourStreamName</code> and <code>yourPublishingToken</code> fields.</p>
-<h3 id="viewer-app">Viewer app</h3>
-<p>In vanilla JavaScript:</p>
-<p><code>viewer.html</code></p>
-<pre class="prettyprint source lang-html"><code>&lt;html>
-  &lt;head>
-    &lt;!-- Import the Millicast JS SDK -->
-    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js&quot;>&lt;/script>
-  &lt;/head>
-
-  &lt;body>
-    &lt;video id=&quot;my-video&quot; controls autoplay muted>&lt;/video>
-
-    &lt;script type=&quot;module&quot;>
-      // Get media element
-      const video = document.getElementById('my-video')
-
-      // Set the credentials for the streaming
-      const yourStreamName = &quot;...&quot;
-      const yourStreamAccountId = &quot;...&quot;
-
-      // Define callback for generate new token
-      const tokenGenerator = () => millicast.Director.getSubscriber({
-        streamName: yourStreamName,
-        streamAccountId: yourStreamAccountId
-      })
-
-      // Create a new instance
-      const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
-
-      // Start connection to publisher
-      try {
-        await millicastView.connect()
-      } catch (e) {
-        console.log('Connection failed, handle error', e)
-      }
-    &lt;/script>
-  &lt;/body>
-&lt;/html>
-</code></pre>
-<p>Please be sure to set up the credentials filling up the <code>yourStreamName</code> and <code>yourStreamAccountId</code> fields.</p>
-<h2 id="api-reference">API Reference</h2>
-<p>You can find the latest, most up to date, SDK documentation at our <a href="https://millicast.github.io/millicast-sdk/">API Reference page</a>. There are more examples with every module available.</p>
-<h2 id="samples">Samples</h2>
-<p>In this repo there are two packages that implement a broadcaster and viewer application using the SDK.
-You can clone this repo and following the steps indicated in each example:</p>
-<ul>
-<li><a href="https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme">millicast-publisher-demo</a></li>
-<li><a href="https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme">millicast-viewer-demo</a></li>
-<li><a href="https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme">millicast-webaudio-delay-demo</a></li>
-</ul>
-<h2 id="js-frameworks">JS Frameworks</h2>
-<p>This section is intended to explain how properly integrate this SDK with different JS frameworks, with links to official guides that will contain a more step by step oriented explanation on how to do it.</p>
-<p>Right now, we only have a React Native guide.</p>
-<h3 id="react-native-integration">React Native Integration</h3>
-<p>This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with <a href="https://github.com/react-native-webrtc/react-native-webrtc">React Native webRTC project</a> for this purpose.</p>
-<p>Check out this guide on <a href="https://docs.dolby.io/streaming-apis/docs/rn">how to integrate Millicast JS SDK with React Native webRTC</a>!</p>
-<h2 id="sdk-developer-information">SDK developer information</h2>
-<p>To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. <a href="https://github.com/millicast/millicast-sdk/blob/main/developer-info.md">Follow this link.</a></p>
-<h2 id="license">License</h2>
-<p>Please refer to <a href="https://github.com/millicast/millicast-sdk/blob/main/LICENSE">LICENSE</a> file.</p></article>
-    </section>
+    <div class="description">
+        <p>Get all logs generated during a session.
+All logs are recollected besides the log level selected by the user.</p>
+    </div>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line103">line 103</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+<div class="param-desc">
+    <p>All logs recollected from level TRACE.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;String></span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>Logger.getHistory()
+// Outupt
+// [
+//   "[Director] 2021-04-05T14:09:26.625Z - Getting publisher connection data for stream name:  1xxx2",
+//   "[Director] 2021-04-05T14:09:27.064Z - Getting publisher response",
+//   "[Publish]  2021-04-05T14:09:27.066Z - Broadcasting"
+// ]</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getHistoryMaxSize">
+        <a href="#~getHistoryMaxSize">#</a>
+        <span class="type-signature">(inner) </span>getHistoryMaxSize<span class="signature">()</span><span class="type-signature"></span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Get the maximum count of logs preserved during a session.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line118">line 118</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>Logger.getHistoryMaxSize()</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getLevel">
+        <a href="#~getLevel">#</a>
+        <span class="type-signature">(inner) </span>getLevel<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#LogLevel">LogLevel</a>}</span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Get global current logger level.
+Also you can get the level of any particular logger.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line155">line 155</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container mt-20">
+    <strong>Returns:</strong>
+        
+            
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+    </dd>
+</dl>
+
+            
+    </div>
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>// Global Level
+Logger.getLevel()
+// Output
+// {value: 2, name: 'DEBUG'}
+
+// Module Level
+Logger.get('Publish').getLevel()
+// Output
+// {value: 5, name: 'WARN'}</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setHandler">
+        <a href="#~setHandler">#</a>
+        <span class="type-signature">(inner) </span>setHandler<span class="signature">(handler, level)</span><span class="type-signature"></span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Add your custom log handler to Logger at the specified level.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#loggerHandler">loggerHandler</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Your custom log handler function.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>level</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Log level to filter messages.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line214">line 214</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>const myHandler = (messages, context) => {
+ // You can filter by logger
+ if (context.name === 'Publish') {
+   sendToMyLogger(messages[0])
+ }
+
+ // You can filter by logger level
+ if (context.level.value >= Logger.INFO.value) {
+   sendToMyLogger(messages[0])
+ }
+}
+
+Logger.setHandler(myHandler, Logger.INFO)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setHistoryMaxSize">
+        <a href="#~setHistoryMaxSize">#</a>
+        <span class="type-signature">(inner) </span>setHistoryMaxSize<span class="signature">(maxSize)</span><span class="type-signature"></span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Set the maximum count of logs to preserve during a session.
+By default it is set to 10000.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>maxSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Max size of log history. Set 0 to disable history or -1 to unlimited log history.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line126">line 126</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>Logger.setHistoryMaxSize(100)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~setLevel">
+        <a href="#~setLevel">#</a>
+        <span class="type-signature">(inner) </span>setLevel<span class="signature">(level)</span><span class="type-signature"></span>
+    </h4>
+
+    
+
+
+
+    <div class="description">
+        <p>Set log level to all loggers.</p>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Parameters:</strong>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>level</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#LogLevel">LogLevel</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>New log level to be set.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    </div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class="details-item-container">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source"><ul class="dummy"><li>
+                <a href="Logger.js.html">Logger.js</a>, <a href="Logger.js.html#line136">line 136</a>
+            </li></ul></dd>
+        </div>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="method-member-container flex flex-col w-100 overflow-auto mt-20">
+        <strong>Example</strong>
+        
+    <div class="rel">
+    <pre class="prettyprint"><code>// Global Level
+Logger.setLevel(Logger.DEBUG)
+
+// Module Level
+Logger.get('Publish').setLevel(Logger.DEBUG)</code></pre>
+    
+    
+    </div>
+
+    </div>
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
