@@ -51,3 +51,95 @@ Or if you want to navigate docs in your localhost run:
 npx lerna run start-docs --stream
 ```
 In the logs you find the link where you can access to docs. By default is running at http://localhost:5000.
+
+### SDK Components
+```mermaid
+classDiagram
+  class EventEmitter {
+    +emit(eventName: string | symbol, ...args: any[]) boolean
+    +on(eventName: string | symbol, listener: (...args: any[]) => void) EventEmitter
+  }
+  class BaseWebRTC {
+    <<Abstract>>
+    +string streamName
+    #PeerConnection webRTCPeer
+    #Signaling signaling
+    #tokenGeneratorCallback tokenGenerator
+    +isActive() bool
+    +stop()
+    +async reconnect(data)
+    +getRTCPeerConnection() RTCPeerConnection
+  }
+  class PeerConnection{
+    $getCapabilities() MillicastCapability
+    +async addRemoteTrack(media, streams) RTCRtpTransceiver
+    +async createRTCPeer(config)
+    +async closeRTCPeer()
+    +initStats()
+    +stopStats()
+    +async getRTCLocalSDP(options) string
+    +async setRTCRemoteSDP(sdp)
+    +updateBandwidthRestriction(sdp, bitrate) string
+    +async updateBitrate(bitrate)
+  }
+  class Signaling {
+    +async connect() WebSocket
+    +close()
+    +async cmd(command, data?) Object
+    +async publish(sdp, options) string
+    +async subscribe(sdp, options) string
+  }
+  class Publish {
+    +async connect(options)
+    +async record()
+    +async unrecord()
+  }
+  class View {
+    +async connect(options)
+    +async select(layer)
+    +async addRemoteTrack(media, streams)
+    +async project(sourceId, mapping)
+    +async unproject(mediaIds)
+  }
+  class Director {
+    <<Singleton>>
+    +getPublisher(publishToken, streamName, streamType?)
+    +getSubscriber(streamName, streamAccountId, subscribeToken?)
+  }
+  class SdpParser {
+    <<Singleton>>
+    +setStereo(sdp) string
+    +setDTX(sdp) string
+    +setVideoBitrate(sdp, bitrate) string
+    +setSimulcast(sdp, codec) string
+  }
+  class Logger {
+    <<Singleton>>
+    +get() Logger
+    +getLevel() LogLevel
+    +setLevel()
+    +debug(string)
+    +info(string)
+    +warn(string)
+    +error(string)
+    +time(string)
+  }
+  EventEmitter <|-- BaseWebRTC
+  EventEmitter <|-- PeerConnection
+  EventEmitter <|-- Signaling
+  BaseWebRTC <|-- Publish
+  BaseWebRTC <|-- View
+  BaseWebRTC *-- PeerConnection
+  BaseWebRTC *-- Signaling
+  Signaling <-- SdpParser
+  PeerConnection <-- SdpParser
+  Publish <-- Director : getPublisher
+  View <-- Director: getSubscriber
+  BaseWebRTC <-- Logger
+  Director <-- Logger
+  Signaling <-- Logger
+  PeerConnection <-- Logger
+  Publish <-- Logger
+  View <-- Logger
+  SdpParser <-- Logger
+```

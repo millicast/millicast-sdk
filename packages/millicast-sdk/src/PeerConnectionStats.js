@@ -186,6 +186,7 @@ const addInboundRtpReport = (report, previousStats, statsObject) => {
   additionalData.jitter = report.jitter
   additionalData.id = report.id
   additionalData.mid = report.mid
+  additionalData.trackIdentifier = report.trackIdentifier
 
   additionalData.bitrate = 0
   additionalData.packetsLostRatioPerSecond = 0

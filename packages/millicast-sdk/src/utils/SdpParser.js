@@ -23,21 +23,21 @@ const headerExtensionIdLowerRange = Array.from({ length: (lastHeaderExtensionIdL
 const headerExtensionIdUppperRange = Array.from({ length: (lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange) + 1 }, (_, i) => i + firstHeaderExtensionIdUpperRange)
 
 /**
- * Simplify SDP parser.
- *
- * @namespace
+ * @module SdpParser
+ * @description Simplify SDP parser.
  */
-export default class SdpParser {
+const SdpParser = {
   /**
-   * Parse SDP for support simulcast.
-   *
+   * @function
+   * @name setSimulcast
+   * @description Parse SDP for support simulcast.
    * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
    * @param {String} codec - Codec.
    * @returns {String} SDP parsed with simulcast support.
    * @example SdpParser.setSimulcast(sdp, 'h264')
    */
-  static setSimulcast (sdp, codec) {
+  setSimulcast (sdp, codec) {
     logger.info('Setting simulcast. Codec: ', codec)
     const browserData = new UserAgent()
     if (!browserData.isChrome()) {
@@ -83,15 +83,17 @@ export default class SdpParser {
       logger.error('Error setting SDP for simulcast: ', e)
       throw e
     }
-  }
+  },
 
   /**
-   * Parse SDP for support stereo.
+   * @function
+   * @name setStereo
+   * @description Parse SDP for support stereo.
    * @param {String} sdp - Current SDP.
    * @returns {String} SDP parsed with stereo support.
    * @example SdpParser.setStereo(sdp)
    */
-  static setStereo (sdp) {
+  setStereo (sdp) {
     logger.info('Replacing SDP response for support stereo')
     sdp = sdp.replace(
       /useinbandfec=1/g,
@@ -100,15 +102,17 @@ export default class SdpParser {
     logger.info('Replaced SDP response for support stereo')
     logger.debug('New SDP value: ', sdp)
     return sdp
-  }
+  },
 
   /**
-   * Parse SDP for support dtx.
+   * @function
+   * @name setDTX
+   * @description Set DTX (Discontinuous Transmission) to the connection. Advanced configuration of the opus audio codec that allows for a large reduction in the audio traffic. For example, when a participant is silent, the audio packets won't be transmitted.
    * @param {String} sdp - Current SDP.
    * @returns {String} SDP parsed with dtx support.
    * @example SdpParser.setDTX(sdp)
    */
-  static setDTX (sdp) {
+  setDTX (sdp) {
     logger.info('Replacing SDP response for support dtx')
     sdp = sdp.replace(
       'useinbandfec=1',
@@ -117,15 +121,17 @@ export default class SdpParser {
     logger.info('Replaced SDP response for support dtx')
     logger.debug('New SDP value: ', sdp)
     return sdp
-  }
+  },
 
   /**
-   * Mangle SDP for adding absolute capture time header extension.
+   * @function
+   * @name setAbsoluteCaptureTime
+   * @description Mangle SDP for adding absolute capture time header extension.
    * @param {String} sdp - Current SDP.
-   * @returns {String} SDP mungled with abs-catpure-time header extension.
+   * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  static setAbsoluteCaptureTime (sdp) {
+  setAbsoluteCaptureTime (sdp) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
     const header = 'a=extmap:' + id + ' http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n'
 
@@ -137,15 +143,17 @@ export default class SdpParser {
     logger.debug('New SDP value: ', sdp)
 
     return sdp
-  }
+  },
 
   /**
-   * Mangle SDP for adding dependency descriptor header extension.
+   * @function
+   * @name setDependencyDescriptor
+   * @description Mangle SDP for adding dependency descriptor header extension.
    * @param {String} sdp - Current SDP.
-   * @returns {String} SDP mungled with abs-catpure-time header extension.
+   * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  static setDependencyDescriptor (sdp) {
+  setDependencyDescriptor (sdp) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
     const header = 'a=extmap:' + id + ' https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension\r\n'
 
@@ -157,16 +165,18 @@ export default class SdpParser {
     logger.debug('New SDP value: ', sdp)
 
     return sdp
-  }
+  },
 
   /**
-   * Parse SDP for desired bitrate.
+   * @function
+   * @name setVideoBitrate
+   * @description Parse SDP for desired bitrate.
    * @param {String} sdp - Current SDP.
    * @param {Number} bitrate - Bitrate value in kbps or 0 for unlimited bitrate.
    * @returns {String} SDP parsed with desired bitrate.
    * @example SdpParser.setVideoBitrate(sdp, 1000)
    */
-  static setVideoBitrate (sdp, bitrate) {
+  setVideoBitrate (sdp, bitrate) {
     if (bitrate < 1) {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
@@ -179,16 +189,18 @@ export default class SdpParser {
       sdp = offer.toString()
     }
     return sdp
-  }
+  },
 
   /**
-   * Remove SDP line.
+   * @function
+   * @name removeSdpLine
+   * @description Remove SDP line.
    * @param {String} sdp - Current SDP.
    * @param {String} sdpLine - SDP line to remove.
    * @returns {String} SDP without the line.
    * @example SdpParser.removeSdpLine(sdp, 'custom line')
    */
-  static removeSdpLine (sdp, sdpLine) {
+  removeSdpLine (sdp, sdpLine) {
     logger.debug('SDP before trimming: ', sdp)
     sdp = sdp
       .split('\n')
@@ -198,34 +210,37 @@ export default class SdpParser {
       .join('\n')
     logger.debug('SDP trimmed result: ', sdp)
     return sdp
-  }
+  },
 
   /**
-   * Replace codec name of a SDP.
+   * @function
+   * @name adaptCodecName
+   * @description Replace codec name of a SDP.
    * @param {String} sdp - Current SDP.
    * @param {String} codec - Codec name to be replaced.
    * @param {String} newCodecName - New codec name to replace.
    * @returns {String} SDP updated with new codec name.
    */
-  static adaptCodecName (sdp, codec, newCodecName) {
+  adaptCodecName (sdp, codec, newCodecName) {
     if (!sdp) {
       return sdp
     }
     const regex = new RegExp(`${codec}`, 'i')
 
     return sdp.replace(regex, newCodecName)
-  }
+  },
 
   /**
-   * Parse SDP for support multiopus.
-   *
+   * @function
+   * @name setMultiopus
+   * @description Parse SDP for support multiopus.
    * **Only available in Google Chrome.**
    * @param {String} sdp - Current SDP.
    * @param {MediaStream} mediaStream - MediaStream offered in the stream.
    * @returns {String} SDP parsed with multiopus support.
    * @example SdpParser.setMultiopus(sdp, mediaStream)
    */
-  static setMultiopus (sdp, mediaStream) {
+  setMultiopus (sdp, mediaStream) {
     const browserData = new UserAgent()
     if (!browserData.isFirefox() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
       if (!sdp.includes('multiopus/48000/6')) {
@@ -249,15 +264,16 @@ export default class SdpParser {
       }
     }
     return sdp
-  }
+  },
 
   /**
-   * Gets all available payload type IDs of the current Session Description.
-   *
+   * @function
+   * @name getAvailablePayloadTypeRange
+   * @description Gets all available payload type IDs of the current Session Description.
    * @param {String} sdp - Current SDP.
    * @returns {Array<Number>} All available payload type ids.
    */
-  static getAvailablePayloadTypeRange (sdp) {
+  getAvailablePayloadTypeRange (sdp) {
     const regex = /m=(?:.*) (?:.*) UDP\/TLS\/RTP\/SAVPF (.*)\r\n/gm
 
     const matches = sdp.matchAll(regex)
@@ -269,15 +285,16 @@ export default class SdpParser {
     }
 
     return ptAvailable
-  }
+  },
 
   /**
-   * Gets all available header extension IDs of the current Session Description.
-   *
+   * @function
+   * @name getAvailableHeaderExtensionIdRange
+   * @description Gets all available header extension IDs of the current Session Description.
    * @param {String} sdp - Current SDP.
    * @returns {Array<Number>} All available header extension IDs.
    */
-  static getAvailableHeaderExtensionIdRange (sdp) {
+  getAvailableHeaderExtensionIdRange (sdp) {
     const regex = /a=extmap:(\d+)(?:.*)\r\n/gm
 
     const matches = sdp.matchAll(regex)
@@ -289,16 +306,17 @@ export default class SdpParser {
     }
 
     return idAvailable
-  }
+  },
 
   /**
-   * Renegotiate remote sdp based on previous description.
+   * @function
+   * @name renegotiate
+   * @description Renegotiate remote sdp based on previous description.
    * This function will fill missing m-lines cloning on the remote description by cloning the codec and extensions already negotiated for that media
-   *
    * @param {String} localDescription - Updated local sdp
    * @param {String} remoteDescription - Previous remote sdp
    */
-  static renegotiate (localDescription, remoteDescription) {
+  renegotiate (localDescription, remoteDescription) {
     const offer = SDPInfo.parse(localDescription)
     const answer = SDPInfo.parse(remoteDescription)
 
@@ -330,15 +348,17 @@ export default class SdpParser {
     }
 
     return answer.toString()
-  }
+  },
 
   /**
-   * Adds missing extensions of each video section in the localDescription
+   * @function
+   * @name updateMissingVideoExtensions
+   * @description Adds missing extensions of each video section in the localDescription
    * @param {String} localDescription - Previous local sdp
    * @param {String} remoteDescription - Remote sdp
    * @returns {String} SDP updated with missing extensions.
    */
-  static updateMissingVideoExtensions (localDescription, remoteDescription) {
+  updateMissingVideoExtensions (localDescription, remoteDescription) {
     const offer = SDPInfo.parse(localDescription)
     const answer = SDPInfo.parse(remoteDescription)
     // Get extensions of answer
@@ -362,11 +382,9 @@ export default class SdpParser {
   }
 }
 
-/**
- * Checks if mediaStream has more than 2 audio channels.
- * @param {MediaStream} mediaStream - MediaStream to verify.
- * @returns {Boolean} returns true if MediaStream has more than 2 channels.
- */
+// Checks if mediaStream has more than 2 audio channels.
 const hasAudioMultichannel = (mediaStream) => {
   return mediaStream.getAudioTracks().some(value => value.getSettings().channelCount > 2)
 }
+
+export default SdpParser
