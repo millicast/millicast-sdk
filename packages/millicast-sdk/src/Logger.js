@@ -1,4 +1,5 @@
 import jsLogger from 'js-logger'
+import { version } from '../package.json'
 
 /**
  * @module Logger
@@ -231,7 +232,8 @@ const Logger = {
    *
    * Logger.setHandler(myHandler, Logger.INFO)
    */
-  setHandler: (handler, level) => { customHandlers.push({ handler, level }) }
+  setHandler: (handler, level) => { customHandlers.push({ handler, level }) },
+  VERSION: version
 }
 
 export default Logger
