@@ -48,23 +48,23 @@ export default class Publish extends BaseWebRTC {
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
    * @param {String} options.sourceId - Source unique id. Only avialable if stream is multisource.
-   * @param {Boolean} options.stereo - True to modify SDP for support stereo. Otherwise False.
-   * @param {Boolean} options.dtx - True to modify SDP for supporting dtx in opus. Otherwise False.
-   * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   * @param {Boolean} options.dependencyDescriptor - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
+   * @param {Boolean} [options.stereo = false] - True to modify SDP for support stereo. Otherwise False.
+   * @param {Boolean} [options.dtx = false] - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * @param {Boolean} [options.absCaptureTime = false] - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+   * @param {Boolean} [options.dependencyDescriptor = false] - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
-   * @param {VideoCodec} options.codec - Codec for publish stream.
-   * @param {Boolean} options.simulcast - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
-   * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
+   * @param {VideoCodec} [options.codec = 'h264'] - Codec for publish stream.
+   * @param {Boolean} [options.simulcast = false] - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
+   * @param {String} [options.scalabilityMode = null] - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
-   * @param {RTCConfiguration} options.peerConfig - Options to configure the new RTCPeerConnection.
-   * @param {Boolean} [options.record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-   * @param {Array<String>} [options.events] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
-   * @param {Number} [options.priority] - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
+   * @param {RTCConfiguration} [options.peerConfig = null] - Options to configure the new RTCPeerConnection.
+   * @param {Boolean} [options.record = false ] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+   * @param {Array<String>} [options.events = null] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
+   * @param {Number} [options.priority = null] - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    * @fires PeerConnection#connectionStateChange
    * @fires Signaling#broadcastEvent
@@ -73,7 +73,7 @@ export default class Publish extends BaseWebRTC {
    * import Publish from '@millicast/sdk'
    *
    * //Define callback for generate new token
-   * const tokenGenerator = () => getYourPublisherInformation(token, streamName)
+   * const tokenGenerator = () => getYourPublisherConnection(token, streamName)
    *
    * //Create a new instance
    * const streamName = "My Millicast Stream Name"

@@ -4,7 +4,6 @@ import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
-import UserAgent from './utils/UserAgent'
 
 const logger = Logger.get('View')
 
@@ -146,6 +145,7 @@ export default class View extends BaseWebRTC {
    * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
    * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
    * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
+   * @param {Boolean} [mapping.promote]                - To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true.
    */
   async project (sourceId, mapping) {
     for (const map of mapping) {
@@ -193,11 +193,6 @@ export default class View extends BaseWebRTC {
       subscriberData = await this.tokenGenerator()
       //  Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
-      // Only for Safari when iCloud Private Relay is enabled, this policy is needed
-      const browserData = new UserAgent()
-      if (browserData.isSafari()) {
-        this.options.peerConfig.iceTransportPolicy = 'relay'
-      }
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {

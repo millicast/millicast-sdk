@@ -160,22 +160,17 @@ export default class PeerConnection extends EventEmitter {
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack (media, streams) {
-    const transceiver = await (new Promise((resolve, reject) => {
-      try {
-        const transceiver = this.peer.addTransceiver(media, {
-          direction: 'recvonly'
-        })
-
-        transceiver.resolve = resolve
-        transceiver.streams = streams
-      } catch (e) {
-        reject(e)
-      }
-    }))
-    for (const stream of streams) {
-      stream.addTrack(transceiver.receiver.track)
+    try {
+      let transceiver = this.peer.addTransceiver(media, {
+        direction: 'recvonly',
+        streams
+      })
+      transceiver = await getTransceiverWithMid(transceiver, streams)
+      return transceiver
+    } catch (e) {
+      logger.error('Error while adding the remote track: ', e)
+      throw e
     }
-    return transceiver
   }
 
   /**
@@ -408,13 +403,6 @@ const addPeerEvents = (instanceClass, peer) => {
     logger.info('New track from peer.')
     logger.debug('Track event value: ', event)
 
-    // Listen for remote tracks events for resolving pending addRemoteTrack calls.
-    if (event?.transceiver?.resolve) {
-      const resolve = event.transceiver.resolve
-      delete (event.transceiver.resolve)
-      resolve(event.transceiver)
-    }
-
     /**
      * New track event.
      *
@@ -511,6 +499,26 @@ const addReceiveTransceivers = (peer, options) => {
       direction: 'recvonly'
     })
   }
+}
+
+const getTransceiverWithMid = async (transceiver, streams, retries = 0) => {
+  return new Promise((resolve, reject) => {
+    if (transceiver.mid) {
+      for (const stream of streams) {
+        stream.addTrack(transceiver.receiver.track)
+      }
+      resolve(transceiver)
+    } else if (retries >= 10) {
+      reject(new Error('Error, maximum number of retries has been reached'))
+    } else {
+      retries++
+      setTimeout(() => {
+        getTransceiverWithMid(transceiver, streams, retries)
+          .then(resolve)
+          .catch(reject)
+      }, 50)
+    }
+  })
 }
 
 const getConnectionState = (peer) => {

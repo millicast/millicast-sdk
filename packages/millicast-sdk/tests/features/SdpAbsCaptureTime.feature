@@ -1,4 +1,4 @@
-Feature: As a user I want to mungle my SDP for adding the absolute catpure time header extension so I can offer what I need to my peer
+Feature: As a user I want to mungle my SDP for adding the absolute capture time header extension so I can offer what I need to my peer
 
   Scenario: Set abs-capture-time
     Given a local sdp without the header extension

@@ -13,7 +13,17 @@ export const defaultApiEndpoint = config.MILLICAST_DIRECTOR_ENDPOINT
 let apiEndpoint = defaultApiEndpoint
 
 /**
+ * @module Director
+ * @description Simplify API calls to find the best server and region to publish and subscribe to.
+ * For security reasons all calls will return a [JWT](https://jwt.io) token for authentication including the required
+ * socket path to connect with.
+ *
+ * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
+ */
+
+/**
  * @typedef {Object} MillicastDirectorResponse
+ * @global
  * @property {Array<String>} urls - WebSocket available URLs.
  * @property {String} jwt - Access token for signaling initialization.
  * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
@@ -21,6 +31,7 @@ let apiEndpoint = defaultApiEndpoint
 
 /**
  * @typedef {Object} DirectorPublisherOptions
+ * @global
  * @property {String} token - Millicast Publishing Token.
  * @property {String} streamName - Millicast Stream Name.
  * @property {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
@@ -28,65 +39,62 @@ let apiEndpoint = defaultApiEndpoint
 
 /**
  * @typedef {Object} DirectorSubscriberOptions
+ * @global
  * @property {String} streamName - Millicast publisher Stream Name.
  * @property {String} streamAccountId - Millicast Account ID.
  * @property {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
  */
 
-/**
- * Simplify API calls to find the best server and region to publish and subscribe to.
- * For security reasons all calls will return a [JWT](https://jwt.io) token for authentication including the required
- * socket path to connect with.
- *
- * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
- * @namespace
- */
-
-export default class Director {
+const Director = {
   /**
-   * Set Director API endpoint where requests will be sent.
-   *
+   * @function
+   * @name setEndpoint
+   * @description Set Director API endpoint where requests will be sent.
    * @param {String} url - New Director API endpoint
+   * @returns {void}
    */
-  static setEndpoint (url) {
+  setEndpoint: (url) => {
     apiEndpoint = url.replace(/\/$/, '')
-  }
+  },
 
   /**
-   * Get current Director API endpoint where requests will be sent.
-   *
-   * By default, https://director.millicast.com is the current API endpoint.
+   * @function
+   * @name getEndpoint
+   * @description Get current Director API endpoint where requests will be sent. Default endpoint is 'https://director.millicast.com'.
    * @returns {String} API base url
    */
-  static getEndpoint () {
+  getEndpoint: () => {
     return apiEndpoint
-  }
+  },
 
   /**
-   * Set Websocket Live domain from Director API response.
+   * @function
+   * @name setLiveDomain
+   * @description Set Websocket Live domain from Director API response.
    * If it is set to empty, it will not parse the response.
-   *
    * @param {String} domain - New Websocket Live domain
+   * @returns {void}
   */
-  static setLiveDomain (domain) {
+  setLiveDomain: (domain) => {
     liveWebsocketDomain = domain.replace(/\/$/, '')
-  }
+  },
 
   /**
-   * Get current Websocket Live domain.
-   *
+   * @function
+   * @name getLiveDomain
+   * @description Get current Websocket Live domain.
    * By default is empty which corresponds to not parse the Director response.
    * @returns {String} Websocket Live domain
   */
-  static getLiveDomain () {
+  getLiveDomain: () => {
     return liveWebsocketDomain
-  }
+  },
 
   /**
-   * Get publisher connection data.
-   * @param {DirectorPublisherOptions | String} options - Millicast options or *Deprecated Millicast Publishing Token.*
-   * @param {String} [streamName] - *Deprecated, use options parameter instead* Millicast Stream Name.
-   * @param {("WebRtc" | "Rtmp")} [streamType] - *Deprecated, use options parameter instead* Millicast Stream Type.
+   * @function
+   * @name getPublisher
+   * @description Get publisher connection data.
+   * @param {DirectorPublisherOptions} options - Millicast options.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
    * @example const response = await Director.getPublisher(options)
    * @example
@@ -111,13 +119,12 @@ export default class Director {
    * //Start broadcast
    * await millicastPublish.connect(broadcastOptions)
    */
-
-  static async getPublisher (options, streamName = null, streamType = streamTypes.WEBRTC) {
+  getPublisher: async (options, streamName = null, streamType = streamTypes.WEBRTC) => {
     const optionsParsed = getPublisherOptions(options, streamName, streamType)
     logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
     const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
-    const url = `${this.getEndpoint()}/api/director/publish`
+    const url = `${Director.getEndpoint()}/api/director/publish`
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       let data = await response.json()
@@ -132,13 +139,13 @@ export default class Director {
       logger.error('Error while getting publisher connection path. ', e)
       throw e
     }
-  }
+  },
 
   /**
-   * Get subscriber connection data.
-   * @param {DirectorSubscriberOptions | String} options - Millicast options or *Deprecated Millicast publisher Stream Name.*
-   * @param {String} [streamAccountId] - *Deprecated, use options parameter instead* Millicast Account ID.
-   * @param {String} [subscriberToken] - *Deprecated, use options parameter instead* Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
+   * @function
+   * @name getSubscriber
+   * @description Get subscriber connection data.
+   * @param {DirectorSubscriberOptions} options - Millicast options.
    * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
    * @example const response = await Director.getSubscriber(options)
    * @example
@@ -167,7 +174,7 @@ export default class Director {
    * await millicastView.connect(options)
    */
 
-  static async getSubscriber (options, streamAccountId = null, subscriberToken = null) {
+  getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
@@ -176,7 +183,7 @@ export default class Director {
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
-    const url = `${this.getEndpoint()}/api/director/subscribe`
+    const url = `${Director.getEndpoint()}/api/director/subscribe`
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       let data = await response.json()
@@ -232,3 +239,5 @@ const parseIncomingDirectorResponse = (directorResponse) => {
   }
   return directorResponse
 }
+
+export default Director
