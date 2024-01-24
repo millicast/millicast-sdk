@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
+import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
 
 const logger = Logger.get('Signaling')
@@ -11,36 +12,6 @@ export const signalingEvents = {
   connectionError: 'wsConnectionError',
   connectionClose: 'wsConnectionClose',
   broadcastEvent: 'broadcastEvent'
-}
-
-/**
- * Enum of Millicast supported Video codecs
- * @readonly
- * @enum {String}
- * @property {String} VP8
- * @property {String} VP9
- * @property {String} H264
- * @property {String} AV1
- * @property {String} H265 - Only available in Safari
- */
-export const VideoCodec = {
-  VP8: 'vp8',
-  VP9: 'vp9',
-  H264: 'h264',
-  AV1: 'av1',
-  H265: 'h265'
-}
-
-/**
- * Enum of Millicast supported Audio codecs
- * @readonly
- * @enum {String}
- * @property {String} OPUS
- * @property {String} MULTIOPUS
- */
-export const AudioCodec = {
-  OPUS: 'opus',
-  MULTIOPUS: 'multiopus'
 }
 
 /**
@@ -209,9 +180,7 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Subscriber role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {SignalingSubscribeOptions | Boolean} options - Signaling Subscribe Options or *Deprecated Enable VAD multiplexing for secondary sources.*
-   * @param {String} pinnedSourceId - *Deprecated, use options parameter instead* Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} excludedSourceIds - *Deprecated, use options parameter instead* Do not receive media from the these source ids.
+   * @param {SignalingSubscribeOptions} options - Signaling Subscribe Options.
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
@@ -253,9 +222,7 @@ export default class Signaling extends EventEmitter {
   /**
    * Establish WebRTC connection with Millicast Server as Publisher role.
    * @param {String} sdp - The SDP information created by your offer.
-   * @param {SignalingPublishOptions | VideoCodec} options - Signaling Publish Options or *Deprecated Codec for publish stream (h264 default).*
-   * @param {Boolean} [record] - *Deprecated, use options parameter instead* Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-   * @param {String} [sourceId] - *Deprecated, use options parameter instead* Source unique id. **Only available in Tokens with multisource enabled.***
+   * @param {SignalingPublishOptions} options - Signaling Publish Options.
    * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
