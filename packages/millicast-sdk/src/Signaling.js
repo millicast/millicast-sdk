@@ -289,6 +289,18 @@ export default class Signaling extends EventEmitter {
       sourceId: optionsParsed.sourceId
     }
 
+    if (optionsParsed.priority) {
+      if (
+        Number.isInteger(optionsParsed.priority) &&
+        optionsParsed.priority >= -2147483648 &&
+        optionsParsed.priority <= 2147483647
+      ) {
+        data.priority = optionsParsed.priority
+      } else {
+        throw new Error('Invalid value for priority option. It should be a decimal integer between the range [-2^31, +2^31 - 1]')
+      }
+    }
+
     if (optionsParsed.record !== null) {
       data.record = optionsParsed.record
     }
