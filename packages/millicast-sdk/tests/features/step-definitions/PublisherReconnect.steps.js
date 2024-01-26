@@ -1,12 +1,13 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { webRTCEvents } from '../../../src/PeerConnection'
-import Signaling, { signalingEvents } from '../../../src/Signaling'
+import { signalingEvents } from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../PublisherReconnection.feature', { loadRelativePath: true, errors: true })
 let Publish
+let setTimeout
 
 jest.useFakeTimers()
 
@@ -19,13 +20,30 @@ const mockTokenGenerator = jest.fn(() => {
   }
 })
 
+jest.mock('../../../src/Signaling', () => {
+  const originalSignaling = jest.requireActual('../../../src/Signaling')
+
+  return {
+    __esModule: true,
+    ...originalSignaling,
+    default: class MockedSignaling extends originalSignaling.default {
+      async connect () {
+        return Promise.resolve()
+      }
+
+      async publish () {
+        return Promise.resolve('SDP')
+      }
+    }
+  }
+})
+
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(Signaling.prototype, 'connect').mockImplementation(jest.fn)
-  jest.spyOn(Signaling.prototype, 'publish').mockResolvedValue('SDP')
+  setTimeout = jest.spyOn(window, 'setTimeout')
   jest.isolateModules(() => {
     Publish = require('../../../src/Publish').default
   })
