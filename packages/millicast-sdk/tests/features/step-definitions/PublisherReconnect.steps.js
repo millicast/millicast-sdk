@@ -225,6 +225,7 @@ defineFeature(feature, test => {
 
     when('reconnection is called and peer is inactive', () => {
       jest.spyOn(publisher, 'isActive').mockImplementation(() => { return false })
+      jest.spyOn(publisher, 'connect').mockImplementation(jest.fn)
       publisher.reconnect()
     })
 
