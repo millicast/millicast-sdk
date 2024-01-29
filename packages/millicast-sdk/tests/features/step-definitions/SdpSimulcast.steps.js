@@ -4,8 +4,8 @@ import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../SdpSimulcast.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
-  afterEach(() => {
-    changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
+  beforeEach(() => {
+    changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
   })
 
   test('Set simulcast in Chrome and h264 codec', ({ given, when, then }) => {
@@ -23,7 +23,7 @@ defineFeature(feature, test => {
     })
 
     then('returns the sdp with simulcast updated', async () => {
-      expect(localSdp).not.toBe(simulcastSdp)
+      expect(Object.is(localSdp, simulcastSdp)).toBe(false)
     })
   })
 
@@ -43,7 +43,7 @@ defineFeature(feature, test => {
     })
 
     then('returns the sdp without simulcast', async () => {
-      expect(localSdp).toBe(simulcastSdp)
+      expect(Object.is(localSdp, simulcastSdp)).toBe(true)
     })
   })
 
@@ -62,7 +62,7 @@ defineFeature(feature, test => {
     })
 
     then('returns the sdp without simulcast', async () => {
-      expect(localSdp).toBe(simulcastSdp)
+      expect(Object.is(localSdp, simulcastSdp)).toBe(true)
     })
   })
 
