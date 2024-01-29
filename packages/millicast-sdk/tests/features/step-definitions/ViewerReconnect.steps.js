@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { webRTCEvents } from '../../../src/PeerConnection'
-import { signalingEvents } from '../../../src/Signaling'
+import Signaling, { signalingEvents } from '../../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 
@@ -19,27 +19,11 @@ const mockTokenGenerator = jest.fn(() => {
   }
 })
 
-jest.mock('../../../src/Signaling', () => {
-  const originalSignaling = jest.requireActual('../../../src/Signaling')
-
-  return {
-    __esModule: true,
-    ...originalSignaling,
-    default: class MockedSignaling extends originalSignaling.default {
-      async connect () {
-        return Promise.resolve()
-      }
-
-      async subscribe () {
-        return Promise.resolve('SDP')
-      }
-    }
-  }
-})
-
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
+  jest.spyOn(Signaling.prototype, 'connect').mockResolvedValue()
+  jest.spyOn(Signaling.prototype, 'subscribe').mockResolvedValue('SDP')
   setTimeout = jest.spyOn(window, 'setTimeout')
   jest.isolateModules(() => {
     View = require('../../../src/View').default
