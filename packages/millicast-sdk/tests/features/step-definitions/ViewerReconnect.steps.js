@@ -22,7 +22,7 @@ const mockTokenGenerator = jest.fn(() => {
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(Signaling.prototype, 'connect').mockResolvedValue()
+  jest.spyOn(Signaling.prototype, 'connect').mockImplementation(jest.fn)
   jest.spyOn(Signaling.prototype, 'subscribe').mockResolvedValue('SDP')
   setTimeout = jest.spyOn(window, 'setTimeout')
   jest.isolateModules(() => {

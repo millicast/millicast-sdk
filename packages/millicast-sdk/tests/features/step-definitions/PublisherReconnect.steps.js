@@ -25,7 +25,7 @@ const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 beforeEach(() => {
   jest.restoreAllMocks()
   jest.clearAllTimers()
-  jest.spyOn(Signaling.prototype, 'connect').mockResolvedValue()
+  jest.spyOn(Signaling.prototype, 'connect').mockImplementation(jest.fn)
   jest.spyOn(Signaling.prototype, 'publish').mockResolvedValue('SDP')
   setTimeout = jest.spyOn(window, 'setTimeout')
   jest.isolateModules(() => {
