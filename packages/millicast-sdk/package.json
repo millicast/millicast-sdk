@@ -19,9 +19,9 @@
     "start": "rollup -c -w",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
-    "test-unit": "jest --testMatch '**/features/step-definitions/*.steps.js'",
-    "test-unit-coverage": "jest --testMatch '**/features/step-definitions/*.steps.js' --coverage",
-    "test-e2e": "npm run build && jest --testMatch '**/functional/*.steps.js' --setupFiles './tests/test-env.js' --verbose",
+    "test-unit": "jest --testMatch '**/unit/step-definitions/*.steps.js'",
+    "test-unit-coverage": "jest --testMatch '**/unit/step-definitions/*.steps.js' --coverage",
+    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --setupFiles './tests/test-env.js' --verbose",
     "test-all": "npm run build && jest --testMatch '**/*.steps.js' --setupFiles './tests/test-env.js'",
     "test": "npm run test-unit"
   },
