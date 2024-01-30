@@ -22,7 +22,7 @@ jobs:
       
       - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 16
       
       - name: Restore lerna
         uses: actions/cache@v2
@@ -46,7 +46,7 @@ jobs:
       
       - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Restore lerna
         uses: actions/cache@v3
