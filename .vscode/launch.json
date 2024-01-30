@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Jest: current file",
+      "program": "${workspaceFolder}/packages/millicast-sdk/node_modules/.bin/jest",
+      "args": ["${fileBasenameNoExtension}", "--config", "./packages/millicast-sdk/jest.config.js"],
+      "console": "integratedTerminal",
+      "windows": {
+        "program": "${workspaceFolder}/packages/millicast-sdk/node_modules/jest/bin/jest"
+      }
+    }
+  ]
+}
