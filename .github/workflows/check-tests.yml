@@ -68,6 +68,5 @@ jobs:
 
       - name: Test End-2-End
         uses: "./.github/actions/puppeteer-container"
-        working-directory: './packages/millicast-sdk'
         with:
           args: npm run test-e2e
