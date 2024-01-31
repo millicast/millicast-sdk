@@ -67,6 +67,6 @@ jobs:
           npm test
 
       - name: Test End-2-End
-        uses: ianwalter/puppeteer-container@v4.0.0
+        uses: "./.github/actions/puppeteer-container"
         with:
           args: npm run test-e2e
