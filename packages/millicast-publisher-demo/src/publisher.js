@@ -142,7 +142,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
       });
-      let priority = parseInt(params.priority) || 0;
+      let priority = parseInt(params.priority);
+      priority = isNaN(priority) ? undefined : priority;
       await millicastPublishUserMedia.connect({ bandwidth, events: events, priority })
       isBroadcasting = true;
       broadcastHandler();
