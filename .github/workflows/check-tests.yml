@@ -66,6 +66,9 @@ jobs:
           npm install
           npm test
 
+      - name: Install node modules
+        run: npm ci
+
       - name: Test End-2-End
         uses: "./.github/actions/puppeteer-container"
         with:
