@@ -69,9 +69,8 @@ jobs:
       - name: Install node modules
         run: |
           npm ci
-          rm -rf ./packages/millicast-sdk/node_modules
 
       - name: Test End-2-End
         uses: "./.github/actions/puppeteer-container"
         with:
-          args: npm ci && npm run test-e2e
+          args: npm run test-e2e
