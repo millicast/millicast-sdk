@@ -143,6 +143,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         get: (searchParams, prop) => searchParams.get(prop),
       });
       let priority = parseInt(params.priority);
+      priority = isNaN(priority) ? undefined : priority;
       await millicastPublishUserMedia.connect({ bandwidth, events: events, priority })
       isBroadcasting = true;
       broadcastHandler();
