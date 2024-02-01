@@ -7,7 +7,6 @@ jobs:
   setup-and-install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
       - name: Setup Node.js and Cache
         uses: actions/setup-node@v4
         with:
