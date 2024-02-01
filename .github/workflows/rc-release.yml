@@ -19,7 +19,7 @@ jobs:
       - name: build docs
         run: npm run build-docs
       - name: deploy docs
-        run: netlify-cli deploy --prod --site ${{ secrets.NETLIFY_DOC_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./packages/millicast-sdk/docs
+        run: npx netlify deploy --prod --site ${{ secrets.NETLIFY_DOC_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./packages/millicast-sdk/docs
 
   # TODO: deploy example apps
 
