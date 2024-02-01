@@ -70,8 +70,8 @@ jobs:
         uses: "./.github/actions/puppeteer-container"
         with:
           args: |
-            npm ci
-            cd ./packages/millicast-sdk
-            rm -rf node_modules
-            npm ci
+            npm ci &&
+            cd ./packages/millicast-sdk &&
+            rm -rf node_modules &&
+            npm ci &&
             npm run test-e2e
