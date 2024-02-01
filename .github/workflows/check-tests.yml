@@ -59,16 +59,14 @@ jobs:
       - name: Prepare Tests
         working-directory: './packages/millicast-sdk'
         run: echo -n ${{secrets.MILLICAST_TEST_ACCOUNT}} | base64 -d > ./tests/test-env.js
-
-      - name: Test 🧪
-        working-directory: './packages/millicast-sdk'
-        run: |
-          npm install
-          npm test
           
       - name: Install node modules
         run: |
-          npm ci
+          yarn
+
+      - name: Test 🧪
+        working-directory: './packages/millicast-sdk'
+        run: npm test
 
       - name: Test End-2-End
         uses: "./.github/actions/puppeteer-container"
