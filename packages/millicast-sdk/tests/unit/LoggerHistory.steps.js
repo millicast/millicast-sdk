@@ -3,11 +3,11 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 let Logger
 beforeEach(() => {
   jest.isolateModules(() => {
-    Logger = require('../../../src/Logger').default
+    Logger = require('../../src/Logger').default
   })
 })
 
-const feature = loadFeature('../LoggerHistory.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/LoggerHistory.feature', { loadRelativePath: true, errors: true })
 
 const arrayGenerator = l => Array.from(Array(l).keys())
 const matcher = (i, message = 'This is a log message number') => expect.stringMatching(`${message} ${i}`)

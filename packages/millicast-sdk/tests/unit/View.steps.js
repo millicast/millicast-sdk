@@ -1,12 +1,12 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import View from '../../../src/View'
-import Signaling from '../../../src/Signaling'
+import View from '../../src/View'
+import Signaling from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../View.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/View.feature', { loadRelativePath: true, errors: true })
 
-jest.mock('../../../src/Signaling')
+jest.mock('../../src/Signaling')
 
 const mockTokenGenerator = jest.fn(() => {
   return {

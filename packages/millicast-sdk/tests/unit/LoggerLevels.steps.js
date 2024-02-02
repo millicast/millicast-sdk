@@ -3,11 +3,11 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 let Logger
 beforeEach(() => {
   jest.isolateModules(() => {
-    Logger = require('../../../src/Logger').default
+    Logger = require('../../src/Logger').default
   })
 })
 
-const feature = loadFeature('../LoggerLevels.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/LoggerLevels.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
   test('Set global level to INFO', ({ given, when, then }) => {

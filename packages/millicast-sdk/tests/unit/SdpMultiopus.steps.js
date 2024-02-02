@@ -1,8 +1,8 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import SdpParser from '../../../src/utils/SdpParser'
+import SdpParser from '../../src/utils/SdpParser'
 import './__mocks__/MockMediaStream'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
-const feature = loadFeature('../SdpMultiopus.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/SdpMultiopus.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
   afterEach(() => {

@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import Logger from '../../../src/Logger'
-const feature = loadFeature('../LoggerHandlers.feature', { loadRelativePath: true, errors: true })
+import Logger from '../../src/Logger'
+const feature = loadFeature('../features/LoggerHandlers.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
   test('Gets messages from same level', ({ given, when, then }) => {

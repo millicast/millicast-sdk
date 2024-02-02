@@ -1,15 +1,15 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import Publish from '../../../src/Publish'
-import PeerConnectionStats, { peerConnectionStatsEvents } from '../../../src/PeerConnectionStats'
-import '../../../src/Signaling'
+import Publish from '../../src/Publish'
+import PeerConnectionStats, { peerConnectionStatsEvents } from '../../src/PeerConnectionStats'
+import '../../src/Signaling'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../PeerStats.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/PeerStats.feature', { loadRelativePath: true, errors: true })
 
 jest.useFakeTimers()
-jest.mock('../../../src/Signaling')
+jest.mock('../../src/Signaling')
 
 const mockTokenGenerator = jest.fn(() => {
   return {

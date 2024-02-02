@@ -1,15 +1,15 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import Publish from '../../../src/Publish'
-import PeerConnection from '../../../src/PeerConnection'
-import Signaling from '../../../src/Signaling'
-import { VideoCodec } from '../../../src/utils/Codecs'
+import Publish from '../../src/Publish'
+import PeerConnection from '../../src/PeerConnection'
+import Signaling from '../../src/Signaling'
+import { VideoCodec } from '../../src/utils/Codecs'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../Publish.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/Publish.feature', { loadRelativePath: true, errors: true })
 
-jest.mock('../../../src/Signaling')
+jest.mock('../../src/Signaling')
 
 const mockTokenGenerator = jest.fn(() => {
   return {

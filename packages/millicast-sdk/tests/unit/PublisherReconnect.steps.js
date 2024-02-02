@@ -1,11 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { webRTCEvents } from '../../../src/PeerConnection'
-import { signalingEvents } from '../../../src/Signaling'
+import { webRTCEvents } from '../../src/PeerConnection'
+import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../PublisherReconnection.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/PublisherReconnection.feature', { loadRelativePath: true, errors: true })
 let Publish
 let setTimeout
 
@@ -22,8 +22,8 @@ const mockTokenGenerator = jest.fn(() => {
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
-jest.mock('../../../src/Signaling', () => {
-  const originalSignaling = jest.requireActual('../../../src/Signaling')
+jest.mock('../../src/Signaling', () => {
+  const originalSignaling = jest.requireActual('../../src/Signaling')
 
   return {
     __esModule: true,
@@ -40,7 +40,7 @@ beforeEach(() => {
   jest.clearAllTimers()
   setTimeout = jest.spyOn(window, 'setTimeout')
   jest.isolateModules(() => {
-    Publish = require('../../../src/Publish').default
+    Publish = require('../../src/Publish').default
   })
 })
 

@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { mockFetchJsonReturnValue, mockFetchRejectValue } from './__mocks__/Fetch'
-import Director from '../../../src/Director'
-const feature = loadFeature('../GetPublisherConnectionPath.feature', { loadRelativePath: true, errors: true })
+import Director from '../../src/Director'
+const feature = loadFeature('../features/GetPublisherConnectionPath.feature', { loadRelativePath: true, errors: true })
 
 const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
 
