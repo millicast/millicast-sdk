@@ -13,8 +13,7 @@
     ]
   },
   "scripts": {
-    "prepare": "lerna bootstrap --ci",
-    "build": "lerna run build",
+    "build": "lerna run build --ignore millicast-webaudio-delay-demo",
     "start": "lerna run start --parallel",
     "test": "lerna run test --stream",
     "build-docs": "lerna run build-docs",
