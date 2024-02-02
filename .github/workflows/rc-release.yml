@@ -40,7 +40,7 @@ jobs:
           key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
 
   deploy-multiview-demo:
-    name: Build and cache demo apps
+    name: Build and Deploy Multiview Demo
     runs-on: ubuntu-latest
     needs: build-sdk
     if: ${{ github.event_name == 'push' }}
@@ -58,7 +58,7 @@ jobs:
             packages/millicast-sdk/dist
           key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
       - name: build app
-        run: npx learna run build --scope=millicast-multiview-demo
+        run: npx lerna run build --scope=millicast-multiview-demo
       - name: deploy app
         run: npx netlify deploy --prod --site ${{ secrets.NETLIFY_MULTIVIEW_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./packages/millicast-multiview-demo/dist
 
