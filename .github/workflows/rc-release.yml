@@ -25,6 +25,9 @@ jobs:
     name: Build and cache demo apps
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
+    env:
+        MILLICAST_ACCOUNT_ID: ${{ vars.MULTIVIEW_DEMO_ACC_ID }}
+        MILLICAST_STREAM_NAME: ${{ vars.MULTIVIEW_DEMO_STREAM_NAME }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup and Install
