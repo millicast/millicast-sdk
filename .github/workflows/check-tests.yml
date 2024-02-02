@@ -66,5 +66,4 @@ jobs:
 
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
-        with:
-          args: npm run test-e2e
+        run: npm run test-e2e
