@@ -22,7 +22,7 @@ jobs:
       
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       
       - name: Restore lerna
         uses: actions/cache@v2
@@ -46,7 +46,7 @@ jobs:
       
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Restore lerna
         uses: actions/cache@v3
@@ -58,7 +58,9 @@ jobs:
 
       - name: Prepare Tests
         working-directory: './packages/millicast-sdk'
-        run: echo -n ${{secrets.MILLICAST_TEST_ACCOUNT}} | base64 -d > ./tests/test-env.js
+        run: |
+          echo -n ${{secrets.MILLICAST_TEST_ACCOUNT}} | base64 -d > ./tests/test-env.js
+          npm ci
 
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
