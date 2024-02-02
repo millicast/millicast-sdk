@@ -57,10 +57,14 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
+            packages/millicast-chromecast-receiver/dist
             packages/millicast-multiview-demo/dist
+            packages/millicast-publisher-demo/dist
+            packages/millicast-viewer-demo/dist
+            packages/millicast-webaudio-delay-demo/dist
           key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-demo-apps-dist
       - name: deploy app
-        run: npx netlify deploy --prod --site ${{ secrets.NETLIFY_MULTIVIEW_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./packages/millicast-multiview-demo
+        run: npx netlify deploy --prod --site ${{ secrets.NETLIFY_MULTIVIEW_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./packages/millicast-multiview-demo/dist
 
   cleanup:
     name: Delete RC branch when PR is closed
