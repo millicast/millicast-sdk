@@ -58,9 +58,7 @@ jobs:
 
       - name: Prepare Tests
         working-directory: './packages/millicast-sdk'
-        run: |
-          echo -n ${{secrets.MILLICAST_TEST_ACCOUNT}} | base64 -d > ./tests/test-env.js
-          npm ci
+        run: npm ci
 
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
@@ -69,3 +67,7 @@ jobs:
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: npm run test-e2e
+        env:
+          STREAM_NAME: ${{secrets.TEST_STREAM_NAME}}
+          ACCOUNT_ID: ${{secrets.TEST_ACCOUNT_ID}}
+          PUBLISH_TOKEN: ${{secrets.TEST_PUBLISH_TOKEN}}

@@ -21,8 +21,8 @@
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "jest --testMatch '**/unit/*.steps.js'",
     "test-unit-coverage": "jest --testMatch '**/unit/*.steps.js' --coverage",
-    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --setupFiles './tests/test-env.js' --verbose",
-    "test-all": "npm run build && jest --testMatch '**/*.steps.js' --setupFiles './tests/test-env.js'",
+    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --verbose",
+    "test-all": "npm run build && jest --testMatch '**/*.steps.js'",
     "test": "npm run test-all"
   },
   "types": "dist/millicast.d.ts",
