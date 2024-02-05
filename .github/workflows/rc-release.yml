@@ -107,8 +107,10 @@ jobs:
       - name: publish
         working-directory: './packages/millicast-sdk'
         env:
-            NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-        run: npm publish --tag next
+            NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        run: |
+          npm config ls -l
+          npm publish --tag next
 
   cleanup:
     name: Delete RC branch when PR is closed
