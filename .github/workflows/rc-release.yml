@@ -108,7 +108,7 @@ jobs:
         working-directory: './packages/millicast-sdk'
         env:
             NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-        run: echo "Tag name is ${GITHUB_REF##*/}"
+        run: npm publish --tag next
 
   cleanup:
     name: Delete RC branch when PR is closed
