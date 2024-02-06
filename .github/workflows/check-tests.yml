@@ -32,9 +32,10 @@ jobs:
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       
-      - name: Check Linter 📑
+      - name: Check Linter and Build 📑
         run: |
           npm install
+          npm run build
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
   test:
@@ -60,4 +61,5 @@ jobs:
         working-directory: './packages/millicast-sdk'
         run: |
           npm install
-          npm test
+          npx puppeteer browsers install chrome
+          npm run test

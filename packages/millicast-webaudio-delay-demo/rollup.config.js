@@ -46,8 +46,7 @@ export default [
         presets: ['@babel/preset-env'],
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime'],
-        inputSourceMap: false,
-        sourceMaps: 'inline'
+        inputSourceMap: false
       }),
       terser(),
       cleanup({
