@@ -61,4 +61,5 @@ jobs:
         working-directory: './packages/millicast-sdk'
         run: |
           npm install
+          npx puppeteer browsers install chrome
           npm run test
