@@ -1,6 +1,7 @@
 import EventEmitter from 'events'
 import PeerConnection, { webRTCEvents } from '../PeerConnection'
 import { signalingEvents } from '../Signaling'
+import Diagnostics from './Diagnostics'
 let logger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
@@ -101,6 +102,7 @@ export default class BaseWebRTC extends EventEmitter {
       })
 
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+        Diagnostics.setConnectionState(state)
         if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
           this.firstReconnection = false
           this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') })

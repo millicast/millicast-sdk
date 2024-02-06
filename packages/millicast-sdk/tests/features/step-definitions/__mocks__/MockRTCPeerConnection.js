@@ -161,7 +161,7 @@ export default class MockRTCPeerConnection {
     }
   }
 
-  peerStatsValue () { return null }
+  peerStatsValue () { return rawStats }
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection
