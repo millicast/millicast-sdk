@@ -68,6 +68,5 @@ jobs:
         working-directory: './packages/millicast-sdk'
         run: npm run test-e2e
         env:
-          STREAM_NAME: ${{secrets.TEST_STREAM_NAME}}
-          ACCOUNT_ID: ${{secrets.TEST_ACCOUNT_ID}}
-          PUBLISH_TOKEN: ${{secrets.TEST_PUBLISH_TOKEN}}
+          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
+          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}

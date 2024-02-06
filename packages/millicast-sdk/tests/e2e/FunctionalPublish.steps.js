@@ -10,7 +10,7 @@ const feature = loadFeature('../features/FunctionalPublish.feature', { loadRelat
 jest.setTimeout(20000)
 const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 const publishToken = process.env.PUBLISH_TOKEN
-const streamName = process.env.STREAM_NAME
+const streamName = process.env.STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
 const accountId = process.env.ACCOUNT_ID
 const startPublisher = () => null
 const startViewer = () => null
