@@ -61,4 +61,4 @@ jobs:
         working-directory: './packages/millicast-sdk'
         run: |
           npm install
-          npm test
+          npm run test
