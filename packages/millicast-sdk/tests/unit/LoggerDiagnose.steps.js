@@ -1,16 +1,16 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import Logger from '../../../src/Logger'
-import View from '../../../src/View'
+import Logger from '../../src/Logger'
+import View from '../../src/View'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
-import Publish from '../../../src/Publish'
-import Diagnostics from '../../../src/utils/Diagnostics'
-import { version } from '../../../package.json'
+import Publish from '../../src/Publish'
+import Diagnostics from '../../src/utils/Diagnostics'
+import { version } from '../../package.json'
 
-const feature = loadFeature('../LoggerDiagnose.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/LoggerDiagnose.feature', { loadRelativePath: true, errors: true })
 
-jest.mock('../../../src/Signaling')
+jest.mock('../../src/Signaling')
 
 const expectedObject = {
   accountId: expect.any(String),
