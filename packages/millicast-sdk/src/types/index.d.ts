@@ -13,7 +13,8 @@ declare module '@millicast/sdk' {
     name: string;
   };
   /**
-   * Manages all log messages from SDK modules, you can use this logger to add your custom
+   * @module Logger
+   * @description Manages all log messages from SDK modules, you can use this logger to add your custom
    * messages and set your custom log handlers to forward all messages to your own monitoring
    * system.
    *
@@ -56,7 +57,9 @@ declare module '@millicast/sdk' {
   export class Logger {
     enabledFor: (level: any, loggerName: any) => boolean;
     /**
-     * Get all logs generated during a session.
+     * @function
+     * @name getHistory
+     * @description Get all logs generated during a session.
      * All logs are recollected besides the log level selected by the user.
      * @returns {Array<String>} All logs recollected from level TRACE.
      * @example Logger.getHistory()
@@ -69,19 +72,25 @@ declare module '@millicast/sdk' {
      */
     getHistory: () => Array<string>;
     /**
-     * Get the maximum count of logs preserved during a session.
+     * @function
+     * @name getHistoryMaxSize
+     * @description Get the maximum count of logs preserved during a session.
      * @example Logger.getHistoryMaxSize()
      */
     getHistoryMaxSize: () => number;
     /**
-     * Set the maximum count of logs to preserve during a session.
+     * @function
+     * @name setHistoryMaxSize
+     * @description Set the maximum count of logs to preserve during a session.
      * By default it is set to 10000.
      * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
      * @example Logger.setHistoryMaxSize(100)
      */
     setHistoryMaxSize: (maxSize: number) => void;
     /**
-     * Set log level to all loggers.
+     * @function
+     * @name setLevel
+     * @description Set log level to all loggers.
      * @param {LogLevel} level - New log level to be set.
      * @example
      * // Global Level
@@ -92,7 +101,9 @@ declare module '@millicast/sdk' {
      */
     setLevel: (level: LogLevel) => void;
     /**
-     * Get global current logger level.
+     * @function
+     * @name getLevel
+     * @description Get global current logger level.
      * Also you can get the level of any particular logger.
      * @returns {LogLevel}
      * @example
@@ -108,7 +119,9 @@ declare module '@millicast/sdk' {
      */
     getLevel: () => LogLevel;
     /**
-     * Gets or creates a named logger. Named loggers are used to group log messages
+     * @function
+     * @name get
+     * @description Gets or creates a named logger. Named loggers are used to group log messages
      * that refers to a common context.
      * @param {String} name
      * @returns {Object} Logger object with same properties and functions as Logger except
@@ -131,13 +144,16 @@ declare module '@millicast/sdk' {
      * Callback which handles log messages.
      *
      * @callback loggerHandler
+     * @global
      * @param {any[]} messages         - Arguments object with the supplied log messages.
      * @param {Object} context
      * @param {LogLevel} context.level - The currrent log level.
      * @param {String?} context.name   - The optional current logger name.
      */
     /**
-     * Add your custom log handler to Logger at the specified level.
+     * @function
+     * @name setHandler
+     * @description Add your custom log handler to Logger at the specified level.
      * @param {loggerHandler} handler  - Your custom log handler function.
      * @param {LogLevel} level         - Log level to filter messages.
      * @example
@@ -156,6 +172,23 @@ declare module '@millicast/sdk' {
      * Logger.setHandler(myHandler, Logger.INFO)
      */
     setHandler: (handler: (messages: any[], context: any, level: LogLevel, name: string | null) => any, level: LogLevel) => void;
+    /**
+     * @function
+     * @name diagnose
+     * @description Returns an object with diagnostics about the state of the connection and environment.
+     * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
+     * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
+     * @example
+     * // Log and get a diagnose object with the last 3 stats reports
+     * const diagnostics = await Logger.diagnose(3)
+     */
+    diagnose: (statsCount: Number) => Object;
+    /**
+     * @var
+     * @name VERSION
+     * @description Returns the current SDK version.
+     */
+    VERSION: String;
     useDefaults(options?: import("js-logger").ILoggerOpts): void;
 	  createDefaultHandler(options?: any): import("js-logger").ILogHandler;
     static get TRACE(): import("js-logger").ILogLevel;
