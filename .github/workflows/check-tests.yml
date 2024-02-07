@@ -38,7 +38,7 @@ jobs:
           npm run build
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
-  test:
+  unit-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -65,6 +65,24 @@ jobs:
         working-directory: './packages/millicast-sdk'
         run: npm run test-unit
 
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Restore lerna
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Prepare Tests
+        working-directory: './packages/millicast-sdk'
+        run: npm ci
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: npm run test-e2e
