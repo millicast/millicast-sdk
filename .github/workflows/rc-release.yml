@@ -25,7 +25,6 @@ jobs:
   build-sdk:
     name: Build WebSDK
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.pull_request.head.ref, 'RC-') }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup and Install
