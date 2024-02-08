@@ -24,6 +24,7 @@
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.1",
     "@lerna/publish": "^5.5.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.21.0",
