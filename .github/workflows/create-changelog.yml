@@ -9,15 +9,25 @@ on:
 jobs:
   create-changelog:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - name: Create and Checkout New Branch
+        run: |
+          git checkout -b release/rc
       - name: Install dependencies
         run: npm install
       - name: Run changeset version
         run: npx changeset version
-      - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: push changes
         run: |
-          gh pr create --title "Bump version and update CHANGELOG.md" --body "Changeset version updated the CHANGELOG.md file and version number" --head feature/add-changesets --base main
+          git config --local user.email "action@millicast.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Bump version and update CHANGELOG.md"
+          git push origin release/rc
+      - name: Create Pull Request
+        run: |
+          gh pr create --title "Bump version and update CHANGELOG.md" --body "Changeset version updated the CHANGELOG.md file and version number" --head "release/rc" --base "main"
