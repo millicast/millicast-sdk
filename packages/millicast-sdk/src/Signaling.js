@@ -198,7 +198,7 @@ export default class Signaling extends EventEmitter {
     if (optionsParsed.vad) { data.vad = true }
     if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
     if (optionsParsed.forcePlayoutDelay) { data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay }
-    if (optionsParsed.layers) { data.layers = optionsParsed.layers }
+    if (optionsParsed.layer) { data.layer = optionsParsed.layer }
 
     try {
       await this.connect()
