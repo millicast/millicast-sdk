@@ -9,7 +9,7 @@ on:
     branches: 
       - main
       - develop
-    
+
   workflow_dispatch:
 
 jobs:
@@ -17,50 +17,20 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v4
-      
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      
-      - name: Restore lerna
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
       - name: Check Linter and Build 📑
         run: |
-          npm install
           npm run build
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v4
-      
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Restore lerna
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Prepare Tests
-        working-directory: './packages/millicast-sdk'
-        run: npm ci
-
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
         run: npm run test-unit
@@ -68,21 +38,9 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Restore lerna
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - name: Prepare Tests
-        working-directory: './packages/millicast-sdk'
-        run: npm ci
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: npm run test-e2e
