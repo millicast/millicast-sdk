@@ -23,8 +23,6 @@ jobs:
         run: npx changeset version
       - name: push changes
         run: |
-          git config --local user.email "action@millicast.com"
-          git config --local user.name "GitHub Action"
           git add .
           git commit -m "Bump version and update CHANGELOG.md"
           git push origin release/rc
