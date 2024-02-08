@@ -9,7 +9,7 @@ on:
     branches: 
       - main
       - develop
-    
+
   workflow_dispatch:
 
 jobs:
@@ -17,47 +17,33 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-      
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      
-      - name: Restore lerna
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      
-      - name: Check Linter 📑
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
+      - name: Check Linter and Build 📑
         run: |
-          npm install
+          npm run build
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
-  test:
+  unit-test:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-      
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Restore lerna
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Test 🧪
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
+      - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
-        run: |
-          npm install
-          npm test
+        run: npm run test-unit
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
+      - name: End-2-End Testing
+        working-directory: './packages/millicast-sdk'
+        run: npm run test-e2e
+        env:
+          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
+          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
