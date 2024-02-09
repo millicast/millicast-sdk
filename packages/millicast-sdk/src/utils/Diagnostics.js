@@ -11,6 +11,7 @@ const diagnostics = {
   connection: '',
   stats: []
 }
+const tempStats = []
 
 const setAccountId = (accountId) => { diagnostics.accountId = accountId }
 
@@ -26,10 +27,10 @@ const setFeedId = (feedId) => { diagnostics.feedId = feedId }
 const setConnectionState = (connectionState) => { diagnostics.connection = connectionState }
 
 const setStats = (stats) => {
-  if (diagnostics.stats.length === MAX_STATS_HISTORY_SIZE) {
-    diagnostics.stats.shift()
+  if (tempStats.length === MAX_STATS_HISTORY_SIZE) {
+    tempStats.shift()
   }
-  diagnostics.stats.push(stats)
+  tempStats.push(stats)
 }
 
 const getDiagnostics = (statsCount = MAX_STATS_HISTORY_SIZE) => {
@@ -39,9 +40,14 @@ const getDiagnostics = (statsCount = MAX_STATS_HISTORY_SIZE) => {
   diagnostics.version = version
   diagnostics.timestamp = Date.now()
   diagnostics.userAgent = window?.navigator?.userAgent || 'No user agent available'
+  diagnostics.stats = [...tempStats]
 
-  if (diagnostics.stats.length && Number.isInteger(statsCount) && statsCount >= 0 && statsCount < MAX_STATS_HISTORY_SIZE) {
-    diagnostics.stats = diagnostics.stats.slice(-statsCount)
+  if (tempStats.length && Number.isInteger(statsCount) && statsCount >= 0 && statsCount < MAX_STATS_HISTORY_SIZE) {
+    if (statsCount === 0) {
+      diagnostics.stats = []
+    } else {
+      diagnostics.stats = tempStats.slice(-statsCount)
+    }
   }
 
   return diagnostics
