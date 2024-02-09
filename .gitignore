@@ -5,6 +5,5 @@ dist
 docs
 docs-translations
 .env
-test-env.js
 test-environment.js
 **/.DS_Store
