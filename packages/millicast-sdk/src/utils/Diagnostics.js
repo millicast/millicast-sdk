@@ -34,7 +34,7 @@ const setStats = (stats) => {
 }
 
 const getDiagnostics = (statsCount = MAX_STATS_HISTORY_SIZE) => {
-  if (statsCount > MAX_STATS_HISTORY_SIZE) {
+  if (statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
     statsCount = MAX_STATS_HISTORY_SIZE
   }
   diagnostics.version = version
@@ -48,9 +48,11 @@ const getDiagnostics = (statsCount = MAX_STATS_HISTORY_SIZE) => {
     } else {
       diagnostics.stats = tempStats.slice(-statsCount)
     }
+  } else {
+    diagnostics.stats = []
   }
 
-  return diagnostics
+  return { ...diagnostics }
 }
 
 const Diagnostics = {
