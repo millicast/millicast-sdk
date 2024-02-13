@@ -34,22 +34,17 @@ const setStats = (stats) => {
 }
 
 const getDiagnostics = (statsCount = MAX_STATS_HISTORY_SIZE) => {
-  if (statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
+  if (!Number.isInteger(statsCount) && (statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0)) {
     statsCount = MAX_STATS_HISTORY_SIZE
   }
+
   diagnostics.version = version
   diagnostics.timestamp = Date.now()
   diagnostics.userAgent = window?.navigator?.userAgent || 'No user agent available'
   diagnostics.stats = [...tempStats]
 
-  if (tempStats.length && Number.isInteger(statsCount) && statsCount >= 0 && statsCount < MAX_STATS_HISTORY_SIZE) {
-    if (statsCount === 0) {
-      diagnostics.stats = []
-    } else {
-      diagnostics.stats = tempStats.slice(-statsCount)
-    }
-  } else {
-    diagnostics.stats = []
+  if (tempStats.length) {
+    diagnostics.stats = diagnostics.stats.slice(-statsCount)
   }
 
   return { ...diagnostics }
