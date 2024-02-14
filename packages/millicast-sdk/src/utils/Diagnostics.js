@@ -7,7 +7,7 @@ let streamName = ''
 let subscriberId = ''
 let streamViewId = ''
 let feedId = ''
-let connectionState = ''
+let connection = ''
 const stats = []
 
 const Diagnostics = {
@@ -16,7 +16,7 @@ const Diagnostics = {
   setSubscriberId: (newSubscriberId) => { subscriberId = newSubscriberId },
   setStreamViewId: (newStreamViewId) => { streamViewId = newStreamViewId },
   setFeedId: (newFeedId) => { feedId = newFeedId },
-  setConnectionState: (newConnectionState) => { connectionState = newConnectionState },
+  setConnectionState: (newConnectionState) => { connection = newConnectionState },
   setStats: (statsToSave) => {
     if (stats.length === MAX_STATS_HISTORY_SIZE) {
       stats.shift()
@@ -35,7 +35,7 @@ const Diagnostics = {
       accountId,
       streamName,
       subscriberId,
-      connectionState,
+      connection,
       stats: stats.slice(-statsCount)
     }
 
