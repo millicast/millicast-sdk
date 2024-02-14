@@ -216,7 +216,8 @@ export default class Signaling extends EventEmitter {
       this.clusterId = result.clusterId
 
       // Save for diagnostics
-      Diagnostics.setStreamNameAndSubscriberId(this.streamName, this.serverId)
+      Diagnostics.setStreamName(this.streamName)
+      Diagnostics.setSubscriberId(this.serverId)
       Diagnostics.setStreamViewId(result.streamViewId)
       return result.sdp
     } catch (e) {
@@ -297,7 +298,8 @@ export default class Signaling extends EventEmitter {
       this.clusterId = result.clusterId
 
       // Save for diagnostics
-      Diagnostics.setStreamNameAndSubscriberId(this.streamName, this.serverId)
+      Diagnostics.setStreamName(this.streamName)
+      Diagnostics.setSubscriberId(this.serverId)
       Diagnostics.setFeedId(result.feedId)
       return result.sdp
     } catch (e) {
