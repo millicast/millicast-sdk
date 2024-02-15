@@ -2,29 +2,29 @@ import { version } from '../../package.json'
 
 const MAX_STATS_HISTORY_SIZE = 5
 const userAgent = window?.navigator?.userAgent || 'No user agent available'
-let accountId = ''
-let streamName = ''
-let subscriberId = ''
-let streamViewId = ''
-let feedId = ''
-let connection = ''
-const stats = []
+let _accountId = ''
+let _streamName = ''
+let _subscriberId = ''
+let _streamViewId = ''
+let _feedId = ''
+let _connection = ''
+const _stats = []
 
 const Diagnostics = {
-  setAccountId: (newAccountId) => { accountId = newAccountId },
-  setStreamName: (newStreamName) => { streamName = newStreamName },
-  setSubscriberId: (newSubscriberId) => { subscriberId = newSubscriberId },
-  setStreamViewId: (newStreamViewId) => { streamViewId = newStreamViewId },
-  setFeedId: (newFeedId) => { feedId = newFeedId },
-  setConnectionState: (newConnectionState) => { connection = newConnectionState },
-  setStats: (statsToSave) => {
-    if (stats.length === MAX_STATS_HISTORY_SIZE) {
-      stats.shift()
+  setAccountId: (accountId) => { _accountId = accountId },
+  setStreamName: (streamName) => { _streamName = streamName },
+  setSubscriberId: (subscriberId) => { _subscriberId = subscriberId },
+  setStreamViewId: (streamViewId) => { _streamViewId = streamViewId },
+  setFeedId: (feedId) => { _feedId = feedId },
+  setConnectionState: (connectionState) => { _connection = connectionState },
+  addStats: (stats) => {
+    if (_stats.length === MAX_STATS_HISTORY_SIZE) {
+      _stats.shift()
     }
-    stats.push(statsToSave)
+    _stats.push(stats)
   },
   get: (statsCount = MAX_STATS_HISTORY_SIZE) => {
-    if (!Number.isInteger(statsCount) && (statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0)) {
+    if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
       statsCount = MAX_STATS_HISTORY_SIZE
     }
 
@@ -32,17 +32,17 @@ const Diagnostics = {
       version,
       timestamp: Date.now(),
       userAgent,
-      accountId,
-      streamName,
-      subscriberId,
-      connection,
-      stats: stats.slice(-statsCount)
+      accountId: _accountId,
+      streamName: _streamName,
+      subscriberId: _subscriberId,
+      connection: _connection,
+      stats: _stats.slice(-statsCount)
     }
 
-    if (feedId !== '') {
-      diagnostics.feedId = feedId
-    } else if (streamViewId !== '') {
-      diagnostics.streamViewId = streamViewId
+    if (_feedId !== '') {
+      diagnostics.feedId = _feedId
+    } else if (_streamViewId !== '') {
+      diagnostics.streamViewId = _streamViewId
     }
 
     return diagnostics
