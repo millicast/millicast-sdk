@@ -11,11 +11,11 @@ let _connection = ''
 const _stats = []
 
 const Diagnostics = {
-  setAccountId: (accountId) => { _accountId = accountId },
-  setStreamName: (streamName) => { _streamName = streamName },
-  setSubscriberId: (subscriberId) => { _subscriberId = subscriberId },
-  setStreamViewId: (streamViewId) => { _streamViewId = streamViewId },
-  setFeedId: (feedId) => { _feedId = feedId },
+  initAccountId: (accountId) => { _accountId = _accountId === '' ? accountId : _accountId },
+  initStreamName: (streamName) => { _streamName = _streamName === '' ? streamName : _streamName },
+  initSubscriberId: (subscriberId) => { _subscriberId = _subscriberId === '' ? subscriberId : _subscriberId },
+  initStreamViewId: (streamViewId) => { _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId },
+  initFeedId: (feedId) => { _feedId = _feedId === '' ? feedId : _feedId },
   setConnectionState: (connectionState) => { _connection = connectionState },
   addStats: (stats) => {
     if (_stats.length === MAX_STATS_HISTORY_SIZE) {

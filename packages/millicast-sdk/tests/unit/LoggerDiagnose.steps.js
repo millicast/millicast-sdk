@@ -98,7 +98,7 @@ defineFeature(feature, test => {
       viewer.webRTCPeer.initStats()
       const stats = await viewer.webRTCPeer.peer.getStats()
       viewer.webRTCPeer.peerConnectionStats.parseStats(stats)
-      Diagnostics.setStats(stats)
+      Diagnostics.addStats(stats)
     })
 
     when('I call Logger diagnose function', async () => {
