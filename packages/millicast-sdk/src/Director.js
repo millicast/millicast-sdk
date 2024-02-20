@@ -177,7 +177,7 @@ const Director = {
 
   getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
-    Diagnostics.setAccountId(optionsParsed.streamAccountId)
+    Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
     const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
