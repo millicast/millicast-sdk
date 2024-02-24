@@ -11,6 +11,7 @@ const href = new URL(window.location.href)
 const url = href.searchParams.get('url')
   ? href.searchParams.get('url')
   : 'wss://turn.millicast.com/millisock'
+const endpoint = href.searchParams.get('endpoint')
 const streamName = href.searchParams.get('streamName')
   ? href.searchParams.get('streamName')
   : process.env.MILLICAST_STREAM_NAME
@@ -98,6 +99,7 @@ switchElement.addEventListener('change', function () {
 // MillicastView object
 let millicastView = null
 const newViewer = () => {
+  if (endpoint) Director.setEndpoint(endpoint)
   const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on('broadcastEvent', (event) => {
@@ -164,8 +166,10 @@ const addStream = (stream, receiver) => {
     // Replace the video when media has started playing
     tmp.addEventListener('loadedmetadata', (event) => {
       Logger.log('loadedmetadata tmp', event)
-      // metadataPlayer?.() // unmount current player
-      initializeMetadataPlayer(tmp, canvas, receiver)
+      if (receiver.track.kind === 'video') {
+        //metadataPlayer?.() // unmount current player
+        initializeMetadataPlayer(tmp, canvas, receiver)
+      }
     })
   }
   if (receiver.track.kind === 'video') {
