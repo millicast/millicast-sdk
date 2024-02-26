@@ -50,14 +50,6 @@ export function initializeMetadataPlayer(
       return this.metadata!
     }
   }(clockRate, video, receiver, worker)
-  
-  if (receiver.track.kind == 'audio') {
-    // Stop videoFrameCallbacks and stop processing them
-    metadataSync.stop();
-    metadataSync.metadata = undefined;
-    return 
-  }
-
   cleanupTasks.push(() => metadataSync.stop())
 
   // monitor for size / resolution changes, request re-render on change

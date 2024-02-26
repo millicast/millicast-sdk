@@ -110,7 +110,16 @@ const newViewer = () => {
     }
   })
   millicastView.on('track', (event) => {
-    addStream(event.streams[0], event.receiver)
+    if (event.track.kind === 'video')
+      addStream(event.streams[0], event.receiver)
+    else if ('createEncodedStreams' in event.receiver) {
+      // enabling encodedInsertableStreams in the connection
+      // causes receivers to require an encoded stream in order
+      // for frames to flow. we don't want to extract metadata
+      // from this receiver, so just pipe reader to writer
+      const transformer = event.receiver.createEncodedStreams()
+      transformer.readable.pipeTo(transformer.writable)
+    }
   })
   return millicastView
 }
@@ -148,37 +157,11 @@ const addStream = (stream, receiver) => {
     video.removeAttribute('autoplay')
   }
 
-  // If we already had a a stream
-  if (video.srcObject) {
-    const tmp = video.cloneNode(true)
-    // Override the muted attribute with current muted state
-    tmp.muted = video.muted
-    // Set same volume
-    tmp.volume = video.volume
-    // Set new stream
-    tmp.srcObject = stream
-    // Replicate playback state
-    if (video.playing) {
-      try { tmp.play() } catch (e) {}
-    } else if (video.paused) {
-      try { tmp.paused() } catch (e) {}
-    }
-    // Replace the video when media has started playing
-    tmp.addEventListener('loadedmetadata', (event) => {
-      Logger.log('loadedmetadata tmp', event)
-      if (receiver.track.kind === 'video') {
-        //metadataPlayer?.() // unmount current player
-        initializeMetadataPlayer(tmp, canvas, receiver)
-      }
-    })
-  }
-  if (receiver.track.kind === 'video') {
-    metadataPlayer?.() // unmount current player
-    video.srcObject = stream
-    metadataPlayer = initializeMetadataPlayer(video, canvas, receiver)
-    vidPlaceholder.style.display = 'none'
-    vidContainer.style.display = null
-  }
+  metadataPlayer?.() // unmount current player
+  video.srcObject = stream
+  metadataPlayer = initializeMetadataPlayer(video, canvas, receiver)
+  vidPlaceholder.style.display = 'none'
+  vidContainer.style.display = null
 }
 
 export function toggleSwitchBtns () {
