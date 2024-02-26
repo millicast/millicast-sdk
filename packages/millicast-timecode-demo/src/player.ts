@@ -27,19 +27,21 @@ export function initializeMetadataPlayer(
       const displayDiff = frameMetadata.expectedDisplayTime - now
       const ts = metadataSync.metadata
       if (!ts) {
+        // no metadata for this frame
         timecodeEl.textContent = ''
         return
       }
 
-      const tsText = new Date(Number(ts)).toISOString()
-      const displayDiffText = Math.round(displayDiff).toString().padStart(4)
+      const tsText = new Date(Number(ts)).toISOString().replace('T', ' ')
+      const displayDiffText = Math.round(displayDiff).toString()
       const text = `${tsText} (${displayDiffText})`
       timecodeEl.textContent = text
     }
   }(clockRate, video, receiver, worker)
-  metadataSync.ready.then(() => {
-    console.info('Metadata player initialized')
-  } )
 
+  metadataSync.ready.then(() =>
+    console.info('Metadata player initialized'))
+
+  // return callback for user to stop/unmount us
   return metadataSync
 }
