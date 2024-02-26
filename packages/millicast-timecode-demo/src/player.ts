@@ -28,7 +28,7 @@ export function initializeMetadataPlayer(
   const metadataSync = new class extends SimpleMetadataSync<Metadata, Metadata> {
     newFrame(now: DOMHighResTimeStamp, frameMetadata: VideoFrameMetadata) {
       super.newFrame(now, frameMetadata)
-      displayDiff = frameMetadata.expectedDisplayTime - performance.now()
+      displayDiff = frameMetadata.expectedDisplayTime - now
       rafHandle.request()
     }
     async waitMetadata(): Promise<Metadata> {
