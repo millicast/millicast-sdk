@@ -24,9 +24,11 @@ export function initializeMetadataPlayer(
   const clockRate = 90000 // FIXME: ideally grab this from SDP
 
   // begin extracting metadata, request re-render on change
+  let displayDiff = 0
   const metadataSync = new class extends SimpleMetadataSync<Metadata, Metadata> {
     newFrame(now: DOMHighResTimeStamp, frameMetadata: VideoFrameMetadata) {
       super.newFrame(now, frameMetadata)
+      displayDiff = frameMetadata.expectedDisplayTime - performance.now()
       rafHandle.request()
     }
     async waitMetadata(): Promise<Metadata> {
@@ -80,7 +82,9 @@ export function initializeMetadataPlayer(
     if (!metadataSync.metadata) return
     const ts = metadataSync.metadata
 
-    const text = new Date(Number(ts)).toISOString(), textLength = text.length
+    const date = new Date(Number(ts)).toISOString()
+    const text = `${date} (${Math.round(displayDiff).toString().padStart(4)})`
+    const textLength = text.length
 
     ctx.font = `bold ${canvas.height * .045}px monospace`
     
