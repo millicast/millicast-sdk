@@ -54,8 +54,7 @@ const fullBtn = document.querySelector('#fullBtn')
 const video = document.querySelector('video')
 const muteBtn = document.getElementById('muteBtn')
 const playBtn = document.getElementById('playBtn')
-const canvas = document.querySelector('canvas')
-canvas.style.display = 'none'
+const timecodeEl = document.querySelector('#timecode')
 let metadataPlayer
 
 const vidPlaceholder = document.querySelector('#vidPlaceholder')
@@ -159,17 +158,17 @@ const addStream = (stream, receiver) => {
 
   metadataPlayer?.() // unmount current player
   video.srcObject = stream
-  metadataPlayer = initializeMetadataPlayer(video, canvas, receiver)
+  metadataPlayer = initializeMetadataPlayer(video, timecodeEl, receiver)
   vidPlaceholder.style.display = 'none'
   vidContainer.style.display = null
 }
 
 export function toggleSwitchBtns () {
+  return
   const toggleSwitch = document.getElementById('metaSwitch')
   const metadata = document.getElementById('metadata-toggle')
   metadata.checked = true
   toggleSwitch.style.display = 'block'
-  canvas.style.display = 'block'
 }
 
 let isSubscribed = false

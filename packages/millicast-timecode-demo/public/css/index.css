@@ -19,6 +19,15 @@ google-cast-launcher {
   font-size: 15px;
 }
 
+.vidCtrls {
+  display: flex;
+  align-items: center;
+}
+
+#fullBtn {
+  order: 10;
+}
+
 #vidContainer, #vidPlaceholder {
   position: fixed;
   bottom: 0;
@@ -270,6 +279,32 @@ Black faded bars in control display for video.
   background: #40308e;
   border: none;
   color: white;
+}
+
+#timecode {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0.5em;
+  margin-top: 0.4em;
+  flex: 1;
+  color: rgba(248, 249, 250, 0.81);
+  font-size: 1em;
+  text-align: left;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+@media (min-width: 480px) {
+  #timecode {
+    font-size: 1.18em;
+  }
+}
+
+@media (min-width: 768px) {
+  #timecode {
+    font-size: 1.5em;
+  }
 }
 
 @media (max-height: 750px) {
