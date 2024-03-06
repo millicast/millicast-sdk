@@ -5,7 +5,7 @@ const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODk
 jwtDecodeMock.mockImplementation((token) => {
   return {
     millicast: {
-      streamName: 'Unexisting_stream_name',
+      streamName: 'test-stream',
       jwt: dummyToken
     }
   }
