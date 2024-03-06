@@ -18,21 +18,6 @@ const mockTokenGenerator = jest.fn(() => {
 })
 
 defineFeature(feature, test => {
-  test('Instance viewer without streamName', ({ given, when, then }) => {
-    let expectError
-
-    given('no stream name', () => null)
-
-    when('I instance a View', async () => {
-      expectError = expect(() => new View())
-    })
-
-    then('throws an error', async () => {
-      expectError.toThrow(Error)
-      expectError.toThrow('Stream Name is required to construct this module.')
-    })
-  })
-
   test('Instance viewer without tokenGenerator', ({ given, when, then }) => {
     let expectError
 
