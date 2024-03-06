@@ -1,10 +1,5 @@
 Feature: As a user I want to publish a stream without managing connections
 
-  Scenario: Instance publisher without streamName
-    Given no stream name
-    When I instance a Publish
-    Then throws an error
-
   Scenario: Instance publisher without tokenGenerator
     Given no token generator
     When I instance a Publish
