@@ -11,24 +11,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
       
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      
-      - name: Restore lerna
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      
-      - name: Install and Build 🔧
+      - name: Build All 🔧
         run: |
-          npm install
           npm run build
           npm run build-docs
       
@@ -43,25 +31,15 @@ jobs:
         uses: "./.github/actions/github-pages-deploy-action-4.1.1"
         with:
           branch: docs
-          folder: packages/millicast-sdk/docs 
+          folder: packages/millicast-sdk/docs
 
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          registry-url: https://registry.npmjs.org/
-
-      - name: Restore lerna
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - uses: actions/checkout@v4
+      - name: Setup and Install
+        uses: ./.github/actions/setup-install
 
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
@@ -69,7 +47,6 @@ jobs:
       - name: Publish package
         working-directory: './packages/millicast-sdk'
         run: |
-          npm install
           npm run build
           npm publish --access public
         env:

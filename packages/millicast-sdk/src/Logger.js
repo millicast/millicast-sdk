@@ -1,5 +1,6 @@
 import jsLogger from 'js-logger'
 import { version } from '../package.json'
+import Diagnostics from './utils/Diagnostics'
 
 /**
  * @module Logger
@@ -233,6 +234,22 @@ const Logger = {
    * Logger.setHandler(myHandler, Logger.INFO)
    */
   setHandler: (handler, level) => { customHandlers.push({ handler, level }) },
+  /**
+   * @function
+   * @name diagnose
+   * @description Returns an object with diagnostics about the state of the connection and environment.
+   * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
+   * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
+   * @example
+   * // Log and get a diagnose object with the last 3 stats reports
+   * const diagnostics = await Logger.diagnose(3)
+   */
+  diagnose: Diagnostics.get,
+  /**
+   * @var
+   * @name VERSION
+   * @description Returns the current SDK version.
+   */
   VERSION: version
 }
 

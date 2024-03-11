@@ -4,6 +4,7 @@ import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
 import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
+import Diagnostics from './utils/Diagnostics'
 
 const logger = Logger.get('Signaling')
 
@@ -197,6 +198,7 @@ export default class Signaling extends EventEmitter {
     if (optionsParsed.vad) { data.vad = true }
     if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
     if (optionsParsed.forcePlayoutDelay) { data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay }
+    if (optionsParsed.layer) { data.layer = optionsParsed.layer }
 
     try {
       await this.connect()
@@ -212,6 +214,11 @@ export default class Signaling extends EventEmitter {
       logger.debug('Command result: ', result)
       this.serverId = result.subscriberId
       this.clusterId = result.clusterId
+
+      // Save for diagnostics
+      Diagnostics.initStreamName(this.streamName)
+      Diagnostics.initSubscriberId(this.serverId)
+      Diagnostics.initStreamViewId(result.streamViewId)
       return result.sdp
     } catch (e) {
       logger.error('Error sending view command, error: ', e)
@@ -289,6 +296,11 @@ export default class Signaling extends EventEmitter {
       logger.debug('Command result: ', result)
       this.serverId = result.publisherId
       this.clusterId = result.clusterId
+
+      // Save for diagnostics
+      Diagnostics.initStreamName(this.streamName)
+      Diagnostics.initSubscriberId(this.serverId)
+      Diagnostics.initFeedId(result.feedId)
       return result.sdp
     } catch (e) {
       logger.error('Error sending publish command, error: ', e)

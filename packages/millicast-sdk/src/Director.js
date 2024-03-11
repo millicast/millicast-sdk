@@ -1,5 +1,6 @@
 import Logger from './Logger'
 import config from './config'
+import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
 
 const logger = Logger.get('Director')
@@ -176,6 +177,7 @@ const Director = {
 
   getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
+    Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
     const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
