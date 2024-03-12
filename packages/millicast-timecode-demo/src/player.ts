@@ -25,9 +25,8 @@ export function initializeMetadataPlayer(
         return
       }
 
-      const tsText = new Date(Number(ts)).toISOString().replace('T', ' ')
       const displayDiffText = Math.round(displayDiff).toString()
-      const text = `${tsText} (${displayDiffText})`
+      const text = `${ts} (${displayDiffText})`
       timecodeEl.textContent = text
     }
   }(clockRate, video, receiver, worker)

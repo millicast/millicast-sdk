@@ -3,7 +3,15 @@ import {
   startMetadataSyncService, MessageData,
 } from "nal-extractor"
 
-export type Metadata = bigint
+export type Metadata = string
+
+function unregRawData(uuid: bigint, data: Uint8Array): Uint8Array {
+  const rawData = new Uint8Array(16 + data.length)
+  for (let i = 0; i < 16; i++)
+    rawData[15-i] = Number((uuid >> BigInt(i*8)) & 0xFFn)
+  rawData.set(data, 16)
+  return rawData
+}
 
 startMetadataSyncService(() => {
   const extractor = new SEIExtractor({ enableUserDataUnregistered: true })
@@ -12,18 +20,16 @@ startMetadataSyncService(() => {
     const metas = extractor.processAU(frame.data)
 
     const timings = metas.flatMap(meta =>
-      meta.type === SEIMessageType.USER_DATA_UNREGISTERED &&
-      meta.uuid === 0x00112233445566778899AABBCCDDEEFFn
-      ? [meta.data] : [])
+      meta.type === SEIMessageType.USER_DATA_UNREGISTERED
+      ? [unregRawData(meta.uuid, meta.data)] : [])
     if (timings.length !== 1)
       console.warn(timings.length, 'timecode messages found in AU', frame.timestamp)
     return timings[0] ? [processTimingMeta(timings[0]), []] : undefined
   }
 
+  const textDecoder = new TextDecoder();
   function processTimingMeta(x: Uint8Array) {
-    if (x.length !== 8)
-      throw new Error(`invalid payload length ${x.length}`)
-    return new DataView(x.buffer, x.byteOffset, x.byteLength).getBigUint64(0)
+    return textDecoder.decode(x)
   }
 
   return extractTimestamp
