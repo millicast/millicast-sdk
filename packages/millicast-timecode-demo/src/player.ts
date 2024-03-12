@@ -1,13 +1,6 @@
-import { matchCanvasResolution, monitorNaturalResolution, RafHandle, SimpleMetadataSync } from "nal-extractor"
+import { SimpleMetadataSync } from "nal-extractor"
 
 import type { Metadata } from "./worker"
-import { toggleSwitchBtns } from "viewer"
-
-export function assertNonNull<T>(x: T | null | undefined): T {
-  if (x === null || x === undefined)
-    throw new Error(`unexpected null`)
-  return x
-}
 
 // start up worker as soon as the module is loaded
 const worker = new Worker('./worker.umd.js', { name: 'metadata-extractor' })

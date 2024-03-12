@@ -15,10 +15,8 @@ startMetadataSyncService(() => {
       meta.type === SEIMessageType.USER_DATA_UNREGISTERED &&
       meta.uuid === 0x00112233445566778899AABBCCDDEEFFn
       ? [meta.data] : [])
-    if (timings.length > 1)
-      throw new Error('multiple timecode metadata messages in AU')
-    if (timings.length < 1)
-      console.warn('timecode metadata not present in AU', frame.timestamp)
+    if (timings.length !== 1)
+      console.warn(timings.length, 'timecode messages found in AU', frame.timestamp)
     return timings[0] ? [processTimingMeta(timings[0]), []] : undefined
   }
 
