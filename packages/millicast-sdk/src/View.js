@@ -5,6 +5,7 @@ import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
+import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 
 const logger = Logger.get('View')
 
@@ -183,6 +184,11 @@ export default class View extends BaseWebRTC {
     await this.initConnection({ migrate: true })
   }
 
+  stop () {
+    super.stop()
+    this.worker?.terminate()
+  }
+
   async initConnection (data) {
     logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false
@@ -196,6 +202,7 @@ export default class View extends BaseWebRTC {
       subscriberData = await this.tokenGenerator()
       //  Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
+      this.options.peerConfig.encodedInsertableStreams = true
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -228,6 +235,24 @@ export default class View extends BaseWebRTC {
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
+
+    webRTCPeerInstance.on('track', (trackEvent) => {
+      if (trackEvent.track.kind !== 'video') return
+      const trackId = trackEvent.track.id
+      const worker = new Worker('workers/TransformWorker.js')
+      if (supportsRTCRtpScriptTransform) {
+        // eslint-disable-next-line no-undef
+        trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform' })
+      } else if (supportsInsertableStreams) {
+        const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+        worker.postMessage({ action: 'insertable-streams-receiver', readable, writable }, [readable, writable])
+      }
+      worker.onmessage = (event) => {
+        console.log('message from worker:', event.data)
+        this.emit('onMetadata', { ...event.data, trackId })
+      }
+      this.worker = worker
+    })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
     const signalingConnectPromise = signalingInstance.connect()

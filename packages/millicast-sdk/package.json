@@ -14,6 +14,13 @@
   "maintypes": "dist/millicast.d.ts",
   "browser": "dist/millicast.umd.js",
   "millicastdebug": "dist/millicast.debug.umd.js",
+  "files": [
+    "dist",
+    "scripts"
+  ],
+  "bin":{
+    "copy-worker": "./scripts/copy-worker.js"
+  },
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",

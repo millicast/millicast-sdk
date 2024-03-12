@@ -71,6 +71,10 @@ const newViewer = () => {
     addStream(event.streams[0]);
   });
 
+  millicastView.on('onMetadata', (event) => {
+    console.log('metadata event: ', event)
+  })
+
   return millicastView
 }
 
