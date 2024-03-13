@@ -16,7 +16,10 @@ export function initializeMetadataPlayer(
   // begin extracting metadata, request re-render on change
   const metadataSync = new class extends SimpleMetadataSync<Metadata, Metadata> {
     newFrame(now: DOMHighResTimeStamp, frameMetadata: VideoFrameMetadata) {
+      // call super implementation to populate `this.metadata`
       super.newFrame(now, frameMetadata)
+
+      // retrieve metadata and expected display time
       const displayDiff = frameMetadata.expectedDisplayTime - now
       const ts = metadataSync.metadata
       if (!ts) {
@@ -25,6 +28,7 @@ export function initializeMetadataPlayer(
         return
       }
 
+      // render metadata
       const displayDiffText = Math.round(displayDiff).toString()
       timecodeEl.textContent = `(${displayDiffText}) ${ts}`
     }
