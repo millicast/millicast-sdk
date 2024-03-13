@@ -1,4 +1,5 @@
 import reemit from 're-emitter'
+import jwtDecode from 'jwt-decode'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
@@ -23,7 +24,8 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @param {String} streamName - Millicast existing Stream Name where you want to connect.
+ * @deprecated streamName is no longer used, use tokenGenerator
+ * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
@@ -80,6 +82,7 @@ export default class View extends BaseWebRTC {
    * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
    *
    * //Create a new instance
+   * // Stream name is not necessary in the constructor anymore, could be null | undefined
    * const streamName = "Millicast Stream Name where i want to connect"
    * const millicastView = new View(streamName, tokenGenerator, videoElement)
    *
@@ -210,6 +213,8 @@ export default class View extends BaseWebRTC {
       logger.error('Error while subscribing. Subscriber data required')
       throw new Error('Subscriber data required')
     }
+    const decodedJWT = jwtDecode(subscriberData.jwt)
+    this.streamName = decodedJWT.millicast.streamName
     const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`

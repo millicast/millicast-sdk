@@ -34,7 +34,8 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @param {String} streamName - Millicast existing stream name.
+ * @deprecated streamName is no longer used, use tokenGenerator
+ * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
@@ -77,6 +78,7 @@ export default class Publish extends BaseWebRTC {
    * const tokenGenerator = () => getYourPublisherConnection(token, streamName)
    *
    * //Create a new instance
+   * // streamName is not necessary in the constructor anymore, could be null or undefined
    * const streamName = "My Millicast Stream Name"
    * const millicastPublish = new Publish(streamName, tokenGenerator)
    *
@@ -196,7 +198,9 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. Publisher data required')
       throw new Error('Publisher data required')
     }
-    this.recordingAvailable = jwtDecode(publisherData.jwt)[atob('bWlsbGljYXN0')].record
+    const decodedJWT = jwtDecode(publisherData.jwt)
+    this.streamName = decodedJWT.millicast.streamName
+    this.recordingAvailable = decodedJWT[atob('bWlsbGljYXN0')].record
     if (this.options.record && !this.recordingAvailable) {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')

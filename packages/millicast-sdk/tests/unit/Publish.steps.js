@@ -23,21 +23,6 @@ const mockTokenGenerator = jest.fn(() => {
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
 defineFeature(feature, test => {
-  test('Instance publisher without streamName', ({ given, when, then }) => {
-    let expectError
-
-    given('no stream name', () => null)
-
-    when('I instance a Publish', async () => {
-      expectError = expect(() => new Publish())
-    })
-
-    then('throws an error', async () => {
-      expectError.toThrow(Error)
-      expectError.toThrow('Stream Name is required to construct this module.')
-    })
-  })
-
   test('Instance publisher without tokenGenerator', ({ given, when, then }) => {
     let expectError
 
