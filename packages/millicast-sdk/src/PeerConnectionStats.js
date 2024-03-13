@@ -78,7 +78,7 @@ export default class PeerConnectionStats extends EventEmitter {
     this.emitInterval = setInterval(async () => {
       const stats = await this.peer.getStats()
       this.parseStats(stats)
-      Diagnostics.setStats(this.stats)
+      Diagnostics.addStats(this.stats)
       /**
        * Peer connection incoming stats.
        *

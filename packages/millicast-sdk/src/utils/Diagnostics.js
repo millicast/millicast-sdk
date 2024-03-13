@@ -1,60 +1,52 @@
 import { version } from '../../package.json'
 
 const MAX_STATS_HISTORY_SIZE = 5
-const diagnostics = {
-  version: '',
-  accountId: '',
-  streamName: '',
-  subscriberId: '',
-  timestamp: '',
-  userAgent: '',
-  connection: '',
-  stats: []
-}
-
-const setAccountId = (accountId) => { diagnostics.accountId = accountId }
-
-const setStreamNameAndSubscriberId = (streamName, subscriberId) => {
-  diagnostics.streamName = streamName
-  diagnostics.subscriberId = subscriberId
-}
-
-const setStreamViewId = (streamViewId) => { diagnostics.streamViewId = streamViewId }
-
-const setFeedId = (feedId) => { diagnostics.feedId = feedId }
-
-const setConnectionState = (connectionState) => { diagnostics.connection = connectionState }
-
-const setStats = (stats) => {
-  if (diagnostics.stats.length === MAX_STATS_HISTORY_SIZE) {
-    diagnostics.stats.shift()
-  }
-  diagnostics.stats.push(stats)
-}
-
-const getDiagnostics = (statsCount = MAX_STATS_HISTORY_SIZE) => {
-  if (statsCount > MAX_STATS_HISTORY_SIZE) {
-    statsCount = MAX_STATS_HISTORY_SIZE
-  }
-  diagnostics.version = version
-  diagnostics.timestamp = Date.now()
-  diagnostics.userAgent = window?.navigator?.userAgent || 'No user agent available'
-
-  if (diagnostics.stats.length && Number.isInteger(statsCount) && statsCount >= 0 && statsCount < MAX_STATS_HISTORY_SIZE) {
-    diagnostics.stats = diagnostics.stats.slice(-statsCount)
-  }
-
-  return diagnostics
-}
+const userAgent = window?.navigator?.userAgent || 'No user agent available'
+let _accountId = ''
+let _streamName = ''
+let _subscriberId = ''
+let _streamViewId = ''
+let _feedId = ''
+let _connection = ''
+const _stats = []
 
 const Diagnostics = {
-  setAccountId,
-  setStreamNameAndSubscriberId,
-  setStreamViewId,
-  setFeedId,
-  setConnectionState,
-  setStats,
-  get: getDiagnostics
+  initAccountId: (accountId) => { _accountId = _accountId === '' ? accountId : _accountId },
+  initStreamName: (streamName) => { _streamName = _streamName === '' ? streamName : _streamName },
+  initSubscriberId: (subscriberId) => { _subscriberId = _subscriberId === '' ? subscriberId : _subscriberId },
+  initStreamViewId: (streamViewId) => { _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId },
+  initFeedId: (feedId) => { _feedId = _feedId === '' ? feedId : _feedId },
+  setConnectionState: (connectionState) => { _connection = connectionState },
+  addStats: (stats) => {
+    if (_stats.length === MAX_STATS_HISTORY_SIZE) {
+      _stats.shift()
+    }
+    _stats.push(stats)
+  },
+  get: (statsCount = MAX_STATS_HISTORY_SIZE) => {
+    if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
+      statsCount = MAX_STATS_HISTORY_SIZE
+    }
+
+    const diagnostics = {
+      version,
+      timestamp: Date.now(),
+      userAgent,
+      accountId: _accountId,
+      streamName: _streamName,
+      subscriberId: _subscriberId,
+      connection: _connection,
+      stats: _stats.slice(-statsCount)
+    }
+
+    if (_feedId !== '') {
+      diagnostics.feedId = _feedId
+    } else if (_streamViewId !== '') {
+      diagnostics.streamViewId = _streamViewId
+    }
+
+    return diagnostics
+  }
 }
 
 export default Diagnostics

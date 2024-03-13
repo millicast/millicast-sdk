@@ -25,7 +25,7 @@ jobs:
   build-sdk:
     name: Build WebSDK
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.pull_request.head.ref, 'RC-') }}
+    if: ${{ startsWith(github.event.pull_request.head.ref, 'RC-') }} || ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup and Install
@@ -94,7 +94,7 @@ jobs:
     name: Publish SDK to NPM for next-<version> tag
     runs-on: ubuntu-latest
     needs: build-sdk
-    if: startsWith(github.ref, 'refs/tags/next-')
+    if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup and Install
