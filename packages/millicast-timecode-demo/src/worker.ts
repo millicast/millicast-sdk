@@ -15,8 +15,9 @@ function unregRawData(uuid: bigint, data: Uint8Array): Uint8Array {
 
 startMetadataSyncService(() => {
   const extractor = new SEIExtractor({ enableUserDataUnregistered: true })
+  const textDecoder = new TextDecoder()
 
-  function extractTimestamp(frame: RTCEncodedVideoFrame): MessageData<Metadata> | undefined {
+  return (frame: RTCEncodedVideoFrame): MessageData<Metadata> | undefined => {
     const metas = extractor.processAU(frame.data)
 
     const timings = metas.flatMap(meta =>
@@ -24,13 +25,6 @@ startMetadataSyncService(() => {
       ? [unregRawData(meta.uuid, meta.data)] : [])
     if (timings.length !== 1)
       console.warn(timings.length, 'timecode messages found in AU', frame.timestamp)
-    return timings[0] ? [processTimingMeta(timings[0]), []] : undefined
+    return timings[0] ? [textDecoder.decode(timings[0]), []] : undefined
   }
-
-  const textDecoder = new TextDecoder();
-  function processTimingMeta(x: Uint8Array) {
-    return textDecoder.decode(x)
-  }
-
-  return extractTimestamp
 })

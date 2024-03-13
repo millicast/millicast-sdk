@@ -26,8 +26,7 @@ export function initializeMetadataPlayer(
       }
 
       const displayDiffText = Math.round(displayDiff).toString()
-      const text = `${ts} (${displayDiffText})`
-      timecodeEl.textContent = text
+      timecodeEl.textContent = `(${displayDiffText}) ${ts}`
     }
   }(clockRate, video, receiver, worker)
 
