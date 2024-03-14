@@ -41,9 +41,24 @@ function findStartCodeIndex (frameBuffer, offset) {
   return -1
 }
 
-// eslint-disable-next-line no-unused-vars
-function removePreventionBytes (nalu) {
-  // TODO: implementation
+// EBSP (Encapsulate Byte Sequence Payload) is a sequence of bytes without start code and header in NAL unit
+// which is also aka ...RBSP (Raw Byte Sequence Payload) + 0x03 when there are [0x00, 0x00, <0x01 or 0x02 or 0x03>] in RBSP
+// so we need to remove 0x03 byte before we parse the payload data
+function removePreventionBytes (ebsp) {
+  const output = new Uint8Array(ebsp.byteLength)
+  let outOffset = 0
+  let ebspOffset = 0
+  for (let preventionByteIdx = 2; preventionByteIdx < ebsp.byteLength; preventionByteIdx++) {
+    if (ebsp[preventionByteIdx] === 0x03 && ebsp[preventionByteIdx - 1] === 0x00 && ebsp[preventionByteIdx - 2] === 0x00) {
+      output.set(ebsp.subarray(ebspOffset, preventionByteIdx), outOffset)
+      outOffset += preventionByteIdx - ebspOffset
+      ebspOffset = preventionByteIdx + 1
+    }
+  }
+  if (ebspOffset < ebsp.byteLength) {
+    output.set(ebsp.subarray(ebspOffset), outOffset)
+  }
+  return output
 }
 
 function getNalus (frameBuffer) {
@@ -57,10 +72,10 @@ function getNalus (frameBuffer) {
       // find the start index of next NAL unit
       const nextStartCodeIndex = findStartCodeIndex(frameBuffer, startCodeIndex + startCodeLength)
       if (nextStartCodeIndex > startCodeIndex) {
-        nalus.push(frameBuffer.slice(startCodeIndex, nextStartCodeIndex))
+        nalus.push(frameBuffer.subarray(startCodeIndex, nextStartCodeIndex))
         offset = nextStartCodeIndex
       } else {
-        nalus.push(frameBuffer.slice(startCodeIndex))
+        nalus.push(frameBuffer.subarray(startCodeIndex))
         break
       }
     } else {
@@ -82,27 +97,28 @@ function getSeiNalus (frameBuffer, codec) {
 function getSeiUserUnregisteredPayload (nalu, codec) {
   const startCodeLength = nalu[2] === 0x01 ? 3 : 4
   const headerLength = codec === 'h264' ? 1 : 2
-  let idx = startCodeLength + headerLength
+  const data = removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
   let payloadType = 0
-  while (nalu[idx] === 0xff) {
+  let idx = 0
+  while (data[idx] === 0xff) {
     payloadType += 0xff
     idx++
   }
-  payloadType += nalu[idx]
+  payloadType += data[idx]
   if (payloadType !== 5) {
     return null
   }
   idx++
   let payloadSize = 0
-  while (nalu[idx] === 0xff) {
+  while (data[idx] === 0xff) {
     payloadSize += 0xff
     idx++
   }
-  payloadSize += nalu[idx]
+  payloadSize += data[idx]
   idx++
-  const uuid = nalu.slice(idx, idx + 16)
+  const uuid = data.subarray(idx, idx + 16)
   idx += 16
-  const payload = nalu.slice(idx, idx + payloadSize - 16)
+  const payload = data.subarray(idx, idx + payloadSize - 16)
   return { uuid, payload }
 }
 
