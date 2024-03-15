@@ -61,8 +61,9 @@ function removePreventionBytes (ebsp) {
   return output
 }
 
-function getNalus (frameBuffer) {
+function getNalus (frameBuffer, codec) {
   let offset = 0
+  const headerSize = codec === 'h264' ? 1 : 2
   const nalus = []
   while (offset < frameBuffer.byteLength - 4) {
     const startCodeIndex = findStartCodeIndex(frameBuffer, offset)
@@ -70,7 +71,7 @@ function getNalus (frameBuffer) {
       // found the NAL unit start code
       const startCodeLength = frameBuffer[startCodeIndex + 2] === 0x01 ? 3 : 4
       // find the start index of next NAL unit
-      const nextStartCodeIndex = findStartCodeIndex(frameBuffer, startCodeIndex + startCodeLength)
+      const nextStartCodeIndex = findStartCodeIndex(frameBuffer, startCodeIndex + startCodeLength + headerSize)
       if (nextStartCodeIndex > startCodeIndex) {
         nalus.push(frameBuffer.subarray(startCodeIndex, nextStartCodeIndex))
         offset = nextStartCodeIndex
@@ -86,7 +87,7 @@ function getNalus (frameBuffer) {
 }
 
 function getSeiNalus (frameBuffer, codec) {
-  return getNalus(frameBuffer).filter((nalu) => {
+  return getNalus(frameBuffer, codec).filter((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
     const header = nalu[startCodeLength]
     const naluType = codec === 'h264' ? header & 0x1f : header >> 1 & 0x3f

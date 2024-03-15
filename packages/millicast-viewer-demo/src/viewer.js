@@ -62,7 +62,6 @@ const newViewer = () => {
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
-  
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
@@ -72,7 +71,8 @@ const newViewer = () => {
   });
 
   millicastView.on('onMetadata', (event) => {
-    console.log('metadata event: ', event)
+    const decoder = new TextDecoder()
+    console.log('metadata: ', decoder.decode(event.metadata[0].payload))
   })
 
   return millicastView
