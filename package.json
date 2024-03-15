@@ -4,7 +4,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "post-commit": "./check-signature.sh"
+      "pre-push": "./check-signature.sh"
     }
   },
   "lint-staged": {
