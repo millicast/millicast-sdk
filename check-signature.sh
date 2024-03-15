@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# get the command output
 output=$(git verify-commit HEAD)
 
 if [ -z "$output" ]; then
