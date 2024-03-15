@@ -3,6 +3,6 @@
 output=$(git verify-commit HEAD)
 
 if [ -z "$output" ]; then
-    echo "Error: Commit is not signed."
+    echo "\033[0;31mError: Commit is not signed.\033[0m"
     exit 1
 fi
