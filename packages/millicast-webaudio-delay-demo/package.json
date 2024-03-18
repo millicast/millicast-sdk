@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@maslick/radiaslider": "^1.9.8",
-    "@millicast/sdk": "file:../millicast-sdk"
+    "@millicast/sdk": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
