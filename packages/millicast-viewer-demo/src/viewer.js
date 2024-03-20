@@ -72,7 +72,14 @@ const newViewer = () => {
 
   millicastView.on('onMetadata', (event) => {
     const decoder = new TextDecoder()
-    console.log('metadata: ', decoder.decode(event.metadata[0].payload))
+    const metadata = event.metadata
+    const track = event.track
+    if (metadata.seiUserUnregisteredDataArray.length > 0) {
+      const uuid = metadata.seiUserUnregisteredDataArray[0].uuid
+      metadata.seiUserUnregisteredDataArray[0].uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+      metadata.seiUserUnregisteredDataArray[0].data = decoder.decode(metadata.seiUserUnregisteredDataArray[0].data)
+    }
+    console.log('trackID: ', track.id, ', metadata: ', JSON.stringify(metadata, null, 2))
   })
 
   return millicastView
