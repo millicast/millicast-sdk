@@ -1,7 +1,7 @@
 import { TextDecoder } from 'util'
-import { extractH26xSEI } from '../../src/utils/Codecs'
+import { extractH26xMetadata } from '../../src/utils/Codecs'
 
-function bytes2HexStr(bytes) {
+function bytes2HexStr (bytes) {
   return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
 }
 
@@ -20,12 +20,13 @@ describe('Extract user unregistered data in SEI from H26x frame', () => {
       Buffer.from([0x80]),
       dirtyBuffer
     ])
-    const data = new Uint8Array(frameBuffer.buffer, frameBuffer.byteOffset, frameBuffer.byteLength)
-    const res = extractH26xSEI(data, 'h264')
-    expect(res).toHaveLength(1)
-    expect(bytes2HexStr(res[0].uuid)).toEqual(targetUUID)
+    const timestamp = (new Date()).getTime()
+    const res = extractH26xMetadata({ timestamp, data: frameBuffer }, 'h264')
+    expect(res.timestamp).toEqual(timestamp)
+    expect(res.seiUserUnregisteredDataArray).toHaveLength(1)
+    expect(bytes2HexStr(res.seiUserUnregisteredDataArray[0].uuid)).toEqual(targetUUID)
     const decoder = new TextDecoder('ascii')
-    expect(decoder.decode(res[0].payload)).toEqual(targetContent)
+    expect(decoder.decode(res.seiUserUnregisteredDataArray[0].data)).toEqual(targetContent)
   })
 
   it('should extract user unregistered data from H265/HEVC frame', () => {
@@ -36,12 +37,13 @@ describe('Extract user unregistered data in SEI from H26x frame', () => {
       Buffer.from(targetUUID, 'hex'),
       Buffer.from(targetContent),
       Buffer.from([0x80])])
-    const data = new Uint8Array(frameBuffer.buffer, frameBuffer.byteOffset, frameBuffer.byteLength)
-    const res = extractH26xSEI(data, 'h265')
-    expect(res).toHaveLength(1)
-    expect(bytes2HexStr(res[0].uuid)).toEqual(targetUUID)
+    const timestamp = (new Date()).getTime()
+    const res = extractH26xMetadata({ timestamp, data: frameBuffer }, 'h265')
+    expect(res.timestamp).toEqual(timestamp)
+    expect(res.seiUserUnregisteredDataArray).toHaveLength(1)
+    expect(bytes2HexStr(res.seiUserUnregisteredDataArray[0].uuid)).toEqual(targetUUID)
     const decoder = new TextDecoder('ascii')
-    expect(decoder.decode(res[0].payload)).toEqual(targetContent)
+    expect(decoder.decode(res.seiUserUnregisteredDataArray[0].data)).toEqual(targetContent)
   })
   it('should extract user unregistered data when there is emulation_prevention_three_byte', () => {
     const targetUUID = 'dc45000001d948b7962cd820d923eeef'
@@ -55,11 +57,13 @@ describe('Extract user unregistered data in SEI from H26x frame', () => {
       Buffer.from(prevention3BytesContent),
       Buffer.from([0x89])
     ])
-    const data = new Uint8Array(frameBuffer.buffer, frameBuffer.byteOffset, frameBuffer.byteLength)
-    const res = extractH26xSEI(data, 'h264')
-    expect(res).toHaveLength(1)
-    expect(bytes2HexStr(res[0].uuid)).toEqual(targetUUID)
+
+    const timestamp = (new Date()).getTime()
+    const res = extractH26xMetadata({ timestamp, data: frameBuffer }, 'h264')
+    expect(res.timestamp).toEqual(timestamp)
+    expect(res.seiUserUnregisteredDataArray).toHaveLength(1)
+    expect(bytes2HexStr(res.seiUserUnregisteredDataArray[0].uuid)).toEqual(targetUUID)
     const decoder = new TextDecoder('ascii')
-    expect(decoder.decode(res[0].payload)).toEqual(targetContent)
+    expect(decoder.decode(res.seiUserUnregisteredDataArray[0].data)).toEqual(targetContent)
   })
 })

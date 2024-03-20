@@ -95,49 +95,102 @@ function getSeiNalus (frameBuffer, codec) {
   })
 }
 
-function getSeiUserUnregisteredPayload (nalu, codec) {
-  const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-  const headerLength = codec === 'h264' ? 1 : 2
-  const data = removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
+function extractSEIPayload (rbsp) {
   let payloadType = 0
   let idx = 0
-  while (data[idx] === 0xff) {
+  while (rbsp[idx] === 0xff) {
     payloadType += 0xff
     idx++
   }
-  payloadType += data[idx]
-  if (payloadType !== 5) {
-    return null
-  }
+  payloadType += rbsp[idx]
   idx++
   let payloadSize = 0
-  while (data[idx] === 0xff) {
+  while (rbsp[idx] === 0xff) {
     payloadSize += 0xff
     idx++
   }
-  payloadSize += data[idx]
+  payloadSize += rbsp[idx]
   idx++
-  const uuid = data.subarray(idx, idx + 16)
+  return {
+    type: payloadType,
+    content: rbsp.subarray(idx, idx + payloadSize)
+  }
+}
+
+function getSeiUserUnregisteredData (payloadContent) {
+  let idx = 0
+  const uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
-  const payload = data.subarray(idx, idx + payloadSize - 16)
-  return { uuid, payload }
+  const data = payloadContent.subarray(idx)
+  return { uuid, data }
 }
 
 // eslint-disable-next-line no-unused-vars
-function getSeiPicTimingPayload (nalu, codec) {
+function getSeiPicTimingTimecode (payloadContent) {
   // TODO: implementation
 }
 
 /**
+ * SEI User unregistered data
+ * @typedef {object} SEIUserUnregisteredData
+ * @global
+ * @property {string} uuid - the UUID of the SEI user unregistered data
+ * @property {Uint8Array} data - the binary content of the SEI user unregistered data
+ */
+
+/**
+ * SEI Pic timing time code
+ * @typedef {object} SEIPicTimingTimeCode
+ * @global
+ * @property {number} seconds
+ * @property {number} minutes
+ * @property {number} hours
+ * @property {number} n_frames
+ * @property {number} [time_offset]
+ */
+
+/**
+ * Metadata of the Encoded Frame
+ * @typedef {object} FrameMetaData
+ * @global
+ * @property {number} timestamp - the time at which frame sampling started, value is a positive integer containing the sampling instant of the first byte in this frame, in microseconds
+ * @property { Array<SEIUserUnregisteredData> } seiUserUnregisteredDataArray - the SEI user unregistered data array
+ * @property { SEIPicTimingTimeCode } [seiPicTimingTimeCode] - the SEI pic timing time code
+ */
+
+/**
 * Extract user unregistered metadata from H26x Encoded Frame
-* @param { Uint8Array } frameBuffer
+* @param { RTCEncodedFrame } encodedFrame
 * @param { 'h264' | 'h265' } codec
+* @returns { FrameMetaData }
 */
-export function extractH26xSEI (frameBuffer, codec) {
+export function extractH26xMetadata (encodedFrame, codec) {
   if (codec !== 'h264' && codec !== 'h265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
-  return getSeiNalus(frameBuffer, codec).map((nalu) => getSeiUserUnregisteredPayload(nalu, codec)).filter((sei) => sei !== null)
+  const seiUserUnregisteredDataArray = []
+  let seiPicTimingTimeCode
+  getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
+    const startCodeLength = nalu[2] === 0x01 ? 3 : 4
+    const headerLength = codec === 'h264' ? 1 : 2
+    const rbsp = removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
+    const payload = extractSEIPayload(rbsp)
+    switch (payload.type) {
+      case 1:
+        seiPicTimingTimeCode = getSeiPicTimingTimecode(payload.content)
+        break
+      case 5:
+        seiUserUnregisteredDataArray.push(getSeiUserUnregisteredData(payload.content))
+        break
+      default:
+        break
+    }
+  })
+  return {
+    timestamp: encodedFrame.timestamp,
+    seiUserUnregisteredDataArray,
+    seiPicTimingTimeCode
+  }
 }
 
 export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {

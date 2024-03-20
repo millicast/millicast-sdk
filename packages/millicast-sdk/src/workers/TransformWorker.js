@@ -1,14 +1,11 @@
-import { extractH26xSEI } from '../utils/Codecs'
+import { extractH26xMetadata } from '../utils/Codecs'
 
 function createReceiverTransform () {
   return new TransformStream({
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      const seis = extractH26xSEI(new Uint8Array(encodedFrame.data), 'h264')
-      if (seis.length > 0) {
-        self.postMessage({ metadata: seis })
-      }
+      self.postMessage({ metadata: extractH26xMetadata(encodedFrame, 'h264') })
       controller.enqueue(encodedFrame)
     }
   })
