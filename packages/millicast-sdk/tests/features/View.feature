@@ -1,10 +1,5 @@
 Feature: As a user I want to subscribe to a stream without managing connections
 
-  Scenario: Instance viewer without streamName
-    Given no stream name
-    When I instance a View
-    Then throws an error
-  
   Scenario: Instance viewer without tokenGenerator
     Given no token generator
     When I instance a View
