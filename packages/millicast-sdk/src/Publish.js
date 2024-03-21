@@ -16,7 +16,7 @@ const connectOptions = {
   bandwidth: 0,
   disableVideo: false,
   disableAudio: false,
-  codec: VideoCodec.H264,
+  codec: VideoCodec.H265,
   simulcast: false,
   scalabilityMode: null,
   peerConfig: {}

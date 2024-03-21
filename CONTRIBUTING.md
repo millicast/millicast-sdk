@@ -1,5 +1,7 @@
 # Develop in Millicast SDK
+
 ## Packages
+
 This project is built with [Lerna](https://lerna.js.org/) and contains the following packages:
 
 - `millicast-sdk`: The SDK itself.
@@ -8,21 +10,28 @@ This project is built with [Lerna](https://lerna.js.org/) and contains the follo
 - `millicast-chromecast-receiver`: Example of Google Cast receiver for demo.
 
 ## Development
+
 Asumming that you have Node 12.10.x or newer and `npm` installed, install the required dependencies running:
+
 ```sh
 npm ci
 ```
 
 ### Changesets
+
 Whenever you are working on a new feature, fix or change, make sure you create a **changeset** with a description of the change. Follow [this](.changeset/README.md#Changes-per-feature) guide for further understanding.
 
 ### Building packages
+
 As the project is built using [Lerna](https://lerna.js.org/), we can rely on it to manage our packages dependencies, so you just need to run at project's root directory
 ```sh
 npm run prepare
 ```
 
-Next, to build all packages add a `.env` file in both demo packages (`millicast-publisher-demo`, `millicast-viewer-demo` & `millicast-chromecast-receiver`). You can find the following example in `.env.sample`:
+You will need to add a `.env` file in all demo packages (`packages/millicast-publisher-demo`, `packages/millicast-viewer-demo` & `packages/millicast-chromecast-receiver`). You can simply copy the `.env.sample` to get started:
+
+> note : The `.env` is typically not added to git. When you clone the repo, you will not find this file and will have to create one yourself. The `.env.example` app can be used as a template with basic keys. Rename the file to `.env` and insert your tokens to get the file up and running.
+
 ```sh
 # Make a .env file with the following vars
 MILLICAST_STREAM_NAME=test
@@ -30,33 +39,48 @@ MILLICAST_ACCOUNT_ID=test
 MILLICAST_PUBLISH_TOKEN=test
 ```
 
+These tokens can be found in your [Dolby.io dashboard](https://streaming.dolby.io/#/tokens).
+
+![Tokens](img/tokens.png)
+
 Then, build all packages:
+
 ```sh
 npm run build
 ```
 
-Optionally you can run other Lerna command using `npx lerna [command]`.
+Optionally you can run other Lerna commands using `$ npx lerna [command]`.
 
 ### Running demo
-If you want to add, fix or edit features in SDK, or just try our demo pages, run:
+
+If you want to add, fix or edit features in the SDK or just try our demo pages, run the following command:
+
 ```sh
 npm run start
 ```
-It opens in your browser both demos and keep watching changes in all packages, so you only need to refresh both pages if you add changes in code.
+
+> Please note that before you run `npm run start`, you need to have built the solution first using `npm run build`
+
+It opens all the demo apps in your browser and keeps watching for changes in all the packages. You only need to refresh both pages if you modify the code.
 
 ### Building docs
-The SDK documentation is written with [JSDcos](https://jsdoc.app/), so to build documentation to get HTMLs files run:
+
+The SDK documentation is written with [JSDcos](https://jsdoc.app/). To build the HTML documentation, run:
+
 ```sh
 npx lerna run build-docs
 ```
 
-Or if you want to navigate docs in your localhost run:
+Or if you want to navigate to the docs on your local machine, run:
+
 ```sh
 npx lerna run start-docs --stream
 ```
-In the logs you find the link where you can access to docs. By default is running at http://localhost:5000.
+
+In the logs you find the link where you can access to docs. By default, the logs run on http://localhost:5000.
 
 ### SDK Components
+
 ```mermaid
 classDiagram
   class EventEmitter {
