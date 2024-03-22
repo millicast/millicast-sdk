@@ -5,7 +5,10 @@ function createReceiverTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      self.postMessage({ metadata: extractH26xMetadata(encodedFrame, 'h264') })
+      const metadata = extractH26xMetadata(encodedFrame, 'h264')
+      if (metadata.seiUserUnregisteredDataArray.length > 0 || metadata.seiPicTimingTimeCode) {
+        self.postMessage({ metadata })
+      }
       controller.enqueue(encodedFrame)
     }
   })

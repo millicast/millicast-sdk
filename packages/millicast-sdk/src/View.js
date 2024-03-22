@@ -238,7 +238,6 @@ export default class View extends BaseWebRTC {
 
     webRTCPeerInstance.on('track', (trackEvent) => {
       if (trackEvent.track.kind !== 'video') return
-      const trackId = trackEvent.track.id
       const worker = new Worker('workers/TransformWorker.js')
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
@@ -248,8 +247,7 @@ export default class View extends BaseWebRTC {
         worker.postMessage({ action: 'insertable-streams-receiver', readable, writable }, [readable, writable])
       }
       worker.onmessage = (event) => {
-        console.log('message from worker:', event.data)
-        this.emit('onMetadata', { ...event.data, trackId })
+        this.emit('onMetadata', { ...event.data, track: trackEvent.track })
       }
       this.worker = worker
     })
