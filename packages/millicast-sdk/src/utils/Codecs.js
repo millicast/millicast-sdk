@@ -197,6 +197,33 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
   if (codec !== 'h264' && codec !== 'h265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
-  // TODO: create new Uint8Array as NAL unit. NAL unit format is start code + header + sei type + payload then push to the original NAL units array
-  return encodedFrame
+  // TODO: create new Uint8Array as NAL unit. NAL unit format is start code + header + sei type (1-SEI_PIC_TIMING, 5-UNREGISTERED) + payload then push to the original NAL units array
+  // Example of NALU H264 - unregistered: 0x00 0x00 0x00 0x01 - 0b01100110 (0x66) - 0x05 - uuid+payload
+  // const startCode = new Uint8Array([0x00, 0x00, 0x00, 0x01])
+  const header = new Uint8Array([0x66]) // 0b01100110
+  const seiType = new Uint8Array([0x05])
+  const content = new TextEncoder().encode(uuid + payload)
+  const contentWithPreventionBytes = new Uint8Array(content.length)
+
+  for (let i = 2; i < content.byteLength; i++) {
+    if ([0x00, 0x01, 0x02, 0x03].includes(content[i]) && content[i - 1] === 0x00 && content[i - 2] === 0x00) {
+      contentWithPreventionBytes.set(content[i - 2])
+      contentWithPreventionBytes.set(content[i - 1])
+      i += 2
+      contentWithPreventionBytes.set([0x03])
+    } else {
+      contentWithPreventionBytes.set(content[i])
+    }
+  }
+
+  const naluWithSEI = new Uint8Array(header.length + seiType.length + contentWithPreventionBytes.length)
+  // naluWithSEI.set(startCode)
+  naluWithSEI.set(header)
+  naluWithSEI.set(seiType)
+  naluWithSEI.set(contentWithPreventionBytes)
+
+  const encodedFrameWithSEI = new Uint8Array(encodedFrame.data)
+  encodedFrameWithSEI.set(naluWithSEI)
+
+  return encodedFrameWithSEI
 }
