@@ -24,6 +24,7 @@ Whenever you are working on a new feature, fix or change, make sure you create a
 ### Building packages
 
 As the project is built using [Lerna](https://lerna.js.org/), we can rely on it to manage our packages dependencies, so you just need to run at project's root directory
+
 ```sh
 npm run prepare
 ```
