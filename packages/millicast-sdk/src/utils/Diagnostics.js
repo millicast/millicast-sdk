@@ -1,6 +1,8 @@
+import Logger from '../Logger'
 import { version } from '../../package.json'
 
 const MAX_STATS_HISTORY_SIZE = 5
+const MAX_HISTORY_SIZE = 10
 const userAgent = window?.navigator?.userAgent || 'No user agent available'
 let _accountId = ''
 let _streamName = ''
@@ -23,9 +25,13 @@ const Diagnostics = {
     }
     _stats.push(stats)
   },
-  get: (statsCount = MAX_STATS_HISTORY_SIZE) => {
+  get: (statsCount = MAX_STATS_HISTORY_SIZE, historySize = MAX_HISTORY_SIZE) => {
     if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
       statsCount = MAX_STATS_HISTORY_SIZE
+    }
+
+    if (!Number.isInteger(historySize) || historySize > MAX_HISTORY_SIZE || historySize <= 0) {
+      historySize = MAX_HISTORY_SIZE
     }
 
     const diagnostics = {
@@ -36,6 +42,7 @@ const Diagnostics = {
       streamName: _streamName,
       subscriberId: _subscriberId,
       connection: _connection,
+      history: Logger.getHistory().slice(-historySize),
       stats: _stats.slice(-statsCount)
     }
 
