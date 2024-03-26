@@ -28,7 +28,7 @@ As the project is built using [Lerna](https://lerna.js.org/), we can rely on it 
 npm run prepare
 ```
 
-You will need to add a `.env` file in all demo packages (`packages/millicast-publisher-demo`, `packages/millicast-viewer-demo` & `packages/millicast-chromecast-receiver`). You can simply copy the `.env.sample` to get started:
+You will need to add a `.env` file in all demo packages (`packages/millicast-publisher-demo`, `packages/millicast-viewer-demo`, `packages/millicast-chromecast-receiver`, `packages/millicast-multiview-demo` & `packages/millicast-webaudio-delay-demo`). You can simply copy the `.env.sample` to get started:
 
 > note : The `.env` is typically not added to git. When you clone the repo, you will not find this file and will have to create one yourself. The `.env.example` app can be used as a template with basic keys. Rename the file to `.env` and insert your tokens to get the file up and running.
 
