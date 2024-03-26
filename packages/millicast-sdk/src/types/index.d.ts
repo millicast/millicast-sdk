@@ -177,12 +177,13 @@ declare module '@millicast/sdk' {
      * @name diagnose
      * @description Returns an object with diagnostics about the state of the connection and environment.
      * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
+     * @param {Number} [historySize = 10]  - Amount of history messages to be returned.
      * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
      * @example
      * // Log and get a diagnose object with the last 3 stats reports
      * const diagnostics = await Logger.diagnose(3)
      */
-    diagnose: (statsCount: Number) => Object;
+    diagnose: (statsCount: Number, historySize: Number) => Object;
     /**
      * @var
      * @name VERSION
