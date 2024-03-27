@@ -176,14 +176,21 @@ declare module '@millicast/sdk' {
      * @function
      * @name diagnose
      * @description Returns an object with diagnostics about the state of the connection and environment.
-     * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
+     * @param {Number} [statsCount = 5]    - Amount of stats objects to be saved.
      * @param {Number} [historySize = 10]  - Amount of history messages to be returned.
+     * @param {String} minLogLevel         - Levels of history messages to be included.
+     * examples of minLogLevel values in level order (if 'INFO' given, return INFO, WARN, and ERROR level messages)
+     * 1 - TRACE
+     * 2 - DEBUG
+     * 3 - INFO
+     * 4 - WARN
+     * 5 - ERROR
      * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
      * @example
      * // Log and get a diagnose object with the last 3 stats reports
      * const diagnostics = await Logger.diagnose(3)
      */
-    diagnose: (statsCount: Number, historySize: Number) => Object;
+    diagnose: (statsCount: Number, historySize: Number, minLogLevel: String) => Object;
     /**
      * @var
      * @name VERSION

@@ -3,6 +3,7 @@ import { version } from '../../package.json'
 
 const MAX_STATS_HISTORY_SIZE = 5
 const MAX_HISTORY_SIZE = 10
+const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR']
 const userAgent = window?.navigator?.userAgent || 'No user agent available'
 let _accountId = ''
 let _streamName = ''
@@ -10,6 +11,7 @@ let _subscriberId = ''
 let _streamViewId = ''
 let _feedId = ''
 let _connection = ''
+let _history = []
 const _stats = []
 
 const Diagnostics = {
@@ -25,13 +27,21 @@ const Diagnostics = {
     }
     _stats.push(stats)
   },
-  get: (statsCount = MAX_STATS_HISTORY_SIZE, historySize = MAX_HISTORY_SIZE) => {
+  get: (statsCount = MAX_STATS_HISTORY_SIZE, historySize = MAX_HISTORY_SIZE, minLogLevel = 'TRACE') => {
     if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
       statsCount = MAX_STATS_HISTORY_SIZE
     }
 
     if (!Number.isInteger(historySize) || historySize > MAX_HISTORY_SIZE || historySize <= 0) {
       historySize = MAX_HISTORY_SIZE
+    }
+
+    _history = Logger.getHistory()
+
+    if (LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
+      const filteredLogLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(minLogLevel.toUpperCase()))
+      const filteredLevels = _history.filter((log) => filteredLogLevels.some(level => log.includes(level)))
+      _history = filteredLevels
     }
 
     const diagnostics = {
@@ -42,7 +52,7 @@ const Diagnostics = {
       streamName: _streamName,
       subscriberId: _subscriberId,
       connection: _connection,
-      history: Logger.getHistory().slice(-historySize),
+      history: _history.slice(-historySize),
       stats: _stats.slice(-statsCount)
     }
 
