@@ -197,33 +197,46 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
   if (codec !== 'h264' && codec !== 'h265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
+  if (uuid === '' && payload === '') {
+    return
+  }
   // TODO: create new Uint8Array as NAL unit. NAL unit format is start code + header + sei type (1-SEI_PIC_TIMING, 5-UNREGISTERED) + payload then push to the original NAL units array
   // Example of NALU H264 - unregistered: 0x00 0x00 0x00 0x01 - 0b01100110 (0x66) - 0x05 - uuid+payload
-  // const startCode = new Uint8Array([0x00, 0x00, 0x00, 0x01])
+  const startCode = new Uint8Array([0x00, 0x00, 0x00, 0x01])
   const header = new Uint8Array([0x66]) // 0b01100110
   const seiType = new Uint8Array([0x05])
   const content = new TextEncoder().encode(uuid + payload)
-  const contentWithPreventionBytes = new Uint8Array(content.length)
+  const preventionByteArray = []
 
   for (let i = 2; i < content.byteLength; i++) {
     if ([0x00, 0x01, 0x02, 0x03].includes(content[i]) && content[i - 1] === 0x00 && content[i - 2] === 0x00) {
-      contentWithPreventionBytes.set(content[i - 2])
-      contentWithPreventionBytes.set(content[i - 1])
+      preventionByteArray.push(content[i - 2])
+      preventionByteArray.push(content[i - 1])
       i += 2
-      contentWithPreventionBytes.set([0x03])
+      preventionByteArray.push([0x03])
     } else {
-      contentWithPreventionBytes.set(content[i])
+      preventionByteArray.push(content[i])
     }
   }
 
-  const naluWithSEI = new Uint8Array(header.length + seiType.length + contentWithPreventionBytes.length)
-  // naluWithSEI.set(startCode)
-  naluWithSEI.set(header)
-  naluWithSEI.set(seiType)
-  naluWithSEI.set(contentWithPreventionBytes)
+  const contentWithPreventionBytes = new Uint8Array(preventionByteArray)
 
-  const encodedFrameWithSEI = new Uint8Array(encodedFrame.data)
-  encodedFrameWithSEI.set(naluWithSEI)
+  const naluWithSEI = new Uint8Array(startCode.length + header.length + seiType.length + contentWithPreventionBytes.length)
+  naluWithSEI.set(startCode)
+  naluWithSEI.set(header, startCode.length)
+  naluWithSEI.set(seiType, startCode.length + header.length)
+  naluWithSEI.set(contentWithPreventionBytes, startCode.length + header.length + seiType.length)
 
-  return encodedFrameWithSEI
+  const encodedFrameView = new DataView(encodedFrame.data)
+  const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)
+  const encodedFrameWithSEIView = new DataView(encodedFrameWithSEI)
+
+  for (let i = 0; i < encodedFrame.data.byteLength; i++) {
+    encodedFrameWithSEIView.setUint8(i, encodedFrameView.getUint8(i))
+  }
+  for (let i = 0; i < naluWithSEI.byteLength; i++) {
+    encodedFrameWithSEIView.setUint8(encodedFrame.data.byteLength + i, naluWithSEI[i])
+  }
+
+  encodedFrame.data = encodedFrameWithSEI
 }

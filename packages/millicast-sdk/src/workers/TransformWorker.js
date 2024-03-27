@@ -1,7 +1,7 @@
 import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 
 let uuid = ''
-let message = ''
+let payload = ''
 
 function createReceiverTransform () {
   return new TransformStream({
@@ -22,8 +22,10 @@ function createSenderTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      const encodedFrameWithSEI = addH26xSEI({ uuid, message }, encodedFrame, 'h264')
-      controller.enqueue(encodedFrameWithSEI)
+      addH26xSEI({ uuid, payload }, encodedFrame, 'h264')
+      uuid = ''
+      payload = ''
+      controller.enqueue(encodedFrame)
     }
   })
 }
@@ -58,7 +60,7 @@ addEventListener('message', (event) => {
       break
     case 'metadata':
       uuid = event.data.uuid
-      message = event.data.metadata
+      payload = event.data.payload
       break
     default:
       break

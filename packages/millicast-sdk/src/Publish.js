@@ -280,7 +280,7 @@ export default class Publish extends BaseWebRTC {
       this.worker.postMessage({
         action: 'metadata',
         uuid: uuid,
-        message: message
+        payload: message
       })
     }
   }
