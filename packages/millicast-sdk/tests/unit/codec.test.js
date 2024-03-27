@@ -1,5 +1,7 @@
 import { TextDecoder } from 'util'
 import { extractH26xMetadata } from '../../src/utils/Codecs'
+import fs from 'fs'
+import path from 'path'
 
 function bytes2HexStr (bytes) {
   return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
@@ -65,5 +67,42 @@ describe('Extract user unregistered data in SEI from H26x frame', () => {
     expect(bytes2HexStr(res.seiUserUnregisteredDataArray[0].uuid)).toEqual(targetUUID)
     const decoder = new TextDecoder('ascii')
     expect(decoder.decode(res.seiUserUnregisteredDataArray[0].data)).toEqual(targetContent)
+  })
+})
+
+describe('Extract pic_timing SEI from h26x sample', () => {
+  it('should extract expected pic_timing SEI from h264 sample', () => {
+    const output = []
+    for (let i = 1; i <= 4; i++) {
+      const filePath = path.join(__dirname, 'samples', `pic-${i}.bin`)
+      const frameBuffer = fs.readFileSync(filePath)
+      output.push(extractH26xMetadata({ timestamp: 0, data: frameBuffer }, 'h264'))
+    }
+    expect(output).toHaveLength(4)
+    expect(output[0].seiPicTimingTimeCodeArray).toBeUndefined()
+    expect(output[1].seiPicTimingTimeCodeArray).toHaveLength(1)
+    expect(output[1].seiPicTimingTimeCodeArray[0]).toEqual({
+      hours_value: 19,
+      minutes_value: 15,
+      seconds_value: 8,
+      n_frames: 14,
+      time_offset: 0
+    })
+    expect(output[2].seiPicTimingTimeCodeArray).toHaveLength(1)
+    expect(output[2].seiPicTimingTimeCodeArray[0]).toEqual({
+      hours_value: 19,
+      minutes_value: 15,
+      seconds_value: 8,
+      n_frames: 15,
+      time_offset: 0
+    })
+    expect(output[3].seiPicTimingTimeCodeArray).toHaveLength(1)
+    expect(output[3].seiPicTimingTimeCodeArray[0]).toEqual({
+      hours_value: 19,
+      minutes_value: 15,
+      seconds_value: 8,
+      n_frames: 16,
+      time_offset: 0
+    })
   })
 })
