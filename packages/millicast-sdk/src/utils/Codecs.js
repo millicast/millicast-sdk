@@ -428,6 +428,8 @@ function getSeiPicTimingTimecode (payloadContent) {
           console.error('Failed to read time_offset', err)
           timecode.time_offset = 0
         }
+      } else {
+        timecode.time_offset = 0
       }
       timecodes.push(timecode)
     }
