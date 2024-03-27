@@ -200,18 +200,34 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
   if (uuid === '' && payload === '') {
     return
   }
-  // TODO: create new Uint8Array as NAL unit. NAL unit format is start code + header + sei type (1-SEI_PIC_TIMING, 5-UNREGISTERED) + payload then push to the original NAL units array
-  // Example of NALU H264 - unregistered: 0x00 0x00 0x00 0x01 - 0b01100110 (0x66) - 0x05 - uuid+payload
+  // Case of NALU H264 - User Unregistered Data
   const startCode = new Uint8Array([0x00, 0x00, 0x00, 0x01])
   const header = new Uint8Array([0x66]) // 0b01100110
-  const seiType = new Uint8Array([0x05])
-  const content = new TextEncoder().encode(uuid + payload)
+
+  const uuidBytes = uuid.replace(/-/g, '')
+    .match(/.{1,2}/g)
+    .map(byte => parseInt(byte, 16))
+  const uuidArray = new Uint8Array(uuidBytes)
+  const payloadArray = new TextEncoder().encode(payload)
+  const content = new Uint8Array(uuidArray.length + payloadArray.length)
+  content.set(uuidArray)
+  content.set(payloadArray, uuidArray.length)
+
+  const payloadSize = []
+  const ffToAdd = Math.floor(content.byteLength / 255)
+  const sizeModulo = content.byteLength % 255
+  for (let i = 0; i < ffToAdd; i++) {
+    payloadSize.push(0xFF)
+  }
+  payloadSize.push(sizeModulo)
+
+  const seiTypeAndSize = new Uint8Array([0x05, ...payloadSize])
   const preventionByteArray = []
 
-  for (let i = 2; i < content.byteLength; i++) {
-    if ([0x00, 0x01, 0x02, 0x03].includes(content[i]) && content[i - 1] === 0x00 && content[i - 2] === 0x00) {
-      preventionByteArray.push(content[i - 2])
-      preventionByteArray.push(content[i - 1])
+  for (let i = 0; i < content.byteLength; i++) {
+    if (i + 2 < content.byteLength && [0x00, 0x01, 0x02, 0x03].includes(content[i + 2]) && content[i] === 0x00 && content[i + 1] === 0x00) {
+      preventionByteArray.push(content[i])
+      preventionByteArray.push(content[i + 1])
       i += 2
       preventionByteArray.push([0x03])
     } else {
@@ -221,11 +237,11 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
 
   const contentWithPreventionBytes = new Uint8Array(preventionByteArray)
 
-  const naluWithSEI = new Uint8Array(startCode.length + header.length + seiType.length + contentWithPreventionBytes.length)
+  const naluWithSEI = new Uint8Array(startCode.length + header.length + seiTypeAndSize.length + contentWithPreventionBytes.length)
   naluWithSEI.set(startCode)
   naluWithSEI.set(header, startCode.length)
-  naluWithSEI.set(seiType, startCode.length + header.length)
-  naluWithSEI.set(contentWithPreventionBytes, startCode.length + header.length + seiType.length)
+  naluWithSEI.set(seiTypeAndSize, startCode.length + header.length)
+  naluWithSEI.set(contentWithPreventionBytes, startCode.length + header.length + seiTypeAndSize.length)
 
   const encodedFrameView = new DataView(encodedFrame.data)
   const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)
