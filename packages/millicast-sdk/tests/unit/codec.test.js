@@ -85,24 +85,21 @@ describe('Extract pic_timing SEI from h26x sample', () => {
       hours_value: 19,
       minutes_value: 15,
       seconds_value: 8,
-      n_frames: 14,
-      time_offset: 0
+      n_frames: 14
     })
     expect(output[2].seiPicTimingTimeCodeArray).toHaveLength(1)
     expect(output[2].seiPicTimingTimeCodeArray[0]).toEqual({
       hours_value: 19,
       minutes_value: 15,
       seconds_value: 8,
-      n_frames: 15,
-      time_offset: 0
+      n_frames: 15
     })
     expect(output[3].seiPicTimingTimeCodeArray).toHaveLength(1)
     expect(output[3].seiPicTimingTimeCodeArray[0]).toEqual({
       hours_value: 19,
       minutes_value: 15,
       seconds_value: 8,
-      n_frames: 16,
-      time_offset: 0
+      n_frames: 16
     })
   })
 })

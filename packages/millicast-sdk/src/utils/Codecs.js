@@ -374,7 +374,7 @@ function getSeiPicTimingTimecode (payloadContent) {
     cpb_dpb_delays_present_flag: hrdParameters ? 1 : 0,
     cpb_removal_delay_length_minus1: hrdParameters?.cpb_removal_delay_length_minus1 ?? 23,
     dpb_output_delay_length_minus1: hrdParameters?.dpb_output_delay_length_minus1 ?? 23,
-    time_offset_length: hrdParameters?.time_offset_length ?? 24,
+    time_offset_length: hrdParameters ? hrdParameters.time_offset_length ?? 24 : undefined,
     pic_struct_present_flag: spsState.activeSPS.vui_parameters.pic_struct_present_flag ?? 0
   }
   if (!options.pic_struct_present_flag) {
@@ -421,11 +421,13 @@ function getSeiPicTimingTimecode (payloadContent) {
           }
         }
       }
-      try {
-        timecode.time_offset = reader.readBits(options.time_offset_length)
-      } catch (err) {
-        console.error('Failed to read time_offset', err)
-        timecode.time_offset = 0
+      if (options.time_offset_length) {
+        try {
+          timecode.time_offset = reader.readBits(options.time_offset_length)
+        } catch (err) {
+          console.error('Failed to read time_offset', err)
+          timecode.time_offset = 0
+        }
       }
       timecodes.push(timecode)
     }
