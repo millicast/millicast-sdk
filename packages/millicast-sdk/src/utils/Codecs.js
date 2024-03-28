@@ -167,11 +167,13 @@ class SPSState {
         reader.readExpGolombUnsigned() // chroma_sample_loc_type_bottom_field
       }
       // timing_info
-      if (reader.readBits(1)) {
-        reader.skip(32) // num_units_in_tick
-        reader.skip(32) // time_scale
-        reader.skip(1) // fixed_frame_rate_flag
-      }
+      const timing_info = reader.readBits(1)
+        ? {
+            num_units_in_tick: reader.readBits(32),
+            time_scale: reader.readBits(32),
+            fixed_frame_rate_flag: reader.readBits(1)
+          }
+        : undefined
 
       function parseHRDParameters (reader) {
         const cpb_cnt_minus1 = reader.readExpGolombUnsigned()
@@ -200,6 +202,7 @@ class SPSState {
       }
       const pic_struct_present_flag = reader.readBits(1)
       vui_parameters = {
+        timing_info,
         nal_hrd_parameters,
         vcl_hrd_parameters,
         pic_struct_present_flag
