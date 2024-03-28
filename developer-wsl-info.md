@@ -2,7 +2,7 @@
 ### Running Test
 After completing the general Millicast SDK setup instructions listed in the [developer-info.md](developer-info.md) file, WSL users may experience multiple issues when trying to run test locally.
 
- - The first issue you may encounter is a SyntaxError occuring at the Puppeteer/util/disposable.js file requiring a specific version of Node or higher. The error will appear in your terminal due to an unexpected "??=" token.
+ - The first issue you may encounter is a SyntaxError occuring at the Puppeteer/util/disposable.js file which will appear in your terminal as an error due to an unexpected "??=" token.
 
  ![Puppeteer Syntax error](image.png)
 
@@ -33,12 +33,11 @@ module.exports = {
 
 Add your "Puppeteerrc.cjs" file to the global .gitignore file so that its not pushed up to the main repository in github, which could affect Apple/MacOS users.
 
-Next uninstall then reinstall Puppeteer inside the millicast-sdk subdirectory. This should help you fix the issue, but you may lead to another error depending on the packages and dependencies you have installed for WSL locally. I will address this below in the third error resolution. 
+Next uninstall then reinstall Puppeteer inside the millicast-sdk subdirectory. This should help you fix the issue, but may lead to another error depending on the packages and dependencies you have installed for WSL locally. I will address this below in the third issue resolution. 
 
  -----------------
 
- - The third issue you may encounter is due to not having Chrome installed for WSL.
- Your terminal may display the following error: 
+ - The third issue you may encounter is due to not having Chrome installed for WSL. Your terminal may display the following error: 
  
  ".cache/puppeteer/chrome/linux-119.0.6045.105/chrome-linux64/chrome: error while loading shared libraries: libxkbcommon.so.0: cannot open shared object file: No such file or directory"
 
