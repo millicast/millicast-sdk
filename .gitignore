@@ -3,6 +3,7 @@ node_modules
 coverage
 dist
 docs
+puppeteerrc.cjs
 docs-translations
 .env
 test-environment.js
