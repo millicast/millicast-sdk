@@ -14,11 +14,11 @@ After completing the general Millicast SDK setup instructions listed in the [dev
 
  -----------------
 ### Second Issue
- The second issue you may encounter is due to the current way the Puppeteer file is stored in your global .cache folder located in your machine's root user directory for WSL. This will cause issues when trying to run test as the millicast-sdk sub-directory will not be able to access the Puppeteer folder located in the .cache since its not located within its sub directory. 
+ The second issue you may encounter is due to the current way the Puppeteer file is stored in your global .cache folder located in your machine's root user directory for WSL. This will cause issues when trying to run test as the millicast-sdk sub-directory will not be able to access the Puppeteer folder located in the .cache since its not located within its sub-directory. 
 
- Your terminal will give you an option to resolve the issue by running "npx puppeteer browsers install chrome" or alert you that your cache path is incorrectly configured.
+ Your terminal will give you an option to resolve the issue by running ```npx puppeteer browsers install chrome``` or alert you that your cache path is incorrectly configured.
 
- Run the "npx puppeteer browsers install chrome" command and then create a file named 'Puppeteerrc.config' and insert the following contents within it: 
+ Run the ```npx puppeteer browsers install chrome``` command and then create a file named 'Puppeteerrc.config' and insert the following contents within it: 
 
  ```
 const { join } = require('path')
@@ -35,7 +35,7 @@ module.exports = {
 
 Add your "Puppeteerrc.cjs" file to the global .gitignore file so that its not pushed up to the main repository in github, which could affect Apple/MacOS users.
 
-Next uninstall then reinstall Puppeteer inside the millicast-sdk subdirectory. This should help you fix the issue, but may lead to another error depending on the packages and dependencies you have installed for WSL locally. I will address this below in the third issue resolution. 
+Next reinstall Puppeteer inside the millicast-sdk sub-directory. This should help you fix the issue, but may lead to another error depending on the packages and dependencies you have installed for WSL. I will address this below in the third issue resolution. 
 
  -----------------
 ### Third Issue
@@ -62,7 +62,7 @@ to install Chrome's required dependencies manually.
 
  -----------------
 
-After running through these steps, your WSL should be able to run "npm run test" without any errors and see results of running the tests.
+After running through these steps, your WSL should be able to run "npm run test" without any errors and show you the results of running the tests.
 
 
 
