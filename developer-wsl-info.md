@@ -3,18 +3,27 @@
 ## Table of Contents
 - Millicast SDK for WSL
   - [Running test](#running-test)
+    - [Puppeteer syntax error](#solving-puppeteer-syntax-error)
+    - [Puppeteer .cache path error](#solving-puppeteer-cache-path-issue)
+    - [Chrome libxkbcommon.so.0 library error](#libxkbcommonso0-library-error)
   
 ## Running Test
 After completing the general Millicast SDK setup instructions listed in the [developer-info.md](developer-info.md) file, WSL users may experience multiple issues when trying to run test locally.
 
-### First Issue
- The first issue you may encounter is a SyntaxError occuring at the Puppeteer/util/disposable.js file which will appear in your terminal as an error due to an unexpected "??=" token.
+### Pre-requisites
+In order to get through the following guides on getting test to work, you must ensure you have installed or done the following:
+- Have Node Version 16 or greater installed
+- Have run through the steps listed in the [developer-info.md](developer-info.md)
 
- The quick way to resolve this error is by using "nvm use v16.14.0" or any higher version of Node.
+### Solving Puppeteer syntax error
+ If you encounter a SyntaxError, occuring at the ```Puppeteer/util/disposable.js``` file, which will appear in your terminal as an error due to an unexpected "??=" token, then you will need to do the
+ following to resolve it:
+
+ Use "nvm use v16.14.0" or any higher version of Node. If you have went through and implemented the pre-requisites, then you should not get this error.
 
  -----------------
-### Second Issue
- The second issue you may encounter is due to the current way the Puppeteer file is stored in your global .cache folder located in your machine's root user directory for WSL. This will cause issues when trying to run test as the millicast-sdk sub-directory will not be able to access the Puppeteer folder located in the .cache since its not located within its sub-directory. 
+### Solving Puppeteer .cache path issue
+ You may encounter this due to the current way the Puppeteer file is stored in your global .cache folder located in your machine's root user directory for WSL. This will cause issues when trying to run test as the [millicast-sdk](packages/millicast-sdk) sub-directory will not be able to access the Puppeteer folder located in the global .cache and not within its sub-directory. 
 
  Your terminal will give you an option to resolve the issue by running ```npx puppeteer browsers install chrome``` or alert you that your cache path is incorrectly configured.
 
@@ -35,12 +44,12 @@ module.exports = {
 
 Add your "Puppeteerrc.cjs" file to the global .gitignore file so that its not pushed up to the main repository in github, which could affect Apple/MacOS users.
 
-Next reinstall Puppeteer inside the millicast-sdk sub-directory. This should help you fix the issue, but may lead to another error depending on the packages and dependencies you have installed for WSL. I will address this below in the third issue resolution. 
+Next reinstall Puppeteer inside the [millicast-sdk](packages/millicast-sdk) sub-directory. This should help you fix the issue, but may lead to another error depending on the packages and dependencies you have installed for WSL. I will address this below in the third issue resolution. 
 
  -----------------
-### Third Issue
+### Chrome libxkbcommon.so.0 library error
 
- The third issue you may encounter is due to not having Chrome installed for WSL. Your terminal may display the following error: 
+ This issue is due to not having Chrome installed for WSL. Your terminal will display the following error: 
  
  ```.cache/puppeteer/chrome/linux-119.0.6045.105/chrome-linux64/chrome: error while loading shared libraries: libxkbcommon.so.0: cannot open shared object file: No such file or directory```
 
