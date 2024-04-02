@@ -275,10 +275,10 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
-  sendMetadata (uuid = '6e9cfd2a-5907-49ff-b363-8978a6e8340e', message) {
+  sendMetadata (message, uuid = '6e9cfd2a-5907-49ff-b363-8978a6e8340e') {
     if (this.worker) {
       this.worker.postMessage({
-        action: 'metadata',
+        action: 'metadata-sei-user-data-unregistered',
         uuid: uuid,
         payload: message
       })

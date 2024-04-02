@@ -193,35 +193,36 @@ export function extractH26xMetadata (encodedFrame, codec) {
   }
 }
 
-export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
-  if (codec !== 'h264' && codec !== 'h265') {
-    throw new Error(`Unsupported codec ${codec}`)
-  }
-  if (uuid === '' && payload === '') {
-    return
-  }
-  // Case of NALU H264 - User Unregistered Data
-  const startCode = new Uint8Array([0x00, 0x00, 0x00, 0x01])
-  const header = new Uint8Array([0x66]) // 0b01100110
-
-  const uuidBytes = uuid.replace(/-/g, '')
+function parseUUID (uuid) {
+  return uuid.replace(/-/g, '')
     .match(/.{1,2}/g)
     .map(byte => parseInt(byte, 16))
-  const uuidArray = new Uint8Array(uuidBytes)
+}
+
+function createSEIMessageContent (uuid, payload) {
+  const uuidArray = new Uint8Array(parseUUID(uuid))
   const payloadArray = new TextEncoder().encode(payload)
+
   const content = new Uint8Array(uuidArray.length + payloadArray.length)
   content.set(uuidArray)
   content.set(payloadArray, uuidArray.length)
 
+  return content
+}
+
+function createSEITypeAndSize (content) {
   const payloadSize = []
-  const ffToAdd = Math.floor(content.byteLength / 255)
-  const sizeModulo = content.byteLength % 255
-  for (let i = 0; i < ffToAdd; i++) {
+  const ffBytes = Math.floor(content.byteLength / 255)
+  const lastPayloadTypeByte = content.byteLength % 255
+  for (let i = 0; i < ffBytes; i++) {
     payloadSize.push(0xFF)
   }
-  payloadSize.push(sizeModulo)
+  payloadSize.push(lastPayloadTypeByte)
 
-  const seiTypeAndSize = new Uint8Array([0x05, ...payloadSize])
+  return new Uint8Array([0x05, ...payloadSize])
+}
+
+function createSEIMessageContentWithPrevensionBytes (content) {
   const preventionByteArray = []
 
   for (let i = 0; i < content.byteLength; i++) {
@@ -229,19 +230,43 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
       preventionByteArray.push(content[i])
       preventionByteArray.push(content[i + 1])
       i += 2
-      preventionByteArray.push([0x03])
+      preventionByteArray.push(0x03)
     } else {
       preventionByteArray.push(content[i])
     }
   }
 
-  const contentWithPreventionBytes = new Uint8Array(preventionByteArray)
+  // trailing bits
+  preventionByteArray.push(0x80)
+
+  return new Uint8Array(preventionByteArray)
+}
+
+function createSEINalu ({ uuid, payload }, codec) {
+  const startCode = [0x00, 0x00, 0x00, 0x01]
+  const header = [0x66] // 0b01100110
+  const content = createSEIMessageContent(uuid, payload)
+  const seiTypeAndSize = createSEITypeAndSize(content)
+  const contentWithPreventionBytes = createSEIMessageContentWithPrevensionBytes(content)
 
   const naluWithSEI = new Uint8Array(startCode.length + header.length + seiTypeAndSize.length + contentWithPreventionBytes.length)
   naluWithSEI.set(startCode)
   naluWithSEI.set(header, startCode.length)
   naluWithSEI.set(seiTypeAndSize, startCode.length + header.length)
   naluWithSEI.set(contentWithPreventionBytes, startCode.length + header.length + seiTypeAndSize.length)
+
+  return naluWithSEI
+}
+
+export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
+  if (codec !== 'h264' && codec !== 'h265') {
+    throw new Error(`Unsupported codec ${codec}`)
+  }
+  if (uuid === '' || payload === '') {
+    return
+  }
+  // Case of NALU H264 - User Unregistered Data
+  const naluWithSEI = createSEINalu({ uuid, payload }, codec)
 
   const encodedFrameView = new DataView(encodedFrame.data)
   const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)

@@ -58,7 +58,7 @@ addEventListener('message', (event) => {
     case 'insertable-streams-receiver':
       setupPipe(event.data, createReceiverTransform())
       break
-    case 'metadata':
+    case 'metadata-sei-user-data-unregistered':
       uuid = event.data.uuid
       payload = event.data.payload
       break
