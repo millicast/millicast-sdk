@@ -16,14 +16,14 @@ In order to get through the following guides on getting test to work, you must e
 - Have run through the steps listed in the [developer-info.md](developer-info.md)
 
 ### Solving Puppeteer syntax error
- If you encounter a SyntaxError, occuring at the ```Puppeteer/util/disposable.js``` file, which will appear in your terminal as an error due to an unexpected "??=" token, then you will need to do the
+ If you encounter a SyntaxError at the ```Puppeteer/util/disposable.js``` file, which will appear in your terminal as an error due to an unexpected "??=" token, then you will need to do the
  following to resolve it:
 
- Use "nvm use v16.14.0" or any higher version of Node. If you have went through and implemented the pre-requisites, then you should not get this error.
+ Use "nvm use v16.14.0" or any higher version of Node.
 
  -----------------
-### Solving Puppeteer .cache path issue
- You may encounter this due to the current way the Puppeteer file is stored in your global .cache folder located in your machine's root user directory for WSL. This will cause issues when trying to run test as the [millicast-sdk](packages/millicast-sdk) sub-directory will not be able to access the Puppeteer folder located in the global .cache and not within its sub-directory. 
+### Solving Puppeteer .cache path error
+ You may encounter this error due to the current way the Puppeteer file is stored in your global .cache folder located in your machine's root user directory for WSL. This will cause issues when trying to run test as the [millicast-sdk](packages/millicast-sdk) sub-directory will not be able to access the Puppeteer folder located in the global .cache and not within its sub-directory. 
 
  Your terminal will give you an option to resolve the issue by running ```npx puppeteer browsers install chrome``` or alert you that your cache path is incorrectly configured.
 
@@ -49,7 +49,7 @@ Next reinstall Puppeteer inside the [millicast-sdk](packages/millicast-sdk) sub-
  -----------------
 ### Chrome libxkbcommon.so.0 library error
 
- This issue is due to not having Chrome installed for WSL. Your terminal will display the following error: 
+ This error is due to not having Chrome installed for WSL. Your terminal will display the following error: 
  
  ```.cache/puppeteer/chrome/linux-119.0.6045.105/chrome-linux64/chrome: error while loading shared libraries: libxkbcommon.so.0: cannot open shared object file: No such file or directory```
 
