@@ -179,7 +179,7 @@ declare module '@millicast/sdk' {
      * @param {Number} [statsCount = 5]    - Amount of stats objects to be saved.
      * @param {Number} [historySize = 10]  - Amount of history messages to be returned.
      * @param {String} minLogLevel         - Levels of history messages to be included.
-     * examples of minLogLevel values in level order (if 'INFO' given, return INFO, WARN, and ERROR level messages):
+     * examples of minLogLevel values in level order (if 'INFO' given, return INFO, WARN, and ERROR level messages)
      * 1 - TRACE
      * 2 - DEBUG
      * 3 - INFO
