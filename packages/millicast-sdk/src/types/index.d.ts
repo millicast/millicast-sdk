@@ -179,12 +179,13 @@ declare module '@millicast/sdk' {
      * @param {Number} [statsCount = 5]    - Amount of stats objects to be saved.
      * @param {Number} [historySize = 10]  - Amount of history messages to be returned.
      * @param {String} minLogLevel         - Levels of history messages to be included.
-     * examples of minLogLevel values in level order (if 'INFO' given, return INFO, WARN, and ERROR level messages)
+     * examples of minLogLevel values in level order:
      * 1 - TRACE
      * 2 - DEBUG
      * 3 - INFO
      * 4 - WARN
      * 5 - ERROR
+     * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
      * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
      * @example
      * // Log and get a diagnose object with the last 3 stats reports
