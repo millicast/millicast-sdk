@@ -45,7 +45,7 @@ npm run start
 It opens in your browser both demos and keep watching changes in all packages, so you only need to refresh both pages if you add changes in code.
 
 ### WSL user guide
-Read the [WSL](developer-wsl-info.md) user guide for help with configuring WSL to develop with the SDK.
+Read the [WSL user guide ](developer-wsl-info.md) for help with configuring WSL to develop with the SDK.
 
 ### Building docs
 The SDK documentation is written with [JSDcos](https://jsdoc.app/), so to build documentation to get HTMLs files run:
