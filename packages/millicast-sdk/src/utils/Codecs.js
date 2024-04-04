@@ -327,8 +327,12 @@ function getSeiNalus (frameBuffer, codec) {
         case NALUType.SLICE_IDR:
         case NALUType.SLICE_NON_IDR:
         case NALUType.SLICE_PARTITION_A:
-          spsState.findActiveSPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
-          shouldSearchActiveSPS = false
+          try {
+            spsState.findActiveSPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
+            shouldSearchActiveSPS = false
+          } catch (err) {
+            console.error('Failed to find active SPS', err)
+          }
           break
         default:
           break
