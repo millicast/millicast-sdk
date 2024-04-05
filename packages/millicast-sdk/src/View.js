@@ -237,7 +237,7 @@ export default class View extends BaseWebRTC {
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     webRTCPeerInstance.on('track', (trackEvent) => {
-      if (trackEvent.track.kind !== 'video') return
+      if (trackEvent.track?.kind !== 'video') return
       const worker = new Worker('workers/TransformWorker.js')
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
@@ -248,6 +248,10 @@ export default class View extends BaseWebRTC {
       }
       worker.onmessage = (event) => {
         this.emit('onMetadata', { ...event.data, track: trackEvent.track })
+      }
+      if (this.worker) {
+        this.worker.terminate()
+        this.worker = null
       }
       this.worker = worker
     })
