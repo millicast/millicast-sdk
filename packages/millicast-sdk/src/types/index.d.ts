@@ -177,7 +177,7 @@ declare module '@millicast/sdk' {
      * @name diagnose
      * @description Returns an object with diagnostics about the state of the connection and environment.
      * @param {Number} [statsCount = 5]    - Amount of stats objects to be saved.
-     * @param {Number} [historySize = 10]  - Amount of history messages to be returned.
+     * @param {Number} [historySize = 100]  - Amount of history messages to be returned.
      * @param {String} minLogLevel         - Levels of history messages to be included.
      * examples of minLogLevel values in level order:
      * 1 - TRACE
