@@ -1,6 +1,7 @@
 import EventEmitter from 'events'
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
+import WebRTCStats from '@dolbyio/webrtc-stats'
 
 const logger = Logger.get('PeerConnectionStats')
 
@@ -35,6 +36,10 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} [framesPerSecond] - Current framerate if it's video report.
  * @property {Number} [frameHeight] - Current frame height if it's video report.
  * @property {Number} [frameWidth] - Current frame width if it's video report.
+ * @property {Number} [keyFramesDecoded] - Total number of key frames that have been decoded if it's video report.
+ * @property {Number} [framesDecoded] - Total number of frames that have been decoded if it's video report.
+ * @property {Number} [framesDropped] - Total number of frames that have been dropped if it's video report.
+ * @property {Number} [framesReceived] - Total number of frames that have been received if it's video report.
  * @property {Number} timestamp - Timestamp of report.
  * @property {Number} totalBytesReceived - Total bytes received is an integer value which indicates the total number of bytes received so far from this synchronization source.
  * @property {Number} totalPacketsReceived - Total packets received indicates the total number of packets of any kind that have been received on the connection described by the pair of candidates.
@@ -42,7 +47,10 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} packetsLostRatioPerSecond - Total packet lost ratio per second.
  * @property {Number} packetsLostDeltaPerSecond - Total packet lost delta per second.
  * @property {Number} bitrate - Current bitrate in bits per second.
- */
+ * @property {Number} packetRate - The rate at which packets are being received, measured in packets per second.
+ * @property {Number} jitterBufferDelay - Total delay in seconds currently experienced by the jitter buffer.
+ * @property {Number} jitterBufferEmittedCount - Total number of packets emitted from the jitter buffer.
+*/
 
 /**
  * @typedef {Object} OutboundStats
@@ -55,80 +63,114 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} timestamp - Timestamp of report.
  * @property {Number} totalBytesSent - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
  * @property {Number} bitrate - Current bitrate in bits per second.
+ * @property {Number} bytesSentDelta - Change in the number of bytes sent since the last report.
+ * @property {Number} totalPacketsSent - Total number of packets sent.
+ * @property {Number} packetsSentDelta - Change in the number of packets sent since the last report.
+ * @property {Number} packetRate - Rate at which packets are being sent, measured in packets per second.
+ * @property {Number} targetBitrate - The target bitrate for the encoder, in bits per second.
+ * @property {Number} retransmittedPacketsSent - Total number of retransmitted packets sent.
+ * @property {Number} retransmittedPacketsSentDelta - Change in the number of retransmitted packets sent since the last report.
+ * @property {Number} retransmittedBytesSent - Total number of bytes that have been retransmitted.
+ * @property {Number} retransmittedBytesSentDelta - Change in the number of retransmitted bytes sent since the last report.
+ * @property {Number} framesSent - Total number of frames sent (applicable for video).
+ * @property {Object} [qualityLimitationDurations] - Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
  */
 
 export const peerConnectionStatsEvents = {
   stats: 'stats'
 }
 
+/**
+   * Parses incoming WebRTC statistics
+   * This method takes statistical data from @dolbyio/webrtc-stats and transforms it into
+   * a structured format compatible with previous versions.
+   *
+   * @param {Object} webRTCStats - The statistics object containing various WebRTC stats
+   */
+const parseWebRTCStats = (webRTCStats) => {
+  const { input, output, rawStats, ...filteredStats } = webRTCStats
+  const statsObject = {
+    ...filteredStats,
+    audio: {
+      inbounds: webRTCStats.input.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+        packetsLostRatioPerSecond,
+        packetsLostDeltaPerSecond,
+        ...rest
+      })),
+      outbounds: webRTCStats.output.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+        packetsLostRatioPerSecond,
+        packetsLostDeltaPerSecond,
+        ...rest
+      }))
+    },
+    video: {
+      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+        packetsLostRatioPerSecond,
+        packetsLostDeltaPerSecond,
+        ...rest
+      })),
+      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+        packetsLostRatioPerSecond,
+        packetsLostDeltaPerSecond,
+        ...rest
+      }))
+    },
+    raw: webRTCStats.rawStats
+  }
+  return statsObject
+}
+
 export default class PeerConnectionStats extends EventEmitter {
-  constructor (peer) {
+  constructor (peer, options = { autoInitStats: true }) {
     super()
     this.peer = peer
-    this.stats = null
-    this.emitInterval = null
-    this.previousStats = null
+    this.collection = null
+    this.initialized = false
+
+    if (options.autoInitStats) {
+      this.init()
+    }
   }
 
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
    */
   init () {
+    if (this.initialized) {
+      logger.warn('PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.')
+      return
+    }
     logger.info('Initializing peer connection stats')
-    this.emitInterval = setInterval(async () => {
-      const stats = await this.peer.getStats()
-      this.parseStats(stats)
-      Diagnostics.addStats(this.stats)
-      /**
-       * Peer connection incoming stats.
-       *
-       * @event PeerConnection#stats
-       * @type {ConnectionStats}
-      */
-      this.emit(peerConnectionStatsEvents.stats, this.stats)
-    }, 1000)
+    const peer = this.peer
+    try {
+      this.collection = new WebRTCStats({
+        getStatsInterval: 1000,
+        getStats: () => {
+          return peer.getStats()
+        },
+        includeRawStats: true
+      })
+      this.collection.on('stats', (stats) => {
+        const parsedSats = parseWebRTCStats(stats)
+        Diagnostics.addStats(parsedSats)
+        this.emit(peerConnectionStatsEvents.stats, parsedSats)
+      })
+      this.collection.start()
+      this.initialized = true
+    } catch (e) {
+      logger.error(e)
+    }
   }
 
   /**
    * Parse incoming RTCPeerConnection stats.
+   * @deprecated since version 0.1.45 - will be removed in future releases.
    * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
-   * @returns {ConnectionStats} RTCPeerConnection stats parsed.
+   * @returns {null} Method deprecated and no longer returns meaningful data.
    */
   parseStats (rawStats) {
-    this.previousStats = this.stats
-    const statsObject = {
-      audio: {
-        inbounds: [],
-        outbounds: []
-      },
-      video: {
-        inbounds: [],
-        outbounds: []
-      },
-      raw: rawStats
-    }
-
-    for (const report of rawStats.values()) {
-      switch (report.type) {
-        case 'outbound-rtp': {
-          addOutboundRtpReport(report, this.previousStats, statsObject)
-          break
-        }
-        case 'inbound-rtp': {
-          addInboundRtpReport(report, this.previousStats, statsObject)
-          break
-        }
-        case 'candidate-pair': {
-          if (report.nominated) {
-            addCandidateReport(report, statsObject)
-          }
-          break
-        }
-        default:
-          break
-      }
-    }
-    this.stats = statsObject
+    logger.warn('The parseStats method is deprecated and will be removed in future releases.')
+    return null
   }
 
   /**
@@ -136,147 +178,6 @@ export default class PeerConnectionStats extends EventEmitter {
    */
   stop () {
     logger.info('Stopping peer connection stats')
-    clearInterval(this.emitInterval)
+    this.collection.stop()
   }
-}
-
-/**
- * Parse and add incoming outbound-rtp report from RTCPeerConnection to final report.
- * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
- * @param {ConnectionStats} previousStats - Previous stats parsed.
- * @param {Object} statsObject - Current stats object being parsed.
- */
-const addOutboundRtpReport = (report, previousStats, statsObject) => {
-  const mediaType = getMediaType(report)
-  const codecInfo = getCodecData(report.codecId, statsObject.raw)
-  const additionalData = getBaseRtpReportData(report, mediaType)
-  additionalData.totalBytesSent = report.bytesSent
-  additionalData.id = report.id
-  additionalData.mid = report.mid
-
-  const previousBytesSent = previousStats ? previousStats[mediaType].outbounds.find(x => x.id === additionalData.id)?.totalBytesSent ?? 0 : null
-  additionalData.bitrate = previousBytesSent ? 8 * (report.bytesSent - previousBytesSent) : 0
-
-  if (mediaType === 'video') {
-    additionalData.qualityLimitationReason = report.qualityLimitationReason
-  }
-  statsObject[mediaType].outbounds.push({
-    ...codecInfo,
-    ...additionalData
-  })
-}
-
-/**
- * Parse and add incoming inbound-rtp report from RTCPeerConnection to final report.
- * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
- * @param {ConnectionStats} previousStats - Previous stats parsed.
- * @param {Object} statsObject - Current stats object being parsed.
- */
-const addInboundRtpReport = (report, previousStats, statsObject) => {
-  let mediaType = getMediaType(report)
-  const codecInfo = getCodecData(report.codecId, statsObject.raw)
-
-  // Safari is missing mediaType and kind for 'inbound-rtp'
-  if (!['audio', 'video'].includes(mediaType)) {
-    if (report.id.includes('Video')) mediaType = 'video'
-    else mediaType = 'audio'
-  }
-  const additionalData = getBaseRtpReportData(report, mediaType)
-  additionalData.totalBytesReceived = report.bytesReceived
-  additionalData.totalPacketsReceived = report.packetsReceived
-  additionalData.totalPacketsLost = report.packetsLost
-  additionalData.jitter = report.jitter
-  additionalData.id = report.id
-  additionalData.mid = report.mid
-  additionalData.trackIdentifier = report.trackIdentifier
-
-  additionalData.bitrate = 0
-  additionalData.packetsLostRatioPerSecond = 0
-  additionalData.packetsLostDeltaPerSecond = 0
-  if (previousStats) {
-    const previousReport = previousStats[mediaType].inbounds.find(x => x.id === additionalData.id)
-    if (previousReport) {
-      const previousBytesReceived = previousReport.totalBytesReceived
-      additionalData.bitrate = 8 * (report.bytesReceived - previousBytesReceived)
-      additionalData.packetsLostRatioPerSecond = calculatePacketsLostRatio(additionalData, previousReport)
-      additionalData.packetsLostDeltaPerSecond = calculatePacketsLostDelta(additionalData, previousReport)
-    }
-  }
-
-  statsObject[mediaType].inbounds.push({
-    ...codecInfo,
-    ...additionalData
-  })
-}
-
-/**
- * Parse and add incoming candidate-pair report from RTCPeerConnection to final report.
- * Also adds associated local-candidate data to report.
- * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
- * @param {Object} statsObject - Current stats object being parsed.
- */
-const addCandidateReport = (report, statsObject) => {
-  statsObject.totalRoundTripTime = report.totalRoundTripTime
-  statsObject.currentRoundTripTime = report.currentRoundTripTime
-  statsObject.availableOutgoingBitrate = report.availableOutgoingBitrate
-  statsObject.candidateType = statsObject.raw.get(report.localCandidateId).candidateType
-}
-
-/**
- * Get media type.
- * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
- * @returns {String} Media type.
- */
-const getMediaType = (report) => {
-  return report.mediaType || report.kind
-}
-
-/**
- * Get codec information from stats.
- * @param {String} codecReportId - Codec report ID.
- * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
- * @returns {Object} Object containing codec information.
- */
-const getCodecData = (codecReportId, rawStats) => {
-  const { mimeType } = codecReportId ? rawStats.get(codecReportId) ?? {} : {}
-  return { mimeType }
-}
-
-/**
- * Get common information for RTP reports.
- * @param {Object} report - JSON object which represents a report from RTCPeerConnection stats.
- * @param {String} mediaType - Media type.
- * @returns {Object} Object containing common information.
- */
-const getBaseRtpReportData = (report, mediaType) => {
-  const additionalData = {}
-  if (mediaType === 'video') {
-    additionalData.framesPerSecond = report.framesPerSecond
-    additionalData.frameHeight = report.frameHeight
-    additionalData.frameWidth = report.frameWidth
-  }
-  additionalData.timestamp = report.timestamp
-  return additionalData
-}
-
-/**
- * Calculate the ratio packets lost
- * @param {Object} actualReport - JSON object which represents a parsed report.
- * @param {Object} previousReport - JSON object which represents a parsed report.
- * @returns {Number} Packets lost ratio
- */
-const calculatePacketsLostRatio = (actualReport, previousReport) => {
-  const currentLostPackages = calculatePacketsLostDelta(actualReport, previousReport)
-  const currentReceivedPackages = actualReport.totalPacketsReceived - previousReport.totalPacketsReceived
-  return currentLostPackages / currentReceivedPackages
-}
-
-/**
- * Calculate the delta packets lost
- * @param {Object} actualReport - JSON object which represents a parsed report.
- * @param {Object} previousReport - JSON object which represents a parsed report.
- * @returns {Number} Packets lost ratio
- */
-const calculatePacketsLostDelta = (actualReport, previousReport) => {
-  return actualReport.totalPacketsLost - previousReport.totalPacketsLost
-}
+};
