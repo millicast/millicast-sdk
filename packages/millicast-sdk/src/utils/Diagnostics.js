@@ -2,7 +2,7 @@ import Logger from '../Logger'
 import { version } from '../../package.json'
 
 const MAX_STATS_HISTORY_SIZE = 5
-const MAX_HISTORY_SIZE = 10
+const MAX_HISTORY_SIZE = 100
 const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR']
 const userAgent = window?.navigator?.userAgent || 'No user agent available'
 let _accountId = ''
@@ -33,10 +33,14 @@ const Diagnostics = {
     }
 
     if (!Number.isInteger(historySize) || historySize > MAX_HISTORY_SIZE || historySize <= 0) {
-      historySize = MAX_HISTORY_SIZE
+      throw new Error('Invalid Argument Exception : historySize must be a positive integer that is equal to or less than 100.')
     }
 
     _history = Logger.getHistory()
+
+    if (!LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
+      throw new Error('Invalid Argument Exception : the minLogLevel parameter only excepts "trace", "debug", "info", "warn", and "error" as arguments.')
+    }
 
     if (LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
       const filteredLogLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(minLogLevel.toUpperCase()))
