@@ -213,7 +213,9 @@ class SPSState {
     })
   }
 
-  collectH265SPS (rbsp) {}
+  collectH265SPS (rbsp) {
+    // TODO: parse H265 SPS
+  }
 
   collectH264PPS (rbsp) {
     const reader = new BitStreamReader(rbsp)
@@ -227,7 +229,9 @@ class SPSState {
     })
   }
 
-  collectH265PPS (rbsp) {}
+  collectH265PPS (rbsp) {
+    // TODO: parse H265 PPS
+  }
 
   findActiveSPS (rbsp) {
     // get the seq_parameter_set_id from the slice header
@@ -385,6 +389,7 @@ function getSeiPicTimingTimecode (payloadContent) {
     pic_struct_present_flag: spsState.activeSPS.vui_parameters.pic_struct_present_flag ?? 0
   }
   if (!options.pic_struct_present_flag) {
+    console.warn('pic_struct_present_flag is not present')
     return undefined
   }
   const reader = new BitStreamReader(payloadContent)
