@@ -19,7 +19,9 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: {}
+  peerConfig: {
+    autoInitStats: true
+  }
 }
 
 /**
@@ -123,7 +125,7 @@ export default class Publish extends BaseWebRTC {
     })
     const { error, value } = schema.validate(options)
     if (error) logger.warn(error, value)
-    this.options = { ...connectOptions, ...options, setSDPToPeer: false }
+    this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
     await this.initConnection({ migrate: false })
   }
 

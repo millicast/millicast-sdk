@@ -11,7 +11,9 @@ const logger = Logger.get('View')
 const connectOptions = {
   disableVideo: false,
   disableAudio: false,
-  peerConfig: {}
+  peerConfig: {
+    autoInitStats: true
+  }
 }
 
 /**
@@ -115,7 +117,7 @@ export default class View extends BaseWebRTC {
    * }
    */
   async connect (options = connectOptions) {
-    this.options = { ...connectOptions, ...options, setSDPToPeer: false }
+    this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
     await this.initConnection({ migrate: false })
   }
 
