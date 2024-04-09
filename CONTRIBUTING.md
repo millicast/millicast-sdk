@@ -64,6 +64,36 @@ npm run start
 
 It opens all the demo apps in your browser and keeps watching for changes in all the packages. You only need to refresh both pages if you modify the code.
 
+### Running tests
+If you want to run all tests, run:
+```sh
+npm run test
+```
+
+> Note: There are some requirements to take into account before running E2E tests. Make sure to take a look at those.
+
+#### Unit testing
+If you want to run only unit tests, then you have to move to the `millicast-sdk` package:
+```sh
+cd packages/millicast-sdk
+npm run test-unit
+```
+
+#### E2E testing
+The first step before running E2E tests is setting some environment variables and adjusting the director URL desired.
+
+1. You have to set three variables in the environment based on the token environment you are (production or develop). These variables are:
+- `PUBLISH_TOKEN`
+- `ACCOUNT_ID`
+- `STREAM_NAME`
+
+2. In `packages/millicast-sdk/src/config.js` set `MILLICAST_DIRECTOR_ENDPOINT` to the desired URL, either production (`https://director.millicast.com`) or develop (`https://director-dev.millicast.com`) environment.
+
+If you only want to run E2E tests, in the command line run:
+```sh
+npm run test-e2e
+```
+
 ### Building docs
 
 The SDK documentation is written with [JSDcos](https://jsdoc.app/). To build the HTML documentation, run:
