@@ -583,7 +583,7 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
     throw new Error(`Unsupported codec ${codec}`)
   }
   if (uuid === '' || payload === '') {
-    return
+    throw new Error('uuid and payload cannot be empty')
   }
   // Case of NALU H264 - User Unregistered Data
   const naluWithSEI = createSEINalu({ uuid, payload }, codec)
