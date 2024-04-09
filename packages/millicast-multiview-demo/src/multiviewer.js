@@ -17,6 +17,7 @@ let transceiverToSourceIdMap = {}
 let transceiverToLayersMap = {}
 
 // Create a new viewer instance
+Director.setEndpoint('https://director-dev.millicast.com')
 const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
 const viewer = new View(streamName, tokenGenerator)
 
@@ -42,8 +43,8 @@ viewer.on('broadcastEvent', (event) => {
       break
     }
     case 'layers': {
-      if(sourcesDropDown.value)
-        updateLayers(data.medias)
+      // if(sourcesDropDown.value)
+      updateLayers(data.medias)
       break
     }
   }
@@ -89,6 +90,16 @@ const addRemoteSource = async (data) => {
   createVideoElement(mediaStream, videoMediaId)
   createVideoEventListener(videoMediaId)
 
+  tracks.map((el) => {
+    if (el.media === 'video') {
+      el.layer = {
+        maxHeight:160
+      }
+    }
+    return el
+  })
+  console.log('Tracks to project as remote source: ', tracks)
+
   await viewer.project(data.sourceId,  tracks)
 }
 
@@ -111,12 +122,14 @@ const addMainSource = async (data) => {
 }
 
 const addStreamToVideoElement = (mediaStream, videoMediaId) => {
-  const video = document.getElementById(videoMediaId)
-  video.srcObject = mediaStream
-  video.muted = true
-  video.autoPlay = true
-  video.playsInline = true
-  video.play()
+  setTimeout(() => {
+    const video = document.getElementById(videoMediaId)
+    video.srcObject = mediaStream
+    video.muted = true
+    video.autoPlay = true
+    video.playsInline = true
+    video.play()
+  }, 500)
 }
 
 const remoteVideosContainer = document.getElementById('remoteVideos')
@@ -229,3 +242,5 @@ layersDropDown.addEventListener('change', (event) => {
     }
   }])
 })
+
+window.viewer = viewer
