@@ -22,11 +22,12 @@ function createSenderTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-    if (uuid && payload) {
-      addH26xSEI({ uuid, payload }, encodedFrame, 'h264')
-      uuid = ''
-      payload = ''
-      controller.enqueue(encodedFrame)
+      if (uuid && payload) {
+        addH26xSEI({ uuid, payload }, encodedFrame, 'h264')
+        uuid = ''
+        payload = ''
+        controller.enqueue(encodedFrame)
+      }
     }
   })
 }
