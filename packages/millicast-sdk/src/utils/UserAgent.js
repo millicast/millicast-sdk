@@ -7,6 +7,12 @@ export default class UserAgent extends UAParser {
     super(window.navigator.userAgent)
   }
 
+  isChromium () {
+    const browserData = this.getUA()
+
+    return browserData.match(/Chrome/i)
+  }
+
   isChrome () {
     const browserData = this.getBrowser()
     if (!browserData.name) {
