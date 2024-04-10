@@ -34,12 +34,14 @@ npm i --save @millicast/sdk
 ```
 
 ## Basic Usage
-This simple example will show how to broadcast the user camera and microphone to Millicast Media Servers and viewing it.
 
-You will need a Millicast account and a valid publishing token that you can find it in your dashboard ([link here](https://dash.millicast.com/#/signin)).
+The following examples demonstrate how to broadcast with the Publisher app capturing the user's camera and microphone. You can then view the stream using the Viewer app.
 
+You will need to use a [Dolby Millicast account](https://streaming.dolby.io/) with a valid publishing token.
 
 ### Publisher app
+
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
 
 In vanilla JavaScript:
 
@@ -85,10 +87,10 @@ In vanilla JavaScript:
 </html>
 ```
 
-Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
-
 
 ### Viewer app
+
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
 
 In vanilla JavaScript:
 
@@ -132,7 +134,7 @@ In vanilla JavaScript:
 </html>
 ```
 
-Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
+
 
 ## API Reference
 You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
