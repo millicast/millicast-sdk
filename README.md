@@ -138,11 +138,13 @@ Please be sure to set up the credentials filling up the `yourStreamName` and `yo
 You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
 
 ## Samples
-In this repo there are two packages that implement a broadcaster and viewer application using the SDK.
-You can clone this repo and following the steps indicated in each example:
+
+There are several packages that implement a publisher and viewer. These samples can be run and inspected for examples of how to implement various features.
+
 * [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
 * [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
 * [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
+* [millicast-multiview-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-multiview-demo#readme)
 
 ## JS Frameworks
 
