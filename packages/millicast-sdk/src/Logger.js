@@ -37,6 +37,8 @@ import Diagnostics from './utils/Diagnostics'
 
 jsLogger.useDefaults({ defaultLevel: jsLogger.TRACE })
 
+const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR']
+
 const formatter = (messages, context) => {
   messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} - ${context.level.name} -`)
 }
@@ -239,12 +241,38 @@ const Logger = {
    * @name diagnose
    * @description Returns an object with diagnostics about the state of the connection and environment.
    * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
+   * @param {Number} [historySize = 5000]  - Amount of history messages to be returned.
+   * @param {String} minLogLevel         - Levels of history messages to be included.
+     * examples of minLogLevel values in level order:
+     * 1 - TRACE
+     * 2 - DEBUG
+     * 3 - INFO
+     * 4 - WARN
+     * 5 - ERROR
+     * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
    * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
    * @example
    * // Log and get a diagnose object with the last 3 stats reports
    * const diagnostics = await Logger.diagnose(3)
    */
-  diagnose: Diagnostics.get,
+  diagnose: (statsCount, historySize, minLogLevel = 'TRACE') => {
+    const result = Diagnostics.get(statsCount)
+    const history = Logger.getHistory()
+
+    if (!Number.isInteger(historySize) || historySize <= 0) {
+      throw new Error('Invalid Argument Exception : historySize must be a positive integer.')
+    }
+
+    if (!LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
+      throw new Error('Invalid Argument Exception : the minLogLevel parameter only excepts "trace", "debug", "info", "warn", and "error" as arguments.')
+    }
+    if (LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
+      const filteredLogLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(minLogLevel.toUpperCase()))
+      const filteredLevels = history.filter((log) => filteredLogLevels.some(level => log.includes(level)))
+      result.history = filteredLevels.slice(-historySize)
+    }
+    return result
+  },
   /**
    * @var
    * @name VERSION
