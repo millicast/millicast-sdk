@@ -7,18 +7,17 @@
 This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
 
 ## Table of Contents
-- [Millicast SDK for JavaScript](#millicast-sdk-for-javascript)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Basic Usage](#basic-usage)
-    - [Publisher app](#publisher-app)
-    - [Viewer app](#viewer-app)
-  - [API Reference](#api-reference)
-  - [Samples](#samples)
-  - [JS Frameworks](#js-frameworks)
-    - [React Native](#react-native)
-  - [SDK developer information](#sdk-developer-information)
-  - [License](#license)
+
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+  - [Publisher app](#publisher-app)
+  - [Viewer app](#viewer-app)
+- [API Reference](#api-reference)
+- [Samples](#samples)
+- [JS Frameworks](#js-frameworks)
+  - [React Native](#react-native)
+- [SDK developer information](#sdk-developer-information)
+- [License](#license)
 
 
 ## Installation
@@ -151,7 +150,7 @@ This section is intended to explain how properly integrate this SDK with differe
 
 Right now, we only have a React Native guide.
 
-### React Native Integration
+### React Native
 This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose. 
 
 Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.dolby.io/streaming-apis/docs/rn)!
