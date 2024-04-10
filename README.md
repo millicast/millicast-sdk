@@ -12,7 +12,7 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
 - [Basic Usage](#basic-usage)
   - [Publisher app](#publisher-app)
   - [Viewer app](#viewer-app)
-- [API Reference](#api-reference)
+- [Documentation](#documentation)
 - [Samples](#samples)
 - [JS Frameworks](#js-frameworks)
   - [React Native](#react-native)
@@ -134,12 +134,13 @@ In vanilla JavaScript:
 </html>
 ```
 
+## Documentation
 
+The [Documentation](https://docs.dolby.io/streaming-apis/docs/introduction-to-streaming-apis) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.dolby.io/streaming-apis/docs/getting-started) guide as a quick start.
 
-## API Reference
-You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
+The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development. 
 
-## Samples
+### Samples
 
 There are several packages that implement a publisher and viewer. These samples can be run and inspected for examples of how to implement various features.
 
