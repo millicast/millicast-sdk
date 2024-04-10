@@ -26,8 +26,8 @@ function createSenderTransform () {
         addH26xSEI({ uuid, payload }, encodedFrame, 'h264')
         uuid = ''
         payload = ''
-        controller.enqueue(encodedFrame)
       }
+      controller.enqueue(encodedFrame)
     }
   })
 }
