@@ -60,7 +60,7 @@ export default class Publish extends BaseWebRTC {
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @param {VideoCodec} [options.codec = 'h264'] - Codec for publish stream.
-   * @param {Boolean} [options.simulcast = false] - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
+   * @param {Boolean} [options.simulcast = false] - Enable simulcast. **Only available in Chromium based browsers and with H.264 or VP8 video codecs.**
    * @param {String} [options.scalabilityMode = null] - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
    * @param {RTCConfiguration} [options.peerConfig = null] - Options to configure the new RTCPeerConnection.
