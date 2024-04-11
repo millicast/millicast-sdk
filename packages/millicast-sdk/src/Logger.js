@@ -241,7 +241,7 @@ const Logger = {
    * @name diagnose
    * @description Returns an object with diagnostics about the state of the connection and environment.
    * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
-   * @param {Number} [historySize = 5000]  - Amount of history messages to be returned.
+   * @param {Number} [historySize = 1000]  - Amount of history messages to be returned.
    * @param {String} minLogLevel         - Levels of history messages to be included.
      * examples of minLogLevel values in level order:
      * 1 - TRACE
@@ -255,7 +255,7 @@ const Logger = {
    * // Log and get a diagnose object with the last 3 stats reports
    * const diagnostics = await Logger.diagnose(3)
    */
-  diagnose: (statsCount, historySize, minLogLevel = 'TRACE') => {
+  diagnose: (statsCount, historySize = 1000, minLogLevel = 'TRACE') => {
     const result = Diagnostics.get(statsCount)
     const history = Logger.getHistory()
 
