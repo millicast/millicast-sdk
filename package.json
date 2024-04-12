@@ -27,6 +27,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
     "@lerna/publish": "^5.5.0",
+    "@rollup/plugin-url": "^8.0.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.21.0",
     "eslint-config-airbnb": "^18.2.1",

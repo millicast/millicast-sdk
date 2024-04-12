@@ -7,6 +7,7 @@ import cleanup from 'rollup-plugin-cleanup'
 import json from '@rollup/plugin-json'
 import filesize from 'rollup-plugin-filesize'
 import dts from 'rollup-plugin-dts'
+import url from '@rollup/plugin-url'
 
 export default [
   // browser-friendly UMD build
@@ -44,6 +45,12 @@ export default [
         ],
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
+      }),
+      url({
+        include: ['**/*.worker.bundle.js'],
+        limit: 0,
+        emitFiles: true,
+        fileName: '[name].[hash][extname]'
       }),
       terser(),
       cleanup({
@@ -86,6 +93,12 @@ export default [
           ]
         ],
         exclude: ['/node_modules/**']
+      }),
+      url({
+        include: ['**/*.worker.bundle.js'],
+        limit: 0,
+        emitFiles: true,
+        fileName: '[name].[hash][extname]'
       }),
       terser(),
       cleanup({
@@ -136,12 +149,18 @@ export default [
         ],
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
+      }),
+      url({
+        include: ['**/*.worker.bundle.js'],
+        limit: 0,
+        emitFiles: true,
+        fileName: '[name].[hash][extname]'
       })
     ]
   },
   {
     input: 'src/workers/TransformWorker.js',
-    output: { name: 'TransformWorker', file: 'dist/TransformWorker.js', format: 'umd' },
+    output: { name: 'TransformWorker', file: 'dist/TransformWorker.worker.bundle.js', format: 'iife' },
     plugins: [
       nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs({

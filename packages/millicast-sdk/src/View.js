@@ -6,6 +6,7 @@ import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import workerURL from './workers/TransformWorker'
 
 const logger = Logger.get('View')
 
@@ -238,7 +239,7 @@ export default class View extends BaseWebRTC {
 
     webRTCPeerInstance.on('track', (trackEvent) => {
       if (trackEvent.track?.kind !== 'video') return
-      const worker = new Worker('workers/TransformWorker.js')
+      const worker = new Worker(workerURL)
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
         trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform' })
