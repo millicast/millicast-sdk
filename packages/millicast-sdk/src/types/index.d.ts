@@ -176,13 +176,22 @@ declare module '@millicast/sdk' {
      * @function
      * @name diagnose
      * @description Returns an object with diagnostics about the state of the connection and environment.
-     * @param {Number} [statsCount = 5]  - Amount of stats objects to be saved.
+     * @param {Number} [statsCount = 5]      - Amount of stats objects to be saved.
+     * @param {Number} [historySize = 1000]  - Amount of history messages to be returned.
+     * @param {String} minLogLevel           - Levels of history messages to be included.
+     * examples of minLogLevel values in level order:
+     * 1 - TRACE
+     * 2 - DEBUG
+     * 3 - INFO
+     * 4 - WARN
+     * 5 - ERROR
+     * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
      * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
      * @example
      * // Log and get a diagnose object with the last 3 stats reports
      * const diagnostics = await Logger.diagnose(3)
      */
-    diagnose: (statsCount: Number) => Object;
+    diagnose: (statsCount: Number, historySize: Number, minLogLevel: String) => Object;
     /**
      * @var
      * @name VERSION
@@ -638,7 +647,7 @@ declare module '@millicast/sdk' {
      * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
      * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
      * @param {VideoCodec} options.codec - Selected codec for support simulcast.
-     * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
+     * @param {Boolean} options.simulcast - True to modify SDP for support simulcast. **Only available in Chromium based browsers and with H.264 or VP8 video codecs.**
      * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
      * **Only available in Google Chrome.**
      * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
