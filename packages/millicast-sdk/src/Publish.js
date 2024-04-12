@@ -8,6 +8,7 @@ import Signaling, { signalingEvents } from './Signaling'
 import { VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
+import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 
 const logger = Logger.get('Publish')
 
@@ -19,7 +20,9 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
-  peerConfig: {}
+  peerConfig: {
+    encodedInsertableStreams: true
+  }
 }
 
 /**
@@ -225,6 +228,22 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
+    const worker = new Worker('workers/TransformWorker.js')
+
+    const senders = this.getRTCPeerConnection()
+      .getSenders()
+      .filter((elt) => elt.track.kind === 'video')
+    const sender = senders[0]
+
+    if (supportsRTCRtpScriptTransform) {
+      // eslint-disable-next-line no-undef
+      sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform' })
+    } else if (supportsInsertableStreams) {
+      const { readable, writable } = sender.createEncodedStreams()
+      worker.postMessage({ action: 'insertable-streams-sender', readable, writable }, [readable, writable])
+    }
+    this.worker = worker
+
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 
@@ -252,6 +271,16 @@ export default class Publish extends BaseWebRTC {
           oldWebRTCPeer?.closeRTCPeer?.()
           oldSignaling = oldWebRTCPeer = null
         }
+      })
+    }
+  }
+
+  sendMetadata (message, uuid = '6e9cfd2a-5907-49ff-b363-8978a6e8340e') {
+    if (this.worker) {
+      this.worker.postMessage({
+        action: 'metadata-sei-user-data-unregistered',
+        uuid: uuid,
+        payload: message
       })
     }
   }
