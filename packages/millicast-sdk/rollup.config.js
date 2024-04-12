@@ -7,9 +7,30 @@ import cleanup from 'rollup-plugin-cleanup'
 import json from '@rollup/plugin-json'
 import filesize from 'rollup-plugin-filesize'
 import dts from 'rollup-plugin-dts'
-import url from '@rollup/plugin-url'
 
 export default [
+  // Worker
+  {
+    input: 'src/workers/TransformWorker.js',
+    output: {
+      dir: 'src/',
+      format: 'esm'
+    },
+    plugins: [
+      nodeResolve({ browser: true, preferBuiltins: false }),
+      commonjs({
+        include: [/node_modules/, /src/],
+        transformMixedEsModules: true
+      }),
+      terser(),
+      {
+        name: 'worker-to-string',
+        renderChunk (code) {
+          return `export default '${code}';`
+        }
+      }
+    ]
+  },
   // browser-friendly UMD build
   {
     input: 'src/index.js',
@@ -45,12 +66,6 @@ export default [
         ],
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
-      }),
-      url({
-        include: ['**/*.worker.bundle.js'],
-        limit: 0,
-        emitFiles: true,
-        fileName: '[name].[hash][extname]'
       }),
       terser(),
       cleanup({
@@ -93,12 +108,6 @@ export default [
           ]
         ],
         exclude: ['/node_modules/**']
-      }),
-      url({
-        include: ['**/*.worker.bundle.js'],
-        limit: 0,
-        emitFiles: true,
-        fileName: '[name].[hash][extname]'
       }),
       terser(),
       cleanup({
@@ -149,25 +158,7 @@ export default [
         ],
         exclude: ['/node_modules/**'],
         plugins: ['@babel/plugin-transform-runtime']
-      }),
-      url({
-        include: ['**/*.worker.bundle.js'],
-        limit: 0,
-        emitFiles: true,
-        fileName: '[name].[hash][extname]'
       })
-    ]
-  },
-  {
-    input: 'src/workers/TransformWorker.js',
-    output: { name: 'TransformWorker', file: 'dist/TransformWorker.worker.bundle.js', format: 'iife' },
-    plugins: [
-      nodeResolve({ browser: true, preferBuiltins: false }),
-      commonjs({
-        include: [/node_modules/, /src/],
-        transformMixedEsModules: true
-      }),
-      terser()
     ]
   }
 ]
