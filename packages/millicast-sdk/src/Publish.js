@@ -26,6 +26,8 @@ const connectOptions = {
   }
 }
 
+export const DOLBY_SEI_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
+
 /**
  * @class Publish
  * @extends BaseWebRTC
@@ -278,7 +280,7 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
-  sendMetadata (message, uuid = '6e9cfd2a-5907-49ff-b363-8978a6e8340e') {
+  sendMetadata (message, uuid = DOLBY_SEI_UUID) {
     if (this.worker) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
