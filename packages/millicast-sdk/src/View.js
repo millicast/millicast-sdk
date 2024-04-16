@@ -203,7 +203,7 @@ export default class View extends BaseWebRTC {
       subscriberData = await this.tokenGenerator()
       //  Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
-      this.options.peerConfig.encodedInsertableStreams = true
+      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -248,7 +248,11 @@ export default class View extends BaseWebRTC {
         trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform' })
       } else if (supportsInsertableStreams) {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        worker.postMessage({ action: 'insertable-streams-receiver', readable, writable }, [readable, writable])
+        worker.postMessage({
+          action: 'insertable-streams-receiver',
+          readable,
+          writable
+        }, [readable, writable])
       }
       worker.onmessage = (event) => {
         this.emit('onMetadata', { ...event.data, track: trackEvent.track })

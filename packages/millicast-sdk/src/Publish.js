@@ -26,7 +26,8 @@ const connectOptions = {
   }
 }
 
-export const DOLBY_SEI_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
+export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
+export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 
 /**
  * @class Publish
@@ -245,7 +246,11 @@ export default class Publish extends BaseWebRTC {
       sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform' })
     } else if (supportsInsertableStreams) {
       const { readable, writable } = sender.createEncodedStreams()
-      worker.postMessage({ action: 'insertable-streams-sender', readable, writable }, [readable, writable])
+      worker.postMessage({
+        action: 'insertable-streams-sender',
+        readable,
+        writable
+      }, [readable, writable])
     }
     this.worker = worker
 
@@ -280,7 +285,7 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
-  sendMetadata (message, uuid = DOLBY_SEI_UUID) {
+  sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
     if (this.worker) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',

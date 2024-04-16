@@ -75,13 +75,14 @@ class SPSState {
   collectH264SPS (rbsp) {
     const reader = new BitStreamReader(rbsp)
     const profile_idc = reader.readBits(8)
+    const supported_profiles = [100, 110, 122, 244, 44, 83, 86, 118, 128, 138, 139, 134, 135]
     reader.skip(8) // skip 8bits constraint set flag and reserved_zero_2bits
     reader.skip(8) // level_idc
     const seq_parameter_set_id = reader.readExpGolombUnsigned()
     if (seq_parameter_set_id > 31 || seq_parameter_set_id < 0) {
       throw new Error('Invalid seq_parameter_set_id')
     }
-    if ([100, 110, 122, 244, 44, 83, 86, 118, 128, 138, 139, 134, 135].includes(profile_idc)) {
+    if (supported_profiles.includes(profile_idc)) {
       const chroma_format_idc = reader.readExpGolombUnsigned()
       if (chroma_format_idc === 3) {
         reader.skip(1) // separate_colour_plane_flag
