@@ -9,7 +9,7 @@ import { VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import workerString from './TransformWorker.js'
+import workerString from './TransformWorker.worker.js'
 
 const logger = Logger.get('Publish')
 

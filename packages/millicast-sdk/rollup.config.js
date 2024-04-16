@@ -11,7 +11,7 @@ import dts from 'rollup-plugin-dts'
 export default [
   // Worker
   {
-    input: 'src/workers/TransformWorker.js',
+    input: 'src/workers/TransformWorker.worker.js',
     output: {
       dir: 'src/',
       format: 'esm'

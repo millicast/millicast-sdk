@@ -1,4 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import 'jsdom-worker'
 import Publish from '../../src/Publish'
 import PeerConnectionStats, { peerConnectionStatsEvents } from '../../src/PeerConnectionStats'
 import '../../src/Signaling'

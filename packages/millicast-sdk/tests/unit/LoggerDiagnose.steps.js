@@ -1,4 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import 'jsdom-worker'
 import Logger from '../../src/Logger'
 import View from '../../src/View'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
