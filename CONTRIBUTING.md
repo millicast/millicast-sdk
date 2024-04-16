@@ -73,7 +73,7 @@ npm run test
 > Note: There are some requirements to take into account before running E2E tests. Make sure to take a look at [those](#e2e-testing).
 
 #### Unit testing
-If you want to run only unit tests, then you have to move to the `millicast-sdk` package:
+If you want to run only unit tests, navigate to the `millicast-sdk` package. 
 ```sh
 cd packages/millicast-sdk
 npm run test-unit
