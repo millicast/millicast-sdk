@@ -8,3 +8,4 @@ docs-translations
 puppeteerrc.cjs
 test-environment.js
 **/.DS_Store
+**/src/TransformWorker.js

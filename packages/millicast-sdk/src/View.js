@@ -6,6 +6,7 @@ import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import workerString from './TransformWorker.js'
 
 const logger = Logger.get('View')
 
@@ -236,9 +237,12 @@ export default class View extends BaseWebRTC {
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
+    const workerBlob = new Blob([workerString])
+    const workerURL = URL.createObjectURL(workerBlob)
+
     webRTCPeerInstance.on('track', (trackEvent) => {
       if (trackEvent.track?.kind !== 'video') return
-      const worker = new Worker('workers/TransformWorker.js')
+      const worker = new Worker(workerURL)
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
         trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform' })

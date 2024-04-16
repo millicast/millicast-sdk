@@ -9,6 +9,7 @@ import { VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import workerString from './TransformWorker.js'
 
 const logger = Logger.get('Publish')
 
@@ -230,7 +231,9 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const worker = new Worker('workers/TransformWorker.js')
+    const workerBlob = new Blob([workerString])
+    const workerURL = URL.createObjectURL(workerBlob)
+    const worker = new Worker(workerURL)
 
     const senders = this.getRTCPeerConnection()
       .getSenders()
