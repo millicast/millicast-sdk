@@ -1,24 +1,23 @@
 # Millicast SDK for JavaScript
-<!-- TODO: Add badges: NPM, build, tests, etc. -->
-![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)
+
+[![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)](https://www.npmjs.com/package/@millicast/sdk)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)](https://github.com/millicast/millicast-sdk/releases)
 [![Check tests](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml/badge.svg?branch=main)](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml)
 
 This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
 
 ## Table of Contents
-- [Millicast SDK for JavaScript](#millicast-sdk-for-javascript)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Basic Usage](#basic-usage)
-    - [Publisher app](#publisher-app)
-    - [Viewer app](#viewer-app)
-  - [API Reference](#api-reference)
-  - [Samples](#samples)
-  - [JS Frameworks](#js-frameworks)
-    - [React Native](#react-native)
-  - [SDK developer information](#sdk-developer-information)
-  - [License](#license)
+
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+  - [Publisher app](#publisher-app)
+  - [Viewer app](#viewer-app)
+- [Documentation](#documentation)
+- [Samples](#samples)
+- [JS Frameworks](#js-frameworks)
+  - [React Native](#react-native)
+- [SDK developer information](#sdk-developer-information)
+- [License](#license)
 
 
 ## Installation
@@ -35,12 +34,14 @@ npm i --save @millicast/sdk
 ```
 
 ## Basic Usage
-This simple example will show how to broadcast the user camera and microphone to Millicast Media Servers and viewing it.
 
-You will need a Millicast account and a valid publishing token that you can find it in your dashboard ([link here](https://dash.millicast.com/#/signin)).
+The following examples demonstrate how to broadcast with the Publisher app capturing the user's camera and microphone. You can then view the stream using the Viewer app.
 
+You will need to use a [Dolby Millicast account](https://streaming.dolby.io/) with a valid publishing token.
 
 ### Publisher app
+
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
 
 In vanilla JavaScript:
 
@@ -86,10 +87,10 @@ In vanilla JavaScript:
 </html>
 ```
 
-Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
-
 
 ### Viewer app
+
+Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
 
 In vanilla JavaScript:
 
@@ -133,17 +134,20 @@ In vanilla JavaScript:
 </html>
 ```
 
-Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
+## Documentation
 
-## API Reference
-You can find the latest, most up to date, SDK documentation at our [API Reference page](https://millicast.github.io/millicast-sdk/). There are more examples with every module available.
+The [Documentation](https://docs.dolby.io/streaming-apis/docs/introduction-to-streaming-apis) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.dolby.io/streaming-apis/docs/getting-started) guide as a quick start.
 
-## Samples
-In this repo there are two packages that implement a broadcaster and viewer application using the SDK.
-You can clone this repo and following the steps indicated in each example:
+The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development. 
+
+### Samples
+
+There are several packages that implement a publisher and viewer. These samples can be run and inspected for examples of how to implement various features.
+
 * [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
 * [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
 * [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
+* [millicast-multiview-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-multiview-demo#readme)
 
 ## JS Frameworks
 
@@ -151,7 +155,7 @@ This section is intended to explain how properly integrate this SDK with differe
 
 Right now, we only have a React Native guide.
 
-### React Native Integration
+### React Native
 This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose. 
 
 Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.dolby.io/streaming-apis/docs/rn)!
