@@ -31,7 +31,7 @@ const SdpParser = {
    * @function
    * @name setSimulcast
    * @description Parse SDP for support simulcast.
-   * **Only available in Google Chrome.**
+   * **Only available in Chromium based browser.**
    * @param {String} sdp - Current SDP.
    * @param {String} codec - Codec.
    * @returns {String} SDP parsed with simulcast support.
@@ -41,12 +41,10 @@ const SdpParser = {
     logger.info('Setting simulcast. Codec: ', codec)
     const browserData = new UserAgent()
     if (!browserData.isChromium()) {
-      logger.warn('Simulcast is only available in Chromium based browser')
-      return sdp
+      throw new Error('Simulcast is only available in Chromium based browser')
     }
     if (codec !== 'h264' && codec !== 'vp8') {
-      logger.warn('Simulcast is only available in h264 and vp8 codecs')
-      return sdp
+      throw new Error('Simulcast is only available in h264 and vp8 codecs')
     }
 
     try {
