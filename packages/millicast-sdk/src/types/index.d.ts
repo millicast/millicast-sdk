@@ -175,23 +175,30 @@ declare module '@millicast/sdk' {
     /**
      * @function
      * @name diagnose
-     * @description Returns an object with diagnostics about the state of the connection and environment.
-     * @param {Number} [statsCount = 5]      - Amount of stats objects to be saved.
-     * @param {Number} [historySize = 1000]  - Amount of history messages to be returned.
-     * @param {String} minLogLevel           - Levels of history messages to be included.
-     * examples of minLogLevel values in level order:
-     * 1 - TRACE
-     * 2 - DEBUG
-     * 3 - INFO
-     * 4 - WARN
-     * 5 - ERROR
-     * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
-     * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
+     * @description Returns diagnostics information about the connection and environment, formatted according to the specified parameters.
+     * @param {Object|} config - Configuration object for the diagnostic parameters
+     * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
+     * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
+     * @param {String} [config.minLogLevel] - Levels of history messages to be included.
+          * examples of minLogLevel values in level order:
+          * 1 - TRACE
+          * 2 - DEBUG
+          * 3 - INFO
+          * 4 - WARN
+          * 5 - ERROR
+          * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
+     * @param {String} [config.statsFormat='JSON'] - Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
+     * @returns {Object} An object containing relevant diagnostics information such as userAgent, SDK version, and stats data.
      * @example
-     * // Log and get a diagnose object with the last 3 stats reports
-     * const diagnostics = await Logger.diagnose(3)
+     * // Example using default parameters
+     * const diagnosticsDefault = Logger.diagnose();
+     *
+     * // Example specifying statsCount and format
+     * const diagnostics = Logger.diagnose({ statsCount: 30, minLogLevel: 'INFO', format: Logger.CMCD });
+     *
+     * // Output: Diagnostics object with specified configuration
      */
-    diagnose: (statsCount: Number, historySize: Number, minLogLevel: String) => Object;
+    diagnose: (config: Object) => Object;
     /**
      * @var
      * @name VERSION
