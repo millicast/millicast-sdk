@@ -563,7 +563,7 @@ function createSEIMessageContentWithPrevensionBytes (content) {
   return new Uint8Array(preventionByteArray)
 }
 
-function createSEINalu ({ uuid, payload }, codec) {
+function createSEINalu ({ uuid, payload }) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
   const content = createSEIMessageContent(uuid, payload)
@@ -579,15 +579,16 @@ function createSEINalu ({ uuid, payload }, codec) {
   return naluWithSEI
 }
 
-export function addH26xSEI ({ uuid, payload }, encodedFrame, codec) {
-  if (codec !== 'h264' && codec !== 'h265') {
+export function addH26xSEI ({ uuid, payload }, encodedFrame) {
+  const codec = encodedFrame.getMetadata().mimeType
+  if (codec !== 'video/H264' && codec !== 'video/H265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
   if (uuid === '' || payload === '') {
     throw new Error('uuid and payload cannot be empty')
   }
   // Case of NALU H264 - User Unregistered Data
-  const naluWithSEI = createSEINalu({ uuid, payload }, codec)
+  const naluWithSEI = createSEINalu({ uuid, payload })
 
   const encodedFrameView = new DataView(encodedFrame.data)
   const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)
