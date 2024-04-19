@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
+import { convertNtpTimestamp } from './TimecodeParser'
 /**
  * Enum of Millicast supported Video codecs
  * @readonly
@@ -473,7 +474,7 @@ function getSeiPicTimingTimecode (payloadContent) {
  * Metadata of the Encoded Frame
  * @typedef {object} FrameMetaData
  * @global
- * @property {number} timestamp - the time at which frame sampling started, value is a positive integer containing the sampling instant of the first byte in this frame, in microseconds
+ * @property { Date } timestamp - the time at which frame sampling started as a Date object
  * @property { Array<SEIUserUnregisteredData> } seiUserUnregisteredDataArray - the SEI user unregistered data array
  * @property { Array<SEIPicTimingTimeCode> } [seiPicTimingTimeCodeArray] - the SEI pic timing time codes
  */
@@ -508,7 +509,7 @@ export function extractH26xMetadata (encodedFrame, codec) {
     }
   })
   return {
-    timestamp: encodedFrame.timestamp,
+    timestamp: convertNtpTimestamp(encodedFrame.timestamp),
     seiUserUnregisteredDataArray,
     seiPicTimingTimeCodeArray
   }
