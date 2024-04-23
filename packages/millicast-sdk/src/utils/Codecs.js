@@ -582,7 +582,11 @@ function createSEINalu ({ uuid, payload }) {
 export function addH26xSEI ({ uuid, payload }, encodedFrame) {
   const codec = encodedFrame.getMetadata().mimeType
   if (codec !== 'video/H264' && codec !== 'video/H265') {
-    throw new Error('Sending metadata is not supported with any other codec other than H264 or H265')
+    throw new Error('Sending metadata is not supported with any other codec other than H.264 or H.265')
+  }
+  // TODO: Remove this when H.265 is available
+  if (codec !== 'video/H264') {
+    throw new Error('Sending metadata is only available for H.264 codecs at the moment')
   }
   if (uuid === '' || payload === '') {
     throw new Error('uuid and payload cannot be empty')
