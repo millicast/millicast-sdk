@@ -45,7 +45,7 @@ const SdpParser = {
       return sdp
     }
     if (codec !== 'h264' && codec !== 'vp8') {
-      logger.warn('Your selected codec does not appear to support Simulcast. For a better experience, use H.264 and VP8 codecs.')
+      logger.warn(`Your selected codec ${codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`)
       return sdp
     }
 
