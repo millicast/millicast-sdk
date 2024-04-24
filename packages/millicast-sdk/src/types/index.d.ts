@@ -1160,6 +1160,12 @@ declare module '@millicast/sdk' {
      * Finalize recording in an active stream and change the current record option.
      */
     unrecord(): Promise<void>;
+    /**
+     * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codecs.
+     * @param {String} message String with the data to be sent as SEI user unregistered data.
+     * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XXXXXX).
+     */
+    sendMetadata(message: String, uuid: String): void;
     webRTCPeer?: PeerConnection;
   }
   /**
