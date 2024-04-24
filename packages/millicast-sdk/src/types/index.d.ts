@@ -295,6 +295,23 @@ declare module '@millicast/sdk' {
      * - Current frame width if it's video report.
      */
     frameWidth?: number;
+
+    /**
+     * - Total number of key frames that have been decoded if it's video report.
+     */
+    keyFramesDecoded : number?;
+    /**
+     * - Total number of frames that have been decoded if it's video report.
+     */
+    framesDecoded : number?;
+    /**
+     * - Total number of frames that have been dropped if it's video report.
+     */
+    framesDropped : number?;
+    /**
+     * - Total number of frames that have been received if it's video report.
+     */
+    framesReceived : number?;
     /**
      * - Timestamp of report.
      */
@@ -323,7 +340,18 @@ declare module '@millicast/sdk' {
      * - Current bitrate in bits per second.
      */
     bitrate: number;
+
+    /**
+     * - Total delay in seconds currently experienced by the jitter buffer.
+     */
+    jitterBufferDelay : number;
+
+    /**
+     * - Total number of packets emitted from the jitter buffer.
+     */
+    jitterBufferEmittedCount : number;
   };
+
   export type OutboundStats = {
     /**
      * - outbound-rtp Id.
@@ -361,6 +389,55 @@ declare module '@millicast/sdk' {
      * - Current bitrate in bits per second.
      */
     bitrate: number;
+
+    /**
+     *  - Change in the number of bytes sent since the last report.
+     */
+    bytesSentDelta: number;
+
+    /**
+     *  - Total number of packets sent.
+     */
+    totalPacketsSent : number;
+    /**
+     * - Change in the number of packets sent since the last report.
+     */
+    packetsSentDelta : number;
+    /**
+     * - Rate at which packets are being sent, measured in packets per second.
+     */
+    packetRate : number;
+    /**
+     * - The target bitrate for the encoder, in bits per second.
+     */
+    targetBitrate : number;
+    /**
+     * - Total number of retransmitted packets sent.
+     */
+    retransmittedPacketsSent: number; 
+
+    /**
+     * - Change in the number of retransmitted packets sent since the last report.
+     */
+    retransmittedPacketsSentDelta : number;
+    /**
+     *  - Total number of bytes that have been retransmitted.
+     */
+    retransmittedBytesSent : number;
+    /**
+     *  - Change in the number of retransmitted bytes sent since the last report.
+     */
+    retransmittedBytesSentDelta : number;
+    /**
+     * - Total number of frames sent(applicable for video).
+     */
+    framesSent : number;
+    /**
+     * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
+     * 
+     */  
+    [qualityLimitationDurations] : Date
+
   };
 
   class PeerConnectionStats extends events.EventEmitter {
