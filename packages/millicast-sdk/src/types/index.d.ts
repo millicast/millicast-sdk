@@ -54,6 +54,79 @@ declare module '@millicast/sdk' {
    * Logger.timeEnd('Timer name')
    * // Timer name: 35282.997802734375 ms
    */
+
+  export type StatsFormat = Logger.JSON | Logger.CMCD;
+
+  export type DiagnosticReportConfiguration = {
+    /**
+     *  Number of stats objects to be included in the diagnostics report.
+     */
+    statsCount : number;
+
+    /**
+     *  Amount of history messages to be returned.
+     */
+    historySize : number;
+
+    /**
+     * Levels of history messages to be included. Defaults to Logger.TRACE
+     * Possible values include 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'
+     */
+    minLogLevel : string;
+
+    /**
+     * Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
+     */
+    statsFormat : StatsFormat;
+  }
+  
+  export type DiagnosticsResponse = {
+    /**
+     * Represents the Millicast product in use. 
+     */
+    client: string;
+    /**
+     * The version of the Millicast client in use
+     */
+    version: string,
+    /**
+     * UNIX timestamp to indicate when this report was generated
+     */
+    timestamp: number,
+    /**
+     * Device user agent string
+     */
+    userAgent: string,
+    /**
+     * The account Id for which the stream is being published/viewed
+     */
+    accountId:string,
+    /**
+     * The Millicast stream name being published/viewed
+     */
+    streamName: string,
+    /**
+     * A session level identifier for the client instancce
+     */
+    subscriberId:string,
+    /**
+     * Connection status.
+     */
+    connection: string,
+    /**
+     * 
+     */
+    streamViewId
+    /**
+     * A collection of log events reocrded until the diagnose method  was called 
+     */
+    history : Array<String>,
+    /**
+     * represents a collection of the webRTC stats collected before the diagnose call. 
+     */
+    stats : Array<Object>
+  }
+
   export class Logger {
     enabledFor: (level: any, loggerName: any) => boolean;
     /**
@@ -198,7 +271,7 @@ declare module '@millicast/sdk' {
      *
      * // Output: Diagnostics object with specified configuration
      */
-    diagnose: (config: Object) => Object;
+    diagnose: (config: DiagnosticReportConfiguration) => DiagnosticsResponse;
     /**
      * @var
      * @name VERSION
