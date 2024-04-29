@@ -43,11 +43,15 @@ export default class PeerConnection extends EventEmitter {
   /**
    * Instance new RTCPeerConnection.
    * @param {RTCConfiguration} config - Peer configuration.
+   * @param {Boolean} [autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
    */
-  async createRTCPeer (config = null) {
+  async createRTCPeer (config = { autoInitStats: true }) {
     logger.info('Creating new RTCPeerConnection')
     logger.debug('RTC configuration provided by user: ', config)
     this.peer = instanceRTCPeerConnection(this, config)
+    if (config.autoInitStats) {
+      this.initStats()
+    }
   }
 
   /**
@@ -339,10 +343,9 @@ export default class PeerConnection extends EventEmitter {
    */
   initStats () {
     if (this.peerConnectionStats) {
-      logger.warn('Cannot init peer stats: Already initialized')
+      logger.warn('PeerConnection.initStats() has already been called.  Automatic initialization occurs via View.connect(), Publish.connect() or this.createRTCPeer(). See options')
     } else if (this.peer) {
       this.peerConnectionStats = new PeerConnectionStats(this.peer)
-      this.peerConnectionStats.init()
       reemit(this.peerConnectionStats, this, [peerConnectionStatsEvents.stats])
     } else {
       logger.warn('Cannot init peer stats: RTCPeerConnection not initialized')

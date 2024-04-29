@@ -54,6 +54,79 @@ declare module '@millicast/sdk' {
    * Logger.timeEnd('Timer name')
    * // Timer name: 35282.997802734375 ms
    */
+
+  export type StatsFormat = Logger.JSON | Logger.CMCD;
+
+  export type DiagnosticReportConfiguration = {
+    /**
+     *  Number of stats objects to be included in the diagnostics report.
+     */
+    statsCount : number;
+
+    /**
+     *  Amount of history messages to be returned.
+     */
+    historySize : number;
+
+    /**
+     * Levels of history messages to be included. Defaults to Logger.TRACE
+     * Possible values include 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'
+     */
+    minLogLevel : string;
+
+    /**
+     * Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
+     */
+    statsFormat : StatsFormat;
+  }
+  
+  export type DiagnosticsResponse = {
+    /**
+     * Represents the Millicast product in use. 
+     */
+    client: string;
+    /**
+     * The version of the Millicast client in use
+     */
+    version: string,
+    /**
+     * UNIX timestamp to indicate when this report was generated
+     */
+    timestamp: number,
+    /**
+     * Device user agent string
+     */
+    userAgent: string,
+    /**
+     * The account Id for which the stream is being published/viewed
+     */
+    accountId:string,
+    /**
+     * The Millicast stream name being published/viewed
+     */
+    streamName: string,
+    /**
+     * A session level identifier for the client instancce
+     */
+    subscriberId:string,
+    /**
+     * Connection status.
+     */
+    connection: string,
+    /**
+     * 
+     */
+    streamViewId
+    /**
+     * A collection of log events reocrded until the diagnose method  was called 
+     */
+    history : Array<String>,
+    /**
+     * represents a collection of the webRTC stats collected before the diagnose call. 
+     */
+    stats : Array<Object>
+  }
+
   export class Logger {
     enabledFor: (level: any, loggerName: any) => boolean;
     /**
@@ -175,23 +248,30 @@ declare module '@millicast/sdk' {
     /**
      * @function
      * @name diagnose
-     * @description Returns an object with diagnostics about the state of the connection and environment.
-     * @param {Number} [statsCount = 5]      - Amount of stats objects to be saved.
-     * @param {Number} [historySize = 1000]  - Amount of history messages to be returned.
-     * @param {String} minLogLevel           - Levels of history messages to be included.
-     * examples of minLogLevel values in level order:
-     * 1 - TRACE
-     * 2 - DEBUG
-     * 3 - INFO
-     * 4 - WARN
-     * 5 - ERROR
-     * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
-     * @returns {Object} Relevant information about the current state, such us userAgent, SDK version, besides others.
+     * @description Returns diagnostics information about the connection and environment, formatted according to the specified parameters.
+     * @param {Object|} config - Configuration object for the diagnostic parameters
+     * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
+     * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
+     * @param {String} [config.minLogLevel] - Levels of history messages to be included.
+          * examples of minLogLevel values in level order:
+          * 1 - TRACE
+          * 2 - DEBUG
+          * 3 - INFO
+          * 4 - WARN
+          * 5 - ERROR
+          * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
+     * @param {String} [config.statsFormat='JSON'] - Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
+     * @returns {Object} An object containing relevant diagnostics information such as userAgent, SDK version, and stats data.
      * @example
-     * // Log and get a diagnose object with the last 3 stats reports
-     * const diagnostics = await Logger.diagnose(3)
+     * // Example using default parameters
+     * const diagnosticsDefault = Logger.diagnose();
+     *
+     * // Example specifying statsCount and format
+     * const diagnostics = Logger.diagnose({ statsCount: 30, minLogLevel: 'INFO', format: Logger.CMCD });
+     *
+     * // Output: Diagnostics object with specified configuration
      */
-    diagnose: (statsCount: Number, historySize: Number, minLogLevel: String) => Object;
+    diagnose: (config: DiagnosticReportConfiguration) => DiagnosticsResponse;
     /**
      * @var
      * @name VERSION
@@ -288,6 +368,23 @@ declare module '@millicast/sdk' {
      * - Current frame width if it's video report.
      */
     frameWidth?: number;
+
+    /**
+     * - Total number of key frames that have been decoded if it's video report.
+     */
+    keyFramesDecoded?: number;
+    /**
+     * - Total number of frames that have been decoded if it's video report.
+     */
+    framesDecoded?: number;
+    /**
+     * - Total number of frames that have been dropped if it's video report.
+     */
+    framesDropped?: number;
+    /**
+     * - Total number of frames that have been received if it's video report.
+     */
+    framesReceived?: number;
     /**
      * - Timestamp of report.
      */
@@ -316,7 +413,18 @@ declare module '@millicast/sdk' {
      * - Current bitrate in bits per second.
      */
     bitrate: number;
+
+    /**
+     * - Total delay in seconds currently experienced by the jitter buffer.
+     */
+    jitterBufferDelay : number;
+
+    /**
+     * - Total number of packets emitted from the jitter buffer.
+     */
+    jitterBufferEmittedCount : number;
   };
+
   export type OutboundStats = {
     /**
      * - outbound-rtp Id.
@@ -354,6 +462,55 @@ declare module '@millicast/sdk' {
      * - Current bitrate in bits per second.
      */
     bitrate: number;
+
+    /**
+     *  - Change in the number of bytes sent since the last report.
+     */
+    bytesSentDelta: number;
+
+    /**
+     *  - Total number of packets sent.
+     */
+    totalPacketsSent : number;
+    /**
+     * - Change in the number of packets sent since the last report.
+     */
+    packetsSentDelta : number;
+    /**
+     * - Rate at which packets are being sent, measured in packets per second.
+     */
+    packetRate : number;
+    /**
+     * - The target bitrate for the encoder, in bits per second.
+     */
+    targetBitrate : number;
+    /**
+     * - Total number of retransmitted packets sent.
+     */
+    retransmittedPacketsSent: number; 
+
+    /**
+     * - Change in the number of retransmitted packets sent since the last report.
+     */
+    retransmittedPacketsSentDelta : number;
+    /**
+     *  - Total number of bytes that have been retransmitted.
+     */
+    retransmittedBytesSent : number;
+    /**
+     *  - Change in the number of retransmitted bytes sent since the last report.
+     */
+    retransmittedBytesSentDelta : number;
+    /**
+     * - Total number of frames sent(applicable for video).
+     */
+    framesSent : number;
+    /**
+     * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
+     * 
+     */  
+    [qualityLimitationDurations] : Date
+
   };
 
   class PeerConnectionStats extends events.EventEmitter {
