@@ -54,6 +54,7 @@
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
   "dependencies": {
+    "@dolbyio/webrtc-stats": "^0.4.0",
     "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
     "buffer": "^6.0.3",
