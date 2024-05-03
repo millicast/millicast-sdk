@@ -48,6 +48,8 @@ const SEI_Payload_Type = {
   USER_DATA_UNREGISTERED: 5
 }
 
+export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
+export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 class SPSState {
   constructor (codec = 'h264') {
     this.sps = new Map()
@@ -369,15 +371,33 @@ function extractSEIPayload (rbsp) {
   }
 }
 
-function getSeiUserUnregisteredData (payloadContent) {
+function getSeiUserUnregisteredData (metadata, payloadContent) {
   let idx = 0
-  const uuid = payloadContent.subarray(idx, idx + 16)
+  metadata.uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
-  const data = payloadContent.subarray(idx)
-  return { uuid, data }
+  const content = payloadContent.subarray(idx)
+  if (isUUIDTimestamp(metadata.uuid)) {
+    metadata.timecode = convertSEITimestamp(content)
+  } else {
+    metadata.unregistered = content
+  }
 }
 
-function getSeiPicTimingTimecode (payloadContent) {
+function isUUIDTimestamp (uuidToCheck) {
+  const dolbyUUID = new Uint8Array(parseUUID(DOLBY_SEI_TIMESTAMP_UUID))
+
+  return dolbyUUID.every((value, index) => value === uuidToCheck[index])
+}
+
+function convertSEITimestamp (data) {
+  const timestampBigInt = data.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n)
+  const milliseconds = Number(timestampBigInt)
+  const date = new Date(milliseconds)
+  const dateEncoded = new TextEncoder().encode(date.toISOString())
+  return dateEncoded
+}
+
+function getSeiPicTimingTimecode (metadata, payloadContent) {
   if (!spsState.activeSPS) {
     throw new Error('Cannot find the active SPS')
   }
@@ -447,7 +467,7 @@ function getSeiPicTimingTimecode (payloadContent) {
       timecodes.push(timecode)
     }
   }
-  return timecodes
+  metadata.seiPicTimingTimeCodeArray = timecodes
 }
 
 /**
@@ -488,8 +508,7 @@ export function extractH26xMetadata (encodedFrame, codec) {
   if (codec !== 'h264' && codec !== 'h265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
-  const seiUserUnregisteredDataArray = []
-  let seiPicTimingTimeCodeArray
+  const metadata = {}
   spsState.codec = codec
   getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
@@ -498,20 +517,16 @@ export function extractH26xMetadata (encodedFrame, codec) {
     const payload = extractSEIPayload(rbsp)
     switch (payload.type) {
       case SEI_Payload_Type.PIC_TIMING:
-        seiPicTimingTimeCodeArray = getSeiPicTimingTimecode(payload.content)
+        getSeiPicTimingTimecode(metadata, payload.content)
         break
       case SEI_Payload_Type.USER_DATA_UNREGISTERED:
-        seiUserUnregisteredDataArray.push(getSeiUserUnregisteredData(payload.content))
+        getSeiUserUnregisteredData(metadata, payload.content)
         break
       default:
         break
     }
   })
-  return {
-    timestamp: encodedFrame.timestamp,
-    seiUserUnregisteredDataArray,
-    seiPicTimingTimeCodeArray
-  }
+  return metadata
 }
 
 function parseUUID (uuid) {

@@ -5,7 +5,7 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { VideoCodec } from './utils/Codecs'
+import { DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
@@ -26,9 +26,6 @@ const connectOptions = {
     autoInitStats: true
   }
 }
-
-export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
-export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 
 /**
  * @class Publish
