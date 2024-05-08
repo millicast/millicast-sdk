@@ -9,14 +9,12 @@
     "realtime",
     "streaming"
   ],
-  "main": "dist/millicast.cjs.js",
-  "module": "dist/millicast.esm.js",
-  "maintypes": "dist/millicast.d.ts",
+  "main": "dist/millicast.js",
+  "module": "dist/millicast.mjs",
   "browser": "dist/millicast.umd.js",
-  "millicastdebug": "dist/millicast.debug.umd.js",
   "scripts": {
-    "build": "rollup -c",
-    "start": "rollup -c -w",
+    "build": "vite build",
+    "start": "vite",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "jest --testMatch '**/unit/*.steps.js'",
@@ -25,7 +23,6 @@
     "test-all": "npm run build && jest --testMatch '**/*.steps.js'",
     "test": "npm run test-all"
   },
-  "types": "dist/millicast.d.ts",
   "babel": {
     "env": {
       "test": {
@@ -95,6 +92,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "serve": "^14.2.1",
     "typescript": "^4.9.3",
-    "underscore": "^1.13.1"
+    "underscore": "^1.13.1",
+    "vite": "^5.2.10"
   }
 }
