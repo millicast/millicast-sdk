@@ -14,7 +14,7 @@
   "browser": "dist/millicast.umd.js",
   "scripts": {
     "build": "vite build",
-    "start": "vite",
+    "start": "vite build --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "jest --testMatch '**/unit/*.steps.js'",

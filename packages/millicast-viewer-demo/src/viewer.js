@@ -12,10 +12,10 @@ const url = !!href.searchParams.get("url")
   : "wss://turn.millicast.com/millisock";
 const streamName = !!href.searchParams.get("streamName")
   ? href.searchParams.get("streamName")
-  : process.env.MILLICAST_STREAM_NAME;
+  : import.meta.env.MILLICAST_STREAM_NAME;
 const streamAccountId = !!href.searchParams.get("streamAccountId")
   ? href.searchParams.get("streamAccountId")
-  : process.env.MILLICAST_ACCOUNT_ID;
+  : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 const disableVideo = href.searchParams.get("disableVideo") === "true";
 const disableAudio = href.searchParams.get("disableAudio") === "true";

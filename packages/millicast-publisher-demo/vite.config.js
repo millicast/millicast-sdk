@@ -14,26 +14,6 @@ export default defineConfig({
       fileName: "publisher",
       formats: ["umd"]
     },
-    rollupOptions: {
-      plugins: [
-        nodeResolve({ preferBuiltins: false }),
-        commonjs({
-          include: [/node_modules/, /src/],
-          transformMixedEsModules: true
-        }),
-        babel({
-          babelHelpers: 'runtime',
-          presets: ['@babel/preset-env'],
-          exclude: ['/node_modules/**'],
-          plugins: ['@babel/plugin-transform-runtime']
-        }),
-        terser(),
-        cleanup({
-          comments: 'none',
-          sourcemap: false
-        })
-      ]
-    }
   },
   preview: {
     port: 10001
