@@ -338,7 +338,7 @@ function getSeiNalus (frameBuffer, codec) {
             spsState.findActiveSPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
             shouldSearchActiveSPS = false
           } catch (err) {
-            console.error('Failed to find active SPS', err)
+            console.warn('Failed to find active SPS. Will not be able to extract PIC timing metadata')
           }
           break
         default:
