@@ -529,6 +529,11 @@ export function extractH26xMetadata (encodedFrame, codec) {
   return metadata
 }
 
+function isValidUUID (uuid) {
+  const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
+  return uuidRegEx.test(uuid)
+}
+
 function parseUUID (uuid) {
   return uuid.replace(/-/g, '')
     .match(/.{1,2}/g)
@@ -605,6 +610,10 @@ export function addH26xSEI ({ uuid, payload }, encodedFrame) {
   }
   if (uuid === '' || payload === '') {
     throw new Error('uuid and payload cannot be empty')
+  }
+  if (!isValidUUID(uuid)) {
+    console.warn('Invalid UUID. Using default UUID.')
+    uuid = DOLBY_SEI_DATA_UUID
   }
   // Case of NALU H264 - User Unregistered Data
   const naluWithSEI = createSEINalu({ uuid, payload })
