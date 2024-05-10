@@ -537,7 +537,7 @@ function parseUUID (uuid) {
 
 function createSEIMessageContent (uuid, payload) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
-  const payloadArray = new TextEncoder().encode(payload)
+  const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
 
   const content = new Uint8Array(uuidArray.length + payloadArray.length)
   content.set(uuidArray)

@@ -80,7 +80,7 @@ const newViewer = () => {
     if (metadata.timecode) {
       metadata.timecode = decoder.decode(metadata.timecode)
     } else if (metadata.unregistered) {
-      metadata.unregistered = decoder.decode(metadata.unregistered)
+      metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
     }
     console.log('Metadata event:', metadata)
   })
