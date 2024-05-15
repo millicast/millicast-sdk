@@ -17,6 +17,7 @@ export default class MillicastPublishUserMedia extends Publish {
     return this.mediaManager.constraints;
   }
 
+
   set constraints(constraints) {
     this.mediaManager.constraints = constraints;
   }
@@ -94,6 +95,10 @@ export default class MillicastPublishUserMedia extends Publish {
     } else {
       return Promise.reject(`Invalid Type: ${type}`);
     }
+  }
+
+  sendMessage(message) {
+    this.sendMetadata(message)
   }
 
   muteMedia(type, boo) {
