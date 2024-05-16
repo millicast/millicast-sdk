@@ -13,7 +13,7 @@ startMetadataSyncService(() => {
 
     const timings = metas.flatMap(meta =>
       meta.type === SEIMessageType.USER_DATA_UNREGISTERED &&
-      meta.uuid === 0x00112233445566778899AABBCCDDEEFFn
+      (meta.uuid === 0x9a21f3be31f04b78b0bec7f7dbb97250n || meta.uuid === 0x00112233445566778899AABBCCDDEEFFn)
       ? [meta.data] : [])
     if (timings.length > 1)
       throw new Error('multiple timecode metadata messages in AU')
