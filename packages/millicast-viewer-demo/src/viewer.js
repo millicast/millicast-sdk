@@ -1,4 +1,4 @@
-import { View, Director, Logger, DOLBY_SEI_DATA_UUID, DOLBY_SEI_TIMESTAMP_UUID } from "@millicast/sdk";
+import { View, Director, Logger } from "@millicast/sdk";
 
 window.Logger = Logger
 
@@ -72,10 +72,10 @@ const newViewer = () => {
 
   millicastView.on('onMetadata', (metadata) => {
     console.log('Metadata event:', metadata)
-    if (metadata.uuid === DOLBY_SEI_DATA_UUID) {
+    if (metadata.unregistered) {
       console.log('received SEI unregistered messsage', metadata.unregistered)
-    } else if (metadata.uuid === DOLBY_SEI_TIMESTAMP_UUID) {
-      console.log('received SEI unregistered messsage', metadata.unregistered)
+    } else if (metadata.timecode) {
+      console.log('received timecode messsage', metadata.timecode)
     }
   })
 
