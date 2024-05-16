@@ -301,7 +301,8 @@ export default class Publish extends BaseWebRTC {
         payload: message
       })
     } else if (!/(h26[45])/.test(this.options.codec)) {
-      throw new Error('Sending metadata is not supported with any other codec other than H.264 or H.265')
+      // Add H265 once ready
+      throw new Error('Sending metadata is not supported with any other codec other than H.264')
     }
   }
 };
