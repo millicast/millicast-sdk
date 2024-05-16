@@ -2,6 +2,7 @@ import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 
 let uuid = ''
 let payload = ''
+let codec = ''
 
 function createReceiverTransform () {
   return new TransformStream({
@@ -24,6 +25,10 @@ function createSenderTransform () {
     async transform (encodedFrame, controller) {
       if (uuid && payload) {
         try {
+          // Add h265 regex when ready
+          if (!/(h26[4])/.test(codec)) {
+            throw new Error('Sending metadata is not supported with any other codec other than H.264')
+          }
           addH26xSEI({ uuid, payload }, encodedFrame)
         } catch (error) {
           console.error(error)
@@ -47,6 +52,7 @@ function setupPipe ({ readable, writable }, transform) {
 addEventListener('rtctransform', (event) => {
   let transform
   if (event.transformer.options.name === 'senderTransform') {
+    codec = event.transformer.options.codec
     transform = createSenderTransform()
   } else if (event.transformer.options.name === 'receiverTransform') {
     transform = createReceiverTransform()
@@ -60,6 +66,7 @@ addEventListener('message', (event) => {
   const { action } = event.data
   switch (action) {
     case 'insertable-streams-sender':
+      codec = event.data.codec
       setupPipe(event.data, createSenderTransform())
       break
     case 'insertable-streams-receiver':
