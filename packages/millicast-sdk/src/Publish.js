@@ -22,7 +22,6 @@ const connectOptions = {
   simulcast: false,
   scalabilityMode: null,
   peerConfig: {
-    encodedInsertableStreams: true,
     autoInitStats: true
   }
 }
@@ -128,7 +127,19 @@ export default class Publish extends BaseWebRTC {
     })
     const { error, value } = schema.validate(options)
     if (error) logger.warn(error, value)
-    this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+
+    this.options = {
+      ...connectOptions,
+      ...options,
+      peerConfig: {
+        ...connectOptions.peerConfig,
+        ...options.peerConfig
+      },
+      setSDPToPeer: false
+    }
+    this.options.peerConfig.encodedInsertableStreams = this.options.codec === VideoCodec.H264
+
+    logger.debug('this.options', this.options)
     await this.initConnection({ migrate: false })
   }
 
@@ -230,28 +241,30 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const workerBlob = new Blob([workerString])
-    const workerURL = URL.createObjectURL(workerBlob)
-    const worker = new Worker(workerURL)
+    if (this.options.codec === VideoCodec.H264) {
+      const workerBlob = new Blob([workerString])
+      const workerURL = URL.createObjectURL(workerBlob)
+      const worker = new Worker(workerURL)
 
-    const senders = this.getRTCPeerConnection()
-      .getSenders()
-      .filter((elt) => elt.track.kind === 'video')
-    const sender = senders[0]
+      const senders = this.getRTCPeerConnection()
+        .getSenders()
+        .filter((elt) => elt.track.kind === 'video')
+      const sender = senders[0]
 
-    if (supportsRTCRtpScriptTransform) {
-      // eslint-disable-next-line no-undef
-      sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform', codec: this.options.codec })
-    } else if (supportsInsertableStreams) {
-      const { readable, writable } = sender.createEncodedStreams()
-      worker.postMessage({
-        action: 'insertable-streams-sender',
-        codec: this.options.codec,
-        readable,
-        writable
-      }, [readable, writable])
+      if (supportsRTCRtpScriptTransform) {
+        // eslint-disable-next-line no-undef
+        sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform', codec: this.options.codec })
+      } else if (supportsInsertableStreams) {
+        const { readable, writable } = sender.createEncodedStreams()
+        worker.postMessage({
+          action: 'insertable-streams-sender',
+          codec: this.options.codec,
+          readable,
+          writable
+        }, [readable, writable])
+      }
+      this.worker = worker
     }
-    this.worker = worker
 
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
