@@ -9,9 +9,11 @@ function createReceiverTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      const metadata = extractH26xMetadata(encodedFrame, 'h264')
-      if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
-        self.postMessage({ metadata })
+      if (codec === 'video/H264') {
+        const metadata = extractH26xMetadata(encodedFrame, 'h264')
+        if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
+          self.postMessage({ metadata })
+        }
       }
       controller.enqueue(encodedFrame)
     }
@@ -75,6 +77,9 @@ addEventListener('message', (event) => {
     case 'metadata-sei-user-data-unregistered':
       uuid = event.data.uuid
       payload = event.data.payload
+      break
+    case 'set-codec':
+      codec = event.data.codec || ''
       break
     default:
       break

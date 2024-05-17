@@ -277,6 +277,18 @@ export default class View extends BaseWebRTC {
         this.worker = null
       }
       this.worker = worker
+
+      const getCodecOnStats = (stats) => {
+        if (stats.video.inbounds[0].mimeType) {
+          this.worker.postMessage({
+            action: 'set-codec',
+            codec: stats.video.inbounds[0].mimeType
+          })
+          this.webRTCPeer.removeListener('stats', getCodecOnStats)
+        }
+      }
+
+      this.webRTCPeer.on('stats', getCodecOnStats)
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })

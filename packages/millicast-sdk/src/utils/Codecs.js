@@ -48,6 +48,8 @@ const SEI_Payload_Type = {
   USER_DATA_UNREGISTERED: 5
 }
 
+let shouldSearchActiveSPS = true
+
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 class SPSState {
@@ -315,7 +317,6 @@ function getNalus (frameBuffer, codec) {
 }
 
 function getSeiNalus (frameBuffer, codec) {
-  let shouldSearchActiveSPS = true
   return getNalus(frameBuffer, codec).filter((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
     const headerLength = codec === 'h264' ? 1 : 2
@@ -336,9 +337,10 @@ function getSeiNalus (frameBuffer, codec) {
         case NALUType.SLICE_PARTITION_A:
           try {
             spsState.findActiveSPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
-            shouldSearchActiveSPS = false
           } catch (err) {
             console.warn('Failed to find active SPS. Will not be able to extract PIC timing metadata')
+          } finally {
+            shouldSearchActiveSPS = false
           }
           break
         default:
