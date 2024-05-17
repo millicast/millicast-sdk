@@ -303,6 +303,10 @@ export default class Publish extends BaseWebRTC {
    * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
    */
   sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
+    if (this.options.codec !== VideoCodec.H264) {
+      logger.warn('Sending metadata is only supported with H.264. Your frames will still be sent however no metadata will be attached to them')
+      return
+    }
     if (this.worker) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
