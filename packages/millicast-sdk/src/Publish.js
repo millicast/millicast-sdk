@@ -138,8 +138,6 @@ export default class Publish extends BaseWebRTC {
       setSDPToPeer: false
     }
     this.options.peerConfig.encodedInsertableStreams = this.options.codec === VideoCodec.H264
-
-    logger.debug('this.options', this.options)
     await this.initConnection({ migrate: false })
   }
 
