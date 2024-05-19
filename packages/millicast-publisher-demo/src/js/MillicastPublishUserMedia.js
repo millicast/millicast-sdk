@@ -17,7 +17,6 @@ export default class MillicastPublishUserMedia extends Publish {
     return this.mediaManager.constraints;
   }
 
-
   set constraints(constraints) {
     this.mediaManager.constraints = constraints;
   }
