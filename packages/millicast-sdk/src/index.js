@@ -10,6 +10,5 @@ export {
   Signaling,
   Director,
   Publish,
-  View,
-  DOLBY_SEI_TIMESTAMP_UUID
+  View
 }
