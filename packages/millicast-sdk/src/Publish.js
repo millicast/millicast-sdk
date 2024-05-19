@@ -230,29 +230,28 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    if (/(h26[45])/.test(this.options.codec)) {
-      const workerBlob = new Blob([workerString])
-      const workerURL = URL.createObjectURL(workerBlob)
-      const worker = new Worker(workerURL)
+    const workerBlob = new Blob([workerString])
+    const workerURL = URL.createObjectURL(workerBlob)
+    const worker = new Worker(workerURL)
 
-      const senders = this.getRTCPeerConnection()
-        .getSenders()
-        .filter((elt) => elt.track.kind === 'video')
-      const sender = senders[0]
+    const senders = this.getRTCPeerConnection()
+      .getSenders()
+      .filter((elt) => elt.track.kind === 'video')
+    const sender = senders[0]
 
-      if (supportsRTCRtpScriptTransform) {
-        // eslint-disable-next-line no-undef
-        sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform' })
-      } else if (supportsInsertableStreams) {
-        const { readable, writable } = sender.createEncodedStreams()
-        worker.postMessage({
-          action: 'insertable-streams-sender',
-          readable,
-          writable
-        }, [readable, writable])
-      }
-      this.worker = worker
+    if (supportsRTCRtpScriptTransform) {
+      // eslint-disable-next-line no-undef
+      sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform', codec: this.options.codec })
+    } else if (supportsInsertableStreams) {
+      const { readable, writable } = sender.createEncodedStreams()
+      worker.postMessage({
+        action: 'insertable-streams-sender',
+        codec: this.options.codec,
+        readable,
+        writable
+      }, [readable, writable])
     }
+    this.worker = worker
 
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
@@ -292,16 +291,11 @@ export default class Publish extends BaseWebRTC {
    */
   sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
     if (this.worker) {
-      if (this.options.codec === 'h265') {
-        throw new Error('Sending metadata is only available for H.264 codecs at the moment')
-      }
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
         uuid: uuid,
         payload: message
       })
-    } else if (!/(h26[45])/.test(this.options.codec)) {
-      throw new Error('Sending metadata is not supported with any other codec other than H.264 or H.265')
     }
   }
 };
