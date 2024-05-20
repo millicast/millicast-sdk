@@ -4,6 +4,10 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
+if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+}
+
 //Get our url
 const href = new URL(window.location.href);
 //Get or set Defaults

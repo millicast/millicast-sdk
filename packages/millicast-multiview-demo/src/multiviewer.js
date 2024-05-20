@@ -1,5 +1,9 @@
 import { Director, View } from "@millicast/sdk"
 
+if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+}
+
 // Config data
 const accountId = process.env.MILLICAST_ACCOUNT_ID
 const streamName = process.env.MILLICAST_STREAM_NAME

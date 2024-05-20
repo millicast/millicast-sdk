@@ -1,5 +1,4 @@
 import Logger from './Logger'
-import config from './config'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
 
@@ -10,7 +9,7 @@ const streamTypes = {
 }
 
 let liveWebsocketDomain = ''
-export const defaultApiEndpoint = config.MILLICAST_DIRECTOR_ENDPOINT
+export const defaultApiEndpoint = 'https://director.millicast.com'
 let apiEndpoint = defaultApiEndpoint
 
 /**
@@ -223,9 +222,6 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
       streamAccountId: legacyStreamAccountId,
       subscriberToken: legacySubscriberToken
     }
-  }
-  if (config.MILLICAST_FIXED_ACCOUNT_ID) {
-    parsedOptions = { ...parsedOptions, streamAccountId: config.MILLICAST_FIXED_ACCOUNT_ID }
   }
   return parsedOptions
 }
