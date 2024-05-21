@@ -379,6 +379,16 @@ const SdpParser = {
       })
     }
     return localDescription
+  },
+  getCodecPayloadType (sdp) {
+    const reg = /a=rtpmap:(\d+) (\w+)\/\d+/g
+    const matches = sdp.matchAll(reg)
+    const codecMap = {}
+
+    for (const match of matches) {
+      codecMap[match[1]] = match[2]
+    }
+    return codecMap
   }
 }
 

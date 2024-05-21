@@ -7,6 +7,7 @@ import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import workerString from './TransformWorker.worker.js'
+import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')
 
@@ -37,6 +38,7 @@ const connectOptions = {
 export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
+    this.codecPayloadTypeMap = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -247,11 +249,12 @@ export default class View extends BaseWebRTC {
       const worker = new Worker(workerURL)
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
-        trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform' })
+        trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform', codecMap: this.codecPayloadTypeMap })
       } else if (supportsInsertableStreams) {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
         worker.postMessage({
           action: 'insertable-streams-receiver',
+          codecMap: this.codecPayloadTypeMap,
           readable,
           writable
         }, [readable, writable])
@@ -291,6 +294,8 @@ export default class View extends BaseWebRTC {
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
+
+    this.codecPayloadTypeMap = SdpParser.getCodecPayloadType(sdpSubscriber)
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 
