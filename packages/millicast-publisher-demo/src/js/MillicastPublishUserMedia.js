@@ -96,6 +96,10 @@ export default class MillicastPublishUserMedia extends Publish {
     }
   }
 
+  sendMessage(message) {
+    if (this.options.codec === 'h264') this.sendMetadata(message)
+  }
+
   muteMedia(type, boo) {
     if (type === "audio") {
       return this.mediaManager.muteAudio(boo);

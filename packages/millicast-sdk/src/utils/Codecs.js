@@ -50,6 +50,7 @@ const SEI_Payload_Type = {
 
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
+
 class SPSState {
   constructor (codec = 'h264') {
     this.sps = new Map()
