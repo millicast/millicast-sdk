@@ -10,7 +10,7 @@ function createReceiverTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      const frameCodec = codecMap[encodedFrame.getMetadata().payloadType]
+      const frameCodec = codecMap[encodedFrame.getMetadata().payloadType] || codec.toUpperCase()
       if (frameCodec === 'H264') {
         const metadata = extractH26xMetadata(encodedFrame, frameCodec)
         if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
@@ -60,6 +60,7 @@ addEventListener('rtctransform', (event) => {
     transform = createSenderTransform()
   } else if (event.transformer.options.name === 'receiverTransform') {
     codecMap = event.transformer.options.codecMap || {}
+    codec = event.transformer.options.codec || ''
     transform = createReceiverTransform()
   } else {
     return
@@ -76,6 +77,7 @@ addEventListener('message', (event) => {
       break
     case 'insertable-streams-receiver':
       codecMap = event.data.codecMap || {}
+      codec = event.data.codec || ''
       setupPipe(event.data, createReceiverTransform())
       break
     case 'metadata-sei-user-data-unregistered':
