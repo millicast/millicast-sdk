@@ -38,6 +38,7 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
+    this.transceiverMap = new Map()
   }
 
   /**
@@ -170,8 +171,7 @@ export default class PeerConnection extends EventEmitter {
           direction: 'recvonly',
           streams
         })
-        transceiver.resolve = resolve
-        transceiver.reject = reject
+        this.transceiverMap.set(transceiver, resolve)
       } catch (e) {
         reject(e)
       }
@@ -409,17 +409,15 @@ const addPeerEvents = (instanceClass, peer) => {
   peer.ontrack = async (event) => {
     logger.info('New track from peer.')
     logger.debug('Track event value: ', event)
-
-    if (event?.transceiver?.resolve) {
+    const resolve = instanceClass.transceiverMap.get(event.transceiver)
+    if (resolve) {
       // we could add retry here to avoid unexpected situations
       // that leads to infinite loop and reject it if needed
       while (!event.transceiver.mid) {
         await delay(100)
       }
-      const resolve = event.transceiver.resolve
-      delete (event.transceiver.resolve)
-      delete (event.transceiver.reject)
       resolve(event.transceiver)
+      instanceClass.transceiverMap.delete(event.transceiver)
     }
 
     /**
