@@ -76,6 +76,11 @@ const newViewer = () => {
 
   millicastView.on('onMetadata', (metadata) => {
     console.log('Metadata event:', metadata)
+    if (metadata.unregistered) {
+      console.log('received SEI unregistered messsage', metadata.unregistered)
+    } else if (metadata.timecode) {
+      console.log('received timecode messsage', metadata.timecode)
+    }
   })
 
   return millicastView
