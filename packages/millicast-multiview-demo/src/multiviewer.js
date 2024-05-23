@@ -22,7 +22,7 @@ let transceiverToLayersMap = {}
 
 // Create a new viewer instance
 const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
-const viewer = new View(streamName, tokenGenerator)
+const viewer = window.millicastView = new View(streamName, tokenGenerator)
 
 // Listen for broadcast events
 viewer.on('broadcastEvent', (event) => {
@@ -58,6 +58,10 @@ viewer.on('track', (event) => {
   if (event.streams.length > 0 && event.track.kind === 'video') {
     addStreamToVideoElement(event.streams[0], event.transceiver.mid)
   }
+})
+
+viewer.on('onMetadata', (metadata) => {
+  console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
 })
 
 document.addEventListener('DOMContentLoaded', async () => {
