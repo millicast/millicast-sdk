@@ -19,6 +19,10 @@ const mockTokenGenerator = jest.fn(() => {
 })
 
 defineFeature(feature, test => {
+  beforeEach(() => {
+    jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
+  })
+
   test('Instance viewer without tokenGenerator', ({ given, when, then }) => {
     let expectError
 
@@ -93,7 +97,6 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of View already connected', async () => {
-      jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
       viewer = new View('streamName', mockTokenGenerator)
       await viewer.connect()
     })
@@ -113,7 +116,6 @@ defineFeature(feature, test => {
     let signaling
 
     given('I am subscribed to a stream', async () => {
-      jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
       await viewer.connect()
       signaling = viewer.signaling
     })
@@ -149,7 +151,6 @@ defineFeature(feature, test => {
     let result
 
     given('I am subscribed to a stream', async () => {
-      jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
       await viewer.connect()
     })
 

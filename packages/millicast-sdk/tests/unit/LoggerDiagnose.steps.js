@@ -1,6 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import 'jsdom-worker'
 import Logger from '../../src/Logger'
+import Signaling from '../../src/Signaling'
 import View from '../../src/View'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
@@ -46,7 +47,9 @@ defineFeature(feature, test => {
   beforeEach(() => {
     jest.restoreAllMocks()
     jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue(rawStats)
+    jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
   })
+
   test('Get information with failed connection', ({ given, when, then }) => {
     let viewer
     let expectedError
