@@ -8,6 +8,7 @@ import { VideoCodec, AudioCodec } from './utils/Codecs'
 import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = Logger.get('PeerConnection')
+logger.setLevel(Logger.DEBUG)
 
 export const webRTCEvents = {
   track: 'track',
@@ -164,17 +165,18 @@ export default class PeerConnection extends EventEmitter {
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack (media, streams) {
-    try {
-      let transceiver = this.peer.addTransceiver(media, {
-        direction: 'recvonly',
-        streams
-      })
-      transceiver = await getTransceiverWithMid(transceiver, streams)
-      return transceiver
-    } catch (e) {
-      logger.error('Error while adding the remote track: ', e)
-      throw e
-    }
+    return new Promise((resolve, reject) => {
+      try {
+        const transceiver = this.peer.addTransceiver(media, {
+          direction: 'recvonly',
+          streams
+        })
+        transceiver.resolve = resolve
+        transceiver.reject = reject
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 
   /**
@@ -402,9 +404,22 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
  * @fires PeerConnection#connectionStateChange
  */
 const addPeerEvents = (instanceClass, peer) => {
-  peer.ontrack = (event) => {
+  async function delay (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+  peer.ontrack = async (event) => {
     logger.info('New track from peer.')
     logger.debug('Track event value: ', event)
+
+    if (event?.transceiver?.resolve) {
+      while (!event.transceiver.mid) {
+        await delay(100)
+      }
+      const resolve = event.transceiver.resolve
+      delete (event.transceiver.resolve)
+      delete (event.transceiver.reject)
+      resolve(event.transceiver)
+    }
 
     /**
      * New track event.
@@ -412,7 +427,9 @@ const addPeerEvents = (instanceClass, peer) => {
      * @event PeerConnection#track
      * @type {RTCTrackEvent}
      */
-    instanceClass.emit(webRTCEvents.track, event)
+    setTimeout(() => {
+      instanceClass.emit(webRTCEvents.track, event)
+    }, 0)
   }
 
   if (peer.connectionState) {
@@ -447,6 +464,21 @@ const addPeerEvents = (instanceClass, peer) => {
     logger.info('Peer onnegotiationneeded, updating remote description', sdp)
     await peer.setRemoteDescription({ type: 'answer', sdp })
     logger.info('Peer onnegotiationneeded, renegotiation done')
+    peer.getTransceivers().forEach((transceiver) => {
+      if (transceiver.mid) {
+        if (transceiver.resolve) {
+          transceiver.resolve(transceiver)
+          delete (transceiver.resolve)
+          delete (transceiver.reject)
+        }
+      } else {
+        if (transceiver.reject) {
+          transceiver.reject(new Error('no mid after negotiation'))
+          delete (transceiver.reject)
+          delete (transceiver.resolve)
+        }
+      }
+    })
   }
 }
 
@@ -504,25 +536,26 @@ const addReceiveTransceivers = (peer, options) => {
   }
 }
 
-const getTransceiverWithMid = async (transceiver, streams, retries = 0) => {
-  return new Promise((resolve, reject) => {
-    if (transceiver.mid) {
-      for (const stream of streams) {
-        stream.addTrack(transceiver.receiver.track)
-      }
-      resolve(transceiver)
-    } else if (retries >= 10) {
-      reject(new Error('Error, maximum number of retries has been reached'))
-    } else {
-      retries++
-      setTimeout(() => {
-        getTransceiverWithMid(transceiver, streams, retries)
-          .then(resolve)
-          .catch(reject)
-      }, 50)
-    }
-  })
-}
+// const getTransceiverWithMid = async (transceiver, streams, retries = 0) => {
+//   return new Promise((resolve, reject) => {
+//     if (transceiver.mid || retries >= 10) {
+//       if (retries >= 10) {
+//         logger.warn("transceiver's mid is null after 10 retries")
+//       }
+//       for (const stream of streams) {
+//         stream.addTrack(transceiver.receiver.track)
+//       }
+//       resolve(transceiver)
+//     } else {
+//       retries++
+//       setTimeout(() => {
+//         getTransceiverWithMid(transceiver, streams, retries)
+//           .then(resolve)
+//           .catch(reject)
+//       }, 100)
+//     }
+//   })
+// }
 
 const getConnectionState = (peer) => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState

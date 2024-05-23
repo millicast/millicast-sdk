@@ -139,7 +139,11 @@ export default class View extends BaseWebRTC {
    */
   async addRemoteTrack (media, streams) {
     logger.info('Viewer adding remote % track', media)
-    return this.webRTCPeer.addRemoteTrack(media, streams)
+    const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
+    for (const stream of streams) {
+      stream.addTrack(transceiver.receiver.track)
+    }
+    return transceiver
   }
 
   /**
