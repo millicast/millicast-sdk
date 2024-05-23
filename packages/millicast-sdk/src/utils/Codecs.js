@@ -52,7 +52,7 @@ export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 
 class SPSState {
-  constructor (codec = 'h264') {
+  constructor (codec = 'H264') {
     this.sps = new Map()
     this.pps = new Map()
     this.activeSPS = null
@@ -60,7 +60,7 @@ class SPSState {
   }
 
   collectPPS (rbsp) {
-    if (this.codec === 'h264') {
+    if (this.codec === 'H264') {
       this.collectH264PPS(rbsp)
     } else {
       this.collectH265PPS(rbsp)
@@ -68,7 +68,7 @@ class SPSState {
   }
 
   collectSPS (rbsp) {
-    if (this.codec === 'h264') {
+    if (this.codec === 'H264') {
       this.collectH264SPS(rbsp)
     } else {
       this.collectH265SPS(rbsp)
@@ -292,7 +292,7 @@ function removePreventionBytes (ebsp) {
 
 function getNalus (frameBuffer, codec) {
   let offset = 0
-  const headerSize = codec === 'h264' ? 1 : 2
+  const headerSize = codec === 'H264' ? 1 : 2
   const nalus = []
   while (offset < frameBuffer.byteLength - 4) {
     const startCodeIndex = findStartCodeIndex(frameBuffer, offset)
@@ -319,9 +319,9 @@ function getSeiNalus (frameBuffer, codec) {
   let shouldSearchActiveSPS = true
   return getNalus(frameBuffer, codec).filter((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-    const headerLength = codec === 'h264' ? 1 : 2
+    const headerLength = codec === 'H264' ? 1 : 2
     const header = nalu[startCodeLength]
-    const naluType = codec === 'h264' ? header & 0x1f : header >> 1 & 0x3f
+    const naluType = codec === 'H264' ? header & 0x1f : header >> 1 & 0x3f
     if (shouldSearchActiveSPS) {
       switch (naluType) {
         case NALUType.PPS_H264:
@@ -502,18 +502,18 @@ function getSeiPicTimingTimecode (metadata, payloadContent) {
 /**
 * Extract user unregistered metadata from H26x Encoded Frame
 * @param { RTCEncodedFrame } encodedFrame
-* @param { 'h264' | 'h265' } codec
+* @param { 'H264' | 'H265' } codec
 * @returns { FrameMetaData }
 */
 export function extractH26xMetadata (encodedFrame, codec) {
-  if (codec !== 'h264' && codec !== 'h265') {
+  if (codec !== 'H264' && codec !== 'H265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
   const metadata = {}
   spsState.codec = codec
   getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-    const headerLength = codec === 'h264' ? 1 : 2
+    const headerLength = codec === 'H264' ? 1 : 2
     const rbsp = removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
     const payload = extractSEIPayload(rbsp)
     switch (payload.type) {

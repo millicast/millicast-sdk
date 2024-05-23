@@ -3,15 +3,19 @@ import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 let uuid = ''
 let payload = ''
 let codec = ''
+let codecMap = {}
 
 function createReceiverTransform () {
   return new TransformStream({
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      const metadata = extractH26xMetadata(encodedFrame, 'h264')
-      if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
-        self.postMessage({ metadata })
+      const frameCodec = codecMap[encodedFrame.getMetadata().payloadType] || codec.toUpperCase()
+      if (frameCodec === 'H264') {
+        const metadata = extractH26xMetadata(encodedFrame, frameCodec)
+        if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
+          self.postMessage({ metadata })
+        }
       }
       controller.enqueue(encodedFrame)
     }
@@ -55,6 +59,8 @@ addEventListener('rtctransform', (event) => {
     codec = event.transformer.options.codec
     transform = createSenderTransform()
   } else if (event.transformer.options.name === 'receiverTransform') {
+    codecMap = event.transformer.options.codecMap || {}
+    codec = event.transformer.options.codec || ''
     transform = createReceiverTransform()
   } else {
     return
@@ -70,6 +76,8 @@ addEventListener('message', (event) => {
       setupPipe(event.data, createSenderTransform())
       break
     case 'insertable-streams-receiver':
+      codecMap = event.data.codecMap || {}
+      codec = event.data.codec || ''
       setupPipe(event.data, createReceiverTransform())
       break
     case 'metadata-sei-user-data-unregistered':
