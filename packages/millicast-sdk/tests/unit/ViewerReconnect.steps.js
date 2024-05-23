@@ -1,4 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import 'jsdom-worker'
 import { webRTCEvents } from '../../src/PeerConnection'
 import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
