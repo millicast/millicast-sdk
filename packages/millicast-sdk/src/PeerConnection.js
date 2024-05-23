@@ -8,7 +8,6 @@ import { VideoCodec, AudioCodec } from './utils/Codecs'
 import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = Logger.get('PeerConnection')
-logger.setLevel(Logger.DEBUG)
 
 export const webRTCEvents = {
   track: 'track',
@@ -412,6 +411,8 @@ const addPeerEvents = (instanceClass, peer) => {
     logger.debug('Track event value: ', event)
 
     if (event?.transceiver?.resolve) {
+      // we could add retry here to avoid unexpected situations
+      // that leads to infinite loop and reject it if needed
       while (!event.transceiver.mid) {
         await delay(100)
       }
@@ -464,21 +465,6 @@ const addPeerEvents = (instanceClass, peer) => {
     logger.info('Peer onnegotiationneeded, updating remote description', sdp)
     await peer.setRemoteDescription({ type: 'answer', sdp })
     logger.info('Peer onnegotiationneeded, renegotiation done')
-    peer.getTransceivers().forEach((transceiver) => {
-      if (transceiver.mid) {
-        if (transceiver.resolve) {
-          transceiver.resolve(transceiver)
-          delete (transceiver.resolve)
-          delete (transceiver.reject)
-        }
-      } else {
-        if (transceiver.reject) {
-          transceiver.reject(new Error('no mid after negotiation'))
-          delete (transceiver.reject)
-          delete (transceiver.resolve)
-        }
-      }
-    })
   }
 }
 
@@ -535,27 +521,6 @@ const addReceiveTransceivers = (peer, options) => {
     })
   }
 }
-
-// const getTransceiverWithMid = async (transceiver, streams, retries = 0) => {
-//   return new Promise((resolve, reject) => {
-//     if (transceiver.mid || retries >= 10) {
-//       if (retries >= 10) {
-//         logger.warn("transceiver's mid is null after 10 retries")
-//       }
-//       for (const stream of streams) {
-//         stream.addTrack(transceiver.receiver.track)
-//       }
-//       resolve(transceiver)
-//     } else {
-//       retries++
-//       setTimeout(() => {
-//         getTransceiverWithMid(transceiver, streams, retries)
-//           .then(resolve)
-//           .catch(reject)
-//       }, 100)
-//     }
-//   })
-// }
 
 const getConnectionState = (peer) => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState
