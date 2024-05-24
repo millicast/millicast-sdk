@@ -101,21 +101,26 @@ const addRemoteSource = async (data) => {
 }
 
 const addMainSource = async (data) => {
-  const mediaStream = new MediaStream()
-  const tracks = data.tracks.map(track => {
-    const { media } = track
-    const mediaId = media === 'video' ? mainTransceiver : '1'
-    return {
-      ...track,
-      mediaId
-    }
-  })
+  const mainVideo = document.getElementById(mainTransceiver)
+  if (!mainVideo) {
+    const mediaStream = new MediaStream()
+    const tracks = data.tracks.map(track => {
+      const { media } = track
+      const mediaId = media === 'video' ? mainTransceiver : '1'
+      return {
+        ...track,
+        mediaId
+      }
+    })
 
-  transceiverToSourceIdMap[mainTransceiver] = data.sourceId 
-  sourcesTracks[data.sourceId] = tracks
-  
-  createVideoElement(mediaStream, mainTransceiver)
-  createVideoEventListener(mainTransceiver)
+    transceiverToSourceIdMap[mainTransceiver] = data.sourceId 
+    sourcesTracks[data.sourceId] = tracks
+    
+    createVideoElement(mediaStream, mainTransceiver)
+    createVideoEventListener(mainTransceiver)
+  } else {
+    mainVideo.hidden = false
+  }
 }
 
 const addStreamToVideoElement = (mediaStream, videoMediaId) => {
@@ -134,16 +139,20 @@ const unprojectAndRemoveVideo = async (sourceId) => {
   const videoMediaId = sourcesTracks[sourceId].find(track => track.media === 'video').mediaId
   const tracksMediaIds = sourcesTracks[sourceId].map(track => track.mediaId)
   const video = document.getElementById(videoMediaId)
-  
-  await viewer.unproject(tracksMediaIds)
 
-  if (videoMediaId === mainTransceiver) {
-    mainVideoContainer.removeChild(video)
+  if (sourceId) {
+    await viewer.unproject(tracksMediaIds)
+  
+    if (videoMediaId === mainTransceiver) {
+      mainVideoContainer.removeChild(video)
+    } else {
+      remoteVideosContainer.removeChild(video)
+    }
+    delete sourcesTracks[sourceId]
+    delete transceiverToSourceIdMap[videoMediaId]
   } else {
-    remoteVideosContainer.removeChild(video)
+    video.hidden = true
   }
-  delete sourcesTracks[sourceId]
-  delete transceiverToSourceIdMap[videoMediaId]
 }
 
 const sourcesDropDown = document.getElementById('sourcesDropDown')
