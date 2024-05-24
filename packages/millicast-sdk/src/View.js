@@ -38,7 +38,6 @@ const connectOptions = {
 export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
-    this.workers = {}
     this.codecPayloadTypeMap = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
@@ -192,10 +191,7 @@ export default class View extends BaseWebRTC {
 
   stop () {
     super.stop()
-    Object.keys(this.workers).forEach((key) => {
-      this.workers[key].terminate()
-    })
-    this.workers = null
+    this.worker?.terminate()
   }
 
   async initConnection (data) {
@@ -247,29 +243,33 @@ export default class View extends BaseWebRTC {
 
     const workerBlob = new Blob([workerString])
     const workerURL = URL.createObjectURL(workerBlob)
+    this.worker = new Worker(workerURL)
 
     webRTCPeerInstance.on('track', (trackEvent) => {
-      const { mid } = trackEvent.transceiver
-      if (trackEvent.track?.kind !== 'video' || !mid) return
-      const worker = new Worker(workerURL)
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
-        trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform', codecMap: this.codecPayloadTypeMap, codec: this.options.codec })
+        trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'receiverTransform',
+          codecMap: this.codecPayloadTypeMap,
+          codec: this.options.codec,
+          mid: trackEvent.transceiver?.mid
+        })
       } else if (supportsInsertableStreams) {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        worker.postMessage({
+        this.worker.postMessage({
           action: 'insertable-streams-receiver',
           codecMap: this.codecPayloadTypeMap,
           codec: this.options.codec,
+          mid: trackEvent.transceiver?.mid,
           readable,
           writable
         }, [readable, writable])
       }
-      worker.onmessage = (event) => {
+      this.worker.onmessage = (event) => {
         const decoder = new TextDecoder()
         const metadata = event.data.metadata
+        metadata.mid = event.data.mid
         metadata.track = trackEvent.track
-        metadata.mid = mid
 
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
@@ -282,11 +282,6 @@ export default class View extends BaseWebRTC {
         }
         this.emit('onMetadata', metadata)
       }
-      if (this.workers[mid]) {
-        this.workers[mid].terminate()
-        this.workers[mid] = null
-      }
-      this.workers[mid] = worker
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })

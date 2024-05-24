@@ -169,6 +169,11 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
+  stop () {
+    super.stop()
+    this.worker?.terminate()
+  }
+
   async initConnection (data) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
@@ -232,26 +237,27 @@ export default class Publish extends BaseWebRTC {
 
     const workerBlob = new Blob([workerString])
     const workerURL = URL.createObjectURL(workerBlob)
-    const worker = new Worker(workerURL)
+    this.worker = new Worker(workerURL)
 
-    const senders = this.getRTCPeerConnection()
-      .getSenders()
-      .filter((elt) => elt.track.kind === 'video')
-    const sender = senders[0]
+    const senders = this.getRTCPeerConnection().getSenders()
 
-    if (supportsRTCRtpScriptTransform) {
-      // eslint-disable-next-line no-undef
-      sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform', codec: this.options.codec })
-    } else if (supportsInsertableStreams) {
-      const { readable, writable } = sender.createEncodedStreams()
-      worker.postMessage({
-        action: 'insertable-streams-sender',
-        codec: this.options.codec,
-        readable,
-        writable
-      }, [readable, writable])
-    }
-    this.worker = worker
+    senders.forEach(sender => {
+      if (supportsRTCRtpScriptTransform) {
+        // eslint-disable-next-line no-undef
+        sender.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'senderTransform',
+          codec: this.options.codec
+        })
+      } else if (supportsInsertableStreams) {
+        const { readable, writable } = sender.createEncodedStreams()
+        this.worker.postMessage({
+          action: 'insertable-streams-sender',
+          codec: this.options.codec,
+          readable,
+          writable
+        }, [readable, writable])
+      }
+    })
 
     let oldSignaling = this.signaling
     this.signaling = signalingInstance

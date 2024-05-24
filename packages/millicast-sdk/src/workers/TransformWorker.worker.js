@@ -5,16 +5,19 @@ let payload = ''
 let codec = ''
 let codecMap = {}
 
-function createReceiverTransform () {
+function createReceiverTransform (mid) {
   return new TransformStream({
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      const frameCodec = codecMap[encodedFrame.getMetadata().payloadType] || codec.toUpperCase()
-      if (frameCodec === 'H264') {
-        const metadata = extractH26xMetadata(encodedFrame, frameCodec)
-        if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
-          self.postMessage({ metadata })
+      // eslint-disable-next-line no-undef
+      if (encodedFrame instanceof RTCEncodedVideoFrame) {
+        const frameCodec = codecMap[encodedFrame.getMetadata().payloadType] || codec.toUpperCase()
+        if (frameCodec === 'H264') {
+          const metadata = extractH26xMetadata(encodedFrame, frameCodec)
+          if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
+            self.postMessage({ mid, metadata })
+          }
         }
       }
       controller.enqueue(encodedFrame)
@@ -27,7 +30,8 @@ function createSenderTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      if (uuid && payload) {
+      // eslint-disable-next-line no-undef
+      if (encodedFrame instanceof RTCEncodedVideoFrame && uuid && payload) {
         try {
           // Add h265 regex when ready
           if (!/(h26[4])/.test(codec)) {
@@ -61,7 +65,7 @@ addEventListener('rtctransform', (event) => {
   } else if (event.transformer.options.name === 'receiverTransform') {
     codecMap = event.transformer.options.codecMap || {}
     codec = event.transformer.options.codec || ''
-    transform = createReceiverTransform()
+    transform = createReceiverTransform(event.transformer.options.mid)
   } else {
     return
   }
@@ -78,7 +82,7 @@ addEventListener('message', (event) => {
     case 'insertable-streams-receiver':
       codecMap = event.data.codecMap || {}
       codec = event.data.codec || ''
-      setupPipe(event.data, createReceiverTransform())
+      setupPipe(event.data, createReceiverTransform(event.data.mid))
       break
     case 'metadata-sei-user-data-unregistered':
       uuid = event.data.uuid
