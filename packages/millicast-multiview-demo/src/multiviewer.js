@@ -143,11 +143,7 @@ const unprojectAndRemoveVideo = async (sourceId) => {
   if (sourceId) {
     await viewer.unproject(tracksMediaIds)
   
-    if (videoMediaId === mainTransceiver) {
-      mainVideoContainer.removeChild(video)
-    } else {
-      remoteVideosContainer.removeChild(video)
-    }
+    remoteVideosContainer.removeChild(video)
     delete sourcesTracks[sourceId]
     delete transceiverToSourceIdMap[videoMediaId]
   } else {
