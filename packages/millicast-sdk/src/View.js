@@ -250,7 +250,7 @@ export default class View extends BaseWebRTC {
         // eslint-disable-next-line no-undef
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
           name: 'receiverTransform',
-          codecMap: this.codecPayloadTypeMap,
+          codecMap: { ...this.codecPayloadTypeMap },
           codec: this.options.codec,
           mid: trackEvent.transceiver?.mid
         })
@@ -258,7 +258,7 @@ export default class View extends BaseWebRTC {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
         this.worker.postMessage({
           action: 'insertable-streams-receiver',
-          codecMap: this.codecPayloadTypeMap,
+          codecMap: { ...this.codecPayloadTypeMap },
           codec: this.options.codec,
           mid: trackEvent.transceiver?.mid,
           readable,
