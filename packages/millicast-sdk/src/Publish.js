@@ -172,6 +172,7 @@ export default class Publish extends BaseWebRTC {
   stop () {
     super.stop()
     this.worker?.terminate()
+    this.worker = null
   }
 
   async initConnection (data) {
