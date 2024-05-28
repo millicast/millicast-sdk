@@ -4,7 +4,6 @@ import Signaling from './Signaling'
 import Director from './Director'
 import Publish from './Publish'
 import View from './View'
-
 export {
   Logger,
   PeerConnection,

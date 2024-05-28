@@ -66,7 +66,6 @@ const newViewer = () => {
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
-  
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
@@ -74,6 +73,15 @@ const newViewer = () => {
   millicastView.on("track", (event) => {
     addStream(event.streams[0]);
   });
+
+  millicastView.on('onMetadata', (metadata) => {
+    console.log('Metadata event:', metadata)
+    if (metadata.unregistered) {
+      console.log('received SEI unregistered messsage', metadata.unregistered)
+    } else if (metadata.timecode) {
+      console.log('received timecode messsage', metadata.timecode)
+    }
+  })
 
   return millicastView
 }

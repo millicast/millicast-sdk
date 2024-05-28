@@ -1,3 +1,4 @@
+import 'jsdom-worker'
 import PeerConnectionStats, { peerConnectionStatsEvents } from '../../src/PeerConnectionStats'
 
 jest.mock('events')

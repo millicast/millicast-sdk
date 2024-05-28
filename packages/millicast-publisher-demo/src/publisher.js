@@ -21,6 +21,7 @@ let isVideoMuted   = false
 let isAudioMuted   = false
 
 document.addEventListener("DOMContentLoaded", async (event) => {
+
   $('.privy-popup-container, .privy-popup-content-wrap').click(e => {
     return false;
   })
@@ -140,6 +141,24 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
   const events = ['viewercount']
+  let counter = 0;
+
+  const onVideoFrameReceived = (now, _) => {
+
+    // publish only once per second (at 30 fps)
+    if(counter === 0) {
+      const date = new Date(0)
+      const ts = performance.timeOrigin + now
+      date.setUTCMilliseconds(ts)
+      console.log("Sending publish message", ts)
+      millicastPublishUserMedia.sendMessage(date.toLocaleTimeString())
+    }
+    
+    counter = (counter + 1) % 30
+    if(isBroadcasting) {
+      videoWin.requestVideoFrameCallback(onVideoFrameReceived);
+    }
+  }
 
   const BroadcastMillicastStream = async () => {
     try{
@@ -158,6 +177,11 @@ document.addEventListener("DOMContentLoaded", async (event) => {
           isBroadcasting = false;
           broadcastHandler();
           onSetSessionDescriptionError(error)
+    }
+    if (isBroadcasting && 'requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      videoWin.requestVideoFrameCallback(onVideoFrameReceived)
+    } else {
+      console.warn("No metadata will be published")  
     }
   }
 
