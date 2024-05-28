@@ -4,6 +4,8 @@ let uuid = ''
 let payload = ''
 let codec = ''
 let codecMap = {}
+const ssrc = []
+let ssrcWithMetadata = []
 
 function createReceiverTransform (mid) {
   return new TransformStream({
@@ -31,18 +33,28 @@ function createSenderTransform () {
     flush () {},
     async transform (encodedFrame, controller) {
       // eslint-disable-next-line no-undef
-      if (encodedFrame instanceof RTCEncodedVideoFrame && uuid && payload) {
-        try {
-          // Add h265 regex when ready
-          if (!/(h26[4])/.test(codec)) {
-            throw new Error('Sending metadata is not supported with any other codec other than H.264')
+      if (encodedFrame instanceof RTCEncodedVideoFrame) {
+        const frameMetadata = encodedFrame.getMetadata()
+        if (!ssrc.includes(frameMetadata.synchronizationSource)) {
+          ssrc.push(frameMetadata.synchronizationSource)
+        }
+        if (!ssrcWithMetadata.includes(frameMetadata.synchronizationSource) && uuid && payload) {
+          ssrcWithMetadata.push(frameMetadata.synchronizationSource)
+          try {
+            // Add h265 regex when ready
+            if (!/(h26[4])/.test(codec)) {
+              throw new Error('Sending metadata is not supported with any other codec other than H.264')
+            }
+            addH26xSEI({ uuid, payload }, encodedFrame)
+          } catch (error) {
+            console.error(error)
+          } finally {
+            if (ssrc.sort().join() === ssrcWithMetadata.sort().join()) {
+              uuid = ''
+              payload = ''
+              ssrcWithMetadata = []
+            }
           }
-          addH26xSEI({ uuid, payload }, encodedFrame)
-        } catch (error) {
-          console.error(error)
-        } finally {
-          uuid = ''
-          payload = ''
         }
       }
       controller.enqueue(encodedFrame)
