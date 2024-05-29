@@ -1,11 +1,11 @@
 import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 
-let uuid = ''
-let payload = ''
+const DROPPED_SOURCE_TIMEOUT = 2000
+const metadata = []
 let codec = ''
 let codecMap = {}
-const ssrc = []
-let ssrcWithMetadata = []
+const synchronizationSources = {}
+let synchronizationSourcesWithMetadata = []
 
 function createReceiverTransform (mid) {
   return new TransformStream({
@@ -27,6 +27,25 @@ function createReceiverTransform (mid) {
   })
 }
 
+function clearMetadata () {
+  if (Object.keys(synchronizationSources).sort().join() === synchronizationSourcesWithMetadata.sort().join()) {
+    metadata.shift()
+    synchronizationSourcesWithMetadata = []
+  }
+}
+
+function refreshSynchronizationSources (newSyncSource) {
+  const now = new Date().getTime()
+  synchronizationSources[newSyncSource] = now
+
+  const sourcesToDelete = Object.keys(synchronizationSources).map(source => now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT)
+  sourcesToDelete.forEach(source => {
+    delete synchronizationSources[source]
+    delete synchronizationSourcesWithMetadata[source]
+  })
+  clearMetadata()
+}
+
 function createSenderTransform () {
   return new TransformStream({
     start () {},
@@ -35,25 +54,22 @@ function createSenderTransform () {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
-        if (!ssrc.includes(frameMetadata.synchronizationSource)) {
-          ssrc.push(frameMetadata.synchronizationSource)
-        }
-        if (!ssrcWithMetadata.includes(frameMetadata.synchronizationSource) && uuid && payload) {
-          ssrcWithMetadata.push(frameMetadata.synchronizationSource)
+        const newSyncSource = frameMetadata.synchronizationSource
+
+        refreshSynchronizationSources(newSyncSource)
+
+        if (!synchronizationSourcesWithMetadata.includes(newSyncSource) && metadata.length) {
           try {
             // Add h265 regex when ready
             if (!/(h26[4])/.test(codec)) {
               throw new Error('Sending metadata is not supported with any other codec other than H.264')
             }
-            addH26xSEI({ uuid, payload }, encodedFrame)
+            addH26xSEI(metadata[0], encodedFrame)
+            synchronizationSourcesWithMetadata.push(newSyncSource)
           } catch (error) {
             console.error(error)
           } finally {
-            if (ssrc.sort().join() === ssrcWithMetadata.sort().join()) {
-              uuid = ''
-              payload = ''
-              ssrcWithMetadata = []
-            }
+            clearMetadata()
           }
         }
       }
@@ -97,8 +113,10 @@ addEventListener('message', (event) => {
       setupPipe(event.data, createReceiverTransform(event.data.mid))
       break
     case 'metadata-sei-user-data-unregistered':
-      uuid = event.data.uuid
-      payload = event.data.payload
+      metadata.push({
+        uuid: event.data.uuid,
+        payload: event.data.payload
+      })
       break
     default:
       break
