@@ -38,7 +38,9 @@ function refreshSynchronizationSources (newSyncSource) {
   const now = new Date().getTime()
   synchronizationSources[newSyncSource] = now
 
-  const sourcesToDelete = Object.keys(synchronizationSources).map(source => now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT)
+  const sourcesToDelete = Object.keys(synchronizationSources)
+    .filter(source => (now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT))
+
   sourcesToDelete.forEach(source => {
     delete synchronizationSources[source]
     delete synchronizationSourcesWithMetadata[source]
