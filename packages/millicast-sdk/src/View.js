@@ -39,6 +39,7 @@ export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
     this.codecPayloadTypeMap = {}
+    this.trackMediaId = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -192,6 +193,9 @@ export default class View extends BaseWebRTC {
   stop () {
     super.stop()
     this.worker?.terminate()
+    this.worker = null
+    this.codecPayloadTypeMap = {}
+    this.trackMediaId = {}
   }
 
   async initConnection (data) {
@@ -246,6 +250,7 @@ export default class View extends BaseWebRTC {
     this.worker = new Worker(workerURL)
 
     webRTCPeerInstance.on('track', (trackEvent) => {
+      this.trackMediaId[trackEvent.transceiver?.mid] = trackEvent.track
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
@@ -269,7 +274,7 @@ export default class View extends BaseWebRTC {
         const decoder = new TextDecoder()
         const metadata = event.data.metadata
         metadata.mid = event.data.mid
-        metadata.track = trackEvent.track
+        metadata.track = this.trackMediaId[event.data.mid]
 
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
