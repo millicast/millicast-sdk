@@ -38,8 +38,10 @@ const connectOptions = {
 export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
-    this.codecPayloadTypeMap = {}
-    this.trackMediaId = {}
+    // States what payload type is associated with each codec from the SDP answer.
+    this.payloadTypeCodec = {}
+    // Follows the media id values of each transceiver's track from the 'track' events.
+    this.tracksMidValues = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -194,8 +196,8 @@ export default class View extends BaseWebRTC {
     super.stop()
     this.worker?.terminate()
     this.worker = null
-    this.codecPayloadTypeMap = {}
-    this.trackMediaId = {}
+    this.payloadTypeCodec = {}
+    this.tracksMidValues = {}
   }
 
   async initConnection (data) {
@@ -250,12 +252,12 @@ export default class View extends BaseWebRTC {
     this.worker = new Worker(workerURL)
 
     webRTCPeerInstance.on('track', (trackEvent) => {
-      this.trackMediaId[trackEvent.transceiver?.mid] = trackEvent.track
+      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
           name: 'receiverTransform',
-          codecMap: { ...this.codecPayloadTypeMap },
+          payloadTypeCodec: { ...this.payloadTypeCodec },
           codec: this.options.codec,
           mid: trackEvent.transceiver?.mid
         })
@@ -263,7 +265,7 @@ export default class View extends BaseWebRTC {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
         this.worker.postMessage({
           action: 'insertable-streams-receiver',
-          codecMap: { ...this.codecPayloadTypeMap },
+          payloadTypeCodec: { ...this.payloadTypeCodec },
           codec: this.options.codec,
           mid: trackEvent.transceiver?.mid,
           readable,
@@ -274,7 +276,7 @@ export default class View extends BaseWebRTC {
         const decoder = new TextDecoder()
         const metadata = event.data.metadata
         metadata.mid = event.data.mid
-        metadata.track = this.trackMediaId[event.data.mid]
+        metadata.track = this.tracksMidValues[event.data.mid]
 
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
@@ -302,7 +304,7 @@ export default class View extends BaseWebRTC {
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
 
-    this.codecPayloadTypeMap = SdpParser.getCodecPayloadType(sdpSubscriber)
+    this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber)
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 

@@ -3,7 +3,9 @@ import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 const DROPPED_SOURCE_TIMEOUT = 2000
 const metadata = []
 let codec = ''
-let codecMap = {}
+let payloadTypeCodec = {}
+// When simulcast is enabled, each resolution (height and width) frame has a different syncronization source (ssrc).
+// This object keeps track of the last timestamp each ssrc frame came in, so if that resolution stoped from been sent, after a timeout, it will be not taken into account for sending metadata.
 const synchronizationSources = {}
 let synchronizationSourcesWithMetadata = []
 
@@ -14,7 +16,7 @@ function createReceiverTransform (mid) {
     async transform (encodedFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
-        const frameCodec = codecMap[encodedFrame.getMetadata().payloadType] || codec.toUpperCase()
+        const frameCodec = payloadTypeCodec[encodedFrame.getMetadata().payloadType].toUpperCase() || codec.toUpperCase()
         if (frameCodec === 'H264') {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec)
           if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
@@ -93,7 +95,7 @@ addEventListener('rtctransform', (event) => {
     codec = event.transformer.options.codec
     transform = createSenderTransform()
   } else if (event.transformer.options.name === 'receiverTransform') {
-    codecMap = event.transformer.options.codecMap || {}
+    payloadTypeCodec = event.transformer.options.payloadTypeCodec || {}
     codec = event.transformer.options.codec || ''
     transform = createReceiverTransform(event.transformer.options.mid)
   } else {
@@ -110,7 +112,7 @@ addEventListener('message', (event) => {
       setupPipe(event.data, createSenderTransform())
       break
     case 'insertable-streams-receiver':
-      codecMap = event.data.codecMap || {}
+      payloadTypeCodec = event.data.payloadTypeCodec || {}
       codec = event.data.codec || ''
       setupPipe(event.data, createReceiverTransform(event.data.mid))
       break

@@ -238,6 +238,9 @@ export default class Publish extends BaseWebRTC {
 
     const workerBlob = new Blob([workerString])
     const workerURL = URL.createObjectURL(workerBlob)
+    if (this.worker) {
+      this.worker.terminate()
+    }
     this.worker = new Worker(workerURL)
 
     const senders = this.getRTCPeerConnection().getSenders()
@@ -304,13 +307,15 @@ export default class Publish extends BaseWebRTC {
         payload: message
       })
     } else {
-      let warningMessage = 'Could not send metadata. Reason: '
+      let warningMessage = 'Could not send metadata due to:'
       if (this.options.codec !== VideoCodec.H264) {
-        warningMessage += 'Incompatible codec. Only H264 available.'
-      } else if (this.options.disableVideo) {
-        warningMessage += 'Video disabled.'
-      } else {
-        warningMessage += 'Unknown.'
+        warningMessage += '\n- Incompatible codec. Only H264 available.'
+      }
+      if (this.options.disableVideo) {
+        warningMessage += '\n- Video disabled.'
+      }
+      if (!this.worker) {
+        warningMessage += '\n- Not publishing stream.'
       }
       logger.warn(warningMessage)
     }
