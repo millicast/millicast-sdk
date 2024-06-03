@@ -38,7 +38,10 @@ const connectOptions = {
 export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     super(streamName, tokenGenerator, logger, autoReconnect)
-    this.codecPayloadTypeMap = {}
+    // States what payload type is associated with each codec from the SDP answer.
+    this.payloadTypeCodec = {}
+    // Follows the media id values of each transceiver's track from the 'track' events.
+    this.tracksMidValues = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -192,6 +195,9 @@ export default class View extends BaseWebRTC {
   stop () {
     super.stop()
     this.worker?.terminate()
+    this.worker = null
+    this.payloadTypeCodec = {}
+    this.tracksMidValues = {}
   }
 
   async initConnection (data) {
@@ -243,27 +249,34 @@ export default class View extends BaseWebRTC {
 
     const workerBlob = new Blob([workerString])
     const workerURL = URL.createObjectURL(workerBlob)
+    this.worker = new Worker(workerURL)
 
     webRTCPeerInstance.on('track', (trackEvent) => {
-      if (trackEvent.track?.kind !== 'video') return
-      const worker = new Worker(workerURL)
+      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
-        trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform', codecMap: this.codecPayloadTypeMap, codec: this.options.codec })
+        trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'receiverTransform',
+          payloadTypeCodec: { ...this.payloadTypeCodec },
+          codec: this.options.codec,
+          mid: trackEvent.transceiver?.mid
+        })
       } else if (supportsInsertableStreams) {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        worker.postMessage({
+        this.worker.postMessage({
           action: 'insertable-streams-receiver',
-          codecMap: this.codecPayloadTypeMap,
+          payloadTypeCodec: { ...this.payloadTypeCodec },
           codec: this.options.codec,
+          mid: trackEvent.transceiver?.mid,
           readable,
           writable
         }, [readable, writable])
       }
-      worker.onmessage = (event) => {
+      this.worker.onmessage = (event) => {
         const decoder = new TextDecoder()
         const metadata = event.data.metadata
-        metadata.track = trackEvent.track
+        metadata.mid = event.data.mid
+        metadata.track = this.tracksMidValues[event.data.mid]
 
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
@@ -276,11 +289,6 @@ export default class View extends BaseWebRTC {
         }
         this.emit('onMetadata', metadata)
       }
-      if (this.worker) {
-        this.worker.terminate()
-        this.worker = null
-      }
-      this.worker = worker
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
@@ -296,7 +304,7 @@ export default class View extends BaseWebRTC {
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
 
-    this.codecPayloadTypeMap = SdpParser.getCodecPayloadType(sdpSubscriber)
+    this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber)
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 

@@ -169,6 +169,12 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
+  stop () {
+    super.stop()
+    this.worker?.terminate()
+    this.worker = null
+  }
+
   async initConnection (data) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
@@ -232,26 +238,30 @@ export default class Publish extends BaseWebRTC {
 
     const workerBlob = new Blob([workerString])
     const workerURL = URL.createObjectURL(workerBlob)
-    const worker = new Worker(workerURL)
-
-    const senders = this.getRTCPeerConnection()
-      .getSenders()
-      .filter((elt) => elt.track.kind === 'video')
-    const sender = senders[0]
-
-    if (supportsRTCRtpScriptTransform) {
-      // eslint-disable-next-line no-undef
-      sender.transform = new RTCRtpScriptTransform(worker, { name: 'senderTransform', codec: this.options.codec })
-    } else if (supportsInsertableStreams) {
-      const { readable, writable } = sender.createEncodedStreams()
-      worker.postMessage({
-        action: 'insertable-streams-sender',
-        codec: this.options.codec,
-        readable,
-        writable
-      }, [readable, writable])
+    if (this.worker) {
+      this.worker.terminate()
     }
-    this.worker = worker
+    this.worker = new Worker(workerURL)
+
+    const senders = this.getRTCPeerConnection().getSenders()
+
+    senders.forEach(sender => {
+      if (supportsRTCRtpScriptTransform) {
+        // eslint-disable-next-line no-undef
+        sender.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'senderTransform',
+          codec: this.options.codec
+        })
+      } else if (supportsInsertableStreams) {
+        const { readable, writable } = sender.createEncodedStreams()
+        this.worker.postMessage({
+          action: 'insertable-streams-sender',
+          codec: this.options.codec,
+          readable,
+          writable
+        }, [readable, writable])
+      }
+    })
 
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
@@ -290,12 +300,24 @@ export default class Publish extends BaseWebRTC {
    * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
    */
   sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
-    if (this.worker) {
+    if (this.worker && this.options.codec === VideoCodec.H264 && !this.options.disableVideo) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
         uuid: uuid,
         payload: message
       })
+    } else {
+      let warningMessage = 'Could not send metadata due to:'
+      if (this.options.codec !== VideoCodec.H264) {
+        warningMessage += '\n- Incompatible codec. Only H264 available.'
+      }
+      if (this.options.disableVideo) {
+        warningMessage += '\n- Video disabled.'
+      }
+      if (!this.worker) {
+        warningMessage += '\n- Not publishing stream.'
+      }
+      logger.warn(warningMessage)
     }
   }
 };
