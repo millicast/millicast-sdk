@@ -6,10 +6,12 @@ import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import { rtcDrmGetVersion, rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments } from './drm/rtc-drm-transform.js'
 import workerString from './TransformWorker.worker.js'
 import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')
+logger.setLevel(Logger.DEBUG)
 
 const connectOptions = {
   disableVideo: false,
@@ -18,6 +20,12 @@ const connectOptions = {
     autoInitStats: true
   }
 }
+
+/**
+ * @typedef {Object} DRMOptions contains the options for DRM playback
+ * @property {HTMLVideoElement} videoElement
+ * @property {HTMLAudioElement} audioElement
+ * /
 
 /**
  * @class View
@@ -34,15 +42,39 @@ const connectOptions = {
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
+ * @param {DRMOptions} drmOptions - DRM configuration options, includes audio and video HTML elements for main stream
  */
 export default class View extends BaseWebRTC {
-  constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
+  constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true, drmOptions = null) {
     super(streamName, tokenGenerator, logger, autoReconnect)
     this.codecPayloadTypeMap = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
       })
+    }
+    // TODO: change the workflow of getting the DRM configurations
+    if (drmOptions) {
+      console.log('castlab version', rtcDrmGetVersion())
+      const merchant = 'dolby'
+      const sessionId = ''
+      const environment = rtcDrmEnvironments.Staging
+      const keyId = this.hexToUint8Array(process.env.MILLICAST_DRM_VID1_KEYID)
+      const iv = this.hexToUint8Array(process.env.MILLICAST_DRM_VID1_IV)
+      if (keyId.length === 0 || iv.length === 0) {
+        throw new Error('Invalid keyId or iv')
+      }
+      const video = { codec: 'H264', encryption: 'cbcs', keyId, iv }
+      const audio = { codec: 'opus', encryption: 'clear' }
+      this.defaultDRMConfiguration = {
+        merchant,
+        environment,
+        sessionId,
+        video,
+        audio
+      }
+      this.configDRM({ ...this.defaultDRMConfiguration, ...drmOptions }, 'video', 'main')
+      this.isDRMOn = true
     }
   }
 
@@ -135,15 +167,48 @@ export default class View extends BaseWebRTC {
     logger.info('Connected to streamName: ', this.streamName)
   }
 
+  hexToUint8Array (hexString) {
+    if (!hexString) {
+      return new Uint8Array()
+    }
+    const length = hexString.length
+    const uint8Array = new Uint8Array(length / 2)
+    for (let i = 0; i < length; i += 2) {
+      uint8Array[i / 2] = parseInt(hexString.substr(i, 2), 16)
+    }
+    return uint8Array
+  }
+
   /**
    * Add remote receving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
+   * @param {DRMOptions} [drmOptions] - DRM configuration options, includes audio and video HTML elements for the new remote stream, this must be provided when using DRM.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
-  async addRemoteTrack (media, streams) {
-    logger.info('Viewer adding remote % track', media)
-    return this.webRTCPeer.addRemoteTrack(media, streams)
+  async addRemoteTrack (media, streams, drmOptions) {
+    logger.info('Viewer adding remote track', media)
+    const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
+    for (const stream of streams) {
+      stream.addTrack(transceiver.receiver.track)
+    }
+    if (this.isDRMOn) {
+      if (!drmOptions) throw new Error('DRM options are required when using DRM')
+      // TODO: add the work flow of fetching the DRM options
+      const configuration = JSON.parse(JSON.stringify(this.defaultDRMConfiguration))
+      configuration.environment = rtcDrmEnvironments.Staging // cannot deep clone this object
+      configuration.video.keyId = this.hexToUint8Array(process.env.MILLICAST_DRM_VID2_KEYID)
+      configuration.video.iv = this.hexToUint8Array(process.env.MILLICAST_DRM_VID2_IV)
+      if (configuration.video.keyId.length === 0 || configuration.video.iv.length === 0) {
+        throw new Error('Invalid keyId or iv')
+      }
+      this.configDRM({ ...configuration, ...drmOptions }, media, transceiver.mid)
+    }
+    return transceiver
+  }
+
+  removeRemoteTrack (mediaId) {
+    this.transceiverMap?.delete(mediaId)
   }
 
   /**
@@ -191,6 +256,7 @@ export default class View extends BaseWebRTC {
 
   stop () {
     super.stop()
+    this.transceiverMap?.clear()
     this.worker?.terminate()
   }
 
@@ -207,7 +273,8 @@ export default class View extends BaseWebRTC {
       subscriberData = await this.tokenGenerator()
       //  Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
-      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
+      // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
+      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && (this.isDRMOn || this.isFrameMetadataOn)
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -244,8 +311,18 @@ export default class View extends BaseWebRTC {
     const workerBlob = new Blob([workerString])
     const workerURL = URL.createObjectURL(workerBlob)
 
+    // TODO: add handle function for DRM on Signaling instance
+
     webRTCPeerInstance.on('track', (trackEvent) => {
-      if (trackEvent.track?.kind !== 'video') return
+      // TODO: DRM mode cannot coexist with frame metadata
+      if (this.isDRMOn) {
+        const mediaId = trackEvent.transceiver.mid
+        const drmOptions = this.getDRMConfiguration(mediaId)
+        logger.debug('on track event:', trackEvent.track.kind, drmOptions)
+        rtcDrmOnTrack(trackEvent, drmOptions)
+        return
+      }
+      if (!this.isFrameMetadataOn || trackEvent.track?.kind !== 'video') return
       const worker = new Worker(workerURL)
       if (supportsRTCRtpScriptTransform) {
         // eslint-disable-next-line no-undef
@@ -323,4 +400,47 @@ export default class View extends BaseWebRTC {
       })
     }
   }
-};
+
+  /**
+   * @typedef {Object} DRMMediaOptions
+   * @property {String} codec - h264 for video
+   * @property {String} encryption - cbsc or clear
+   * @property {String} [keyId] - decryption keyId when encryption is not clear
+   * @property {String} [iv] - fairplay iv when encryption is not clear
+   */
+  /**
+   * @typedef {Object} CastLabDRMOptions extends DRMOptions
+   * @property {String} merchant - merchant name
+   * @property {String} sessionId - the DRM session id
+   * @property {HTMLVideoElement} videoElement - video element to be used for playback
+   * @property {HTMLAudioElement} audioElement - audio element to be used for playback
+   * @property {DRMMediaOptions} video - video DRM options
+   * @property {DRMMediaOptions} audio -audio DRM options
+   */
+  /**
+   * config DRM protected stream from transceiver
+   * @param {CastLabDRMOptions} options - the DRM options in castlab SDK format
+   * @param {'video' | 'audio'} mediaType - 'video' or 'audio'
+   * @param {String} mediaId - the transceiver's mediaId, 'main' stands for main stream
+   */
+  configDRM (options, mediaType, mediaId) {
+    if (!options) {
+      throw new Error('Required DRM options is not provided')
+    }
+    if (!this.transceiverMap) {
+      this.transceiverMap = new Map()
+    }
+    this.transceiverMap.set(mediaId, options)
+    if (mediaType === 'video') {
+      console.log('config DRM options', options, 'and transceiverMap is', this.transceiverMap)
+      rtcDrmConfigure(options)
+    }
+  }
+
+  getDRMConfiguration (mediaId) {
+    if (!this.transceiverMap) {
+      return null
+    }
+    return this.transceiverMap.get(mediaId) || this.transceiverMap.get('main')
+  }
+}
