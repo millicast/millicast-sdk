@@ -73,7 +73,7 @@ export default class View extends BaseWebRTC {
         video,
         audio
       }
-      this.configDRM({ ...this.defaultDRMConfiguration, ...drmOptions }, 'video', 'main')
+      this.configureDRM({ ...this.defaultDRMConfiguration, ...drmOptions }, 'video', 'main')
       this.isDRMOn = true
     }
   }
@@ -197,18 +197,18 @@ export default class View extends BaseWebRTC {
       // TODO: add the work flow of fetching the DRM options
       const configuration = JSON.parse(JSON.stringify(this.defaultDRMConfiguration))
       configuration.environment = rtcDrmEnvironments.Staging // cannot deep clone this object
-      configuration.video.keyId = this.hexToUint8Array(process.env.MILLICAST_DRM_VID2_KEYID)
-      configuration.video.iv = this.hexToUint8Array(process.env.MILLICAST_DRM_VID2_IV)
+      configuration.video.keyId = this.hexToUint8Array(process.env.MILLICAST_DRM_VID1_KEYID)
+      configuration.video.iv = this.hexToUint8Array(process.env.MILLICAST_DRM_VID1_IV)
       if (configuration.video.keyId.length === 0 || configuration.video.iv.length === 0) {
         throw new Error('Invalid keyId or iv')
       }
-      this.configDRM({ ...configuration, ...drmOptions }, media, transceiver.mid)
+      this.configureDRM({ ...configuration, ...drmOptions }, media, transceiver.mid)
     }
     return transceiver
   }
 
   removeRemoteTrack (mediaId) {
-    this.transceiverMap?.delete(mediaId)
+    this.drmOptionsMap?.delete(mediaId)
   }
 
   /**
@@ -256,7 +256,7 @@ export default class View extends BaseWebRTC {
 
   stop () {
     super.stop()
-    this.transceiverMap?.clear()
+    this.drmOptionsMap?.clear()
     this.worker?.terminate()
   }
 
@@ -418,29 +418,35 @@ export default class View extends BaseWebRTC {
    * @property {DRMMediaOptions} audio -audio DRM options
    */
   /**
-   * config DRM protected stream from transceiver
+   * configure DRM protected stream from transceiver
    * @param {CastLabDRMOptions} options - the DRM options in castlab SDK format
    * @param {'video' | 'audio'} mediaType - 'video' or 'audio'
    * @param {String} mediaId - the transceiver's mediaId, 'main' stands for main stream
    */
-  configDRM (options, mediaType, mediaId) {
+  configureDRM (options, mediaType, mediaId) {
     if (!options) {
       throw new Error('Required DRM options is not provided')
     }
-    if (!this.transceiverMap) {
-      this.transceiverMap = new Map()
+    if (!this.drmOptionsMap) {
+      // map transceiver's mediaId to its DRM options
+      this.drmOptionsMap = new Map()
     }
-    this.transceiverMap.set(mediaId, options)
+    this.drmOptionsMap.set(mediaId, options)
     if (mediaType === 'video') {
-      console.log('config DRM options', options, 'and transceiverMap is', this.transceiverMap)
+      console.log('config DRM options', options, 'and transceiverMap is', this.drmOptionsMap)
       rtcDrmConfigure(options)
     }
   }
 
+  /**
+   * Get the DRM options for a given mediaId
+   * @param {String} mediaId - the transceiver's mediaId
+   * @returns {DRMMediaOptions} - the DRM options
+   */
   getDRMConfiguration (mediaId) {
-    if (!this.transceiverMap) {
+    if (!this.drmOptionsMap) {
       return null
     }
-    return this.transceiverMap.get(mediaId) || this.transceiverMap.get('main')
+    return this.drmOptionsMap.get(mediaId) || this.drmOptionsMap.get('main')
   }
 }

@@ -26,7 +26,6 @@ const mainVideoMid = '0'
 const mainSourceId = 'main'
 
 let remoteVideosContainer
-let mainVideoContainer
 let mainVideoElement
 let mainAudioElement
 
@@ -46,9 +45,8 @@ let viewer
 
 document.addEventListener('DOMContentLoaded', async () => {
   remoteVideosContainer = document.getElementById('remoteVideos')
-  mainVideoContainer = document.getElementById('mainVideo')
-  mainVideoElement = document.getElementById(mainSourceId + '-video')
-  mainAudioElement = document.getElementById(mainSourceId + '-audio')
+  mainVideoElement = document.getElementById('mid-0')
+  mainAudioElement = document.getElementById('mid-1')
   console.log(' page loaded, mainVideoElement is', mainVideoElement)
   try {
     viewer = isDRMOn ? new View(streamName, tokenGenerator, null, true,
@@ -72,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         case 'inactive': {
           const sourceId = data.sourceId || mainSourceId
-          unprojectAndRemoveVideo(data.sourceId)
+          unprojectAndRemoveVideo(sourceId)
           removeSourceOption(sourceId)
           break
         }
@@ -88,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     viewer.on('track', (event) => {
       console.log('track event', event)
       if (!isDRMOn && event.streams.length > 0 && event.track.kind === 'video') {
-        addStreamToVideoElement(event.streams[0], transceiverMidToSourceIdMap[event.transceiver.mid] || mainSourceId)
+        addStreamToVideoElement(event.streams[0], event.transceiver.mid)
       }
     })
     await viewer.connect({
@@ -104,8 +102,8 @@ const addRemoteSource = async (data) => {
 
   const sourceId = data.sourceId
   const mediaStream = new MediaStream()
-  const videoElement = createVideoElement(mediaStream, sourceId)
-  const audioElement = createAudioElement(sourceId)
+  const videoElement = createVideoElement()
+  const audioElement = createAudioElement()
   const drmOptions = isDRMOn ? { videoElement, audioElement } : null
   const tracksPromises = data.tracks.map(async (track) => {
     const { media } = track
@@ -117,12 +115,17 @@ const addRemoteSource = async (data) => {
   })
   const tracksMapping = await Promise.all(tracksPromises)
   const videoMediaId = tracksMapping.find(track => track.media === 'video').mediaId
-  transceiverMidToSourceIdMap[videoMediaId] = data.sourceId
-  sourceTracksMap[data.sourceId] = tracksMapping
+  const audioMediaId = tracksMapping.find(track => track.media === 'audio')?.mediaId
+  videoElement.id = 'mid-' +videoMediaId
+  if (audioMediaId) {
+    audioElement.id = 'mid-' +audioMediaId
+  }
+  transceiverMidToSourceIdMap[videoMediaId] = sourceId
+  sourceTracksMap[sourceId] = tracksMapping
   createVideoEventListener(videoMediaId)
   if (!isDRMOn) videoElement.srcObject = mediaStream
-  await viewer.project(data.sourceId, tracksMapping)
-  console.log('tracks in stream', mediaStream.getTracks())
+  await viewer.project(sourceId, tracksMapping)
+  console.log('source tracks and mapping:', sourceId, sourceTracksMap[sourceId])
 }
 
 const addMainSource = async (data) => {
@@ -137,13 +140,12 @@ const addMainSource = async (data) => {
   })
   transceiverMidToSourceIdMap[mainVideoMid] = mainSourceId
   sourceTracksMap[mainSourceId] = tracksMapping
-  createVideoEventListener(mainVideoMid)
   mainVideoElement.hidden = false
+  console.log('source tracks and mapping:', mainSourceId, sourceTracksMap[mainSourceId])
 }
 
-const addStreamToVideoElement = (mediaStream, sourceId) => {
-  const video = document.getElementById(sourceId + '-video')
-  console.log('addStreamToVideoElement for source:', sourceId, video, mediaStream.getTracks())
+const addStreamToVideoElement = (mediaStream, mediaId) => {
+  const video = document.getElementById('mid-' + mediaId)
   video.srcObject = mediaStream
   video.muted = true
   video.autoPlay = true
@@ -156,9 +158,10 @@ const addStreamToVideoElement = (mediaStream, sourceId) => {
 
 const unprojectAndRemoveVideo = async (sourceId) => {
   const videoMediaId = sourceTracksMap[sourceId].find(track => track.media === 'video').mediaId
+  const audioMediaId = sourceTracksMap[sourceId].find(track => track.media === 'audio')?.mediaId
   const tracksMediaIds = sourceTracksMap[sourceId].map(track => track.mediaId)
-  const video = document.getElementById(sourceId + '-video')
-  const audio = document.getElementById(sourceId + '-audio')
+  const video = document.getElementById('mid-' + videoMediaId)
+  const audio = document.getElementById('mid-' + audioMediaId)
 
   await viewer.unproject(tracksMediaIds)
 
@@ -168,7 +171,7 @@ const unprojectAndRemoveVideo = async (sourceId) => {
   }else {
     video.hidden = true
     video.pause()
-    audio.pause()
+    audio?.pause()
   }
   delete sourceTracksMap[sourceId]
   delete transceiverMidToSourceIdMap[videoMediaId]
@@ -191,10 +194,8 @@ const updateLayers = (layers) => {
   }).join('')
 }
 
-const createVideoElement = (mediaStream, sourceId) => {
-  if (!sourceId) throw new Error('sourceId is required')
+const createVideoElement = () => {
   const video = document.createElement('video')
-  video.id = sourceId + '-video'
   video.autoplay = true
   video.playsInline = true
   video.controls = true
@@ -205,10 +206,8 @@ const createVideoElement = (mediaStream, sourceId) => {
 }
 
 // We only need this for DRM mode
-const createAudioElement = (sourceId) => {
-  if (!sourceId) throw new Error('sourceId is required')
+const createAudioElement = () => {
   const audio = document.createElement('audio')
-  audio.id = sourceId + '-audio'
   audio.autoplay = true
   audio.muted = true
   audio.hidden = true
@@ -217,19 +216,22 @@ const createAudioElement = (sourceId) => {
 }
 
 const createVideoEventListener = (mediaId) => {
-  const sourceId = transceiverMidToSourceIdMap[mediaId]
-  const video = document.getElementById(sourceId + '-video')
-  console.log('create video element event listener for:', sourceId, video)
-  video.addEventListener('click', () => {
+  const selectedSourceId = transceiverMidToSourceIdMap[mediaId]
+  const video = document.getElementById( 'mid-' + mediaId)
+  console.log('create video element event listener for:', selectedSourceId, video)
+  video.addEventListener('click', async () => {
     // switch main source with selected source
-    const mainSourceId = transceiverMidToSourceIdMap[mainVideoMid]
-    viewer.project(mainSourceId, sourceTracksMap[sourceId])
-    viewer.project(sourceId, sourceTracksMap[mainSourceId])
-    sourceTracksMap[sourceId].find(track => track.trackId === 'video').mediaId = mainVideoMid
-    sourceTracksMap[mainSourceId].find(track => track.trackId === 'video').mediaId = mediaId
-    transceiverMidToSourceIdMap[mainVideoMid] = sourceId
-    transceiverMidToSourceIdMap[mediaId] = mainSourceId
-    // TODO: audio switch
+    const selectedSourceId = transceiverMidToSourceIdMap[mediaId]
+    const mainVideoSourceId = transceiverMidToSourceIdMap[mainVideoMid]
+    console.log('switch main source from:', mainVideoSourceId, 'to:', selectedSourceId)
+    await viewer.project(mainVideoSourceId === mainSourceId ? null : mainVideoSourceId, sourceTracksMap[selectedSourceId])
+    await viewer.project(selectedSourceId === mainSourceId ? null : selectedSourceId, sourceTracksMap[mainVideoSourceId])
+    const tmp = sourceTracksMap[selectedSourceId]
+    sourceTracksMap[selectedSourceId] = sourceTracksMap[mainVideoSourceId]
+    sourceTracksMap[mainVideoSourceId] = tmp
+    transceiverMidToSourceIdMap[mainVideoMid] = selectedSourceId
+    transceiverMidToSourceIdMap[mediaId] = mainVideoSourceId
+    video.play()
   })
 }
 
