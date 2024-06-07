@@ -1072,6 +1072,10 @@ declare module '@millicast/sdk' {
      */
     absCaptureTime?: boolean;
     /**
+     * - Enable metadata extraction if stream is compatible.
+     */
+    metadata?: boolean;
+    /**
      * - Disable the opportunity to receive video stream.
      */
     disableVideo?: boolean;
@@ -1156,6 +1160,10 @@ declare module '@millicast/sdk' {
      * - Broadcast bandwidth. 0 for unlimited.
      */
     bandwidth?: number;
+    /**
+     * - Enable metadata insertion if stream is compatible.
+     */
+    metadata?: boolean;
     /**
      * - Disable the opportunity to send video stream.
      */

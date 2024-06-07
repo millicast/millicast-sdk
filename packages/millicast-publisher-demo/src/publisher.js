@@ -158,8 +158,17 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       });
       let priority = parseInt(params.priority);
       const sourceId = params.sourceId
-      priority = isNaN(priority) ? undefined : priority;
-      await millicastPublishUserMedia.connect({ bandwidth, events: events, priority, sourceId })
+      const metadata = params.metadata === "true"
+      const connectOptions = {
+        bandwidth,
+        events,
+        metadata
+      }
+      if (!isNaN(priority)) {
+        connectOptions.priority = priority
+      }
+      if (sourceId) connectOptions.sourceId = sourceId
+      await millicastPublishUserMedia.connect(connectOptions)
       isBroadcasting = true;
       broadcastHandler();
       setUserCount();

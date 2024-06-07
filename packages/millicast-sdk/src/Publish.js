@@ -16,13 +16,13 @@ const logger = Logger.get('Publish')
 const connectOptions = {
   mediaStream: null,
   bandwidth: 0,
+  metadata: false,
   disableVideo: false,
   disableAudio: false,
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
   peerConfig: {
-    encodedInsertableStreams: true,
     autoInitStats: true
   }
 }
@@ -62,6 +62,7 @@ export default class Publish extends BaseWebRTC {
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
+   * @param {Boolean} [options.metadata = false] - Enable metadata insertion if stream is compatible.
    * @param {Boolean} [options.disableVideo = false] - Disable the opportunity to send video stream.
    * @param {Boolean} [options.disableAudio = false] - Disable the opportunity to send audio stream.
    * @param {VideoCodec} [options.codec = 'h264'] - Codec for publish stream.
@@ -116,6 +117,7 @@ export default class Publish extends BaseWebRTC {
           joi.object()
         ),
       bandwidth: joi.number(),
+      metadata: joi.boolean(),
       disableVideo: joi.boolean(),
       disableAudio: joi.boolean(),
       codec: joi.string().valid(...Object.values(VideoCodec)),
@@ -129,6 +131,10 @@ export default class Publish extends BaseWebRTC {
     const { error, value } = schema.validate(options)
     if (error) logger.warn(error, value)
     this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+    this.options.metadata =
+      this.options.metadata &&
+      this.options.codec === VideoCodec.H264 &&
+      !this.options.disableVideo
     await this.initConnection({ migrate: false })
   }
 
@@ -192,6 +198,9 @@ export default class Publish extends BaseWebRTC {
       publisherData = await this.tokenGenerator()
       //  Set the iceServers from the publish data into the peerConfig
       this.options.peerConfig.iceServers = publisherData?.iceServers
+      if (this.options.metadata) {
+        this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
+      }
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -236,32 +245,33 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const workerBlob = new Blob([workerString])
-    const workerURL = URL.createObjectURL(workerBlob)
-    if (this.worker) {
-      this.worker.terminate()
-    }
-    this.worker = new Worker(workerURL)
-
-    const senders = this.getRTCPeerConnection().getSenders()
-
-    senders.forEach(sender => {
-      if (supportsRTCRtpScriptTransform) {
-        // eslint-disable-next-line no-undef
-        sender.transform = new RTCRtpScriptTransform(this.worker, {
-          name: 'senderTransform',
-          codec: this.options.codec
-        })
-      } else if (supportsInsertableStreams) {
-        const { readable, writable } = sender.createEncodedStreams()
-        this.worker.postMessage({
-          action: 'insertable-streams-sender',
-          codec: this.options.codec,
-          readable,
-          writable
-        }, [readable, writable])
+    if (this.options.metadata) {
+      const workerBlob = new Blob([workerString])
+      const workerURL = URL.createObjectURL(workerBlob)
+      if (!this.worker) {
+        this.worker = new Worker(workerURL)
       }
-    })
+
+      const senders = this.getRTCPeerConnection().getSenders()
+
+      senders.forEach(sender => {
+        if (supportsRTCRtpScriptTransform) {
+          // eslint-disable-next-line no-undef
+          sender.transform = new RTCRtpScriptTransform(this.worker, {
+            name: 'senderTransform',
+            codec: this.options.codec
+          })
+        } else if (supportsInsertableStreams) {
+          const { readable, writable } = sender.createEncodedStreams()
+          this.worker.postMessage({
+            action: 'insertable-streams-sender',
+            codec: this.options.codec,
+            readable,
+            writable
+          }, [readable, writable])
+        }
+      })
+    }
 
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
@@ -300,7 +310,7 @@ export default class Publish extends BaseWebRTC {
    * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
    */
   sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
-    if (this.worker && this.options.codec === VideoCodec.H264 && !this.options.disableVideo) {
+    if (this.options?.metadata && this.worker) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
         uuid: uuid,
@@ -308,14 +318,20 @@ export default class Publish extends BaseWebRTC {
       })
     } else {
       let warningMessage = 'Could not send metadata due to:'
-      if (this.options.codec !== VideoCodec.H264) {
-        warningMessage += '\n- Incompatible codec. Only H264 available.'
-      }
-      if (this.options.disableVideo) {
-        warningMessage += '\n- Video disabled.'
-      }
-      if (!this.worker) {
-        warningMessage += '\n- Not publishing stream.'
+      if (this.options) {
+        if (!this.options.metadata) {
+          warningMessage += '\n- Metadata option is not enabled.'
+          if (this.options.codec !== VideoCodec.H264) {
+            warningMessage += '\n- Incompatible codec. Only H264 available.'
+          }
+          if (this.options.disableVideo) {
+            warningMessage += '\n- Video disabled.'
+          }
+        } else if (!this.worker) {
+          warningMessage += '\n- Stream not being published.'
+        }
+      } else {
+        warningMessage += '\n- Stream not being published.'
       }
       logger.warn(warningMessage)
     }
