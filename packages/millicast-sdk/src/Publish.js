@@ -46,7 +46,7 @@ const connectOptions = {
  */
 export default class Publish extends BaseWebRTC {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
-    super(streamName, tokenGenerator, logger, autoReconnect)
+    super(null, tokenGenerator, logger, autoReconnect)
   }
 
   /**
