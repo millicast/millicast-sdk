@@ -2,11 +2,17 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   envPrefix: "MILLICAST_",
+  server: {
+    port: 10002,
+    watch: {
+      include: ['dist/**'],
+    }
+  },
   build: {
     lib: {
       entry: "src/viewer.js",
       name: "viewer",
-      fileName: "viewer",
+      fileName: (format) => `viewer.${format}.js`,
       formats: ["umd"]
     }
   },

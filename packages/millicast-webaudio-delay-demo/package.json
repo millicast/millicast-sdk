@@ -5,7 +5,8 @@
   "scripts": {
     "prepare": "node prepare.js",
     "build": "vite build",
-    "start": "vite preview"
+    "preview": "vite preview",
+    "start": "concurrently \"nodemon --watch dist --exec vite\" \"nodemon --watch src --exec vite build\""
   },
   "dependencies": {
     "@maslick/radiaslider": "^1.9.8",
@@ -18,7 +19,9 @@
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
+    "concurrently": "^8.2.2",
     "dotenv": "^8.2.0",
+    "nodemon": "^3.1.3",
     "rollup": "^2.42.3",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-inject-process-env": "^1.3.1",

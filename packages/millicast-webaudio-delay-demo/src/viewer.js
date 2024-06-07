@@ -11,10 +11,10 @@ const href = new URL(window.location.href)
 // Get or set Defaults
 const streamName = href.searchParams.get('streamName')
   ? href.searchParams.get('streamName')
-  : process.env.MILLICAST_STREAM_NAME
+  : import.meta.env.MILLICAST_STREAM_NAME
 const streamAccountId = href.searchParams.get('streamAccountId')
   ? href.searchParams.get('streamAccountId')
-  : process.env.MILLICAST_ACCOUNT_ID
+  : import.meta.env.MILLICAST_ACCOUNT_ID
 
 // MillicastView object
 let millicastView = null

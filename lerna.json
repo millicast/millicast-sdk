@@ -3,5 +3,6 @@
     "packages/*"
   ],
   "useWorkspaces": true,
+  "npmClient": "npm",
   "version": "0.1.40"
 }
