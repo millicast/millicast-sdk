@@ -31,7 +31,7 @@ const SdpParser = {
    * @function
    * @name setSimulcast
    * @description Parse SDP for support simulcast.
-   * **Only available in Google Chrome.**
+   * **Only available in Chromium based browsers.**
    * @param {String} sdp - Current SDP.
    * @param {String} codec - Codec.
    * @returns {String} SDP parsed with simulcast support.
