@@ -20,7 +20,7 @@ const expectedObject = {
   subscriberId: expect.any(String),
   connection: expect.any(String),
   version: version,
-  timestamp: expect.any(Number),
+  timestamp: expect.any(String),
   userAgent: expect.any(String),
   stats: expect.any(Array)
 }

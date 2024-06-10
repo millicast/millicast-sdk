@@ -38,7 +38,10 @@ const connectOptions = {
  */
 export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
-    super(streamName, tokenGenerator, logger, autoReconnect)
+    if (streamName) {
+      logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
+    }
+    super(null, tokenGenerator, logger, autoReconnect)
     // States what payload type is associated with each codec from the SDP answer.
     this.payloadTypeCodec = {}
     // Follows the media id values of each transceiver's track from the 'track' events.

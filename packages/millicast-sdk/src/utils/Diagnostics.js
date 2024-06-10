@@ -65,7 +65,7 @@ const Diagnostics = {
     const diagnostics = {
       client: '@millicast/millicast-sdk',
       version,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       userAgent,
       accountId: _accountId,
       streamName: _streamName,
