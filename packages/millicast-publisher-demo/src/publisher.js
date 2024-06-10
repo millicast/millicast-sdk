@@ -5,6 +5,10 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+}
+
 const streamName = import.meta.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
 const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
 const publishToken = import.meta.env.MILLICAST_PUBLISH_TOKEN
@@ -13,10 +17,11 @@ const disableAudio = false
 const disableStereo = false
 const disableOrientation = true
 let isBroadcasting = false
-let isVideoMuted   = false
-let isAudioMuted   = false
+let isVideoMuted = false
+let isAudioMuted = false
 
 document.addEventListener("DOMContentLoaded", async (event) => {
+
   $('.privy-popup-container, .privy-popup-content-wrap').click(e => {
     return false;
   })
@@ -29,8 +34,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     (function (a) {
       if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
         a) ||
-          /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
-            a.substr(0, 4))) {
+        /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+          a.substr(0, 4))) {
         check = true;
       }
     })(navigator.userAgent || navigator.vendor || window.opera);
@@ -42,34 +47,34 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   }
   //GUI ELEMENTS Refs
   //video overlay
-  let viewUrlEl   = document.getElementById('viewerURL');
-  let readyFlag   = document.getElementById('readyBadge');
-  let onAirFlag   = document.getElementById('liveBadge');
-  let userCount   = document.getElementById('userCount');
+  let viewUrlEl = document.getElementById('viewerURL');
+  let readyFlag = document.getElementById('readyBadge');
+  let onAirFlag = document.getElementById('liveBadge');
+  let userCount = document.getElementById('userCount');
 
   //publish button
-  let pubBtn      = document.getElementById('publishBtn');
+  let pubBtn = document.getElementById('publishBtn');
   //Cam elements
-  let camsList    = document.getElementById('camList'),
-      camMuteBtn  = document.getElementById('camMuteBtn');
+  let camsList = document.getElementById('camList'),
+    camMuteBtn = document.getElementById('camMuteBtn');
   //Mic elements
-  let micsList    = document.getElementById('micList'),
-      micMuteBtn  = document.getElementById('micMuteBtn');
+  let micsList = document.getElementById('micList'),
+    micMuteBtn = document.getElementById('micMuteBtn');
   //Share Copy element
-  let cpy         = document.getElementById('copyBtn');
-  let ctrl        = document.getElementById('ctrlUI');
-  let view        = document.getElementById('shareView');
+  let cpy = document.getElementById('copyBtn');
+  let ctrl = document.getElementById('ctrlUI');
+  let view = document.getElementById('shareView');
   //Signup element
-  let signup      = document.getElementById('signUpBtn');
+  let signup = document.getElementById('signUpBtn');
   //Bandwidth Video element
   let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item');
 
   // Publish & share sections
-  let publishSection    = document.getElementById('publishSection'),
-      shareSection      = document.getElementById('shareSection');
+  let publishSection = document.getElementById('publishSection'),
+    shareSection = document.getElementById('shareSection');
   //demo timer
   let tm;
-  let tmInt          = 300000;//300000 - 5min
+  let tmInt = 300000;//300000 - 5min
 
   //////
 
@@ -77,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     // Add listener of broacastEvent to get UserCount
     console.log(millicastPublishUserMedia._events, 'publisher user media')
     millicastPublishUserMedia.on('broadcastEvent', (event) => {
-      const {name, data} = event
+      const { name, data } = event
       console.log(event, 'broadcastEvent')
       if (name === 'viewercount') {
         userCount.innerHTML = data.viewercount
@@ -87,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   //////
 
   function handleOrientation() {
-    let el  = document.querySelector(".turnDeviceNotification");
+    let el = document.querySelector(".turnDeviceNotification");
     let elW = document.querySelector(".turnDeviceNotification.notification-margin-top");
     let thx = document.getElementById('thanks');
 
@@ -97,23 +102,23 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     switch (window.orientation) {
       case 90:
         /* Device is in landscape mode */
-        el.style.display  = "none";
+        el.style.display = "none";
         elW.style.display = "none";
         break;
       case -90:
         /* Device is upside-down in landscape mode*/
-        el.style.display  = "none";
+        el.style.display = "none";
         elW.style.display = "block";
         break;
       default:
         /* Device is in portrait mode*/
-        el.style.display  = "block";
+        el.style.display = "block";
         elW.style.display = "none";
     }
   }
 
   let previousOrientation = window.orientation;
-  let checkOrientation    = function () {
+  let checkOrientation = function () {
     //console.log('checkOrientation', window.orientation, window.orientation !== previousOrientation);
     if (window.orientation !== previousOrientation) {
       previousOrientation = window.orientation;
@@ -136,37 +141,52 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
   const events = ['viewercount']
+  let counter = 0;
+
+  const onVideoFrameReceived = (now, _) => {
+    const date = new Date(0)
+    const ts = performance.timeOrigin + now
+    date.setUTCMilliseconds(ts)
+    millicastPublishUserMedia.sendMessage(date.toLocaleTimeString())
+
+  }
 
   const BroadcastMillicastStream = async () => {
-    try{
+    try {
       const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
       });
       let priority = parseInt(params.priority);
+      const sourceId = params.sourceId
       priority = isNaN(priority) ? undefined : priority;
-      await millicastPublishUserMedia.connect({ bandwidth, events: events, priority })
+      await millicastPublishUserMedia.connect({ bandwidth, events: events, priority, sourceId })
       isBroadcasting = true;
       broadcastHandler();
       setUserCount();
     }
-    catch(error){
+    catch (error) {
       console.log(error);
-          isBroadcasting = false;
-          broadcastHandler();
-          onSetSessionDescriptionError(error)
+      isBroadcasting = false;
+      broadcastHandler();
+      onSetSessionDescriptionError(error)
+    }
+    if (isBroadcasting && 'requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      videoWin.requestVideoFrameCallback(onVideoFrameReceived)
+    } else {
+      console.warn("No metadata will be published")
     }
   }
 
   const onSetVideoBandwidth = async (evt) => {
-    selectedBandwidthBtn.disabled  = true;
-    bandwidth                      = evt.target.dataset.rate;
+    selectedBandwidthBtn.disabled = true;
+    bandwidth = evt.target.dataset.rate;
     selectedBandwidthBtn.innerHTML = bandwidth === 0 ? 'Maximum Bitrate' : `${bandwidth} kbps`;
 
-    if(!millicastPublishUserMedia.isActive()){
+    if (!millicastPublishUserMedia.isActive()) {
       selectedBandwidthBtn.disabled = false;
     }
-    else{
-      try{
+    else {
+      try {
         await millicastPublishUserMedia.webRTCPeer.updateBitrate(bandwidth)
         console.log('Bitrate updated')
       }
@@ -193,20 +213,20 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       selectedBandwidthBtn.classList.add('d-none');
     }
     selectedBandwidthBtn.innerHTML = bandwidth === 0 ? 'Maximum Bitrate' : `${bandwidth} kbps`;
-    if( bandwidth !== 0 )onSetVideoBandwidth();
+    if (bandwidth !== 0) onSetVideoBandwidth();
     elementList.forEach(function (el) {
       el.classList.add('btn');
       el.addEventListener('click', onSetVideoBandwidth)
     });
     let a = true;
     //stereo support
-    if(!disableStereo){
+    if (!disableStereo) {
       a = {
-        channelCount: {ideal:2},
+        channelCount: { ideal: 2 },
         echoCancellation: false
       }
     }
-    console.log('constraints audio:',a, ' disableAudio:',(!disableAudio ? a : false));
+    console.log('constraints audio:', a, ' disableAudio:', (!disableAudio ? a : false));
 
 
     millicastPublishUserMedia.mediaManager.constraints = {
@@ -217,12 +237,12 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         frameRate: { ideal: 24 },
       } : false,
     };
-    try{
-     videoWin.srcObject = await millicastPublishUserMedia.getMediaStream()
-     const devices = await millicastPublishUserMedia.devices
-     displayDevices(devices)
+    try {
+      videoWin.srcObject = await millicastPublishUserMedia.getMediaStream()
+      const devices = await millicastPublishUserMedia.devices
+      displayDevices(devices)
     }
-    catch(err){
+    catch (err) {
       console.error(err);
     }
     pubBtn.addEventListener('click', async (e) => {
@@ -231,18 +251,18 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
     //
     camsList.addEventListener('click', async (e) => {
-      try{
+      try {
         let target = e.target;
-        videoWin.srcObject = await millicastPublishUserMedia.updateMediaStream('video',target.id)
+        videoWin.srcObject = await millicastPublishUserMedia.updateMediaStream('video', target.id)
         displayActiveDevice('cam');
       }
-      catch(e){
+      catch (e) {
         console.log('*index*  new stream failed ', e);
-        alert('Failed to update.',e);
+        alert('Failed to update.', e);
       }
     });
     camMuteBtn.addEventListener('click', (e) => {
-      if (millicastPublishUserMedia.muteMedia('video',!isVideoMuted)) {
+      if (millicastPublishUserMedia.muteMedia('video', !isVideoMuted)) {
         isVideoMuted = !isVideoMuted;
         let iconEl = document.querySelector('#camOnIcon');
         isVideoMuted ? iconEl.classList.add('fa-video-slash') : iconEl.classList.remove('fa-video-slash');
@@ -251,19 +271,19 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     //
 
     micsList.addEventListener('click', async (e) => {
-      try{
+      try {
         let target = e.target;
         videoWin.srcObject = await millicastPublishUserMedia.updateMediaStream('audio', target.id)
         displayActiveDevice('mic');
       }
-      catch(e){
+      catch (e) {
         console.log('*index*  new stream failed ', e);
       }
     });
     micMuteBtn.addEventListener('click', (e) => {
-      if (millicastPublishUserMedia.muteMedia('audio',!isAudioMuted)) {
+      if (millicastPublishUserMedia.muteMedia('audio', !isAudioMuted)) {
         isAudioMuted = !isAudioMuted;
-        let iconEl   = document.querySelector('#micOnIcon');
+        let iconEl = document.querySelector('#micOnIcon');
         isAudioMuted ? iconEl.classList.add('fa-microphone-slash') : iconEl.classList.remove('fa-microphone-slash');
       }
     });
@@ -301,10 +321,10 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     }
     if (mics.length > 0) {
       mics.forEach(device => {
-        let item       = document.createElement('button');
+        let item = document.createElement('button');
         item.innerHTML = device.label;
         item.classList = 'dropdown-item use-hand';
-        item.id        = device.deviceId;
+        item.id = device.deviceId;
         micsList.appendChild(item);
       })
     }
@@ -317,10 +337,10 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     if (cams.length > 0) {
       cams.forEach(device => {
         //console.log('device: ',device);
-        let item       = document.createElement('button');
+        let item = document.createElement('button');
         item.innerHTML = device.label;
         item.classList = 'dropdown-item use-hand';
-        item.id        = device.deviceId;
+        item.id = device.deviceId;
         camsList.appendChild(item);
       })
     }
@@ -343,13 +363,13 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       onAirFlag.classList.remove('hidden')
       readyFlag.classList.add('hidden')
       //
-      pubBtn.disabled               = true;
+      pubBtn.disabled = true;
       selectedBandwidthBtn.disabled = false;
       if (!tm) {
         setTimer();
       }
       //switch guides display.
-      if(showGuide){
+      if (showGuide) {
         showGuide('guide1', false);
         showGuide('guide2', true);
       }
@@ -357,7 +377,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       onAirFlag.classList.add('hidden')
       readyFlag.classList.remove('hidden')
       //
-      pubBtn.disabled               = false;
+      pubBtn.disabled = false;
     }
   }
 
@@ -412,12 +432,12 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         alert('Error: No Broadcast. [ Please begin a live broadcasting. ]');
         return false;
     } */
-    let txt            = document.createElement('input');
-    txt.type           = 'text';
-    txt.readonly       = true;
-    txt.value          = path;
+    let txt = document.createElement('input');
+    txt.type = 'text';
+    txt.readonly = true;
+    txt.value = path;
     txt.style.position = 'fixed';
-    txt.style.left     = '-9999px';
+    txt.style.left = '-9999px';
     document.body.appendChild(txt);
 
     let iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;

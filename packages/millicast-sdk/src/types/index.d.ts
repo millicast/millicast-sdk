@@ -249,7 +249,7 @@ declare module '@millicast/sdk' {
      * @function
      * @name diagnose
      * @description Returns diagnostics information about the connection and environment, formatted according to the specified parameters.
-     * @param {Object|} config - Configuration object for the diagnostic parameters
+     * @param {Object | Number} config - Configuration object for the diagnostic parameters
      * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
      * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
      * @param {String} [config.minLogLevel] - Levels of history messages to be included.
@@ -1317,6 +1317,12 @@ declare module '@millicast/sdk' {
      * Finalize recording in an active stream and change the current record option.
      */
     unrecord(): Promise<void>;
+    /**
+     * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codecs.
+     * @param {String} message String with the data to be sent as SEI user unregistered data.
+     * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
+     */
+    sendMetadata(message: String, uuid: String): void;
     webRTCPeer?: PeerConnection;
   }
   /**

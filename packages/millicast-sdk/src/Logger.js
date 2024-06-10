@@ -240,7 +240,7 @@ const Logger = {
    * @function
    * @name diagnose
    * @description Returns diagnostics information about the connection and environment, formatted according to the specified parameters.
-   * @param {Object|} config - Configuration object for the diagnostic parameters
+   * @param {Object | Number} config - Configuration object for the diagnostic parameters
    * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
    * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
    * @param {String} [config.minLogLevel] - Levels of history messages to be included.

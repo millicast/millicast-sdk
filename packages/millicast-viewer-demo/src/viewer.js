@@ -4,6 +4,10 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
+if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+}
+
 //Get our url
 const href = new URL(window.location.href);
 //Get or set Defaults
@@ -51,9 +55,6 @@ let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
 
-video.addEventListener('loadedmetadata', (event) => {
-  Logger.log("loadedmetadata",event);
-});
 // MillicastView object
 let millicastView = null
 
@@ -62,7 +63,6 @@ const newViewer = () => {
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
-  
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
@@ -70,6 +70,15 @@ const newViewer = () => {
   millicastView.on("track", (event) => {
     addStream(event.streams[0]);
   });
+
+  millicastView.on('onMetadata', (metadata) => {
+    console.log('Metadata event:', metadata)
+    if (metadata.unregistered) {
+      console.log('received SEI unregistered messsage', metadata.unregistered)
+    } else if (metadata.timecode) {
+      console.log('received timecode messsage', metadata.timecode)
+    }
+  })
 
   return millicastView
 }
@@ -124,37 +133,36 @@ const addStream = (stream) => {
 
     //If we already had a a stream
     if (video.srcObject) {
-       //Create temporal video element and switch streams when we have valid data
-       const tmp = video.cloneNode(true);
-       //Override the muted attribute with current muted state
-       tmp.muted = video.muted;
-       //Set same volume
-       tmp.volume = video.volume;
-       //Set new stream
-       tmp.srcObject = stream;
-       //Replicate playback state
-       if (video.playing) {
-          try { tmp.play(); } catch (e) {}
-        } else if (video.paused) {
-          try{ tmp.paused(); } catch (e) {}
-       }
-       //Replace the video when media has started playing              
-       tmp.addEventListener('loadedmetadata', (event) => {
-         Logger.log("loadedmetadata tmp",event);
-          video.parentNode.replaceChild(tmp, video);
-          //Pause previous video to avoid duplicated audio until the old PC is closed
-          try { video.pause(); } catch (e) {}
-          //If it was in full screen
-	  if (document.fullscreenElement == video) {
-            try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
-	  }
-          //If it was in picture in picture mode
-          if (document.pictureInPictureElement == video) {
-            try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
-          }
-          //Replace js objects too
-          video = tmp;
-       });
+      //Create temporal video element and switch streams when we have valid data
+      const tmp = video.cloneNode(true);
+      //Override the muted attribute with current muted state
+      tmp.muted = video.muted;
+      //Set same volume
+      tmp.volume = video.volume;
+      //Set new stream
+      tmp.srcObject = stream;
+      //Replicate playback state
+      if (video.playing) {
+        try { tmp.play(); } catch (e) {}
+      } else if (video.paused) {
+        try{ tmp.paused(); } catch (e) {}
+      }
+      //Replace the video when media has started playing              
+      tmp.addEventListener('loadedmetadata', (event) => {
+      video.parentNode.replaceChild(tmp, video);
+      //Pause previous video to avoid duplicated audio until the old PC is closed
+      try { video.pause(); } catch (e) {}
+      //If it was in full screen
+      if (document.fullscreenElement == video) {
+        try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
+      }
+      //If it was in picture in picture mode
+      if (document.pictureInPictureElement == video) {
+        try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
+      }
+      //Replace js objects too
+      video = tmp;
+      });
     } else {
        video.srcObject = stream;
     }

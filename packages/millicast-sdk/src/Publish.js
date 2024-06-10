@@ -5,9 +5,11 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { VideoCodec } from './utils/Codecs'
+import { DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
+import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import workerString from './TransformWorker.worker.js'
 
 const logger = Logger.get('Publish')
 
@@ -20,6 +22,7 @@ const connectOptions = {
   simulcast: false,
   scalabilityMode: null,
   peerConfig: {
+    encodedInsertableStreams: true,
     autoInitStats: true
   }
 }
@@ -166,6 +169,12 @@ export default class Publish extends BaseWebRTC {
     }
   }
 
+  stop () {
+    super.stop()
+    this.worker?.terminate()
+    this.worker = null
+  }
+
   async initConnection (data) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
@@ -227,6 +236,33 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
+    const workerBlob = new Blob([workerString])
+    const workerURL = URL.createObjectURL(workerBlob)
+    if (this.worker) {
+      this.worker.terminate()
+    }
+    this.worker = new Worker(workerURL)
+
+    const senders = this.getRTCPeerConnection().getSenders()
+
+    senders.forEach(sender => {
+      if (supportsRTCRtpScriptTransform) {
+        // eslint-disable-next-line no-undef
+        sender.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'senderTransform',
+          codec: this.options.codec
+        })
+      } else if (supportsInsertableStreams) {
+        const { readable, writable } = sender.createEncodedStreams()
+        this.worker.postMessage({
+          action: 'insertable-streams-sender',
+          codec: this.options.codec,
+          readable,
+          writable
+        }, [readable, writable])
+      }
+    })
+
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 
@@ -255,6 +291,33 @@ export default class Publish extends BaseWebRTC {
           oldSignaling = oldWebRTCPeer = null
         }
       })
+    }
+  }
+
+  /**
+   * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codec.
+   * @param {String} message String with the data to be sent as SEI user unregistered data.
+   * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
+   */
+  sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
+    if (this.worker && this.options.codec === VideoCodec.H264 && !this.options.disableVideo) {
+      this.worker.postMessage({
+        action: 'metadata-sei-user-data-unregistered',
+        uuid: uuid,
+        payload: message
+      })
+    } else {
+      let warningMessage = 'Could not send metadata due to:'
+      if (this.options.codec !== VideoCodec.H264) {
+        warningMessage += '\n- Incompatible codec. Only H264 available.'
+      }
+      if (this.options.disableVideo) {
+        warningMessage += '\n- Video disabled.'
+      }
+      if (!this.worker) {
+        warningMessage += '\n- Not publishing stream.'
+      }
+      logger.warn(warningMessage)
     }
   }
 };

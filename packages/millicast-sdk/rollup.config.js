@@ -9,6 +9,28 @@ import filesize from 'rollup-plugin-filesize'
 import dts from 'rollup-plugin-dts'
 
 export default [
+  // Worker
+  {
+    input: 'src/workers/TransformWorker.worker.js',
+    output: {
+      dir: 'src/',
+      format: 'esm'
+    },
+    plugins: [
+      nodeResolve({ browser: true, preferBuiltins: false }),
+      commonjs({
+        include: [/node_modules/, /src/],
+        transformMixedEsModules: true
+      }),
+      terser(),
+      {
+        name: 'worker-to-string',
+        renderChunk (code) {
+          return `export default '${code}';`
+        }
+      }
+    ]
+  },
   // browser-friendly UMD build
   {
     input: 'src/index.js',

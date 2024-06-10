@@ -6,6 +6,10 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG)
 
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+}
+
 // Get our url
 const href = new URL(window.location.href)
 // Get or set Defaults
