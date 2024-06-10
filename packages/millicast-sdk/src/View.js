@@ -12,6 +12,7 @@ import SdpParser from './utils/SdpParser'
 const logger = Logger.get('View')
 
 const connectOptions = {
+  metadata: false,
   disableVideo: false,
   disableAudio: false,
   peerConfig: {
@@ -37,7 +38,10 @@ const connectOptions = {
  */
 export default class View extends BaseWebRTC {
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
-    super(streamName, tokenGenerator, logger, autoReconnect)
+    if (streamName) {
+      logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
+    }
+    super(null, tokenGenerator, logger, autoReconnect)
     // States what payload type is associated with each codec from the SDP answer.
     this.payloadTypeCodec = {}
     // Follows the media id values of each transceiver's track from the 'track' events.
@@ -65,6 +69,7 @@ export default class View extends BaseWebRTC {
    * @param {Object} [options]                          - General subscriber options.
    * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+   * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
    * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
    * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
@@ -213,7 +218,9 @@ export default class View extends BaseWebRTC {
       subscriberData = await this.tokenGenerator()
       //  Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
-      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
+      if (this.options.metadata) {
+        this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
+      }
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -247,31 +254,36 @@ export default class View extends BaseWebRTC {
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
-    const workerBlob = new Blob([workerString])
-    const workerURL = URL.createObjectURL(workerBlob)
-    this.worker = new Worker(workerURL)
-
-    webRTCPeerInstance.on('track', (trackEvent) => {
-      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
-      if (supportsRTCRtpScriptTransform) {
-        // eslint-disable-next-line no-undef
-        trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
-          name: 'receiverTransform',
-          payloadTypeCodec: { ...this.payloadTypeCodec },
-          codec: this.options.codec,
-          mid: trackEvent.transceiver?.mid
-        })
-      } else if (supportsInsertableStreams) {
-        const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        this.worker.postMessage({
-          action: 'insertable-streams-receiver',
-          payloadTypeCodec: { ...this.payloadTypeCodec },
-          codec: this.options.codec,
-          mid: trackEvent.transceiver?.mid,
-          readable,
-          writable
-        }, [readable, writable])
+    if (this.options.metadata) {
+      const workerBlob = new Blob([workerString])
+      const workerURL = URL.createObjectURL(workerBlob)
+      if (!this.worker) {
+        this.worker = new Worker(workerURL)
       }
+
+      webRTCPeerInstance.on('track', (trackEvent) => {
+        this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
+        if (supportsRTCRtpScriptTransform) {
+          // eslint-disable-next-line no-undef
+          trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
+            name: 'receiverTransform',
+            payloadTypeCodec: { ...this.payloadTypeCodec },
+            codec: this.options.metadata && 'h264',
+            mid: trackEvent.transceiver?.mid
+          })
+        } else if (supportsInsertableStreams) {
+          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+          this.worker.postMessage({
+            action: 'insertable-streams-receiver',
+            payloadTypeCodec: { ...this.payloadTypeCodec },
+            codec: this.options.metadata && 'h264',
+            mid: trackEvent.transceiver?.mid,
+            readable,
+            writable
+          }, [readable, writable])
+        }
+      })
+
       this.worker.onmessage = (event) => {
         const decoder = new TextDecoder()
         const metadata = event.data.metadata
@@ -289,7 +301,7 @@ export default class View extends BaseWebRTC {
         }
         this.emit('onMetadata', metadata)
       }
-    })
+    }
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
     const signalingConnectPromise = signalingInstance.connect()
