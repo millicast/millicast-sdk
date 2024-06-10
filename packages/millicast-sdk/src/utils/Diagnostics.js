@@ -68,7 +68,7 @@ const Diagnostics = {
     const diagnostics = {
       client: '@millicast/millicast-sdk',
       version,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       userAgent,
       clusterId: _cluster,
       accountId: _accountId,

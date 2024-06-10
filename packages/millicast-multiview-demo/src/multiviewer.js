@@ -22,7 +22,7 @@ let transceiverToLayersMap = {}
 
 // Create a new viewer instance
 const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
-const viewer = new View(streamName, tokenGenerator)
+const viewer = window.millicastView = new View(streamName, tokenGenerator)
 
 // Listen for broadcast events
 viewer.on('broadcastEvent', (event) => {
@@ -58,6 +58,10 @@ viewer.on('track', (event) => {
   if (event.streams.length > 0 && event.track.kind === 'video') {
     addStreamToVideoElement(event.streams[0], event.transceiver.mid)
   }
+})
+
+viewer.on('onMetadata', (metadata) => {
+  console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
 })
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -97,21 +101,26 @@ const addRemoteSource = async (data) => {
 }
 
 const addMainSource = async (data) => {
-  const mediaStream = new MediaStream()
-  const tracks = data.tracks.map(track => {
-    const { media } = track
-    const mediaId = media === 'video' ? mainTransceiver : '1'
-    return {
-      ...track,
-      mediaId
-    }
-  })
+  const mainVideo = document.getElementById(mainTransceiver)
+  if (!mainVideo) {
+    const mediaStream = new MediaStream()
+    const tracks = data.tracks.map(track => {
+      const { media } = track
+      const mediaId = media === 'video' ? mainTransceiver : '1'
+      return {
+        ...track,
+        mediaId
+      }
+    })
 
-  transceiverToSourceIdMap[mainTransceiver] = data.sourceId 
-  sourcesTracks[data.sourceId] = tracks
-  
-  createVideoElement(mediaStream, mainTransceiver)
-  createVideoEventListener(mainTransceiver)
+    transceiverToSourceIdMap[mainTransceiver] = data.sourceId 
+    sourcesTracks[data.sourceId] = tracks
+    
+    createVideoElement(mediaStream, mainTransceiver)
+    createVideoEventListener(mainTransceiver)
+  } else {
+    mainVideo.hidden = false
+  }
 }
 
 const addStreamToVideoElement = (mediaStream, videoMediaId) => {
@@ -130,16 +139,16 @@ const unprojectAndRemoveVideo = async (sourceId) => {
   const videoMediaId = sourcesTracks[sourceId].find(track => track.media === 'video').mediaId
   const tracksMediaIds = sourcesTracks[sourceId].map(track => track.mediaId)
   const video = document.getElementById(videoMediaId)
-  
-  await viewer.unproject(tracksMediaIds)
 
-  if (videoMediaId === mainTransceiver) {
-    mainVideoContainer.removeChild(video)
-  } else {
+  if (sourceId) {
+    await viewer.unproject(tracksMediaIds)
+  
     remoteVideosContainer.removeChild(video)
+    delete sourcesTracks[sourceId]
+    delete transceiverToSourceIdMap[videoMediaId]
+  } else {
+    video.hidden = true
   }
-  delete sourcesTracks[sourceId]
-  delete transceiverToSourceIdMap[videoMediaId]
 }
 
 const sourcesDropDown = document.getElementById('sourcesDropDown')
