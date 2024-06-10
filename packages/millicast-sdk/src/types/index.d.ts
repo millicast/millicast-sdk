@@ -1072,7 +1072,7 @@ declare module '@millicast/sdk' {
      */
     absCaptureTime?: boolean;
     /**
-     * - Enable metadata extraction if stream is compatible.
+     * - Enable metadata extraction. This feature is only supported with the H.264 codec.
      */
     metadata?: boolean;
     /**
@@ -1161,7 +1161,7 @@ declare module '@millicast/sdk' {
      */
     bandwidth?: number;
     /**
-     * - Enable metadata insertion if stream is compatible.
+     * - Enable metadata insertion. This feature is only supported with the H.264 codec.
      */
     metadata?: boolean;
     /**

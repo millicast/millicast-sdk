@@ -198,9 +198,7 @@ export default class Publish extends BaseWebRTC {
       publisherData = await this.tokenGenerator()
       //  Set the iceServers from the publish data into the peerConfig
       this.options.peerConfig.iceServers = publisherData?.iceServers
-      if (this.options.metadata) {
-        this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
-      }
+      this.options.peerConfig.encodedInsertableStreams = this.options.metadata
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
