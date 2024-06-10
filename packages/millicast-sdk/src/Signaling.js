@@ -219,6 +219,7 @@ export default class Signaling extends EventEmitter {
       Diagnostics.initStreamName(this.streamName)
       Diagnostics.initSubscriberId(this.serverId)
       Diagnostics.initStreamViewId(result.streamViewId)
+      Diagnostics.setClusterId(this.clusterId)
       return result.sdp
     } catch (e) {
       logger.error('Error sending view command, error: ', e)
@@ -301,6 +302,7 @@ export default class Signaling extends EventEmitter {
       Diagnostics.initStreamName(this.streamName)
       Diagnostics.initSubscriberId(this.serverId)
       Diagnostics.initFeedId(result.feedId)
+      Diagnostics.setClusterId(this.clusterId)
       return result.sdp
     } catch (e) {
       logger.error('Error sending publish command, error: ', e)
