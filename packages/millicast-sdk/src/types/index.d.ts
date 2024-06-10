@@ -1169,7 +1169,7 @@ declare module '@millicast/sdk' {
      */
     codec?: VideoCodec;
     /**
-     * - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
+     * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
      */
     simulcast?: boolean;
     /**
