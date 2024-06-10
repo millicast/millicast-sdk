@@ -88,7 +88,6 @@
     "jest-websocket-mock": "^2.2.0",
     "jsdoc": "^4.0.2",
     "jsdoc-export-default-interop": "^0.3.1",
-    "jsdom-worker": "^0.3.0",
     "mock-socket": "^9.0.3",
     "puppeteer": "^21.6.1",
     "rollup": "2.55",
