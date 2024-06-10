@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
       });
-      let priority = parseInt(params.priority);
+      const priority = parseInt(params.priority);
       const sourceId = params.sourceId
       const metadata = params.metadata === "true"
       const connectOptions = {
