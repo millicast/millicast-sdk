@@ -1177,7 +1177,7 @@ declare module '@millicast/sdk' {
      */
     codec?: VideoCodec;
     /**
-     * - Enable simulcast. **Only available in Google Chrome and with H.264 or VP8 video codecs.**
+     * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
      */
     simulcast?: boolean;
     /**
@@ -1276,7 +1276,7 @@ declare module '@millicast/sdk' {
    *
    * - A connection path that you can get from {@link Director} module or from your own implementation.
    * @constructor
-   * @param {String} streamName - Millicast existing stream name.
+   * @deprecated {String} streamName - Millicast stream name. Note that this field is now deprecated and no longer used internally. It will be removed in a future version.
    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
    */
@@ -1343,7 +1343,7 @@ declare module '@millicast/sdk' {
    *
    * - A connection path that you can get from {@link Director} module or from your own implementation.
    * @constructor
-   * @param {String} streamName - Millicast existing Stream Name where you want to connect.
+   * @deprecated {String} streamName - Millicast stream name to connect to. Note that this field is now deprecated and no longer used internally. It will be removed in a future version
    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
    * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
