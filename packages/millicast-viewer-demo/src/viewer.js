@@ -21,6 +21,7 @@ const streamAccountId = !!href.searchParams.get("streamAccountId")
   ? href.searchParams.get("streamAccountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
+const metadata = href.searchParams.get("metadata") === "true";
 const disableVideo = href.searchParams.get("disableVideo") === "true";
 const disableAudio = href.searchParams.get("disableAudio") === "true";
 const muted =
@@ -190,8 +191,9 @@ const subscribe = async () => {
   try {
     isSubscribed = true
     const options = {
-      disableVideo: disableVideo,
-      disableAudio: disableAudio,
+      metadata,
+      disableVideo,
+      disableAudio,
       absCaptureTime: true,
     };
     window.millicastView = millicastView = newViewer()
