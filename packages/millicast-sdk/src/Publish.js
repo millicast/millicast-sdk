@@ -46,7 +46,10 @@ const connectOptions = {
  */
 export default class Publish extends BaseWebRTC {
   constructor (streamName, tokenGenerator, autoReconnect = true) {
-    super(streamName, tokenGenerator, logger, autoReconnect)
+    if (streamName) {
+      logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
+    }
+    super(null, tokenGenerator, logger, autoReconnect)
   }
 
   /**
