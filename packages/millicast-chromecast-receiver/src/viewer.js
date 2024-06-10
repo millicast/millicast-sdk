@@ -2,8 +2,8 @@ import { View, Director, Logger } from '@millicast/sdk'
 
 window.Logger = Logger
 
-if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
 const addStream = (stream) => {

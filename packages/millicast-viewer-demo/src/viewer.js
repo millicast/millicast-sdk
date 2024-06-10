@@ -4,8 +4,8 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
-if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
 //Get our url

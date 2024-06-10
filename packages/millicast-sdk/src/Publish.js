@@ -9,7 +9,7 @@ import { DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import workerString from './TransformWorker.worker.js'
+import MyWorker from './workers/TransformWorker.worker.js?worker&inline'
 
 const logger = Logger.get('Publish')
 
@@ -236,12 +236,12 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    const workerBlob = new Blob([workerString])
-    const workerURL = URL.createObjectURL(workerBlob)
+    // const workerBlob = new Blob([workerString])
+    // const workerURL = URL.createObjectURL(workerBlob)
     if (this.worker) {
       this.worker.terminate()
     }
-    this.worker = new Worker(workerURL)
+    this.worker = new MyWorker()
 
     const senders = this.getRTCPeerConnection().getSenders()
 
