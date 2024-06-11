@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.1.45-RC2",
+  "version": "0.1.46-RC1",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",

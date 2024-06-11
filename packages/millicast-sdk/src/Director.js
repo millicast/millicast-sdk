@@ -134,6 +134,8 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting publisher response: ', data)
+      Diagnostics.initAccountId(data.data.streamAccountId)
+
       return data.data
     } catch (e) {
       logger.error('Error while getting publisher connection path. ', e)
