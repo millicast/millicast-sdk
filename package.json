@@ -19,7 +19,8 @@
   "scripts": {
     "prepare": "lerna bootstrap --ci",
     "build": "lerna run build",
-    "start": "lerna run start --parallel",
+    "start": " lerna run start --scope 'millicast-publisher-demo' --scope '@millicast/sdk' --scope 'millicast-viewer-demo' --parallel",
+    "start-all": "lerna run start --parallel",
     "test": "lerna run test --stream",
     "test-e2e": "lerna run test-e2e --stream",
     "build-docs": "lerna run build-docs",

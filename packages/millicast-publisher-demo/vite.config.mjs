@@ -14,9 +14,6 @@ export default defineConfig({
     }
   },
   build: {
-    watch: {
-      include: "src/**"
-    },
     lib: {
       entry: "src/publisher.js",
       name: "publisher",
@@ -34,7 +31,8 @@ export default defineConfig({
           babelHelpers: 'runtime',
           presets: [['@babel/preset-env', { targets: "defaults" }]],
           exclude: /node_modules/,
-          plugins: ['@babel/plugin-transform-runtime']
+          plugins: ['@babel/plugin-transform-runtime'],
+          compact: true
         }),
         terser(),
         cleanup({
