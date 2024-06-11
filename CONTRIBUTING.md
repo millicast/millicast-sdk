@@ -57,12 +57,29 @@ Optionally you can run other Lerna commands using `$ npx lerna [command]`.
 If you want to add, fix or edit features in the SDK or just try our demo pages, run the following command:
 
 ```sh
+npm run start-all
+```
+
+> Please note that before you run `npm run start-all`, you need to have built the solution first using `npm run build`
+
+It opens all the demo apps in your browser and keeps watching for changes in all the packages. You only need to refresh both pages if you modify the code.
+
+### Running specific demo projects
+
+If you want to add, fix or edit features in the SDK or just try our specific demo pages, run the following command:
+
+```sh
 npm run start
 ```
 
 > Please note that before you run `npm run start`, you need to have built the solution first using `npm run build`
 
-It opens all the demo apps in your browser and keeps watching for changes in all the packages. You only need to refresh both pages if you modify the code.
+This command opens the following demo apps in your browser:
+- millicast-publisher-demo
+- millicast-viewer-demo
+- millicast-sdk
+
+It keeps watching for changes in these packages. You only need to refresh both pages if you modify the code.
 
 ### Running tests
 If you want to run all tests, run:
