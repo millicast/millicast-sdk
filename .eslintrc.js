@@ -9,12 +9,11 @@ module.exports = {
     ecmaFeatures: {
       experimentalObjectRestSpread: true
     },
-    ecmaVersion: 2020,
     sourceType: 'module'
   },
   settings: {
     jest: {
-      version: 24
+      version: 28
     }
   },
   extends: 'standard'

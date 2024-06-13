@@ -4,22 +4,11 @@ if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
-const getQueryValueIgnoreCase = (params, key) => {
-  for (const [paramKey, value] of params) {
-    if (paramKey.toLowerCase() === key.toLowerCase()) {
-      return value;
-    }
-  }
-  return null; // or whatever default value you prefer
-};
-
-// Query params
-const params = new URLSearchParams(window.location.search)
-const isDRMOn = getQueryValueIgnoreCase(params, 'drm')
-
 // Config data
 const accountId = process.env.MILLICAST_ACCOUNT_ID
 const streamName = process.env.MILLICAST_STREAM_NAME
+const drmKeyId = process.env.MILLICAST_DRM_VID2_KEYID
+const drmIv = process.env.MILLICAST_DRM_VID2_IV
 
 // This will store the main transceiver video mid
 const mainVideoMid = '0'
@@ -49,10 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   mainAudioElement = document.getElementById('mid-1')
   console.log(' page loaded, mainVideoElement is', mainVideoElement)
   try {
-    viewer = isDRMOn ? new View(streamName, tokenGenerator, null, true,
-      { videoElement: mainVideoElement, audioElement: mainAudioElement }) :
-      new View(streamName, tokenGenerator)
-
+    viewer = new View(streamName, tokenGenerator)
     // Listen for broadcast events
     viewer.on('broadcastEvent', (event) => {
       // Get event name and data
@@ -60,6 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       switch (name) {
         case 'active': {
           const sourceId = data.sourceId || mainSourceId
+          // TODO: remove this hardcoded encryption property
+          data.encryption = {
+            keyId: drmKeyId,
+            iv: drmIv
+          }
           if (sourceId === mainSourceId) {
             addMainSource(data)
           } else {
@@ -84,12 +75,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // This aplication does not support audio only streams. It's not intented to work using audio only streams.
     viewer.on('track', (event) => {
-      console.log('track event', event)
-      if (!isDRMOn && event.streams.length > 0 && event.track.kind === 'video') {
+      if (!viewer.isDRMOn && event.streams.length > 0 && event.track.kind === 'video') {
         addStreamToVideoElement(event.streams[0], event.transceiver.mid)
       }
     })
     await viewer.connect({
+      enableDRM: true,
       events: ['active', 'inactive', 'layers']
     })
   } catch (e) {
@@ -104,10 +95,9 @@ const addRemoteSource = async (data) => {
   const mediaStream = new MediaStream()
   const videoElement = createVideoElement()
   const audioElement = createAudioElement()
-  const drmOptions = isDRMOn ? { videoElement, audioElement } : null
   const tracksPromises = data.tracks.map(async (track) => {
     const { media } = track
-    const mediaTransceiver = await viewer.addRemoteTrack(media, [mediaStream], drmOptions)
+    const mediaTransceiver = await viewer.addRemoteTrack(media, [mediaStream])
     return {
       ...track,
       mediaId: mediaTransceiver.mid
@@ -116,16 +106,27 @@ const addRemoteSource = async (data) => {
   const tracksMapping = await Promise.all(tracksPromises)
   const videoMediaId = tracksMapping.find(track => track.media === 'video').mediaId
   const audioMediaId = tracksMapping.find(track => track.media === 'audio')?.mediaId
-  videoElement.id = 'mid-' +videoMediaId
+  videoElement.id = 'mid-' + videoMediaId
   if (audioMediaId) {
-    audioElement.id = 'mid-' +audioMediaId
+    audioElement.id = 'mid-' + audioMediaId
+  }
+  if (data.encryption) {
+    const drmOptions = {
+      videoElement,
+      audioElement,
+      videoEncParams: data.encryption,
+      videoMid: videoMediaId,
+    }
+    if (audioMediaId) {
+      drmOptions.audioMid = audioMediaId
+    }
+    viewer.configureDRM(drmOptions)
   }
   transceiverMidToSourceIdMap[videoMediaId] = sourceId
   sourceTracksMap[sourceId] = tracksMapping
   createVideoEventListener(videoMediaId)
-  if (!isDRMOn) videoElement.srcObject = mediaStream
+  if (!data.encryption) videoElement.srcObject = mediaStream
   await viewer.project(sourceId, tracksMapping)
-  console.log('source tracks and mapping:', sourceId, sourceTracksMap[sourceId])
 }
 
 const addMainSource = async (data) => {
@@ -138,10 +139,22 @@ const addMainSource = async (data) => {
       mediaId
     }
   })
+  if (data.encryption) {
+    const drmOptions = {
+      videoElement: mainVideoElement,
+      audioElement: mainAudioElement,
+      videoEncParams: data.encryption,
+      videoMid: mainVideoMid,
+    }
+    const audioTrackMapping = tracksMapping.find(track => track.media === 'audio')
+    if (audioTrackMapping) {
+      drmOptions.audioMid = audioTrackMapping.mediaId
+    }
+    viewer.configureDRM(drmOptions)
+  }
   transceiverMidToSourceIdMap[mainVideoMid] = mainSourceId
   sourceTracksMap[mainSourceId] = tracksMapping
   mainVideoElement.hidden = false
-  console.log('source tracks and mapping:', mainSourceId, sourceTracksMap[mainSourceId])
 }
 
 const addStreamToVideoElement = (mediaStream, mediaId) => {
@@ -167,8 +180,10 @@ const unprojectAndRemoveVideo = async (sourceId) => {
 
   if (videoMediaId !== mainVideoMid) {
     remoteVideosContainer.removeChild(video)
+    viewer.removeDRMConfiguration(videoMediaId)
+    if (audioMediaId) viewer.removeDRMConfiguration(audioMediaId)
     if (audio) remoteVideosContainer.removeChild(audio)
-  }else {
+  } else {
     video.hidden = true
     video.pause()
     audio?.pause()
@@ -215,15 +230,28 @@ const createAudioElement = () => {
   return audio
 }
 
+function swapPropertyValues(obj1, obj2, key) {
+  // Check if both objects have the property
+  if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
+    const temp = obj1[key];
+    obj1[key] = obj2[key];
+    obj2[key] = temp;
+  } else {
+    console.error(`One or both objects do not have the property "${key}"`);
+  }
+}
+
 const createVideoEventListener = (mediaId) => {
   const selectedSourceId = transceiverMidToSourceIdMap[mediaId]
-  const video = document.getElementById( 'mid-' + mediaId)
-  console.log('create video element event listener for:', selectedSourceId, video)
+  const video = document.getElementById('mid-' + mediaId)
   video.addEventListener('click', async () => {
     // switch main source with selected source
     const selectedSourceId = transceiverMidToSourceIdMap[mediaId]
     const mainVideoSourceId = transceiverMidToSourceIdMap[mainVideoMid]
     console.log('switch main source from:', mainVideoSourceId, 'to:', selectedSourceId)
+    if (viewer.isDRMOn) {
+      viewer.exchangeDRMConfiguration(mediaId, mainVideoMid)
+    }
     await viewer.project(mainVideoSourceId === mainSourceId ? null : mainVideoSourceId, sourceTracksMap[selectedSourceId])
     await viewer.project(selectedSourceId === mainSourceId ? null : selectedSourceId, sourceTracksMap[mainVideoSourceId])
     const tmp = sourceTracksMap[selectedSourceId]
