@@ -268,7 +268,9 @@ export default class View extends BaseWebRTC {
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
     if (subscriberData.DRMProfile) {
-      // TODO: cache the DRM license server URLs
+      // cache the DRM license server URLs
+      // TODO: verify the payload
+      this.DRMProfile = subscriberData.DRMProfile
     }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
@@ -415,6 +417,12 @@ export default class View extends BaseWebRTC {
       audioElement: options.audioElement,
       video: { codec: 'h264', encryption: 'cbcs', keyId: this.#hexToUint8Array(options.videoEncParams.keyId), iv: this.#hexToUint8Array(options.videoEncParams.iv) },
       audio: { codec: 'opus', encryption: 'clear' }
+    }
+    if (this.DRMProfile) {
+      // TODO: replace with spread operator
+      drmOptions.fpsLiceseUrl = this.DRMProfile.fpsLiceseUrl
+      drmOptions.wvLicenseUrl = this.DRMProfile.wvLicenseUrl
+      drmOptions.fpsCertificateUrl = this.DRMProfile.fpsCertificateUrl
     }
     try {
       rtcDrmConfigure(drmOptions)
