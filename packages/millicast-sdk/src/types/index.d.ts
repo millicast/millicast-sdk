@@ -714,7 +714,7 @@ declare module '@millicast/sdk' {
      */
     sourceId?: string;
     /**
-     * - Override which events will be delivered by the server ("active" | "inactive" ).
+     * - Override which events will be delivered by the server ("active" | "inactive").
      */
     events: Array<string>;
   };
