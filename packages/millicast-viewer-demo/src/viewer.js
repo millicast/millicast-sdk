@@ -22,6 +22,7 @@ const streamAccountId = !!href.searchParams.get("streamAccountId")
   : process.env.MILLICAST_ACCOUNT_ID;
 
 const metadata = href.searchParams.get("metadata") === "true";
+const enableDRM = href.searchParams.get("drm") === 'true';
 const disableVideo = href.searchParams.get("disableVideo") === "true";
 const disableAudio = href.searchParams.get("disableAudio") === "true";
 const muted =
@@ -34,7 +35,6 @@ const autoReconnect =
   href.searchParams.get("autoReconnect") === "true" ||
   href.searchParams.get("autoReconnect") === null;
 
-//console.log(disableVideo, disableAudio, muted, autoplay, autoReconnect);
 const disableControls =
   href.searchParams.get("disableControls") === "true" &&
   href.searchParams.get("disableControls") !== null;
@@ -51,7 +51,6 @@ const disableFull =
     href.searchParams.get("disableFull") !== null) ||
   disableControls;
 
-//console.log(disableVolume, disablePlay, disableFull);
 let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
@@ -64,12 +63,32 @@ const newViewer = () => {
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
+    if (event.name === "active") {
+      // TODO: remove hardcoded encryption property
+      const encryption = event.data.encryption || {
+        keyId: process.env.MILLICAST_DRM_VID_KEYID,
+        iv: process.env.MILLICAST_DRM_VID_IV
+      };
+      if (encryption) {
+        const drmOptions = {
+          videoElement: document.querySelector("video"),
+          audioElement: document.querySelector("audio"),
+          videoEncParams: encryption,
+          videoMid: '0',
+        };
+        const audioTrackInfo = event.data.tracks.find((track) => track.type === 'audio')
+        if (audioTrackInfo) {
+          drmOptions.audioMid = audioTrackInfo.mediaId;
+        }
+        millicastView.configureDRM(drmOptions);
+      }
+    }
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
   });
   millicastView.on("track", (event) => {
-    addStream(event.streams[0]);
+    if (!millicastView.isDRMOn) addStream(event.streams[0]);
   });
 
   millicastView.on('onMetadata', (metadata) => {
@@ -148,7 +167,7 @@ const addStream = (stream) => {
       } else if (video.paused) {
         try{ tmp.paused(); } catch (e) {}
       }
-      //Replace the video when media has started playing              
+      //Replace the video when media has started playing
       tmp.addEventListener('loadedmetadata', (event) => {
       video.parentNode.replaceChild(tmp, video);
       //Pause previous video to avoid duplicated audio until the old PC is closed
@@ -191,6 +210,7 @@ const subscribe = async () => {
   try {
     isSubscribed = true
     const options = {
+      enableDRM,
       metadata,
       disableVideo,
       disableAudio,
