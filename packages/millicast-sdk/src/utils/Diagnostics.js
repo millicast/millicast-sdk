@@ -9,6 +9,7 @@ let _subscriberId = ''
 let _streamViewId = ''
 let _feedId = ''
 let _connection = ''
+let _cluster = ''
 const _stats = []
 
 function transformWebRTCStatsToCMCD (diagnostics) {
@@ -48,6 +49,8 @@ const Diagnostics = {
   initStreamViewId: (streamViewId) => { _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId },
   initFeedId: (feedId) => { _feedId = _feedId === '' ? feedId : _feedId },
   setConnectionState: (connectionState) => { _connection = connectionState },
+  setClusterId: (clusterId) => { _cluster = _cluster === '' ? clusterId : _cluster },
+
   addStats: (stats) => {
     if (_stats.length === MAX_STATS_HISTORY_SIZE) {
       _stats.shift()
@@ -65,8 +68,9 @@ const Diagnostics = {
     const diagnostics = {
       client: '@millicast/millicast-sdk',
       version,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       userAgent,
+      clusterId: _cluster,
       accountId: _accountId,
       streamName: _streamName,
       subscriberId: _subscriberId,

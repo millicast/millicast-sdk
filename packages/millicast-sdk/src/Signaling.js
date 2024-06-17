@@ -65,6 +65,7 @@ export default class Signaling extends EventEmitter {
     this.transactionManager = null
     this.serverId = null
     this.clusterId = null
+    this.streamViewId = null
   }
 
   /**
@@ -214,11 +215,13 @@ export default class Signaling extends EventEmitter {
       logger.debug('Command result: ', result)
       this.serverId = result.subscriberId
       this.clusterId = result.clusterId
+      this.streamViewId = result.streamViewId
 
       // Save for diagnostics
       Diagnostics.initStreamName(this.streamName)
       Diagnostics.initSubscriberId(this.serverId)
       Diagnostics.initStreamViewId(result.streamViewId)
+      Diagnostics.setClusterId(this.clusterId)
       return result.sdp
     } catch (e) {
       logger.error('Error sending view command, error: ', e)
@@ -301,6 +304,7 @@ export default class Signaling extends EventEmitter {
       Diagnostics.initStreamName(this.streamName)
       Diagnostics.initSubscriberId(this.serverId)
       Diagnostics.initFeedId(result.feedId)
+      Diagnostics.setClusterId(this.clusterId)
       return result.sdp
     } catch (e) {
       logger.error('Error sending publish command, error: ', e)

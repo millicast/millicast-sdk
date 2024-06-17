@@ -24,21 +24,22 @@ let sourceTracksMap = {}
 // This will store a mapping: transceiver video mid => source id
 let transceiverMidToSourceIdMap = {}
 
-// This will store a mapping: transceiver video mid => active layers 
+// This will store a mapping: transceiver video mid => active layers
 let transceiverToLayersMap = {}
 
 // Create a new viewer instance
 const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
 let viewer
 
-
 document.addEventListener('DOMContentLoaded', async () => {
   remoteVideosContainer = document.getElementById('remoteVideos')
   mainVideoElement = document.getElementById('mid-0')
   mainAudioElement = document.getElementById('mid-1')
-  console.log(' page loaded, mainVideoElement is', mainVideoElement)
   try {
     viewer = new View(streamName, tokenGenerator)
+    viewer.on('onMetadata', (metadata) => {
+      console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
+    })
     // Listen for broadcast events
     viewer.on('broadcastEvent', (event) => {
       // Get event name and data

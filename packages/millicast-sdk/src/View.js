@@ -14,6 +14,7 @@ const logger = Logger.get('View')
 logger.setLevel(Logger.DEBUG)
 
 const connectOptions = {
+  metadata: false,
   disableVideo: false,
   disableAudio: false,
   peerConfig: {
@@ -41,8 +42,14 @@ export default class View extends BaseWebRTC {
   // mapping media ID of RTCRtcTransceiver to DRM Options
   #drmOptionsMap
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
-    super(streamName, tokenGenerator, logger, autoReconnect)
-    this.codecPayloadTypeMap = {}
+    if (streamName) {
+      logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
+    }
+    super(null, tokenGenerator, logger, autoReconnect)
+    // States what payload type is associated with each codec from the SDP answer.
+    this.payloadTypeCodec = {}
+    // Follows the media id values of each transceiver's track from the 'track' events.
+    this.tracksMidValues = {}
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -66,6 +73,7 @@ export default class View extends BaseWebRTC {
    * @param {Object} [options]                          - General subscriber options.
    * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+   * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
    * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
    * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
@@ -156,7 +164,7 @@ export default class View extends BaseWebRTC {
     // Check if both objects have the property
     //
     if (Object.prototype.hasOwnProperty.call(obj1, key) &&
-        Object.prototype.hasOwnProperty.call(obj2, key)) {
+      Object.prototype.hasOwnProperty.call(obj2, key)) {
       const temp = obj1[key]
       obj1[key] = obj2[key]
       obj2[key] = temp
@@ -227,6 +235,9 @@ export default class View extends BaseWebRTC {
     super.stop()
     this.drmOptionsMap?.clear()
     this.worker?.terminate()
+    this.worker = null
+    this.payloadTypeCodec = {}
+    this.tracksMidValues = {}
   }
 
   async initConnection (data) {
@@ -243,7 +254,7 @@ export default class View extends BaseWebRTC {
       // Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
       // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
-      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && this.options.enableDRM
+      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && (this.options.enableDRM || this.options.metadata)
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -282,11 +293,33 @@ export default class View extends BaseWebRTC {
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
-    const workerBlob = new Blob([workerString])
-    const workerURL = URL.createObjectURL(workerBlob)
+    if (this.options.metadata) {
+      if (this.worker) {
+        this.worker.terminate()
+      }
+      const workerBlob = new Blob([workerString])
+      const workerURL = URL.createObjectURL(workerBlob)
+      this.worker = new Worker(workerURL)
+      this.worker.onmessage = (event) => {
+        const decoder = new TextDecoder()
+        const metadata = event.data.metadata
+        metadata.mid = event.data.mid
+        metadata.track = this.tracksMidValues[event.data.mid]
+        const uuid = metadata.uuid
+        metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+        metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+        if (metadata.timecode) {
+          metadata.timecode = new Date(decoder.decode(metadata.timecode))
+        } else if (metadata.unregistered) {
+          metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
+        }
+        this.emit('onMetadata', metadata)
+      }
+    }
 
     webRTCPeerInstance.on('track', (trackEvent) => {
-      // TODO: DRM mode cannot coexist with frame metadata
+      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
+      // TODO: DRM mode cannot coexist with frame metadata currently
       if (this.isDRMOn) {
         const mediaId = trackEvent.transceiver.mid
         const drmOptions = this.#getDRMConfiguration(mediaId)
@@ -297,42 +330,27 @@ export default class View extends BaseWebRTC {
         }
         return
       }
-      if (!this.isFrameMetadataOn || trackEvent.track?.kind !== 'video') return
-      const worker = new Worker(workerURL)
-      if (supportsRTCRtpScriptTransform) {
-        // eslint-disable-next-line no-undef
-        trackEvent.receiver.transform = new RTCRtpScriptTransform(worker, { name: 'receiverTransform', codecMap: this.codecPayloadTypeMap, codec: this.options.codec })
-      } else if (supportsInsertableStreams) {
-        const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        worker.postMessage({
-          action: 'insertable-streams-receiver',
-          codecMap: this.codecPayloadTypeMap,
-          codec: this.options.codec,
-          readable,
-          writable
-        }, [readable, writable])
-      }
-      worker.onmessage = (event) => {
-        const decoder = new TextDecoder()
-        const metadata = event.data.metadata
-        metadata.track = trackEvent.track
-
-        const uuid = metadata.uuid
-        metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-        metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
-
-        if (metadata.timecode) {
-          metadata.timecode = new Date(decoder.decode(metadata.timecode))
-        } else if (metadata.unregistered) {
-          metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
+      if (this.options.metadata) {
+        if (supportsRTCRtpScriptTransform) {
+          // eslint-disable-next-line no-undef
+          trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
+            name: 'receiverTransform',
+            payloadTypeCodec: { ...this.payloadTypeCodec },
+            codec: this.options.metadata && 'h264',
+            mid: trackEvent.transceiver?.mid
+          })
+        } else if (supportsInsertableStreams) {
+          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+          this.worker.postMessage({
+            action: 'insertable-streams-receiver',
+            payloadTypeCodec: { ...this.payloadTypeCodec },
+            codec: this.options.metadata && 'h264',
+            mid: trackEvent.transceiver?.mid,
+            readable,
+            writable
+          }, [readable, writable])
         }
-        this.emit('onMetadata', metadata)
       }
-      if (this.worker) {
-        this.worker.terminate()
-        this.worker = null
-      }
-      this.worker = worker
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
@@ -348,7 +366,7 @@ export default class View extends BaseWebRTC {
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]
 
-    this.codecPayloadTypeMap = SdpParser.getCodecPayloadType(sdpSubscriber)
+    this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber)
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 
