@@ -13,5 +13,6 @@ module.exports = {
   },
   moduleNameMapper: {
     '^uuid$': require.resolve('uuid')
-  }
+  },
+  resolver: './jest_resolver.js'
 }

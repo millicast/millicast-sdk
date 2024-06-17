@@ -161,7 +161,7 @@ This SDK can be used for React Native based projects. In order to accomplish thi
 Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.dolby.io/streaming-apis/docs/rn)!
 
 ## SDK developer information
-To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/developer-info.md)
+To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/CONTRIBUTING.md)
 
 ## License
 Please refer to [LICENSE](https://github.com/millicast/millicast-sdk/blob/main/LICENSE) file.
