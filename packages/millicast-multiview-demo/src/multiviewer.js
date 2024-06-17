@@ -1,12 +1,12 @@
 import { Director, View } from "@millicast/sdk"
 
-if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
 // Config data
-const accountId = process.env.MILLICAST_ACCOUNT_ID
-const streamName = process.env.MILLICAST_STREAM_NAME
+const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
+const streamName = import.meta.env.MILLICAST_STREAM_NAME
 
 // This will store the main transceiver video mid
 const mainTransceiver = '0'

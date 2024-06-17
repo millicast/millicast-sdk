@@ -5,13 +5,13 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
-if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
-const streamName = process.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
-const accountId = process.env.MILLICAST_ACCOUNT_ID
-const publishToken = process.env.MILLICAST_PUBLISH_TOKEN
+const streamName = import.meta.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
+const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
+const publishToken = import.meta.env.MILLICAST_PUBLISH_TOKEN
 const disableVideo = false
 const disableAudio = false
 const disableStereo = false

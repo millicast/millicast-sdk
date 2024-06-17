@@ -1,5 +1,4 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import 'jsdom-worker'
 import { webRTCEvents } from '../../src/PeerConnection'
 import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
@@ -32,6 +31,13 @@ jest.mock('../../src/Signaling', () => {
     }
   }
 })
+
+jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+  jest.fn(() => ({
+    postMessage: jest.fn(),
+    terminate: jest.fn()
+  }))
+)
 
 beforeEach(() => {
   jest.restoreAllMocks()
