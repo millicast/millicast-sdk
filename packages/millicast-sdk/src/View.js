@@ -6,7 +6,7 @@ import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import workerString from './TransformWorker.worker.js'
+import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')
@@ -255,10 +255,8 @@ export default class View extends BaseWebRTC {
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     if (this.options.metadata) {
-      const workerBlob = new Blob([workerString])
-      const workerURL = URL.createObjectURL(workerBlob)
       if (!this.worker) {
-        this.worker = new Worker(workerURL)
+        this.worker = new TransformWorker()
       }
 
       webRTCPeerInstance.on('track', (trackEvent) => {

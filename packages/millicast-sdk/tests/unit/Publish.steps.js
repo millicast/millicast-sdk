@@ -1,5 +1,4 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import 'jsdom-worker'
 import Publish from '../../src/Publish'
 import PeerConnection from '../../src/PeerConnection'
 import Signaling from '../../src/Signaling'
@@ -11,6 +10,13 @@ import './__mocks__/MockBrowser'
 const feature = loadFeature('../features/Publish.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('../../src/Signaling')
+
+jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+  jest.fn(() => ({
+    postMessage: jest.fn(),
+    terminate: jest.fn()
+  }))
+)
 
 const mockTokenGenerator = jest.fn(() => {
   return {
