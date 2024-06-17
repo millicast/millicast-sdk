@@ -40,10 +40,14 @@ export default class MillicastPublishUserMedia extends Publish {
       disableAudio: false,
     }
   ) {
-    await super.connect({
-      ...options,
-      mediaStream: this.mediaManager.mediaStream,
-    });
+      await super.connect({
+        ...options, 
+        mediaStream: this.mediaManager.mediaStream
+      });
+  
+    this.webRTCPeer.on('stats', (stats) => {
+      console.log(stats)
+    })
   }
 
   async getMediaStream() {

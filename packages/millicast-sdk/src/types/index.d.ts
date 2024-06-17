@@ -521,8 +521,9 @@ declare module '@millicast/sdk' {
     previousStats: ConnectionStats;
     /**
      * Initialize the statistics monitoring of the RTCPeerConnection.
+     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.  
      */
-    init(): void;
+    init(statsIntervalMs : number): void;
     /**
      * Parse incoming RTCPeerConnection stats.
      * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
