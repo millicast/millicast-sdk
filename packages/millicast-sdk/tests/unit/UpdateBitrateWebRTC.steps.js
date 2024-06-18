@@ -6,6 +6,7 @@ import { changeBrowserMock } from './__mocks__/MockBrowser'
 const feature = loadFeature('../features/UpdateBitrateWebRTC.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {
+  const config = { autoInitStats: true }
   afterEach(async () => {
     jest.restoreAllMocks()
     changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
@@ -16,7 +17,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
+      await peerConnection.createRTCPeer(config, ConnectionType.Publisher)
       await peerConnection.setRTCRemoteSDP(sdp)
       expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
@@ -35,7 +36,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
+      await peerConnection.createRTCPeer(config, ConnectionType.Publisher)
       await peerConnection.setRTCRemoteSDP(sdp)
       expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
@@ -55,7 +56,7 @@ defineFeature(feature, test => {
 
     given('I am using Firefox and I have a peer connected', async () => {
       changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
-      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
+      await peerConnection.createRTCPeer(config, ConnectionType.Publisher)
       await peerConnection.setRTCRemoteSDP(sdp)
       expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
@@ -94,7 +95,7 @@ defineFeature(feature, test => {
     let errorMessage
 
     given('I have a peer connected as a viewer', async () => {
-      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
+      await peerConnection.createRTCPeer(config, ConnectionType.Viewer)
       await peerConnection.setRTCRemoteSDP(sdp)
     })
 
