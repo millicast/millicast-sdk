@@ -106,7 +106,7 @@ defineFeature(feature, test => {
       }
     })
 
-    then('throw no existing peer error', async () => {
+    then('I get an exception', async () => {
       expect(errorMessage).toBe('It is not possible for a viewer to update the bitrate.')
     })
   })
