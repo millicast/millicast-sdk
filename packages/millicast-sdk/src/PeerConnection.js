@@ -9,6 +9,10 @@ import mozGetCapabilities from './utils/FirefoxCapabilities'
 
 const logger = Logger.get('PeerConnection')
 
+export const ConnectionType = {
+  Publisher: 'Publisher',
+  Viewer: 'Viewer'
+}
 export const webRTCEvents = {
   track: 'track',
   connectionStateChange: 'connectionStateChange'
@@ -35,6 +39,7 @@ const localSDPOptions = {
 export default class PeerConnection extends EventEmitter {
   constructor () {
     super()
+    this.mode = null
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
@@ -45,10 +50,11 @@ export default class PeerConnection extends EventEmitter {
    * @param {RTCConfiguration} config - Peer configuration.
    * @param {Boolean} [autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
    */
-  async createRTCPeer (config = { autoInitStats: true }) {
+  async createRTCPeer (config = { autoInitStats: true }, mode = ConnectionType.Viewer) {
     logger.info('Creating new RTCPeerConnection')
     logger.debug('RTC configuration provided by user: ', config)
     this.peer = instanceRTCPeerConnection(this, config)
+    this.mode = mode
     if (config.autoInitStats) {
       this.initStats()
     }
@@ -184,6 +190,11 @@ export default class PeerConnection extends EventEmitter {
    * @return {String} Updated SDP information with new bandwidth restriction.
    */
   updateBandwidthRestriction (sdp, bitrate) {
+    if (this.mode === ConnectionType.Viewer) {
+      logger.error('Viewer attempting to udpate bitrate, this is not allowed')
+      throw new Error('It is not possible for a viewer to update the bitrate.')
+    }
+
     logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
     logger.debug('SDP value: ', sdp)
     return SdpParser.setVideoBitrate(sdp, bitrate)
@@ -195,6 +206,11 @@ export default class PeerConnection extends EventEmitter {
    * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
    */
   async updateBitrate (bitrate = 0) {
+    logger.warn(this.mode)
+    if (this.mode === ConnectionType.Viewer) {
+      logger.error('Viewer attempting to udpate bitrate, this is not allowed')
+      throw new Error('It is not possible for a viewer to update the bitrate.')
+    }
     if (!this.peer) {
       logger.error('Cannot update bitrate. No peer found.')
       throw new Error('Cannot update bitrate. No peer found.')
@@ -526,6 +542,7 @@ const getTransceiverWithMid = async (transceiver, streams, retries = 0) => {
 
 const getConnectionState = (peer) => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState
+  logger.warn('Connection state', peer)
   switch (connectionState) {
     case 'checking':
       return 'connecting'

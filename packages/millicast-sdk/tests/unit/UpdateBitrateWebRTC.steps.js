@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection from '../../src/PeerConnection'
+import PeerConnection, { ConnectionType } from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
@@ -16,7 +16,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.createRTCPeer()
+      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
       await peerConnection.setRTCRemoteSDP(sdp)
       expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
@@ -35,7 +35,7 @@ defineFeature(feature, test => {
     const sdp = 'My default SDP'
 
     given('I have a peer connected', async () => {
-      await peerConnection.createRTCPeer()
+      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
       await peerConnection.setRTCRemoteSDP(sdp)
       expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
@@ -55,7 +55,7 @@ defineFeature(feature, test => {
 
     given('I am using Firefox and I have a peer connected', async () => {
       changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
-      await peerConnection.createRTCPeer()
+      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
       await peerConnection.setRTCRemoteSDP(sdp)
       expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
@@ -85,6 +85,29 @@ defineFeature(feature, test => {
 
     then('throw no existing peer error', async () => {
       expect(errorMessage).toBe('Cannot update bitrate. No peer found.')
+    })
+  })
+
+  test('Check update bitrate throws exception when in Viewer mode', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    let errorMessage
+
+    given('I have a peer connected as a viewer', async () => {
+      await peerConnection.createRTCPeer(null, ConnectionType.Publisher)
+      await peerConnection.setRTCRemoteSDP(sdp)
+    })
+
+    when('I want to update the bitrate to 1000 kbps', async () => {
+      try {
+        await peerConnection.updateBitrate(1000)
+      } catch (error) {
+        errorMessage = error.message
+      }
+    })
+
+    then('throw no existing peer error', async () => {
+      expect(errorMessage).toBe('It is not possible for a viewer to update the bitrate.')
     })
   })
 })

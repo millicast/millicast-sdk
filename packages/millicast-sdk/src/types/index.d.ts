@@ -779,7 +779,7 @@ declare module '@millicast/sdk' {
      * Instance new RTCPeerConnection.
      * @param {RTCConfiguration} config - Peer configuration.
      */
-    createRTCPeer(config?: RTCConfiguration): Promise<void>;
+    createRTCPeer(config?: RTCConfiguration, mode : "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
