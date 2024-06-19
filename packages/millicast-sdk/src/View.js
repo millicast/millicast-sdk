@@ -13,7 +13,7 @@ import SdpParser from './utils/SdpParser'
 const logger = Logger.get('View')
 
 const connectOptions = {
-  metadata: true,
+  metadata: false,
   disableVideo: false,
   disableAudio: false,
   peerConfig: {

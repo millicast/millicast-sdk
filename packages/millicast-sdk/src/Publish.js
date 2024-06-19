@@ -16,7 +16,7 @@ const logger = Logger.get('Publish')
 const connectOptions = {
   mediaStream: null,
   bandwidth: 0,
-  metadata: true,
+  metadata: false,
   disableVideo: false,
   disableAudio: false,
   codec: VideoCodec.H264,
