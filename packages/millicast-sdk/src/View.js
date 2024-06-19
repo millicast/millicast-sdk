@@ -5,6 +5,7 @@ import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
+import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
@@ -12,7 +13,7 @@ import SdpParser from './utils/SdpParser'
 const logger = Logger.get('View')
 
 const connectOptions = {
-  metadata: false,
+  metadata: true,
   disableVideo: false,
   disableAudio: false,
   peerConfig: {
@@ -291,13 +292,17 @@ export default class View extends BaseWebRTC {
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
         metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
-
         if (metadata.timecode) {
           metadata.timecode = new Date(decoder.decode(metadata.timecode))
         } else if (metadata.unregistered) {
+          // we need to do a couple of things here -
+          // remove the timecode piece from the message and make that a new property altogether
+          // set the timecode property to be that
           metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
+          metadata.timecode = metadata.unregistered[DOLBY_SDK_TIMESTAMP_UUID]
+          delete metadata.unregistered[DOLBY_SDK_TIMESTAMP_UUID]
         }
-        this.emit('onMetadata', metadata)
+        this.emit('metadata', metadata)
       }
     }
 

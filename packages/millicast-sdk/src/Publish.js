@@ -5,7 +5,7 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID, DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
@@ -16,7 +16,7 @@ const logger = Logger.get('Publish')
 const connectOptions = {
   mediaStream: null,
   bandwidth: 0,
-  metadata: false,
+  metadata: true,
   disableVideo: false,
   disableAudio: false,
   codec: VideoCodec.H264,
@@ -310,10 +310,15 @@ export default class Publish extends BaseWebRTC {
    */
   sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
     if (this.options?.metadata && this.worker) {
+      const payload = {
+        message
+      }
+      payload[DOLBY_SDK_TIMESTAMP_UUID] = new Date().toISOString()
+
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
         uuid: uuid,
-        payload: message
+        payload
       })
     } else {
       let warningMessage = 'Could not send metadata due to:'

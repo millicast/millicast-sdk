@@ -51,6 +51,9 @@ const SEI_Payload_Type = {
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 
+// When the SDK inserts its own timecode into the unregistered block, it uses this identifier
+export const DOLBY_SDK_TIMESTAMP_UUID = 'd40e38ea-d419-4c62-94ed-20ac37b4e4fa'
+
 class SPSState {
   constructor (codec = 'H264') {
     this.sps = new Map()
