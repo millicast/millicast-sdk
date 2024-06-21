@@ -39,7 +39,6 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @deprecated streamName is no longer used, use tokenGenerator
  * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
