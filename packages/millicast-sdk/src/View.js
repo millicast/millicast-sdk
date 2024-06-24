@@ -301,6 +301,8 @@ export default class View extends BaseWebRTC {
           metadata.timecode = metadata.unregistered[DOLBY_SDK_TIMESTAMP_UUID]
           delete metadata.unregistered[DOLBY_SDK_TIMESTAMP_UUID]
         }
+        // for backwards compatibility, emit the old event as well
+        this.emit('onMetadata', metadata)
         this.emit('metadata', metadata)
       }
     }
