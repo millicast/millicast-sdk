@@ -514,7 +514,7 @@ declare module '@millicast/sdk' {
   };
 
   class PeerConnectionStats extends events.EventEmitter {
-    constructor(peer: PeerConnection);
+    constructor(peer: PeerConnection, config : PeerConnectionConfig);
     peer: PeerConnection;
     stats: ConnectionStats;
     emitInterval: NodeJS.Timer;
@@ -777,10 +777,11 @@ declare module '@millicast/sdk' {
     peer: RTCPeerConnection;
     peerConnectionStats: PeerConnectionStats;
     /**
-     * Instance new RTCPeerConnection.
-     * @param {RTCConfiguration} config - Peer configuration.
+     * Instantiate a new RTCPeerConnection.
+     * @param {PeerConnectionConfig} config - Peer configuration.
+     * 
      */
-    createRTCPeer(config?: RTCConfiguration): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -867,6 +868,8 @@ declare module '@millicast/sdk' {
      * Initialize the statistics monitoring of the RTCPeerConnection.
      *
      * It will be emitted every second.
+     * @param autoInitStats - whether to auto initialize stats; defaults to true
+     * @param statsIntervalMs  - the default interval, in milliseconds, at which the SDK will report back stats
      * @fires PeerConnection#stats
      * @example peerConnection.initStats()
      * @example
@@ -898,7 +901,7 @@ declare module '@millicast/sdk' {
      *   console.log('Stats from event: ', stats)
      * })
      */
-    initStats(): void;
+    initStats(autoInitStats : boolean, statsIntervalMs : number): void;
     /**
      * Stops the monitoring of RTCPeerConnection statistics.
      * @example peerConnection.stopStats()
@@ -1189,7 +1192,7 @@ declare module '@millicast/sdk' {
     /**
      * - Options to configure the new RTCPeerConnection.
      */
-    peerConfig?: RTCConfiguration;
+    peerConfig?: PeerConnectionConfig;
     /**
      * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
      */
@@ -1202,6 +1205,18 @@ declare module '@millicast/sdk' {
      * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
      */
     priority?: Number;
+  }
+
+  export interface PeerConnectionConfig extends RTCConfiguration {
+    /**
+     * - whether stats collection should be auto initialized. Defaults to `true`
+     */
+    autoInitStats: boolean;
+
+    /**
+     * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
+     */
+    statsIntervalMs : number;
   }
 
   export type ViewProjectSourceMapping = {
