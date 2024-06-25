@@ -304,7 +304,7 @@ export default class Publish extends BaseWebRTC {
 
   /**
    * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codec.
-   * @param {String} message String with the data to be sent as SEI user unregistered data.
+   * @param {String | Object} message The data to be sent as SEI user unregistered data.
    * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
    */
   sendMetadata (message, uuid = DOLBY_SDK_TIMESTAMP_UUID) {
