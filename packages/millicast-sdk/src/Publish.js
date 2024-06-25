@@ -309,14 +309,10 @@ export default class Publish extends BaseWebRTC {
    */
   sendMetadata (message, uuid = DOLBY_SDK_TIMESTAMP_UUID) {
     if (this.options?.metadata && this.worker) {
-      const payload = {
-        message
-      }
-
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
         uuid: uuid,
-        payload
+        payload: message
       })
     } else {
       let warningMessage = 'Could not send metadata due to:'
