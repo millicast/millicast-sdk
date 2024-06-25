@@ -54,9 +54,10 @@ const UNREGISTERED_MESSAGE_TYPE = {
   TIMECODE: 3
 }
 
+// Old UUID - used by SDK 0.1.45 and before. No longer actively used (only for backwards compatibility purposes)
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
+// AMF/KLV timestamps
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
-
 // When the SDK inserts its own timecode into the unregistered block, it uses this identifier
 export const DOLBY_SDK_TIMESTAMP_UUID = 'd40e38ea-d419-4c62-94ed-20ac37b4e4fa'
 
@@ -399,7 +400,7 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
   // There are 3 possible pathways here
   // the old UUID - where-in there is no timecode in the body
   // the new UUID - where-in there is timecode in the body
-  // SCTE tags - whole different kind of parsing
+  // AMF/KLV timestamps - where there is no other data to parse
   const messageType = resolveUnregisteredMessageType(metadata.uuid)
   const content = payloadContent.subarray(idx)
   switch (messageType) {
