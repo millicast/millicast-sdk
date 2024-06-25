@@ -48,6 +48,12 @@ const SEI_Payload_Type = {
   USER_DATA_UNREGISTERED: 5
 }
 
+const UNREGISTERED_MESSAGE_TYPE = {
+  LEGACY: 1,
+  NEW: 2,
+  TIMECODE: 3
+}
+
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 
@@ -375,22 +381,48 @@ function extractSEIPayload (rbsp) {
   }
 }
 
+function resolveUnregisteredMessageType (uuid) {
+  const timecodeUuid = new Uint8Array(parseUUID(DOLBY_SEI_TIMESTAMP_UUID))
+  const legacySdkUuid = new Uint8Array(parseUUID(DOLBY_SEI_DATA_UUID))
+  const newSdkUuid = new Uint8Array(parseUUID(DOLBY_SDK_TIMESTAMP_UUID))
+
+  if (timecodeUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.TIMECODE
+  if (legacySdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.LEGACY
+  if (newSdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.NEW
+}
+
 function getSeiUserUnregisteredData (metadata, payloadContent) {
   let idx = 0
   metadata.uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
+
+  // There are 3 possible pathways here
+  // the old UUID - where-in there is no timecode in the body
+  // the new UUID - where-in there is timecode in the body
+  // SCTE tags - whole different kind of parsing
+  const messageType = resolveUnregisteredMessageType(metadata.uuid)
   const content = payloadContent.subarray(idx)
-  if (isUUIDTimestamp(metadata.uuid)) {
-    metadata.timecode = convertSEITimestamp(content)
-  } else {
-    metadata.unregistered = content
+  switch (messageType) {
+    case UNREGISTERED_MESSAGE_TYPE.LEGACY :
+      metadata.unregistered = content
+      break
+    case UNREGISTERED_MESSAGE_TYPE.TIMECODE:
+      metadata.timecode = convertSEITimestamp(content)
+      break
+    case UNREGISTERED_MESSAGE_TYPE.NEW:
+    {
+      // we need to separate two sub-arrays here - one for timecode and the remainer to unregistered
+      // Do not make assumptions on the size of a date object as a byte array
+      let index = 0
+      const timecodeBufferLength = numberToByteArray(Date.now()).length
+      const timecodeSubArray = content.subarray(index, timecodeBufferLength)
+      index += timecodeBufferLength
+      const metadataSubArray = content.subarray(index)
+      metadata.timecode = convertSEITimestamp(timecodeSubArray)
+      metadata.unregistered = metadataSubArray
+      break
+    }
   }
-}
-
-function isUUIDTimestamp (uuidToCheck) {
-  const dolbyUUID = new Uint8Array(parseUUID(DOLBY_SEI_TIMESTAMP_UUID))
-
-  return dolbyUUID.every((value, index) => value === uuidToCheck[index])
 }
 
 function convertSEITimestamp (data) {
@@ -544,13 +576,14 @@ function parseUUID (uuid) {
     .map(byte => parseInt(byte, 16))
 }
 
-function createSEIMessageContent (uuid, payload) {
+function createSEIMessageContent (uuid, payload, timecode) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
+  const timecodeArray = numberToByteArray(timecode)
   const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
-
-  const content = new Uint8Array(uuidArray.length + payloadArray.length)
+  const content = new Uint8Array(uuidArray.length + timecodeArray.length + payloadArray.length)
   content.set(uuidArray)
-  content.set(payloadArray, uuidArray.length)
+  content.set(timecodeArray, uuidArray.length)
+  content.set(payloadArray, (timecodeArray.length + uuidArray.length))
 
   return content
 }
@@ -587,10 +620,19 @@ function createSEIMessageContentWithPrevensionBytes (content) {
   return new Uint8Array(preventionByteArray)
 }
 
-function createSEINalu ({ uuid, payload }) {
+function numberToByteArray (num) {
+  const array = []
+  const bigint = BigInt(num)
+  for (let i = 0; i < Math.ceil(Math.floor(Math.log2(num) + 1) / 8); i++) {
+    array.unshift(((bigint >> BigInt(8 * i)) & 255n))
+  }
+  return new Uint8Array(array)
+}
+
+function createSEINalu ({ uuid, payload, timecode }) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
-  const content = createSEIMessageContent(uuid, payload)
+  const content = createSEIMessageContent(uuid, payload, timecode)
   const seiTypeAndSize = createSEITypeAndSize(content)
   const contentWithPreventionBytes = createSEIMessageContentWithPrevensionBytes(content)
 
@@ -603,16 +645,16 @@ function createSEINalu ({ uuid, payload }) {
   return naluWithSEI
 }
 
-export function addH26xSEI ({ uuid, payload }, encodedFrame) {
+export function addH26xSEI ({ uuid, payload, timecode }, encodedFrame) {
   if (uuid === '' || payload === '') {
     throw new Error('uuid and payload cannot be empty')
   }
   if (!isValidUUID(uuid)) {
     console.warn('Invalid UUID. Using default UUID.')
-    uuid = DOLBY_SEI_DATA_UUID
+    uuid = DOLBY_SDK_TIMESTAMP_UUID
   }
   // Case of NALU H264 - User Unregistered Data
-  const naluWithSEI = createSEINalu({ uuid, payload })
+  const naluWithSEI = createSEINalu({ uuid, payload, timecode })
 
   const encodedFrameView = new DataView(encodedFrame.data)
   const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)

@@ -5,7 +5,6 @@ import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
-import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
@@ -293,14 +292,18 @@ export default class View extends BaseWebRTC {
         metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
         if (metadata.timecode) {
           metadata.timecode = new Date(decoder.decode(metadata.timecode))
-        } else if (metadata.unregistered) {
-          // we need to do a couple of things here -
-          // remove the timecode piece from the message and make that a new property altogether
-          // set the timecode property to be that
-          metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
-          metadata.timecode = metadata.unregistered[DOLBY_SDK_TIMESTAMP_UUID]
-          delete metadata.unregistered[DOLBY_SDK_TIMESTAMP_UUID]
         }
+        if (metadata.unregistered) {
+          const content = decoder.decode(metadata.unregistered)
+          try {
+            const json = JSON.parse(content)
+            metadata.unregistered = json
+          } catch (e) {
+            // was not a JSON, just return the raw bytes (i.e. do nothing)
+            logger.info('The content could not be converted to JSON, returning raw bytes instead')
+          }
+        }
+
         // for backwards compatibility, emit the old event as well
         this.emit('onMetadata', metadata)
         this.emit('metadata', metadata)

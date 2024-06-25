@@ -5,7 +5,7 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { DOLBY_SDK_TIMESTAMP_UUID, DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID, VideoCodec } from './utils/Codecs'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
@@ -305,14 +305,13 @@ export default class Publish extends BaseWebRTC {
   /**
    * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codec.
    * @param {String} message String with the data to be sent as SEI user unregistered data.
-   * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
+   * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
    */
-  sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
+  sendMetadata (message, uuid = DOLBY_SDK_TIMESTAMP_UUID) {
     if (this.options?.metadata && this.worker) {
       const payload = {
         message
       }
-      payload[DOLBY_SDK_TIMESTAMP_UUID] = new Date().toISOString()
 
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',

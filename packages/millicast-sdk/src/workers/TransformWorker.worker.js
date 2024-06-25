@@ -119,7 +119,8 @@ addEventListener('message', (event) => {
     case 'metadata-sei-user-data-unregistered':
       metadata.push({
         uuid: event.data.uuid,
-        payload: event.data.payload
+        payload: event.data.payload,
+        timecode: Date.now()
       })
       break
     default:

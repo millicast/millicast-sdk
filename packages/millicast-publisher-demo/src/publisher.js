@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     const date = new Date(0)
     const ts = performance.timeOrigin + now
     date.setUTCMilliseconds(ts)
-    millicastPublishUserMedia.sendMessage(date.toLocaleTimeString())
+    millicastPublishUserMedia.sendMessage("Sending unregistered message with new UUID and hopefully a timecode")
 
   }
 

@@ -22,6 +22,7 @@ const streamAccountId = !!href.searchParams.get("streamAccountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 const metadata = href.searchParams.get("metadata") === "true";
+console.log('****', metadata)
 const disableVideo = href.searchParams.get("disableVideo") === "true";
 const disableAudio = href.searchParams.get("disableAudio") === "true";
 const muted =
