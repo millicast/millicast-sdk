@@ -901,7 +901,7 @@ declare module '@millicast/sdk' {
      *   console.log('Stats from event: ', stats)
      * })
      */
-    initStats(autoInitStats : boolean, statsIntervalMs : number): void;
+    initStats(options : PeerConnectionConfig): void;
     /**
      * Stops the monitoring of RTCPeerConnection statistics.
      * @example peerConnection.stopStats()
