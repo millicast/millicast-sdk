@@ -411,7 +411,6 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
       metadata.timecode = convertSEITimestamp(content)
       break
     case UNREGISTERED_MESSAGE_TYPE.NEW:
-    {
       // we need to separate two sub-arrays here - one for timecode and the remainer to unregistered
       // Do not make assumptions on the size of a date object as a byte array
       let index = 0
