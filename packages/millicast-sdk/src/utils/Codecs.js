@@ -54,7 +54,7 @@ const UNREGISTERED_MESSAGE_TYPE = {
   TIMECODE: 3
 }
 
-// Old UUID - used by SDK 0.1.45 and before. No longer actively used (only for backwards compatibility purposes)
+// Old UUID - used by SDK 0.1.46 and before. No longer actively used (only for backwards compatibility purposes)
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
 // AMF/KLV timestamps
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
