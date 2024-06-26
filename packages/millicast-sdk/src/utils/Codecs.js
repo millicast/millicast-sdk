@@ -51,7 +51,8 @@ const SEI_Payload_Type = {
 const UNREGISTERED_MESSAGE_TYPE = {
   LEGACY: 1,
   NEW: 2,
-  TIMECODE: 3
+  TIMECODE: 3,
+  OTHER: 4
 }
 
 // Old UUID - used by SDK 0.1.46 and before. No longer actively used (only for backwards compatibility purposes)
@@ -390,6 +391,7 @@ function resolveUnregisteredMessageType (uuid) {
   if (timecodeUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.TIMECODE
   if (legacySdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.LEGACY
   if (newSdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.NEW
+  return UNREGISTERED_MESSAGE_TYPE.OTHER
 }
 
 function getSeiUserUnregisteredData (metadata, payloadContent) {
@@ -405,6 +407,7 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
   const content = payloadContent.subarray(idx)
   switch (messageType) {
     case UNREGISTERED_MESSAGE_TYPE.LEGACY:
+    case UNREGISTERED_MESSAGE_TYPE.OTHER:
       metadata.unregistered = content
       break
     case UNREGISTERED_MESSAGE_TYPE.TIMECODE:
