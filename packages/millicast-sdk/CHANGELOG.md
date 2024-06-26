@@ -1,6 +1,6 @@
 # @millicast/sdk
 
-## 0.1.45
+## 0.1.46
 
 ### Patch Changes
 
@@ -10,6 +10,7 @@
 - 5bd8ef5: Stats are now initialized by default. Logger.diagnose method changed to accept an object as parameter, with statsCount, historySize, minLogLevel, statsFormat.
 - faef94f: Deprecated the streamName argument in publish and view
 - 3bc547c: Added SEI user unregistered data extraction and insertion for H.264 codec.
+- 661f150: Added streamViewId variable in Signaling instance when subscribing to a stream.
 
 ## 0.1.44
 

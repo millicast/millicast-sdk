@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.1.46-RC1",
+  "version": "0.1.46",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -9,9 +9,8 @@
     "realtime",
     "streaming"
   ],
-  "main": "dist/millicast.cjs.js",
-  "module": "dist/millicast.esm.js",
-  "maintypes": "dist/millicast.d.ts",
+  "main": "dist/millicast.js",
+  "module": "dist/millicast.mjs",
   "browser": "dist/millicast.umd.js",
   "millicastdebug": "dist/millicast.debug.umd.js",
   "files": [
@@ -19,8 +18,8 @@
     "scripts"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "start": "rollup -c -w",
+    "build": "vite build",
+    "start": "vite build --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
@@ -29,7 +28,6 @@
     "test-all": "npm run build && jest --testMatch '**/*.steps.js'",
     "test": "npm run test-all"
   },
-  "types": "dist/millicast.d.ts",
   "babel": {
     "env": {
       "test": {
@@ -90,7 +88,6 @@
     "jest-websocket-mock": "^2.2.0",
     "jsdoc": "^4.0.2",
     "jsdoc-export-default-interop": "^0.3.1",
-    "jsdom-worker": "^0.3.0",
     "mock-socket": "^9.0.3",
     "puppeteer": "^21.6.1",
     "rollup": "2.55",
@@ -100,6 +97,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "serve": "^14.2.1",
     "typescript": "^4.9.3",
-    "underscore": "^1.13.1"
+    "underscore": "^1.13.1",
+    "vite": "^5.2.10"
   }
 }

@@ -136,9 +136,21 @@ defineFeature(feature, test => {
 
   test('Get video capabilities in Firefox', ({ given, when, then }) => {
     let capabilities
-
+    const browserCapabilities = {
+      codecs: [
+        { clockRate: 90000, mimeType: 'video/VP8', sdpFmtpLine: 'max-fs=12288;max-fr=60' },
+        { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'max-fs=12288;max-fr=60' },
+        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'profile-level-id=42e01f;level-asymmetry-allowed=1;packetization-mode=1' },
+        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'profile-level-id=42e01f;level-asymmetry-allowed=1' },
+        { clockRate: 90000, mimeType: 'video/ulpfec' },
+        { clockRate: 90000, mimeType: 'video/red' },
+        { clockRate: 90000, mimeType: 'video/rtx' }
+      ],
+      headerExtensions: []
+    }
     given('I am in Firefeox', async () => {
       changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
+      jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
     when('I get video capabilities', async () => {
@@ -151,7 +163,7 @@ defineFeature(feature, test => {
         { codec: 'vp9', mimeType: 'video/VP9' },
         { codec: 'h264', mimeType: 'video/H264' }
       ])
-      expect(capabilities.headerExtensions).toEqual([])
+      expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
   })
 

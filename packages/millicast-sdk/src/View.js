@@ -7,7 +7,7 @@ import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments } from './drm/rtc-drm-transform.js'
-import workerString from './TransformWorker.worker.js'
+import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')
@@ -294,26 +294,8 @@ export default class View extends BaseWebRTC {
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     if (this.options.metadata) {
-      if (this.worker) {
-        this.worker.terminate()
-      }
-      const workerBlob = new Blob([workerString])
-      const workerURL = URL.createObjectURL(workerBlob)
-      this.worker = new Worker(workerURL)
-      this.worker.onmessage = (event) => {
-        const decoder = new TextDecoder()
-        const metadata = event.data.metadata
-        metadata.mid = event.data.mid
-        metadata.track = this.tracksMidValues[event.data.mid]
-        const uuid = metadata.uuid
-        metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-        metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
-        if (metadata.timecode) {
-          metadata.timecode = new Date(decoder.decode(metadata.timecode))
-        } else if (metadata.unregistered) {
-          metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
-        }
-        this.emit('onMetadata', metadata)
+      if (!this.worker) {
+        this.worker = new TransformWorker()
       }
     }
 

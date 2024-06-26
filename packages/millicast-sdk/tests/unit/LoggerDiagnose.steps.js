@@ -1,5 +1,4 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import 'jsdom-worker'
 import Logger from '../../src/Logger'
 import Signaling from '../../src/Signaling'
 import View from '../../src/View'
@@ -13,6 +12,13 @@ import { version } from '../../package.json'
 const feature = loadFeature('../features/LoggerDiagnose.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('../../src/Signaling')
+
+jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+  jest.fn(() => ({
+    postMessage: jest.fn(),
+    terminate: jest.fn()
+  }))
+)
 
 const expectedObject = {
   accountId: expect.any(String),

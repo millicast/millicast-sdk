@@ -4,8 +4,8 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
-if (process.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(process.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
 //Get our url
@@ -16,10 +16,10 @@ const url = !!href.searchParams.get("url")
   : "wss://turn.millicast.com/millisock";
 const streamName = !!href.searchParams.get("streamName")
   ? href.searchParams.get("streamName")
-  : process.env.MILLICAST_STREAM_NAME;
+  : import.meta.env.MILLICAST_STREAM_NAME;
 const streamAccountId = !!href.searchParams.get("streamAccountId")
   ? href.searchParams.get("streamAccountId")
-  : process.env.MILLICAST_ACCOUNT_ID;
+  : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 const metadata = href.searchParams.get("metadata") === "true";
 const enableDRM = href.searchParams.get("drm") === 'true';
