@@ -421,7 +421,6 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
       metadata.timecode = convertSEITimestamp(timecodeSubArray)
       metadata.unregistered = metadataSubArray
       break
-    }
   }
 }
 
