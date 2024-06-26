@@ -586,7 +586,7 @@ declare module '@millicast/sdk' {
    * @property {String} vad - Enable VAD multiplexing for secondary sources.
    * @property {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
    * @property {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
-   * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
+   * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
    * @property {LayerInfo} layer - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
    */
   /**
@@ -692,7 +692,7 @@ declare module '@millicast/sdk' {
      */
     excludedSourceIds: Array<string>;
     /**
-     * - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
+     * - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
      */
     events: Array<string>;
     /**
@@ -1060,7 +1060,7 @@ declare module '@millicast/sdk' {
      */
     subscriberToken?: string;
   };
-  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount';
+  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated';
 
   export type ViewConnectOptions = {
     /**
@@ -1096,7 +1096,7 @@ declare module '@millicast/sdk' {
      */
     excludedSourceIds?: Array<string>;
     /**
-     * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount").*
+     * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
      */
     events?: Array<Event>;
     /**
