@@ -270,7 +270,7 @@ const spsState = new SPSState()
 function findStartCodeIndex (frameBuffer, offset) {
   while (offset < frameBuffer.byteLength - 4) {
     if ((frameBuffer[offset] === 0x00 && frameBuffer[offset + 1] === 0x00) &&
-        (frameBuffer[offset + 2] === 0x01 ||
+      (frameBuffer[offset + 2] === 0x01 ||
         (frameBuffer[offset + 2] === 0x00 && frameBuffer[offset + 3] === 0x01))) {
       return offset
     } else {
@@ -404,14 +404,14 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
   const messageType = resolveUnregisteredMessageType(metadata.uuid)
   const content = payloadContent.subarray(idx)
   switch (messageType) {
-    case UNREGISTERED_MESSAGE_TYPE.LEGACY :
+    case UNREGISTERED_MESSAGE_TYPE.LEGACY:
       metadata.unregistered = content
       break
     case UNREGISTERED_MESSAGE_TYPE.TIMECODE:
       metadata.timecode = convertSEITimestamp(content)
       break
     case UNREGISTERED_MESSAGE_TYPE.NEW:
-      // we need to separate two sub-arrays here - one for timecode and the remainer to unregistered
+    { // we need to separate two sub-arrays here - one for timecode and the remainer to unregistered
       // Do not make assumptions on the size of a date object as a byte array
       let index = 0
       const timecodeBufferLength = numberToByteArray(Date.now()).length
@@ -421,6 +421,7 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
       metadata.timecode = convertSEITimestamp(timecodeSubArray)
       metadata.unregistered = metadataSubArray
       break
+    }
   }
 }
 
