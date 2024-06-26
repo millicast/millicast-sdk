@@ -271,7 +271,7 @@ const spsState = new SPSState()
 function findStartCodeIndex (frameBuffer, offset) {
   while (offset < frameBuffer.byteLength - 4) {
     if ((frameBuffer[offset] === 0x00 && frameBuffer[offset + 1] === 0x00) &&
-      (frameBuffer[offset + 2] === 0x01 ||
+        (frameBuffer[offset + 2] === 0x01 ||
         (frameBuffer[offset + 2] === 0x00 && frameBuffer[offset + 3] === 0x01))) {
       return offset
     } else {
