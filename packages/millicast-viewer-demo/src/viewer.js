@@ -196,9 +196,18 @@ const subscribe = async () => {
       disableVideo,
       disableAudio,
       absCaptureTime: true,
+      peerConfig : {
+        autoInitStats: true,
+        statsIntervalMs: 5000
+      }
     };
     window.millicastView = millicastView = newViewer()
     await millicastView.connect(options);
+    
+    millicastView.webRTCPeer.on('stats', (event) => {
+      console.log(event)
+    });
+
   } catch (error) {
     if (!autoReconnect) return;
   }

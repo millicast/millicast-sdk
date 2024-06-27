@@ -162,7 +162,11 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       const connectOptions = {
         bandwidth,
         events,
-        metadata
+        metadata,
+        peerConfig : {
+          autoInitStats: true,
+          statsIntervalMs : 5000
+        }
       }
       if (!isNaN(priority)) {
         connectOptions.priority = priority
