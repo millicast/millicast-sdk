@@ -6,7 +6,7 @@ import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments } from './drm/rtc-drm-transform.js'
+import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
 
@@ -297,11 +297,29 @@ export default class View extends BaseWebRTC {
       if (!this.worker) {
         this.worker = new TransformWorker()
       }
+      this.worker.onmessage = (message) => {
+        if (message.data.event === 'metadata') {
+          const decoder = new TextDecoder()
+          const metadata = message.data.metadata
+          metadata.mid = message.data.mid
+          metadata.track = this.tracksMidValues[message.data.mid]
+
+          const uuid = metadata.uuid
+          metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+          metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+
+          if (metadata.timecode) {
+            metadata.timecode = new Date(decoder.decode(metadata.timecode))
+          } else if (metadata.unregistered) {
+            metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
+          }
+          this.emit('onMetadata', metadata)
+        }
+      }
     }
 
     webRTCPeerInstance.on('track', (trackEvent) => {
       this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
-      // TODO: DRM mode cannot coexist with frame metadata currently
       if (this.isDRMOn) {
         const mediaId = trackEvent.transceiver.mid
         const drmOptions = this.#getDRMConfiguration(mediaId)
@@ -310,7 +328,12 @@ export default class View extends BaseWebRTC {
         } catch (error) {
           logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
         }
-        return
+        this.worker.addEventListener('message', (message) => {
+          if (message.data.event === 'complete') {
+            // feed the frame to DRM processing worker
+            rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+          }
+        })
       }
       if (this.options.metadata) {
         if (supportsRTCRtpScriptTransform) {
@@ -413,6 +436,7 @@ export default class View extends BaseWebRTC {
       merchant: 'dolby',
       sessionId: '',
       environment: rtcDrmEnvironments.Staging,
+      customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
       video: { codec: 'h264', encryption: 'cbcs', keyId: this.#hexToUint8Array(options.videoEncParams.keyId), iv: this.#hexToUint8Array(options.videoEncParams.iv) },

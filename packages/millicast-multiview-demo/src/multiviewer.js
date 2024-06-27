@@ -5,10 +5,10 @@ if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
 }
 
 // Config data
-const accountId = process.env.MILLICAST_ACCOUNT_ID
-const streamName = process.env.MILLICAST_STREAM_NAME
-const drmKeyId = process.env.MILLICAST_DRM_VID2_KEYID
-const drmIv = process.env.MILLICAST_DRM_VID2_IV
+const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
+const streamName = import.meta.env.MILLICAST_STREAM_NAME
+const drmKeyId = import.meta.env.MILLICAST_DRM_VID2_KEYID
+const drmIv = import.meta.env.MILLICAST_DRM_VID2_IV
 
 // This will store the main transceiver video mid
 const mainVideoMid = '0'
@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
     await viewer.connect({
       enableDRM: true,
+      metadata: true,
       events: ['active', 'inactive', 'layers']
     })
   } catch (e) {
