@@ -1,3 +1,4 @@
+/* eslint-disable no-new-wrappers */
 /* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
 /**
@@ -624,10 +625,13 @@ function createSEIMessageContentWithPrevensionBytes (content) {
 }
 
 function numberToByteArray (num) {
+  if (isNaN(num)) {
+    return
+  }
   const array = []
   const bigint = BigInt(num)
-  for (let i = 0; i < Math.ceil(Math.floor(Math.log2(num) + 1) / 8); i++) {
-    array.unshift(((bigint >> BigInt(8 * i)) & 255n))
+  for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
+    array.unshift(new Number((bigint >> BigInt(8 * i)) & 255n))
   }
   return new Uint8Array(array)
 }
