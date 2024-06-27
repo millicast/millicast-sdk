@@ -16,7 +16,8 @@ const connectOptions = {
   disableVideo: false,
   disableAudio: false,
   peerConfig: {
-    autoInitStats: true
+    autoInitStats: true,
+    statsIntervalMs: 1000
   }
 }
 
