@@ -1,4 +1,7 @@
+import Logger from 'js-logger'
 import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
+const logger = Logger.get('TransformWorker')
+logger.setLevel(Logger.DEBUG)
 
 const DROPPED_SOURCE_TIMEOUT = 2000
 const metadata = []
@@ -20,9 +23,13 @@ function createReceiverTransform (mid) {
         if (frameCodec === 'H264') {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec)
           if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
-            self.postMessage({ mid, metadata })
+            self.postMessage({ event: 'metadata', mid, metadata })
           }
         }
+        self.postMessage({
+          event: 'complete',
+          frame: { type: encodedFrame.type, timestamp: encodedFrame.timestamp, data: encodedFrame.data }
+        })
       }
       controller.enqueue(encodedFrame)
     }
