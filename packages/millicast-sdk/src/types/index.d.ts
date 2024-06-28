@@ -779,9 +779,11 @@ declare module '@millicast/sdk' {
     /**
      * Instantiate a new RTCPeerConnection.
      * @param {PeerConnectionConfig} config - Peer configuration.
-     * 
+     * @param {Boolean} [config.autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
+     * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
+     * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode : "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
