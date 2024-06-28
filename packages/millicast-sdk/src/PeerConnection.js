@@ -47,7 +47,8 @@ export default class PeerConnection extends EventEmitter {
   /**
    * Instance new RTCPeerConnection.
    * @param {RTCConfiguration} config - Peer configuration.
-   * @param {Boolean} [autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
+   * @param {Boolean} [config.autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
+   * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
    */
   async createRTCPeer (config = { autoInitStats: true }, mode = ConnectionType.Viewer) {
     logger.info('Creating new RTCPeerConnection')

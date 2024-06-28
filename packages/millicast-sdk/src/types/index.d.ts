@@ -778,6 +778,8 @@ declare module '@millicast/sdk' {
     /**
      * Instance new RTCPeerConnection.
      * @param {RTCConfiguration} config - Peer configuration.
+     * @param {Boolean} [config.autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
+     * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
     createRTCPeer(config?: RTCConfiguration, mode : "Publisher" | "Viewer"): Promise<void>;
     /**
