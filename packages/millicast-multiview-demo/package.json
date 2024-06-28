@@ -5,7 +5,7 @@
     "prepare": "node prepare.js",
     "build": "vite build",
     "preview": "vite preview",
-        "start": "concurrently \"nodemon --watch dist --watch ../millicast-sdk --exec vite\" \"nodemon --watch src --exec vite build\""
+        "start": "concurrently \"nodemon --watch dist --watch ../millicast-sdk --exec vite\" \"nodemon --watch --watch ../millicast-sdk src --exec vite build\""
   },
   "dependencies": {
     "@millicast/sdk": "file:../millicast-sdk"
