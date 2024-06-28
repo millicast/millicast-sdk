@@ -48,6 +48,11 @@ const SdpParser = {
       logger.warn(`Your selected codec ${codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`)
       return sdp
     }
+    // Check if there is video available to set simulcast
+    if (!/m=video/.test(sdp)) {
+      logger.warn('There is no available video for simulcast to be enabled.')
+      return sdp
+    }
 
     try {
       const reg1 = /m=video.*?a=ssrc:(\d*) cname:(.+?)\r\n/s

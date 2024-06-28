@@ -514,15 +514,16 @@ declare module '@millicast/sdk' {
   };
 
   class PeerConnectionStats extends events.EventEmitter {
-    constructor(peer: PeerConnection);
+    constructor(peer: PeerConnection, config : PeerConnectionConfig);
     peer: PeerConnection;
     stats: ConnectionStats;
     emitInterval: NodeJS.Timer;
     previousStats: ConnectionStats;
     /**
      * Initialize the statistics monitoring of the RTCPeerConnection.
+     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.  
      */
-    init(): void;
+    init(statsIntervalMs : number): void;
     /**
      * Parse incoming RTCPeerConnection stats.
      * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
@@ -586,7 +587,7 @@ declare module '@millicast/sdk' {
    * @property {String} vad - Enable VAD multiplexing for secondary sources.
    * @property {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
    * @property {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
-   * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
+   * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
    * @property {LayerInfo} layer - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
    */
   /**
@@ -692,7 +693,7 @@ declare module '@millicast/sdk' {
      */
     excludedSourceIds: Array<string>;
     /**
-     * - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
+     * - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
      */
     events: Array<string>;
     /**
@@ -776,12 +777,13 @@ declare module '@millicast/sdk' {
     peer: RTCPeerConnection;
     peerConnectionStats: PeerConnectionStats;
     /**
-     * Instance new RTCPeerConnection.
-     * @param {RTCConfiguration} config - Peer configuration.
+     * Instantiate a new RTCPeerConnection.
+     * @param {PeerConnectionConfig} config - Peer configuration.
      * @param {Boolean} [config.autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
+     * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
      * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: RTCConfiguration, mode : "Publisher" | "Viewer"): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode : "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -868,6 +870,8 @@ declare module '@millicast/sdk' {
      * Initialize the statistics monitoring of the RTCPeerConnection.
      *
      * It will be emitted every second.
+     * @param autoInitStats - whether to auto initialize stats; defaults to true
+     * @param statsIntervalMs  - the default interval, in milliseconds, at which the SDK will report back stats
      * @fires PeerConnection#stats
      * @example peerConnection.initStats()
      * @example
@@ -899,7 +903,7 @@ declare module '@millicast/sdk' {
      *   console.log('Stats from event: ', stats)
      * })
      */
-    initStats(): void;
+    initStats(options : PeerConnectionConfig): void;
     /**
      * Stops the monitoring of RTCPeerConnection statistics.
      * @example peerConnection.stopStats()
@@ -1062,7 +1066,7 @@ declare module '@millicast/sdk' {
      */
     subscriberToken?: string;
   };
-  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount';
+  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated';
 
   export type ViewConnectOptions = {
     /**
@@ -1098,7 +1102,7 @@ declare module '@millicast/sdk' {
      */
     excludedSourceIds?: Array<string>;
     /**
-     * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount").*
+     * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
      */
     events?: Array<Event>;
     /**
@@ -1190,7 +1194,7 @@ declare module '@millicast/sdk' {
     /**
      * - Options to configure the new RTCPeerConnection.
      */
-    peerConfig?: RTCConfiguration;
+    peerConfig?: PeerConnectionConfig;
     /**
      * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
      */
@@ -1203,6 +1207,18 @@ declare module '@millicast/sdk' {
      * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
      */
     priority?: Number;
+  }
+
+  export interface PeerConnectionConfig extends RTCConfiguration {
+    /**
+     * - whether stats collection should be auto initialized. Defaults to `true`
+     */
+    autoInitStats: boolean;
+
+    /**
+     * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
+     */
+    statsIntervalMs : number;
   }
 
   export type ViewProjectSourceMapping = {

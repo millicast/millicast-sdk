@@ -23,7 +23,8 @@ const connectOptions = {
   simulcast: false,
   scalabilityMode: null,
   peerConfig: {
-    autoInitStats: true
+    autoInitStats: true,
+    statsIntervalMs: 1000
   }
 }
 
