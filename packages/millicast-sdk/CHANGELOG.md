@@ -1,5 +1,22 @@
 # @millicast/sdk
 
+## 0.2.0
+
+### Minor Changes
+
+- d996963: Allow the user to configure the stats timeout value
+- 332b9bf: Improve build time performance
+- ec98d00: add hot reload in sdk
+
+### Patch Changes
+
+- 955d1c3: Let the browser determine the available codecs on Firefox
+- ff4f101: Deprecate the old UUID and use a new one for messages that include a timecode
+- ea41a2e: When enabling simulcast, first check if there is video in the SDP payload
+- ff4f101: Add in a timecode for SDK generated messages as well
+- ff4f101: update the metadata event triggered to be \'metadata\' instead of \'onMetadata\'
+- 11fe87d: Block viewer from trying to update the bitrate, because it\'s not a permitted operation
+
 ## 0.1.46
 
 ### Patch Changes
