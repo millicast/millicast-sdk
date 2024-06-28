@@ -207,7 +207,6 @@ export default class PeerConnection extends EventEmitter {
    * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
    */
   async updateBitrate (bitrate = 0) {
-    logger.warn(this.mode)
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to udpate bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
