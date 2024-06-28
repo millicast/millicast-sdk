@@ -5,13 +5,8 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-<<<<<<< viewer-update-bitrate
-import { DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
-import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
-=======
 import { DOLBY_SDK_TIMESTAMP_UUID, VideoCodec } from './utils/Codecs'
-import PeerConnection, { webRTCEvents } from './PeerConnection'
->>>>>>> main
+import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
