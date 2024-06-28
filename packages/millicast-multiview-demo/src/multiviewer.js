@@ -60,7 +60,7 @@ viewer.on('track', (event) => {
   }
 })
 
-viewer.on('onMetadata', (metadata) => {
+viewer.on('metadata', (metadata) => {
   console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
 })
 
