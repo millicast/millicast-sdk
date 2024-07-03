@@ -1,3 +1,4 @@
+import * as js_logger from 'js-logger';
 import * as events from 'events';
 
 declare module '@millicast/sdk' {
@@ -278,15 +279,15 @@ declare module '@millicast/sdk' {
      * @description Returns the current SDK version.
      */
     VERSION: String;
-    useDefaults(options?: import("js-logger").ILoggerOpts): void;
-	  createDefaultHandler(options?: any): import("js-logger").ILogHandler;
-    static get TRACE(): import("js-logger").ILogLevel;
-    static get DEBUG(): import("js-logger").ILogLevel;
-    static get INFO(): import("js-logger").ILogLevel;
-    static get TIME(): import("js-logger").ILogLevel;
-    static get WARN(): import("js-logger").ILogLevel;
-    static get ERROR(): import("js-logger").ILogLevel;
-    static get OFF(): import("js-logger").ILogLevel;
+    useDefaults(options?: js_logger.ILoggerOpts): void;
+	  createDefaultHandler(options?: any): js_logger.ILogHandler;
+    static get TRACE(): js_logger.ILogLevel;
+    static get DEBUG(): js_logger.ILogLevel;
+    static get INFO(): js_logger.ILogLevel;
+    static get TIME(): js_logger.ILogLevel;
+    static get WARN(): js_logger.ILogLevel;
+    static get ERROR(): js_logger.ILogLevel;
+    static get OFF(): js_logger.ILogLevel;
     trace(...x: any[]): void;
     debug(...x: any[]): void;
     info(...x: any[]): void;
