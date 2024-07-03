@@ -1,4 +1,4 @@
-import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 
 const DROPPED_SOURCE_TIMEOUT = 2000
 const metadata = []
@@ -68,6 +68,9 @@ function createSenderTransform () {
             if (!/(h26[4])/.test(codec)) {
               throw new Error('Sending metadata is not supported with any other codec other than H.264')
             }
+            if (metadata[0].uuid === DOLBY_SDK_TIMESTAMP_UUID) {
+              metadata[0].timecode = Date.now()
+            }
             addH26xSEI(metadata[0], encodedFrame)
             synchronizationSourcesWithMetadata.push(newSyncSource)
           } catch (error) {
@@ -119,8 +122,7 @@ addEventListener('message', (event) => {
     case 'metadata-sei-user-data-unregistered':
       metadata.push({
         uuid: event.data.uuid,
-        payload: event.data.payload,
-        timecode: Date.now()
+        payload: event.data.payload
       })
       break
     default:
