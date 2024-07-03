@@ -44,6 +44,16 @@ The simplest way to receive two streams in the application is to open the dashbo
 
 The application also lets you select the preferred layer, which refers to a simulcast bitrate. This option is available only after enabling **simulcast** in the **media settings**.
 
+## Custom connect options through URL parameters
+This demo application allows the user to set some URL parameters for configuring stream connection options:
+
+| Name             | Description                                         | Default value
+| **accountId**    | Publisher's account ID                              | `null`
+| **streamName**   | Publisher's stream name                             | `null`
+| **metadata**     | Enable metadata extraction on all sources available | `false`
+| **disableVideo** | Set to disable video from the stream                | `false`
+| **disableAudio** | Set to disable audio from the stream                | `false`
+
 ## Introducing updates
 After introducing any changes to the `public` directory, use the following command:
 ```

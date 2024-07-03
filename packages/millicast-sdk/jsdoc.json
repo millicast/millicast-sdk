@@ -11,8 +11,8 @@
   },
   "plugins": [
     "plugins/markdown",
-    "node_modules/jsdoc-export-default-interop/dist/index",
-    "node_modules/jsdoc-i18n-plugin/index.js"
+    "../../node_modules/jsdoc-export-default-interop/dist/index",
+    "../../node_modules/jsdoc-i18n-plugin/index.js"
   ],
   "markdown": {
     "idInHeadings": true 
@@ -24,7 +24,7 @@
     "extension": ".json"
   },
   "opts": {
-    "template": "node_modules/clean-jsdoc-theme",
+    "template": "../../node_modules/clean-jsdoc-theme",
     "encoding": "utf8",
     "destination": "docs/",
     "recurse": true,
