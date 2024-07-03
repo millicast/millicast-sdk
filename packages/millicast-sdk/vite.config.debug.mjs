@@ -2,12 +2,12 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   build: {
-    emptyOutDir: false,
+    sourcemap: 'inline',
     lib: {
       entry: 'src/index.js',
-      name: 'millicast',
-      formats: ['es', 'cjs', 'umd'],
-      fileName: 'millicast'
-    }
+      name: 'millicast-debug',
+      formats: ['umd'],
+      fileName: 'millicast.debug'
+    },
   }
 })
