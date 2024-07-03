@@ -17,8 +17,8 @@ const url = !!href.searchParams.get("url")
 const streamName = !!href.searchParams.get("streamName")
   ? href.searchParams.get("streamName")
   : import.meta.env.MILLICAST_STREAM_NAME;
-const streamAccountId = !!href.searchParams.get("streamAccountId")
-  ? href.searchParams.get("streamAccountId")
+const accountId = !!href.searchParams.get("accountId")
+  ? href.searchParams.get("accountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 const metadata = href.searchParams.get("metadata") === "true";
@@ -33,8 +33,6 @@ const autoplay =
 const autoReconnect =
   href.searchParams.get("autoReconnect") === "true" ||
   href.searchParams.get("autoReconnect") === null;
-
-//console.log(disableVideo, disableAudio, muted, autoplay, autoReconnect);
 const disableControls =
   href.searchParams.get("disableControls") === "true" &&
   href.searchParams.get("disableControls") !== null;
@@ -60,7 +58,7 @@ let video = document.querySelector("video");
 let millicastView = null
 
 const newViewer = () => {
-  const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
+  const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
@@ -272,7 +270,7 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
     if (castState === cast.framework.CastState.CONNECTED) {
       const castSession = castContext.getCurrentSession()
       const mediaInfo = new chrome.cast.media.MediaInfo(streamName, '')
-      mediaInfo.customData = { streamName, streamAccountId }
+      mediaInfo.customData = { streamName, accountId }
       mediaInfo.streamType = chrome.cast.media.StreamType.LIVE
 
       const loadRequest = new chrome.cast.media.LoadRequest(mediaInfo)

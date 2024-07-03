@@ -4,9 +4,14 @@ if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
+// Get query params
+const params = new Proxy(new URLSearchParams(window.location.search), {
+  get: (searchParams, prop) => searchParams.get(prop),
+});
+
 // Config data
-const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
-const streamName = import.meta.env.MILLICAST_STREAM_NAME
+const accountId = params.accountId || import.meta.env.MILLICAST_ACCOUNT_ID
+const streamName = params.streamName || import.meta.env.MILLICAST_STREAM_NAME
 
 // This will store the main transceiver video mid
 const mainTransceiver = '0'
@@ -66,9 +71,16 @@ viewer.on('metadata', (metadata) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    await viewer.connect({
-      events: ['active', 'inactive', 'layers']
-    })
+    const metadata = params.metadata === 'true'
+    const disableVideo = params.disableVideo === 'true'
+    const disableAudio = params.disableAudio === 'true'
+    const connectOptions = {
+      events: ['active', 'inactive', 'layers'],
+      metadata,
+      disableVideo,
+      disableAudio,
+    }
+    await viewer.connect(connectOptions)
   } catch (e) {
     console.error(e)
     viewer.reconnect()
