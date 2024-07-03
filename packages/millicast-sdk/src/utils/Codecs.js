@@ -570,7 +570,7 @@ export function extractH26xMetadata (encodedFrame, codec) {
 }
 
 function isValidUUID (uuid) {
-  const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
+  const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
   return uuidRegEx.test(uuid)
 }
 
@@ -625,13 +625,12 @@ function createSEIMessageContentWithPrevensionBytes (content) {
 }
 
 function numberToByteArray (num) {
-  if (isNaN(num)) {
-    return
-  }
   const array = []
-  const bigint = BigInt(num)
-  for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
-    array.unshift(new Number((bigint >> BigInt(8 * i)) & 255n))
+  if (!isNaN(num)) {
+    const bigint = BigInt(num)
+    for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
+      array.unshift(new Number((bigint >> BigInt(8 * i)) & 255n))
+    }
   }
   return new Uint8Array(array)
 }
