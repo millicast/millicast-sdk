@@ -66,10 +66,10 @@ const newViewer = () => {
     if (event.name === "active") {
       // TODO: remove hardcoded encryption property
       const encryption = event.data.encryption || {
-        keyId: process.env.MILLICAST_DRM_VID_KEYID,
-        iv: process.env.MILLICAST_DRM_VID_IV
+        keyId: import.meta.env.MILLICAST_DRM_VID_KEYID,
+        iv: import.meta.env.MILLICAST_DRM_VID_IV
       };
-      if (encryption) {
+      if (encryption && enableDRM) {
         const drmOptions = {
           videoElement: document.querySelector("video"),
           audioElement: document.querySelector("audio"),

@@ -232,17 +232,6 @@ const createAudioElement = () => {
   return audio
 }
 
-function swapPropertyValues(obj1, obj2, key) {
-  // Check if both objects have the property
-  if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
-    const temp = obj1[key];
-    obj1[key] = obj2[key];
-    obj2[key] = temp;
-  } else {
-    console.error(`One or both objects do not have the property "${key}"`);
-  }
-}
-
 const createVideoEventListener = (mediaId) => {
   const selectedSourceId = transceiverMidToSourceIdMap[mediaId]
   const video = document.getElementById('mid-' + mediaId)
