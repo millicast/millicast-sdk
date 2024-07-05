@@ -8,6 +8,7 @@ export default defineConfig({
       name: 'millicast',
       formats: ['es', 'cjs', 'umd'],
       fileName: 'millicast'
-    }
-  }
+    },
+    target: ['safari11','firefox66']
+  },
 })

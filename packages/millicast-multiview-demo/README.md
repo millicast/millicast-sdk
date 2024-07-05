@@ -6,7 +6,7 @@ The Multiview demo application demonstrates multi view playback capabilities tha
 
 ## Getting started
 
-1. Go to the [Dolby.io Streaming dashboard](https://dashboard.dolby.io/) and select your token. If you do not have a token, create it by clicking the **create** button.
+1. Go to the [Dolby.io Streaming dashboard](https://dashboard.dolby.io/) and select your publish token. If you do not have a token, create it by clicking the **create** button.
 
 2. Open the **token details** tab and enable **multisource**.
 
@@ -48,6 +48,7 @@ The application also lets you select the preferred layer, which refers to a simu
 This demo application allows the user to set some URL parameters for configuring stream connection options:
 
 | Name             | Description                                         | Default value
+| --- | --- | --- |
 | **accountId**    | Publisher's account ID                              | `null`
 | **streamName**   | Publisher's stream name                             | `null`
 | **metadata**     | Enable metadata extraction on all sources available | `false`
