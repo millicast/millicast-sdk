@@ -658,6 +658,7 @@ export function addH26xSEI ({ uuid, payload, timecode }, encodedFrame) {
   if (!isValidUUID(uuid)) {
     console.warn('Invalid UUID. Using default UUID.')
     uuid = DOLBY_SDK_TIMESTAMP_UUID
+    timecode = Date.now()
   }
   // Case of NALU H264 - User Unregistered Data
   const naluWithSEI = createSEINalu({ uuid, payload, timecode })
