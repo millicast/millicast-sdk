@@ -4,7 +4,7 @@ The Viewer demo application demonstrates playback capability that you can add to
 
 ## Getting started
 
-1. Go to the [Dolby.io Streaming dashboard](https://dashboard.dolby.io/) and select your token. If you do not have a token, create it by clicking the **create** button.
+1. Go to the [Dolby.io Streaming dashboard](https://dashboard.dolby.io/) and select your publish token. If you do not have a token, create it by clicking the **create** button.
 
 2. Locate your `account ID` in the **token details** tab and copy the token.
 
@@ -40,6 +40,7 @@ To receive a stream, you need to broadcast it first. You can do it either via th
 This demo application allows the user to set some URL parameters for configuring stream connection options:
 
 | Name                | Description                                                                                    | Default value
+| --- | --- | --- |
 | **url**             | WebSocket URL                                                                                  | `wss://turn.millicast.com/millisock`
 | **accountId**       | Publisher's account ID.                                                                        | `null`
 | **streamName**      | Publisher's stream name.                                                                       | `null`

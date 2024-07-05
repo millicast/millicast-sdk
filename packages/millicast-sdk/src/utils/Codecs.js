@@ -1,6 +1,7 @@
 /* eslint-disable no-new-wrappers */
 /* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
+import Big from 'big.js'
 /**
  * Enum of Millicast supported Video codecs
  * @readonly
@@ -430,7 +431,7 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
 }
 
 function convertSEITimestamp (data) {
-  const timestampBigInt = data.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n)
+  const timestampBigInt = data.reduce((acc, byte) => (acc << Big(8)) + Big(byte), Big(0))
   const milliseconds = Number(timestampBigInt)
   const date = new Date(milliseconds)
   const dateEncoded = new TextEncoder().encode(date.toISOString())
@@ -627,9 +628,9 @@ function createSEIMessageContentWithPrevensionBytes (content) {
 function numberToByteArray (num) {
   const array = []
   if (!isNaN(num)) {
-    const bigint = BigInt(num)
+    const bigint = Big(num)
     for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
-      array.unshift(new Number((bigint >> BigInt(8 * i)) & 255n))
+      array.unshift(new Number((bigint >> Big(8 * i)) & Big(255)))
     }
   }
   return new Uint8Array(array)
@@ -658,6 +659,7 @@ export function addH26xSEI ({ uuid, payload, timecode }, encodedFrame) {
   if (!isValidUUID(uuid)) {
     console.warn('Invalid UUID. Using default UUID.')
     uuid = DOLBY_SDK_TIMESTAMP_UUID
+    timecode = Date.now()
   }
   // Case of NALU H264 - User Unregistered Data
   const naluWithSEI = createSEINalu({ uuid, payload, timecode })
