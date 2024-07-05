@@ -56,6 +56,7 @@
     "@dolbyio/webrtc-stats": "^0.4.0",
     "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
+    "big.js": "^6.2.1",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "joi": "^17.12.0",
