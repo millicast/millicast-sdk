@@ -74,6 +74,7 @@ export default class View extends BaseWebRTC {
    * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
    * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
+   * @param {Boolean} [options.drm = false]             - Enable the DRM protected stream playback.
    * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
    * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
