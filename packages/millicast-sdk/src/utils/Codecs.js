@@ -440,7 +440,8 @@ function convertSEITimestamp (data) {
 
 function getSeiPicTimingTimecode (metadata, payloadContent) {
   if (!spsState.activeSPS) {
-    throw new Error('Cannot find the active SPS')
+    console.warn('Cannot find the active SPS')
+    return
   }
   const hrdParameters = spsState.activeSPS.vui_parameters.nal_hrd_parameters ?? spsState.activeSPS.vui_parameters.vcl_hrd_parameters
   const options = {
