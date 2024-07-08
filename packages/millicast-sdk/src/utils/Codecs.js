@@ -1,7 +1,6 @@
 /* eslint-disable no-new-wrappers */
 /* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
-import Big from 'big.js'
 /**
  * Enum of Millicast supported Video codecs
  * @readonly
@@ -431,7 +430,7 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
 }
 
 function convertSEITimestamp (data) {
-  const timestampBigInt = data.reduce((acc, byte) => (acc << Big(8)) + Big(byte), Big(0))
+  const timestampBigInt = data.reduce((acc, byte) => (acc << BigInt(8)) + BigInt(byte), BigInt(0))
   const milliseconds = Number(timestampBigInt)
   const date = new Date(milliseconds)
   const dateEncoded = new TextEncoder().encode(date.toISOString())
@@ -629,9 +628,9 @@ function createSEIMessageContentWithPrevensionBytes (content) {
 function numberToByteArray (num) {
   const array = []
   if (!isNaN(num)) {
-    const bigint = Big(num)
+    const bigint = BigInt(num)
     for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
-      array.unshift(new Number((bigint >> Big(8 * i)) & Big(255)))
+      array.unshift(new Number((bigint >> BigInt(8 * i)) & BigInt(255)))
     }
   }
   return new Uint8Array(array)
