@@ -400,16 +400,16 @@ function isCTA608SEI (payload) {
   return countryCode === 181 && providerCode === 49 && userIdentifier === 1195456820 && userDataTypeCode === 3
 };
 
-function getSeiUserRegisteredData (metadata, payloadContent) {
+function getSeiUserRegisteredData (metadata, payloadContent, timestamp) {
   if (isCTA608SEI(payloadContent)) {
     // skip the CTA 608 SEI header
-    metadata.cta608cc = extractCTA608CC(payloadContent.subarray(8))
+    metadata.cta608cc = extractCTA608CC(payloadContent.subarray(8), timestamp)
   }
 }
 
-let curEncodedFrame = null
 const cta608Parsers = new Map()
 
+// TODO: set up the call back function in the Cta608Parser to notify the application when caption is ready
 function setUpCta608Parser (field) {
   // only handle the first channel
   cta608Parsers.set(field, new Cta608Parser(field, {
@@ -420,7 +420,7 @@ function setUpCta608Parser (field) {
   }, null))
 }
 
-function extractCTA608CC (ccDataPayload, metadata) {
+function extractCTA608CC (ccDataPayload, metadata, timestamp) {
   const data = new DataView(ccDataPayload.buffer, ccDataPayload.byteOffset, ccDataPayload.byteLength)
   const ccCount = data.getUint8(0) & 0x1F
   // skip count field and escape code, start from offset 2
@@ -440,7 +440,7 @@ function extractCTA608CC (ccDataPayload, metadata) {
             setUpCta608Parser(field)
           }
           const parser = cta608Parsers.get(field)
-          parser.addData(curEncodedFrame.timestamp / 1000, [ccData1, ccData2])
+          parser.addData(timestamp / 1000, [ccData1, ccData2])
         }
       }
     }
@@ -613,7 +613,6 @@ export function extractH26xMetadata (encodedFrame, codec, closedCaptionReady) {
   if (codec !== 'H264' && codec !== 'H265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
-  curEncodedFrame = encodedFrame
   const metadata = {}
   spsState.codec = codec
   getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
@@ -626,7 +625,7 @@ export function extractH26xMetadata (encodedFrame, codec, closedCaptionReady) {
         getSeiPicTimingTimecode(metadata, payload.content)
         break
       case SEI_Payload_Type.USER_DATA_REGISTERED_ITU_T_T35:
-        getSeiUserRegisteredData(metadata, payload.content)
+        getSeiUserRegisteredData(metadata, payload.content, encodedFrame.timestamp)
         break
       case SEI_Payload_Type.USER_DATA_UNREGISTERED:
         getSeiUserUnregisteredData(metadata, payload.content)
