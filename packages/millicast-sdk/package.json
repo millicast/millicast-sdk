@@ -90,7 +90,7 @@
     "jsdoc": "^4.0.2",
     "jsdoc-export-default-interop": "^0.3.1",
     "mock-socket": "^9.0.3",
-    "puppeteer": "^21.6.1",
+    "puppeteer": "^22.12.1",
     "rollup": "2.55",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-dts": "^4.2.3",
