@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
+import { Cta608Parser } from '@svta/common-media-library'
 /**
  * Enum of Millicast supported Video codecs
  * @readonly
@@ -45,6 +46,7 @@ const NALUType = {
 
 const SEI_Payload_Type = {
   PIC_TIMING: 1,
+  USER_DATA_REGISTERED_ITU_T_T35: 4,
   USER_DATA_UNREGISTERED: 5
 }
 
@@ -372,6 +374,67 @@ function extractSEIPayload (rbsp) {
   }
 }
 
+function isCTA608SEI (payload) {
+  const data = new DataView(payload.buffer, payload.byteOffset, payload.byteLength)
+  if (data.byteLength < 8) {
+    return false
+  }
+  const pos = 0
+  const countryCode = data.getUint8(pos)
+  const providerCode = data.getUint16(pos + 1)
+  const userIdentifier = data.getUint32(pos + 3)
+  const userDataTypeCode = data.getUint8(pos + 7)
+  return countryCode === 181 && providerCode === 49 && userIdentifier === 1195456820 && userDataTypeCode === 3
+};
+
+function getSeiUserRegisteredData (metadata, payloadContent) {
+  if (isCTA608SEI(payloadContent)) {
+    // skip the CTA 608 SEI header
+    metadata.cta608cc = extractCTA608CC(payloadContent.subarray(8))
+  }
+}
+
+let curEncodedFrame = null
+const cta608Parsers = new Map()
+
+function setUpCta608Parser (field) {
+  // only handle the first channel
+  cta608Parsers.set(field, new Cta608Parser(field, {
+    newCue: (startTime, endTime, captionScreen) => {
+      console.log('newCue', startTime, endTime, captionScreen.getDisplayText())
+      // console.log('encodedFrame info:', curEncodedFrame?.timestamp, curEncodedFrame?.getMetadata())
+    }
+  }, null))
+}
+
+function extractCTA608CC (ccDataPayload, metadata) {
+  const data = new DataView(ccDataPayload.buffer, ccDataPayload.byteOffset, ccDataPayload.byteLength)
+  const ccCount = data.getUint8(0) & 0x1F
+  // skip count field and escape code, start from offset 2
+  let offset = 2
+  for (let idx = 0; idx < ccCount; idx++) {
+    const byte = data.getUint8(offset)
+    const ccValid = (byte & 0x04) >> 2
+    if (ccValid) {
+      const ccType = byte & 0x03
+      // only process CTA 608 CC type 0 and 1
+      if (ccType === 0 || ccType === 1) {
+        const ccData1 = data.getUint8(offset + 1)
+        const ccData2 = data.getUint8(offset + 2)
+        if ((ccData1 & 0x7F) > 0 || (ccData2 & 0x7F) > 0) {
+          const field = ccType + 1
+          if (!cta608Parsers.has(field)) {
+            setUpCta608Parser(field)
+          }
+          const parser = cta608Parsers.get(field)
+          parser.addData(curEncodedFrame.timestamp / 1000, [ccData1, ccData2])
+        }
+      }
+    }
+    offset += 3
+  }
+}
+
 function getSeiUserUnregisteredData (metadata, payloadContent) {
   let idx = 0
   metadata.uuid = payloadContent.subarray(idx, idx + 16)
@@ -501,14 +564,16 @@ function getSeiPicTimingTimecode (metadata, payloadContent) {
 
 /**
 * Extract user unregistered metadata from H26x Encoded Frame
-* @param { RTCEncodedFrame } encodedFrame
+* @param { RTCEncodedVideoFrame } encodedFrame
 * @param { 'H264' | 'H265' } codec
+* @param { (captionText) => void } closedCaptionReady - callback when closed caption is ready
 * @returns { FrameMetaData }
 */
-export function extractH26xMetadata (encodedFrame, codec) {
+export function extractH26xMetadata (encodedFrame, codec, closedCaptionReady) {
   if (codec !== 'H264' && codec !== 'H265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
+  curEncodedFrame = encodedFrame
   const metadata = {}
   spsState.codec = codec
   getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
@@ -519,6 +584,9 @@ export function extractH26xMetadata (encodedFrame, codec) {
     switch (payload.type) {
       case SEI_Payload_Type.PIC_TIMING:
         getSeiPicTimingTimecode(metadata, payload.content)
+        break
+      case SEI_Payload_Type.USER_DATA_REGISTERED_ITU_T_T35:
+        getSeiUserRegisteredData(metadata, payload.content)
         break
       case SEI_Payload_Type.USER_DATA_UNREGISTERED:
         getSeiUserUnregisteredData(metadata, payload.content)

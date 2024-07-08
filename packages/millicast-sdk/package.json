@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@dolbyio/webrtc-stats": "^0.4.0",
+    "@svta/common-media-library": "^0.7.1",
     "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
     "buffer": "^6.0.3",
