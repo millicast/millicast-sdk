@@ -31,7 +31,6 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @deprecated streamName is no longer used, use tokenGenerator
  * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
@@ -292,13 +291,23 @@ export default class View extends BaseWebRTC {
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
         metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
-
         if (metadata.timecode) {
           metadata.timecode = new Date(decoder.decode(metadata.timecode))
-        } else if (metadata.unregistered) {
-          metadata.unregistered = JSON.parse(decoder.decode(metadata.unregistered))
         }
+        if (metadata.unregistered) {
+          const content = decoder.decode(metadata.unregistered)
+          try {
+            const json = JSON.parse(content)
+            metadata.unregistered = json
+          } catch (e) {
+            // was not a JSON, just return the raw bytes (i.e. do nothing)
+            logger.info('The content could not be converted to JSON, returning raw bytes instead')
+          }
+        }
+
+        // for backwards compatibility, emit the old event as well
         this.emit('onMetadata', metadata)
+        this.emit('metadata', metadata)
       }
     }
 

@@ -5,8 +5,8 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { DOLBY_SEI_DATA_UUID, VideoCodec } from './utils/Codecs'
-import PeerConnection, { webRTCEvents } from './PeerConnection'
+import { DOLBY_SDK_TIMESTAMP_UUID, VideoCodec } from './utils/Codecs'
+import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
@@ -40,7 +40,6 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @deprecated streamName is no longer used, use tokenGenerator
  * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
@@ -234,7 +233,7 @@ export default class Publish extends BaseWebRTC {
     })
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
-    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
+    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig, ConnectionType.Publisher)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     this.stopReemitingSignalingInstanceEvents?.()
@@ -306,10 +305,10 @@ export default class Publish extends BaseWebRTC {
 
   /**
    * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codec.
-   * @param {String} message String with the data to be sent as SEI user unregistered data.
-   * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
+   * @param {String | Object} message The data to be sent as SEI user unregistered data.
+   * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
    */
-  sendMetadata (message, uuid = DOLBY_SEI_DATA_UUID) {
+  sendMetadata (message, uuid = DOLBY_SDK_TIMESTAMP_UUID) {
     if (this.options?.metadata && this.worker) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',

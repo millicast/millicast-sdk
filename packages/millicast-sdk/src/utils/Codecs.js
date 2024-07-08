@@ -1,6 +1,8 @@
+/* eslint-disable no-new-wrappers */
 /* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
 import { Cta608Parser } from '@svta/common-media-library'
+import Big from 'big.js'
 /**
  * Enum of Millicast supported Video codecs
  * @readonly
@@ -50,8 +52,19 @@ const SEI_Payload_Type = {
   USER_DATA_UNREGISTERED: 5
 }
 
+const UNREGISTERED_MESSAGE_TYPE = {
+  LEGACY: 1,
+  NEW: 2,
+  TIMECODE: 3,
+  OTHER: 4
+}
+
+// Old UUID - used by SDK 0.1.46 and before. No longer actively used (only for backwards compatibility purposes)
 export const DOLBY_SEI_DATA_UUID = '6e9cfd2a-5907-49ff-b363-8978a6e8340e'
+// AMF/KLV timestamps
 export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
+// When the SDK inserts its own timecode into the unregistered block, it uses this identifier
+export const DOLBY_SDK_TIMESTAMP_UUID = 'd40e38ea-d419-4c62-94ed-20ac37b4e4fa'
 
 class SPSState {
   constructor (codec = 'H264') {
@@ -435,26 +448,53 @@ function extractCTA608CC (ccDataPayload, metadata) {
   }
 }
 
+function resolveUnregisteredMessageType (uuid) {
+  const timecodeUuid = new Uint8Array(parseUUID(DOLBY_SEI_TIMESTAMP_UUID))
+  const legacySdkUuid = new Uint8Array(parseUUID(DOLBY_SEI_DATA_UUID))
+  const newSdkUuid = new Uint8Array(parseUUID(DOLBY_SDK_TIMESTAMP_UUID))
+
+  if (timecodeUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.TIMECODE
+  if (legacySdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.LEGACY
+  if (newSdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.NEW
+  return UNREGISTERED_MESSAGE_TYPE.OTHER
+}
+
 function getSeiUserUnregisteredData (metadata, payloadContent) {
   let idx = 0
   metadata.uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
+
+  // There are 3 possible pathways here
+  // the old UUID - where-in there is no timecode in the body
+  // the new UUID - where-in there is timecode in the body
+  // AMF/KLV timestamps - where there is no other data to parse
+  const messageType = resolveUnregisteredMessageType(metadata.uuid)
   const content = payloadContent.subarray(idx)
-  if (isUUIDTimestamp(metadata.uuid)) {
-    metadata.timecode = convertSEITimestamp(content)
-  } else {
-    metadata.unregistered = content
+  switch (messageType) {
+    case UNREGISTERED_MESSAGE_TYPE.LEGACY:
+    case UNREGISTERED_MESSAGE_TYPE.OTHER:
+      metadata.unregistered = content
+      break
+    case UNREGISTERED_MESSAGE_TYPE.TIMECODE:
+      metadata.timecode = convertSEITimestamp(content)
+      break
+    case UNREGISTERED_MESSAGE_TYPE.NEW: {
+      // we need to separate two sub-arrays here - one for timecode and the remainer to unregistered
+      // Do not make assumptions on the size of a date object as a byte array
+      let index = 0
+      const timecodeBufferLength = numberToByteArray(Date.now()).length
+      const timecodeSubArray = content.subarray(index, timecodeBufferLength)
+      index += timecodeBufferLength
+      const metadataSubArray = content.subarray(index)
+      metadata.timecode = convertSEITimestamp(timecodeSubArray)
+      metadata.unregistered = metadataSubArray
+      break
+    }
   }
 }
 
-function isUUIDTimestamp (uuidToCheck) {
-  const dolbyUUID = new Uint8Array(parseUUID(DOLBY_SEI_TIMESTAMP_UUID))
-
-  return dolbyUUID.every((value, index) => value === uuidToCheck[index])
-}
-
 function convertSEITimestamp (data) {
-  const timestampBigInt = data.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n)
+  const timestampBigInt = data.reduce((acc, byte) => (acc << Big(8)) + Big(byte), Big(0))
   const milliseconds = Number(timestampBigInt)
   const date = new Date(milliseconds)
   const dateEncoded = new TextEncoder().encode(date.toISOString())
@@ -599,7 +639,7 @@ export function extractH26xMetadata (encodedFrame, codec, closedCaptionReady) {
 }
 
 function isValidUUID (uuid) {
-  const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
+  const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
   return uuidRegEx.test(uuid)
 }
 
@@ -609,13 +649,14 @@ function parseUUID (uuid) {
     .map(byte => parseInt(byte, 16))
 }
 
-function createSEIMessageContent (uuid, payload) {
+function createSEIMessageContent (uuid, payload, timecode) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
+  const timecodeArray = numberToByteArray(timecode)
   const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
-
-  const content = new Uint8Array(uuidArray.length + payloadArray.length)
+  const content = new Uint8Array(uuidArray.length + timecodeArray.length + payloadArray.length)
   content.set(uuidArray)
-  content.set(payloadArray, uuidArray.length)
+  content.set(timecodeArray, uuidArray.length)
+  content.set(payloadArray, (timecodeArray.length + uuidArray.length))
 
   return content
 }
@@ -652,10 +693,21 @@ function createSEIMessageContentWithPrevensionBytes (content) {
   return new Uint8Array(preventionByteArray)
 }
 
-function createSEINalu ({ uuid, payload }) {
+function numberToByteArray (num) {
+  const array = []
+  if (!isNaN(num)) {
+    const bigint = Big(num)
+    for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
+      array.unshift(new Number((bigint >> Big(8 * i)) & Big(255)))
+    }
+  }
+  return new Uint8Array(array)
+}
+
+function createSEINalu ({ uuid, payload, timecode }) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
-  const content = createSEIMessageContent(uuid, payload)
+  const content = createSEIMessageContent(uuid, payload, timecode)
   const seiTypeAndSize = createSEITypeAndSize(content)
   const contentWithPreventionBytes = createSEIMessageContentWithPrevensionBytes(content)
 
@@ -668,16 +720,17 @@ function createSEINalu ({ uuid, payload }) {
   return naluWithSEI
 }
 
-export function addH26xSEI ({ uuid, payload }, encodedFrame) {
+export function addH26xSEI ({ uuid, payload, timecode }, encodedFrame) {
   if (uuid === '' || payload === '') {
     throw new Error('uuid and payload cannot be empty')
   }
   if (!isValidUUID(uuid)) {
     console.warn('Invalid UUID. Using default UUID.')
-    uuid = DOLBY_SEI_DATA_UUID
+    uuid = DOLBY_SDK_TIMESTAMP_UUID
+    timecode = Date.now()
   }
   // Case of NALU H264 - User Unregistered Data
-  const naluWithSEI = createSEINalu({ uuid, payload })
+  const naluWithSEI = createSEINalu({ uuid, payload, timecode })
 
   const encodedFrameView = new DataView(encodedFrame.data)
   const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)

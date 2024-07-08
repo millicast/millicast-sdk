@@ -8,7 +8,7 @@ We recommend using the application together with the [Viewer](../millicast-viewe
 
 ## Getting started
 
-1. Go to the [Dolby.io Streaming dashboard](https://dashboard.dolby.io/) and select your token. If you do not have a token, create it by clicking the **create** button.
+1. Go to the [Dolby.io Streaming dashboard](https://dashboard.dolby.io/) and select your publish token. If you do not have a token, create it by clicking the **create** button.
 
 2. Locate your `account ID` in the **token details** tab and copy the token.
 
@@ -38,6 +38,19 @@ npm start
 ```
 
 9. Open `http://localhost:10001` and test the application.
+
+## Custom connect options through URL parameters
+This demo application allows the user to set some URL parameters for configuring stream connection options:
+
+| Name             | Description                                                                                                                  | Default value
+| --- | --- | --- |
+| **metadata**     | Enable metadata to be inserted by calling `sendMetadata` Publish method.                                                     | `false`
+| **sourceId**     | Set source ID for multiview purposes. `null` source ID is main source.                                                       | `null`
+| **simulcast**    | Set to enable simulcast support. Only available for Chromium browsers and H264/VP8 codecs.                                   | `false`
+| **codec**        | Set codec to publish the stream. Possible values are: `h264`, `h265`, `vp8`, `vp9`, `av1` depending on browser capabilities. | `h264`
+| **priority**     | Set stream priority over other streams from the same account. Its decimal integer value ranges from `-2^31` to `+2^31 -1`.   | `null`
+| **disableVideo** | Set to disable video for the stream.                                                                                         | `false`
+| **disableAudio** | Set to disable audio for the stream.                                                                                         | `false`
 
 ## Introducing updates
 After introducing any changes to the `public` directory, use the following command:

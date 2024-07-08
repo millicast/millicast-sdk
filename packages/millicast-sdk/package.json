@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.1.46",
+  "version": "0.2.0-RC3",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -13,13 +13,14 @@
   "module": "dist/millicast.mjs",
   "browser": "dist/millicast.umd.js",
   "millicastdebug": "dist/millicast.debug.umd.js",
+  "types": "dist/millicast.d.ts",
   "files": [
     "dist",
     "scripts"
   ],
   "scripts": {
-    "build": "vite build",
-    "start": "vite build --watch",
+    "build": "vite build --config vite.config.debug.mjs && vite build && rollup -c",
+    "build:watch": "vite build --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
@@ -56,6 +57,7 @@
     "@svta/common-media-library": "^0.7.1",
     "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
+    "big.js": "^6.2.1",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "joi": "^17.12.0",

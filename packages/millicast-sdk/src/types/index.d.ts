@@ -1,3 +1,4 @@
+import * as js_logger from 'js-logger';
 import * as events from 'events';
 
 declare module '@millicast/sdk' {
@@ -278,15 +279,15 @@ declare module '@millicast/sdk' {
      * @description Returns the current SDK version.
      */
     VERSION: String;
-    useDefaults(options?: import("js-logger").ILoggerOpts): void;
-	  createDefaultHandler(options?: any): import("js-logger").ILogHandler;
-    static get TRACE(): import("js-logger").ILogLevel;
-    static get DEBUG(): import("js-logger").ILogLevel;
-    static get INFO(): import("js-logger").ILogLevel;
-    static get TIME(): import("js-logger").ILogLevel;
-    static get WARN(): import("js-logger").ILogLevel;
-    static get ERROR(): import("js-logger").ILogLevel;
-    static get OFF(): import("js-logger").ILogLevel;
+    useDefaults(options?: js_logger.ILoggerOpts): void;
+	  createDefaultHandler(options?: any): js_logger.ILogHandler;
+    static get TRACE(): js_logger.ILogLevel;
+    static get DEBUG(): js_logger.ILogLevel;
+    static get INFO(): js_logger.ILogLevel;
+    static get TIME(): js_logger.ILogLevel;
+    static get WARN(): js_logger.ILogLevel;
+    static get ERROR(): js_logger.ILogLevel;
+    static get OFF(): js_logger.ILogLevel;
     trace(...x: any[]): void;
     debug(...x: any[]): void;
     info(...x: any[]): void;
@@ -779,9 +780,11 @@ declare module '@millicast/sdk' {
     /**
      * Instantiate a new RTCPeerConnection.
      * @param {PeerConnectionConfig} config - Peer configuration.
-     * 
+     * @param {Boolean} [config.autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
+     * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
+     * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode : "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -1343,10 +1346,10 @@ declare module '@millicast/sdk' {
     unrecord(): Promise<void>;
     /**
      * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codecs.
-     * @param {String} message String with the data to be sent as SEI user unregistered data.
-     * @param {String} [uuid="6e9cfd2a-5907-49ff-b363-8978a6e8340e"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
+     * @param {String | Object} message The data to be sent as SEI user unregistered data.
+     * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
      */
-    sendMetadata(message: String, uuid: String): void;
+    sendMetadata(message: String | Object, uuid: String): void;
     webRTCPeer?: PeerConnection;
   }
   /**

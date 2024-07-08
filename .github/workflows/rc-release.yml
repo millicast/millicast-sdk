@@ -19,7 +19,12 @@ jobs:
       - name: build docs
         run: npm run build-docs
       - name: deploy docs
-        run: npx netlify deploy --prod --site ${{ secrets.NETLIFY_DOC_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./packages/millicast-sdk/docs
+        run: |
+          npx netlify deploy --prod \
+            --site ${{ secrets.NETLIFY_DOC_SITE_ID }} \
+            --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} \
+            --dir ./packages/millicast-sdk/docs \
+            --filter @millicast/sdk
 
   build-sdk:
     name: Build WebSDK
@@ -62,7 +67,7 @@ jobs:
           cd packages/millicast-multiview-demo
           npm install
           npm run build
-          npx netlify deploy --prod --site ${{ secrets.NETLIFY_MULTIVIEW_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./dist
+          npx netlify deploy --prod --site ${{ secrets.NETLIFY_MULTIVIEW_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir .
 
   deploy-publisher-demo:
     name: Build and Deploy Publisher Demo
@@ -87,7 +92,7 @@ jobs:
           cd packages/millicast-publisher-demo
           npm install
           npm run build
-          npx netlify deploy --prod --site ${{ secrets.NETLIFY_PUBLISHER_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir ./dist
+          npx netlify deploy --prod --site ${{ secrets.NETLIFY_PUBLISHER_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --dir .
 
   pulish-next:
     name: Publish SDK to NPM for next-<version> tag
