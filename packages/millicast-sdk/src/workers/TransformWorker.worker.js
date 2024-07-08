@@ -1,5 +1,5 @@
 import Logger from 'js-logger'
-import { addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 const logger = Logger.get('TransformWorker')
 logger.setLevel(Logger.DEBUG)
 
@@ -74,6 +74,9 @@ function createSenderTransform () {
             // Add h265 regex when ready
             if (!/(h26[4])/.test(codec)) {
               throw new Error('Sending metadata is not supported with any other codec other than H.264')
+            }
+            if (metadata[0].uuid === DOLBY_SDK_TIMESTAMP_UUID) {
+              metadata[0].timecode = Date.now()
             }
             addH26xSEI(metadata[0], encodedFrame)
             synchronizationSourcesWithMetadata.push(newSyncSource)

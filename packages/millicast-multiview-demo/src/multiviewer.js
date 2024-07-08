@@ -4,12 +4,27 @@ if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
 }
 
+// Get query params
+const params = new Proxy(new URLSearchParams(window.location.search), {
+  get: (searchParams, prop) => searchParams.get(prop),
+});
+
 // Config data
-const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
-const streamName = import.meta.env.MILLICAST_STREAM_NAME
+const accountId = params.accountId || import.meta.env.MILLICAST_ACCOUNT_ID
+const streamName = params.streamName || import.meta.env.MILLICAST_STREAM_NAME
 const drmKeyId = import.meta.env.MILLICAST_DRM_VID2_KEYID
 const drmIv = import.meta.env.MILLICAST_DRM_VID2_IV
-
+const metadata = params.metadata === 'true'
+const enableDRM = params.drm === 'true'
+const disableVideo = params.disableVideo === 'true'
+const disableAudio = params.disableAudio === 'true'
+const connectOptions = {
+  events: ['active', 'inactive', 'layers'],
+  metadata,
+  enableDRM,
+  disableVideo,
+  disableAudio,
+}
 // This will store the main transceiver video mid
 const mainVideoMid = '0'
 const mainSourceId = 'main'
@@ -80,11 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         addStreamToVideoElement(event.streams[0], event.transceiver.mid)
       }
     })
-    await viewer.connect({
-      enableDRM: true,
-      metadata: true,
-      events: ['active', 'inactive', 'layers']
-    })
+    await viewer.connect(connectOptions)
   } catch (e) {
     console.error(e)
     viewer.reconnect()

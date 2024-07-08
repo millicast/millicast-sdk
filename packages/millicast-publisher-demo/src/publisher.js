@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     const date = new Date(0)
     const ts = performance.timeOrigin + now
     date.setUTCMilliseconds(ts)
-    millicastPublishUserMedia.sendMessage(date.toLocaleTimeString())
+    millicastPublishUserMedia.sendMessage("Sending unregistered message with new UUID and hopefully a timecode")
 
   }
 
@@ -155,14 +155,26 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     try {
       const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
-      });
-      const priority = parseInt(params.priority);
+      })
+      const priority = parseInt(params.priority)
       const sourceId = params.sourceId
-      const metadata = params.metadata === "true"
+      const codec = params.codec ?? 'h264'
+      const metadata = params.metadata === 'true'
+      const simulcast = params.simulcast === 'true'
+      const disableVideo = params.disableVideo === 'true'
+      const disableAudio = params.disableAudio === 'true'
       const connectOptions = {
         bandwidth,
+        codec,
         events,
-        metadata
+        metadata,
+        simulcast,
+        disableVideo,
+        disableAudio,
+        peerConfig : {
+          autoInitStats: true,
+          statsIntervalMs : 5000
+        }
       }
       if (!isNaN(priority)) {
         connectOptions.priority = priority

@@ -17,8 +17,8 @@ const url = !!href.searchParams.get("url")
 const streamName = !!href.searchParams.get("streamName")
   ? href.searchParams.get("streamName")
   : import.meta.env.MILLICAST_STREAM_NAME;
-const streamAccountId = !!href.searchParams.get("streamAccountId")
-  ? href.searchParams.get("streamAccountId")
+const accountId = !!href.searchParams.get("accountId")
+  ? href.searchParams.get("accountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 const metadata = href.searchParams.get("metadata") === "true";
@@ -34,7 +34,6 @@ const autoplay =
 const autoReconnect =
   href.searchParams.get("autoReconnect") === "true" ||
   href.searchParams.get("autoReconnect") === null;
-
 const disableControls =
   href.searchParams.get("disableControls") === "true" &&
   href.searchParams.get("disableControls") !== null;
@@ -59,7 +58,7 @@ let video = document.querySelector("video");
 let millicastView = null
 
 const newViewer = () => {
-  const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
+  const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
@@ -91,11 +90,12 @@ const newViewer = () => {
     if (!millicastView.isDRMOn) addStream(event.streams[0]);
   });
 
-  millicastView.on('onMetadata', (metadata) => {
+  millicastView.on('metadata', (metadata) => {
     console.log('Metadata event:', metadata)
     if (metadata.unregistered) {
       console.log('received SEI unregistered messsage', metadata.unregistered)
-    } else if (metadata.timecode) {
+    } 
+    if (metadata.timecode) {
       console.log('received timecode messsage', metadata.timecode)
     }
   })
@@ -215,9 +215,18 @@ const subscribe = async () => {
       disableVideo,
       disableAudio,
       absCaptureTime: true,
+      peerConfig : {
+        autoInitStats: true,
+        statsIntervalMs: 5000
+      }
     };
     window.millicastView = millicastView = newViewer()
     await millicastView.connect(options);
+    
+    millicastView.webRTCPeer.on('stats', (event) => {
+      console.log(event)
+    });
+
   } catch (error) {
     if (!autoReconnect) return;
   }
@@ -282,7 +291,7 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
     if (castState === cast.framework.CastState.CONNECTED) {
       const castSession = castContext.getCurrentSession()
       const mediaInfo = new chrome.cast.media.MediaInfo(streamName, '')
-      mediaInfo.customData = { streamName, streamAccountId }
+      mediaInfo.customData = { streamName, accountId }
       mediaInfo.streamType = chrome.cast.media.StreamType.LIVE
 
       const loadRequest = new chrome.cast.media.LoadRequest(mediaInfo)
