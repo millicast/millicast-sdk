@@ -1,0 +1,25 @@
+@import 'alabaster.css';
+
+pre {
+    white-space: pre-wrap;
+}
+
+dl.field-list dt {
+    word-break: normal;
+}
+
+dl.class {
+    padding: 0 0 2em 0;
+}
+
+dl.attribute {
+    margin-bottom: 0;
+}
+
+div.body {
+    max-width: 100%;
+}
+
+div.document {
+    width:  100%;
+}

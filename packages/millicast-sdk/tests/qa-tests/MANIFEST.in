@@ -1,0 +1,21 @@
+# doc: https://wiki.python.org/moin/Distutils/Tutorial
+
+include LICENSE
+include README
+include src/dlbio_commsqa_tests/conftest.py
+include src/dlbio_commsqa_tests/jira.cfg
+include src/dlbio_commsqa_tests/pytest.ini
+include src/dlbio_commsqa_tests/statics.py
+recursive-include src/dlbio_commsqa_tests/test_millicast_sdk *.py
+recursive-include src/dlbio_commsqa_tests/test_millicast_sdk *.py
+
+graft doc
+
+graft src/dlbio_commsqa_tests/resources
+recursive-exclude src/dlbio_commsqa_tests/resources *.py # no code files allowed in resources
+recursive-exclude src/dlbio_commsqa_tests __init__.py # this is a namespace package
+
+#remove junk
+recursive-exclude src __pycache__ log
+global-exclude *.pyc
+global-exclude *.DS_Store
