@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.2.0-RC3",
+  "version": "0.2.0-RC4",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -57,7 +57,6 @@
     "@svta/common-media-library": "^0.7.1",
     "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
-    "big.js": "^6.2.1",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "joi": "^17.12.0",
