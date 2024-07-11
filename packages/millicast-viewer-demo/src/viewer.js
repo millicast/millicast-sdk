@@ -53,9 +53,10 @@ const disableFull =
 let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
+const ccCache = [];
 
 // MillicastView object
-let millicastView = null
+let millicastView = null;
 
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
@@ -74,10 +75,14 @@ const newViewer = () => {
     console.log('Metadata event:', metadata)
     if (metadata.unregistered) {
       console.log('received SEI unregistered messsage', metadata.unregistered)
-    } 
+    }
     if (metadata.timecode) {
       console.log('received timecode messsage', metadata.timecode)
     }
+  })
+
+  millicastView.on('closedCaption', ({ startTime, endTime, text }) => {
+    ccCache.push({ startTime, endTime, text })
   })
 
   return millicastView
@@ -143,30 +148,30 @@ const addStream = (stream) => {
       tmp.srcObject = stream;
       //Replicate playback state
       if (video.playing) {
-        try { tmp.play(); } catch (e) {}
+        try { tmp.play(); } catch (e) { }
       } else if (video.paused) {
-        try{ tmp.paused(); } catch (e) {}
+        try { tmp.paused(); } catch (e) { }
       }
-      //Replace the video when media has started playing              
+      //Replace the video when media has started playing
       tmp.addEventListener('loadedmetadata', (event) => {
-      video.parentNode.replaceChild(tmp, video);
-      //Pause previous video to avoid duplicated audio until the old PC is closed
-      try { video.pause(); } catch (e) {}
-      //If it was in full screen
-      if (document.fullscreenElement == video) {
-        try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
-      }
-      //If it was in picture in picture mode
-      if (document.pictureInPictureElement == video) {
-        try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
-      }
-      //Replace js objects too
-      video = tmp;
+        video.parentNode.replaceChild(tmp, video);
+        //Pause previous video to avoid duplicated audio until the old PC is closed
+        try { video.pause(); } catch (e) { }
+        //If it was in full screen
+        if (document.fullscreenElement == video) {
+          try { document.exitFullscreen(); tmp.requestFullscreen(); } catch (e) { }
+        }
+        //If it was in picture in picture mode
+        if (document.pictureInPictureElement == video) {
+          try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch (e) { }
+        }
+        //Replace js objects too
+        video = tmp;
       });
     } else {
-       video.srcObject = stream;
+      video.srcObject = stream;
     }
-    
+
     if (audio) audio.parentNode.removeChild(audio);
   }
 };
@@ -194,14 +199,14 @@ const subscribe = async () => {
       disableVideo,
       disableAudio,
       absCaptureTime: true,
-      peerConfig : {
+      peerConfig: {
         autoInitStats: true,
         statsIntervalMs: 5000
       }
     };
     window.millicastView = millicastView = newViewer()
     await millicastView.connect(options);
-    
+
     millicastView.webRTCPeer.on('stats', (event) => {
       console.log(event)
     });
@@ -242,19 +247,55 @@ document.addEventListener("DOMContentLoaded", () => {
     false
   );
 
+  registerRequestVideoFrameCallback(video);
+
   int = setInterval(() => {
     clearInterval(int);
   }, 2000);
   subscribe();
 });
 
+function registerRequestVideoFrameCallback(videoElem) {
+  const captionElem = document.getElementById('caption');
+  let curCC = null
+  if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {
+    const processor = (now, { rtpTimestamp }) => {
+      const ts = rtpTimestamp / 1000;
+      // check if the current caption is still valid
+      const clearDelay = 500;
+      if (curCC && ts > curCC.endTime + clearDelay) {
+        captionElem.innerHTML = '';
+        curCC = null;
+      }
+      // check if we should display a new caption
+      let idx = 0;
+      while( idx < ccCache.length) {
+        const cc = ccCache[idx];
+        if (cc.endTime < ts) {
+          ccCache.splice(idx, 1);
+        } else if (cc.startTime <= ts && ts <= cc.endTime) {
+          curCC = cc;
+          ccCache.splice(idx, 1);
+        } else {
+          break;
+        }
+      }
+      if (curCC) {
+        captionElem.innerHTML = curCC.text.replace(/\n/g, '<br>');
+      }
+      videoElem.requestVideoFrameCallback(processor);
+    }
+    videoElem.requestVideoFrameCallback(processor);
+  }
+}
+
 const receiverApplicationId = 'B5B8307B'
 
-window['__onGCastApiAvailable'] = function(isAvailable) {
+window['__onGCastApiAvailable'] = function (isAvailable) {
   if (!isAvailable) {
     return false
   }
-  
+
   const stateChanged = cast.framework.CastContextEventType.CAST_STATE_CHANGED
   const castContext = cast.framework.CastContext.getInstance()
   castContext.setOptions({
@@ -262,7 +303,7 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
     receiverApplicationId
   })
 
-  castContext.addEventListener(stateChanged, ({castState}) => {
+  castContext.addEventListener(stateChanged, ({ castState }) => {
     if (castState === cast.framework.CastState.NOT_CONNECTED) {
       subscribe()
     }

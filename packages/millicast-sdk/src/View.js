@@ -282,11 +282,16 @@ export default class View extends BaseWebRTC {
         }
       })
 
-      this.worker.onmessage = (event) => {
+      this.worker.onmessage = (message) => {
         const decoder = new TextDecoder()
-        const metadata = event.data.metadata
-        metadata.mid = event.data.mid
-        metadata.track = this.tracksMidValues[event.data.mid]
+        if (message.data.event === 'closedCaption') {
+          const { startTime, endTime, text } = message.data
+          this.emit('closedCaption', { startTime, endTime, text })
+          return
+        }
+        const metadata = message.data.metadata
+        metadata.mid = message.data.mid
+        metadata.track = this.tracksMidValues[message.data.mid]
 
         const uuid = metadata.uuid
         metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')

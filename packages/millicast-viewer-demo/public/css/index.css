@@ -41,6 +41,18 @@ google-cast-launcher {
   height: 100%;
 }
 
+#caption {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* black with 60% opacity */
+  color: white; /* text color */
+  font-size: 5vh;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
 /*
 Black faded bars in control display for video.
 */

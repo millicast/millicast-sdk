@@ -18,7 +18,9 @@ function createReceiverTransform (mid) {
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameCodec = payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
         if (frameCodec === 'H264') {
-          const metadata = extractH26xMetadata(encodedFrame, frameCodec)
+          const metadata = extractH26xMetadata(encodedFrame, frameCodec, (startTime, endTime, text) => {
+            self.postMessage({ mid, event: 'closedCaption', startTime, endTime, text })
+          })
           if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
             self.postMessage({ mid, metadata })
           }

@@ -400,27 +400,30 @@ function isCTA608SEI (payload) {
   return countryCode === 181 && providerCode === 49 && userIdentifier === 1195456820 && userDataTypeCode === 3
 };
 
-function getSeiUserRegisteredData (metadata, payloadContent, timestamp) {
+function getSeiUserRegisteredData (metadata, payloadContent, timestamp, closedCaptionReady) {
   if (isCTA608SEI(payloadContent)) {
     // skip the CTA 608 SEI header
-    metadata.cta608cc = extractCTA608CC(payloadContent.subarray(8), timestamp)
+    extractCTA608CC(payloadContent.subarray(8), timestamp, closedCaptionReady)
   }
 }
 
 const cta608Parsers = new Map()
+let closedCaptionReadyCallback
 
 // TODO: set up the call back function in the Cta608Parser to notify the application when caption is ready
-function setUpCta608Parser (field) {
+function setUpCta608Parser (field, closedCaptionReady) {
   // only handle the first channel
+  if (!closedCaptionReadyCallback) {
+    closedCaptionReadyCallback = closedCaptionReady
+  }
   cta608Parsers.set(field, new Cta608Parser(field, {
     newCue: (startTime, endTime, captionScreen) => {
-      console.log('newCue', startTime, endTime, captionScreen.getDisplayText())
-      // console.log('encodedFrame info:', curEncodedFrame?.timestamp, curEncodedFrame?.getMetadata())
+      closedCaptionReadyCallback?.(startTime, endTime, captionScreen.getDisplayText())
     }
   }, null))
 }
 
-function extractCTA608CC (ccDataPayload, metadata, timestamp) {
+function extractCTA608CC (ccDataPayload, timestamp, closedCaptionReady) {
   const data = new DataView(ccDataPayload.buffer, ccDataPayload.byteOffset, ccDataPayload.byteLength)
   const ccCount = data.getUint8(0) & 0x1F
   // skip count field and escape code, start from offset 2
@@ -437,7 +440,7 @@ function extractCTA608CC (ccDataPayload, metadata, timestamp) {
         if ((ccData1 & 0x7F) > 0 || (ccData2 & 0x7F) > 0) {
           const field = ccType + 1
           if (!cta608Parsers.has(field)) {
-            setUpCta608Parser(field)
+            setUpCta608Parser(field, closedCaptionReady)
           }
           const parser = cta608Parsers.get(field)
           parser.addData(timestamp / 1000, [ccData1, ccData2])
@@ -606,7 +609,7 @@ function getSeiPicTimingTimecode (metadata, payloadContent) {
 * Extract user unregistered metadata from H26x Encoded Frame
 * @param { RTCEncodedVideoFrame } encodedFrame
 * @param { 'H264' | 'H265' } codec
-* @param { (captionText) => void } closedCaptionReady - callback when closed caption is ready
+* @param { (startTime, endTime, captionText) => void } [closedCaptionReady] - callback when closed caption is ready
 * @returns { FrameMetaData }
 */
 export function extractH26xMetadata (encodedFrame, codec, closedCaptionReady) {
@@ -625,7 +628,7 @@ export function extractH26xMetadata (encodedFrame, codec, closedCaptionReady) {
         getSeiPicTimingTimecode(metadata, payload.content)
         break
       case SEI_Payload_Type.USER_DATA_REGISTERED_ITU_T_T35:
-        getSeiUserRegisteredData(metadata, payload.content, encodedFrame.timestamp)
+        getSeiUserRegisteredData(metadata, payload.content, encodedFrame.timestamp, closedCaptionReady)
         break
       case SEI_Payload_Type.USER_DATA_UNREGISTERED:
         getSeiUserUnregisteredData(metadata, payload.content)
