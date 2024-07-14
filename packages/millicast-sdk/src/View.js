@@ -15,6 +15,7 @@ logger.setLevel(Logger.DEBUG)
 
 const connectOptions = {
   metadata: false,
+  enableDRM: false,
   disableVideo: false,
   disableAudio: false,
   peerConfig: {
@@ -39,8 +40,6 @@ const connectOptions = {
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
-  // mapping media ID of RTCRtcTransceiver to DRM Options
-  #drmOptionsMap
   constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     if (streamName) {
       logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
@@ -50,6 +49,8 @@ export default class View extends BaseWebRTC {
     this.payloadTypeCodec = {}
     // Follows the media id values of each transceiver's track from the 'track' events.
     this.tracksMidValues = {}
+    // mapping media ID of RTCRtcTransceiver to DRM Options
+    this.drmOptionsMap = null
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -149,7 +150,7 @@ export default class View extends BaseWebRTC {
     logger.info('Connected to streamName: ', this.streamName)
   }
 
-  #hexToUint8Array (hexString) {
+  hexToUint8Array (hexString) {
     if (!hexString) {
       return new Uint8Array()
     }
@@ -161,7 +162,7 @@ export default class View extends BaseWebRTC {
     return uint8Array
   }
 
-  #swapPropertyValues (obj1, obj2, key) {
+  swapPropertyValues (obj1, obj2, key) {
     // Check if both objects have the property
     //
     if (Object.prototype.hasOwnProperty.call(obj1, key) &&
@@ -331,7 +332,7 @@ export default class View extends BaseWebRTC {
       this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
       if (this.isDRMOn) {
         const mediaId = trackEvent.transceiver.mid
-        const drmOptions = this.#getDRMConfiguration(mediaId)
+        const drmOptions = this.getDRMConfiguration(mediaId)
         try {
           rtcDrmOnTrack(trackEvent, drmOptions)
         } catch (error) {
@@ -408,8 +409,8 @@ export default class View extends BaseWebRTC {
     }
   }
 
-  #getDRMConfiguration (mediaId) {
-    return this.#drmOptionsMap ? this.#drmOptionsMap.get(mediaId) : null
+  getDRMConfiguration (mediaId) {
+    return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
   }
 
   /**
@@ -437,9 +438,9 @@ export default class View extends BaseWebRTC {
     if (!options) {
       throw new Error('Required DRM options is not provided')
     }
-    if (!this.#drmOptionsMap) {
+    if (!this.drmOptionsMap) {
       // map transceiver's mediaId to its DRM options
-      this.#drmOptionsMap = new Map()
+      this.drmOptionsMap = new Map()
     }
     const drmOptions = {
       merchant: 'dolby',
@@ -448,7 +449,7 @@ export default class View extends BaseWebRTC {
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
-      video: { codec: 'h264', encryption: 'cbcs', keyId: this.#hexToUint8Array(options.videoEncParams.keyId), iv: this.#hexToUint8Array(options.videoEncParams.iv) },
+      video: { codec: 'h264', encryption: 'cbcs', keyId: this.hexToUint8Array(options.videoEncParams.keyId), iv: this.hexToUint8Array(options.videoEncParams.iv) },
       audio: { codec: 'opus', encryption: 'clear' }
     }
     if (this.DRMProfile) {
@@ -459,9 +460,9 @@ export default class View extends BaseWebRTC {
     }
     try {
       rtcDrmConfigure(drmOptions)
-      this.#drmOptionsMap.set(options.videoMid, drmOptions)
+      this.drmOptionsMap.set(options.videoMid, drmOptions)
       if (options.audioMid) {
-        this.#drmOptionsMap.set(options.audioMid, drmOptions)
+        this.drmOptionsMap.set(options.audioMid, drmOptions)
       }
       drmOptions.videoElement.addEventListener('rtcdrmerror', (event) => {
         logger.error('DRM error: ', event.detail.message, 'in video element:', drmOptions.videoElement.id)
@@ -483,7 +484,7 @@ export default class View extends BaseWebRTC {
    * Check if there are any DRM protected Track
    */
   get isDRMOn () {
-    return !!this.#drmOptionsMap && this.#drmOptionsMap.size > 0
+    return !!this.drmOptionsMap && this.drmOptionsMap.size > 0
   }
 
   /**
@@ -493,16 +494,16 @@ export default class View extends BaseWebRTC {
    * @param {String} sourceMediaId
    */
   exchangeDRMConfiguration (targetMediaId, sourceMediaId) {
-    const targetDRMOptions = this.#getDRMConfiguration(targetMediaId)
-    const sourceDRMOptions = this.#getDRMConfiguration(sourceMediaId)
+    const targetDRMOptions = this.getDRMConfiguration(targetMediaId)
+    const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId)
     if (targetDRMOptions === null) {
       throw new Error('No DRM configuration found for ' + targetMediaId)
     }
     if (sourceDRMOptions === null) {
       throw new Error('No DRM configuration found for ' + sourceMediaId)
     }
-    this.#swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')
-    this.#swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv')
+    this.swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')
+    this.swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv')
     try {
       rtcDrmConfigure(targetDRMOptions)
     } catch (error) {
