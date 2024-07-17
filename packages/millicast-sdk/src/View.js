@@ -144,7 +144,7 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Add remote receving track.
+   * Add remote receiving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
