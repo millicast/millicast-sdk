@@ -1,4 +1,4 @@
-import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata, resetCodecs } from '../utils/Codecs'
 
 const DROPPED_SOURCE_TIMEOUT = 2000
 const metadata = []
@@ -10,17 +10,17 @@ const synchronizationSources = {}
 let synchronizationSourcesWithMetadata = []
 
 function createReceiverTransform (mid) {
+  const closedCaptionReady = (startTime, endTime, text) => {
+    self.postMessage({ mid, event: 'closedCaption', startTime, endTime, text })
+  }
+  resetCodecs()
   return new TransformStream({
-    start () {},
-    flush () {},
     async transform (encodedFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameCodec = payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
         if (frameCodec === 'H264') {
-          const metadata = extractH26xMetadata(encodedFrame, frameCodec, (startTime, endTime, text) => {
-            self.postMessage({ mid, event: 'closedCaption', startTime, endTime, text })
-          })
+          const metadata = extractH26xMetadata(encodedFrame, frameCodec, closedCaptionReady)
           if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
             self.postMessage({ mid, metadata })
           }
