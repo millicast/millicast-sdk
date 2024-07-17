@@ -31,7 +31,7 @@ export const signalingEvents = {
  * @property {String} vad - Enable VAD multiplexing for secondary sources.
  * @property {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
  * @property {Array&lt;String>} excludedSourceIds - Do not receive media from the these source ids.
- * @property {Array&lt;String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers").
+ * @property {Array&lt;String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
  * @property {LayerInfo} layer - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
  */
 
@@ -125,12 +125,14 @@ export default class Signaling extends EventEmitter {
            *
            * Viewercount - Fires when the viewer count changes.
            *
+           * Updated - when an active stream's tracks are updated
+           *
            * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
            *
            * @event Signaling#broadcastEvent
            * @type {Object}
            * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount")} name - Event name.
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
            * @property {Object} data - Custom event data.
            */
           this.emit(signalingEvents.broadcastEvent, evt)

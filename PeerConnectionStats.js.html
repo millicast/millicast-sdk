@@ -123,21 +123,22 @@ const parseWebRTCStats = (webRTCStats) => {
 }
 
 export default class PeerConnectionStats extends EventEmitter {
-  constructor (peer, options = { autoInitStats: true }) {
+  constructor (peer, options = { statsIntervalMs: 1000, autoInitStats: true }) {
     super()
     this.peer = peer
     this.collection = null
     this.initialized = false
-
     if (options.autoInitStats) {
-      this.init()
+      this.init(options.statsIntervalMs)
     }
   }
 
   /**
    * Initialize the statistics monitoring of the RTCPeerConnection.
+   *
+   * @param {number} [statsIntervalMs] The interval, in Milliseconds, at which stats need to be returned
    */
-  init () {
+  init (statsIntervalMs) {
     if (this.initialized) {
       logger.warn('PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.')
       return
@@ -146,12 +147,13 @@ export default class PeerConnectionStats extends EventEmitter {
     const peer = this.peer
     try {
       this.collection = new WebRTCStats({
-        getStatsInterval: 1000,
+        getStatsInterval: statsIntervalMs,
         getStats: () => {
           return peer.getStats()
         },
         includeRawStats: true
       })
+
       this.collection.on('stats', (stats) => {
         const parsedSats = parseWebRTCStats(stats)
         Diagnostics.addStats(parsedSats)
