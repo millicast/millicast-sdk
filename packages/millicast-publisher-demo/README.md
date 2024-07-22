@@ -51,9 +51,3 @@ This demo application allows the user to set some URL parameters for configuring
 | **priority**     | Set stream priority over other streams from the same account. Its decimal integer value ranges from `-2^31` to `+2^31 -1`.   | `null`
 | **disableVideo** | Set to disable video for the stream.                                                                                         | `false`
 | **disableAudio** | Set to disable audio for the stream.                                                                                         | `false`
-
-## Introducing updates
-After introducing any changes to the `public` directory, use the following command:
-```
-npm run prepare
-```
