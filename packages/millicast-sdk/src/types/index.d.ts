@@ -840,7 +840,7 @@ declare module '@millicast/sdk' {
       setSDPToPeer: boolean;
     }): Promise<string>;
     /**
-     * Add remote receving track.
+     * Add remote receiving track.
      * @param {String} media - Media kind ('audio' | 'video').
      * @param {Array<MediaStream>} streams - Streams the track will belong to.
      * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
@@ -1442,7 +1442,7 @@ declare module '@millicast/sdk' {
      */
     select(layer?: LayerInfo): Promise<void>;
     /**
-     * Add remote receving track.
+     * Add remote receiving track.
      * @param {String} media - Media kind ('audio' | 'video').
      * @param {Array<MediaStream>} streams - Streams the track will belong to.
      * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
