@@ -17,9 +17,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "lerna run build",
-    "build-docs": "lerna run build-docs",
-    "build:sdk": "lerna run build:watch --scope '@millicast/sdk' --parallel",
+    "build": "nx run-many -t build",
+    "build-docs": "nx build-docs @millicast/sdk",
+    "build:sdk": "nx watch --projects=@millicast/sdk -- echo \\$NX_PROJECT_NAME \\$NX_FILE_CHANGES",
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "publish": "lerna publish from-git",
     "start": "concurrently \"npm run build:sdk\" \"npm run start:projects\"",
