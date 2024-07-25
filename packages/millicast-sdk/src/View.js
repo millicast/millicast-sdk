@@ -304,9 +304,6 @@ export default class View extends BaseWebRTC {
             logger.info('The content could not be converted to JSON, returning raw bytes instead')
           }
         }
-
-        // for backwards compatibility, emit the old event as well
-        this.emit('onMetadata', metadata)
         this.emit('metadata', metadata)
       }
     }
