@@ -165,7 +165,7 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
-   * Add remote receving track.
+   * Add remote receiving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
@@ -192,7 +192,7 @@ export default class PeerConnection extends EventEmitter {
    */
   updateBandwidthRestriction (sdp, bitrate) {
     if (this.mode === ConnectionType.Viewer) {
-      logger.error('Viewer attempting to udpate bitrate, this is not allowed')
+      logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
     }
 
@@ -208,7 +208,7 @@ export default class PeerConnection extends EventEmitter {
    */
   async updateBitrate (bitrate = 0) {
     if (this.mode === ConnectionType.Viewer) {
-      logger.error('Viewer attempting to udpate bitrate, this is not allowed')
+      logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
     }
     if (!this.peer) {
@@ -221,7 +221,7 @@ export default class PeerConnection extends EventEmitter {
     await this.peer.setLocalDescription(this.sessionDescription)
     const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
     await this.setRTCRemoteSDP(sdp)
-    logger.info('Bitrate restirctions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
+    logger.info('Bitrate restrictions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
   }
 
   /**
@@ -274,9 +274,9 @@ export default class PeerConnection extends EventEmitter {
    */
   static getCapabilities (kind) {
     const browserData = new UserAgent()
-    const browserCapabilites = RTCRtpSender.getCapabilities(kind)
+    const browserCapabilities = RTCRtpSender.getCapabilities(kind)
 
-    if (browserCapabilites) {
+    if (browserCapabilities) {
       const codecs = {}
       let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i')
 
@@ -288,7 +288,7 @@ export default class PeerConnection extends EventEmitter {
         }
       }
 
-      for (const codec of browserCapabilites.codecs) {
+      for (const codec of browserCapabilities.codecs) {
         const matches = codec.mimeType.match(regex)
         if (matches) {
           const codecName = matches[1].toLowerCase()
@@ -304,10 +304,10 @@ export default class PeerConnection extends EventEmitter {
         }
       }
 
-      browserCapabilites.codecs = Object.keys(codecs).map((key) => { return { codec: key, ...codecs[key] } })
+      browserCapabilities.codecs = Object.keys(codecs).map((key) => { return { codec: key, ...codecs[key] } })
     }
 
-    return browserCapabilites
+    return browserCapabilities
   }
 
   /**

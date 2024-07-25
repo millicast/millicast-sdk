@@ -144,7 +144,7 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Add remote receving track.
+   * Add remote receiving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
@@ -304,9 +304,6 @@ export default class View extends BaseWebRTC {
             logger.info('The content could not be converted to JSON, returning raw bytes instead')
           }
         }
-
-        // for backwards compatibility, emit the old event as well
-        this.emit('onMetadata', metadata)
         this.emit('metadata', metadata)
       }
     }
