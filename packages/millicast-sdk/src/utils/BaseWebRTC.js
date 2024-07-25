@@ -98,6 +98,9 @@ export default class BaseWebRTC extends EventEmitter {
 
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         Diagnostics.setConnectionState(state)
+        if (state === 'connected') {
+          Diagnostics.setConnectionTime(new Date())
+        }
         if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
           this.firstReconnection = false
           this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') })
