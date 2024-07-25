@@ -125,7 +125,14 @@ declare module '@millicast/sdk' {
     /**
      * represents a collection of the webRTC stats collected before the diagnose call. 
      */
-    stats : Array<Object>
+    stats : Array<Object>,
+
+    /**
+     * Represents how long the stream has been connected for. If a stream disconnects and 
+     * re-connects a few times, this will reflect the duration only since the last time a 
+     * successful connection was established
+     */
+    connectionTime: Number
   }
 
   export class Logger {
