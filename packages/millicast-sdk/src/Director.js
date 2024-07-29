@@ -176,12 +176,12 @@ const Director = {
    * await millicastView.connect(options)
    */
 
-  getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
+  getSubscriber: async (options, streamAccountId = null, subscriberToken = null, isDRMEnabled = false) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
-    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
+    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName, isDrm: isDRMEnabled }
     let headers = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
@@ -236,6 +236,15 @@ const parseIncomingDirectorResponse = (directorResponse) => {
       return url.replace(matched[1], Director.getLiveDomain())
     })
     directorResponse.data.urls = urlsParsed
+  }
+  // TODO: remove this when server returns full path of DRM license server URLs
+  const widevineUrl = directorResponse.data.drmObject.widevineUrl
+  if (widevineUrl) {
+    directorResponse.data.drmObject.widevineUrl = `${Director.getEndpoint()}${widevineUrl}`
+  }
+  const playReadyUrl = directorResponse.data.drmObject.playReadyUrl
+  if (playReadyUrl) {
+    directorResponse.data.drmObject.playReadyUrl = `${Director.getEndpoint()}${playReadyUrl}`
   }
   return directorResponse
 }

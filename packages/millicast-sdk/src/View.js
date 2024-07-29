@@ -258,6 +258,7 @@ export default class View extends BaseWebRTC {
       // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
       this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && (this.options.enableDRM || this.options.metadata)
     } catch (error) {
+      // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
@@ -280,10 +281,10 @@ export default class View extends BaseWebRTC {
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
-    if (subscriberData.DRMProfile) {
+    if (subscriberData.drmObject) {
       // cache the DRM license server URLs
       // TODO: verify the payload
-      this.DRMProfile = subscriberData.DRMProfile
+      this.DRMProfile = subscriberData.drmObject
     }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
@@ -454,9 +455,9 @@ export default class View extends BaseWebRTC {
     }
     if (this.DRMProfile) {
       // TODO: replace with spread operator
-      drmOptions.fpsLiceseUrl = this.DRMProfile.fpsLiceseUrl
-      drmOptions.wvLicenseUrl = this.DRMProfile.wvLicenseUrl
-      drmOptions.fpsCertificateUrl = this.DRMProfile.fpsCertificateUrl
+      drmOptions.prLicenseUrl = this.DRMProfile.playReadyUrl
+      drmOptions.wvLicenseUrl = this.DRMProfile.widevineUrl
+      // drmOptions.fpsCertificateUrl = this.DRMProfile.fpsCertificateUrl
     }
     try {
       rtcDrmConfigure(drmOptions)
