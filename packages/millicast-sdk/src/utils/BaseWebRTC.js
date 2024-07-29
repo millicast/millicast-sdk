@@ -28,8 +28,7 @@ const baseInterval = 1000
  * @classdesc Base class for common actions about peer connection and reconnect mechanism for Publishers and Viewer instances.
  *
  * @constructor
- * @deprecated streamName is no longer used, use tokenGenerator
- * @param {String} streamName - Deprecated: Millicast existing stream name.
+ * @param {String} streamName - Deprecated: Millicast existing stream name. Use tokenGenerator instead.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Object} loggerInstance - Logger instance from the extended classes.
  * @param {Boolean} autoReconnect - Enable auto reconnect.
@@ -99,6 +98,9 @@ export default class BaseWebRTC extends EventEmitter {
 
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         Diagnostics.setConnectionState(state)
+        if (state === 'connected') {
+          Diagnostics.setConnectionTime(new Date())
+        }
         if ((state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) && this.firstReconnection) {
           this.firstReconnection = false
           this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') })

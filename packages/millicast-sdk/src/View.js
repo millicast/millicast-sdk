@@ -176,7 +176,7 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Add remote receving track.
+   * Add remote receiving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
@@ -305,7 +305,7 @@ export default class View extends BaseWebRTC {
           const decoder = new TextDecoder()
           const metadata = message.data.metadata
           metadata.mid = message.data.mid
-          metadata.track = this.tracksMidValues[event.data.mid]
+          metadata.track = this.tracksMidValues[message.data.mid]
           const uuid = metadata.uuid
           metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
           metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
@@ -323,7 +323,6 @@ export default class View extends BaseWebRTC {
             }
           }
           // for backwards compatibility, emit the old event as well
-          this.emit('onMetadata', metadata)
           this.emit('metadata', metadata)
         }
       }

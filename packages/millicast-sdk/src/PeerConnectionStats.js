@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
-import WebRTCStats from '@dolbyio/webrtc-stats'
+import { WebRTCStats } from '@dolbyio/webrtc-stats'
 
 const logger = Logger.get('PeerConnectionStats')
 
@@ -153,9 +153,9 @@ export default class PeerConnectionStats extends EventEmitter {
       })
 
       this.collection.on('stats', (stats) => {
-        const parsedSats = parseWebRTCStats(stats)
-        Diagnostics.addStats(parsedSats)
-        this.emit(peerConnectionStatsEvents.stats, parsedSats)
+        const parsedStats = parseWebRTCStats(stats)
+        Diagnostics.addStats(parsedStats)
+        this.emit(peerConnectionStatsEvents.stats, parsedStats)
       })
       this.collection.start()
       this.initialized = true

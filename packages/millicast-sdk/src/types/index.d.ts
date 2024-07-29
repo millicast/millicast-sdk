@@ -125,7 +125,14 @@ declare module '@millicast/sdk' {
     /**
      * represents a collection of the webRTC stats collected before the diagnose call. 
      */
-    stats : Array<Object>
+    stats : Array<Object>,
+
+    /**
+     * Represents how long the stream has been connected for. If a stream disconnects and 
+     * re-connects a few times, this will reflect the duration only since the last time a 
+     * successful connection was established
+     */
+    connectionTime: Number
   }
 
   export class Logger {
@@ -833,7 +840,7 @@ declare module '@millicast/sdk' {
       setSDPToPeer: boolean;
     }): Promise<string>;
     /**
-     * Add remote receving track.
+     * Add remote receiving track.
      * @param {String} media - Media kind ('audio' | 'video').
      * @param {Array<MediaStream>} streams - Streams the track will belong to.
      * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
@@ -1295,7 +1302,7 @@ declare module '@millicast/sdk' {
    *
    * - A connection path that you can get from {@link Director} module or from your own implementation.
    * @constructor
-   * @deprecated {String} streamName - Millicast stream name. Note that this field is now deprecated and no longer used internally. It will be removed in a future version.
+   * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
    */
@@ -1362,7 +1369,7 @@ declare module '@millicast/sdk' {
    *
    * - A connection path that you can get from {@link Director} module or from your own implementation.
    * @constructor
-   * @deprecated {String} streamName - Millicast stream name to connect to. Note that this field is now deprecated and no longer used internally. It will be removed in a future version
+   * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
    * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
@@ -1435,7 +1442,7 @@ declare module '@millicast/sdk' {
      */
     select(layer?: LayerInfo): Promise<void>;
     /**
-     * Add remote receving track.
+     * Add remote receiving track.
      * @param {String} media - Media kind ('audio' | 'video').
      * @param {Array<MediaStream>} streams - Streams the track will belong to.
      * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.

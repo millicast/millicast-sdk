@@ -10,6 +10,7 @@ let _streamViewId = ''
 let _feedId = ''
 let _connection = ''
 let _cluster = ''
+let _connectionTime = 0
 const _stats = []
 
 function transformWebRTCStatsToCMCD (diagnostics) {
@@ -48,6 +49,7 @@ const Diagnostics = {
   initSubscriberId: (subscriberId) => { _subscriberId = _subscriberId === '' ? subscriberId : _subscriberId },
   initStreamViewId: (streamViewId) => { _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId },
   initFeedId: (feedId) => { _feedId = _feedId === '' ? feedId : _feedId },
+  setConnectionTime: (connectionTime) => { _connectionTime = _connectionTime === 0 ? connectionTime : _connectionTime },
   setConnectionState: (connectionState) => { _connection = connectionState },
   setClusterId: (clusterId) => { _cluster = _cluster === '' ? clusterId : _cluster },
 
@@ -57,6 +59,7 @@ const Diagnostics = {
     }
     _stats.push(stats)
   },
+
   get: (statsCount = MAX_STATS_HISTORY_SIZE, statsFormat = 'JSON') => {
     let configuredStatsCount
     if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
@@ -75,7 +78,8 @@ const Diagnostics = {
       streamName: _streamName,
       subscriberId: _subscriberId,
       connection: _connection,
-      stats: _stats.slice(-configuredStatsCount)
+      stats: _stats.slice(-configuredStatsCount),
+      connectionDurationMs: (new Date().getTime() - _connectionTime)
     }
 
     if (_feedId !== '') {
