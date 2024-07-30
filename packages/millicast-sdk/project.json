@@ -1,0 +1,23 @@
+{
+    "name": "@millicast/sdk",
+    "$schema": "../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/millicast-sdk/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "build": {
+            "executor": "@nx/vite:build",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                "outputPath": "dist/millicast-sdk",
+                "main": "packages/millicast-sdk/src/index.ts",
+                "tsConfig": "packages/millicast-sdk/tsconfig.lib.json",
+                "assets": [
+                    "packages/millicast-sdk/*.md"
+                ]
+            }
+        }
+    }
+}
