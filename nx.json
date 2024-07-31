@@ -132,6 +132,14 @@
       }
     }
   ],
+  "generators": {
+    "@nx/web:application": {
+      "style": "css",
+      "linter": "eslint",
+      "unitTestRunner": "jest",
+      "e2eTestRunner": "none"
+    }
+  },
   "affected": {
     "defaultBase": "main"
   }
