@@ -15,7 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@test-workspace/mylib": ["mylib/src/index.ts"]
+      "@nx-create-lib-app/millicast-sdk": [
+        "packages/millicast-sdk/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

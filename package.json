@@ -1,5 +1,5 @@
 {
-  "name": "root",
+  "name": "@nx-millicast/source",
   "private": true,
   "husky": {
     "hooks": {
@@ -51,6 +51,7 @@
     "@changesets/cli": "^2.27.1",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
+    "@nx/js": "19.5.3",
     "@nx/eslint": "19.5.3",
     "@nx/eslint-plugin": "19.5.3",
     "@nx/jest": "19.5.3",
