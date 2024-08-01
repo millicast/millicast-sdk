@@ -16,11 +16,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "nx run-many -t build",
+    "build": "nx build @millicast/sdk",
     "build-docs": "nx build-docs @millicast/sdk",
-    "build:sdk": "nx watch --projects=@millicast/sdk -- echo \\$NX_PROJECT_NAME \\$NX_FILE_CHANGES",
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "start": "nx run-many -t start",
+    "start": "nx serve millicast-viewer-demo",
     "start-docs": "nx start-docs @millicast/sdk",
     "test": "nx run-many --target=test --all --parallel --output-style=stream",
     "test-e2e": "nx run-many --target=test-e2e --all --parallel --output-style=stream"
