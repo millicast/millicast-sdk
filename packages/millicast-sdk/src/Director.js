@@ -238,13 +238,19 @@ const parseIncomingDirectorResponse = (directorResponse) => {
     directorResponse.data.urls = urlsParsed
   }
   // TODO: remove this when server returns full path of DRM license server URLs
-  const widevineUrl = directorResponse.data.drmObject.widevineUrl
-  if (widevineUrl) {
-    directorResponse.data.drmObject.widevineUrl = `${Director.getEndpoint()}${widevineUrl}`
-  }
-  const playReadyUrl = directorResponse.data.drmObject.playReadyUrl
-  if (playReadyUrl) {
-    directorResponse.data.drmObject.playReadyUrl = `${Director.getEndpoint()}${playReadyUrl}`
+  if (directorResponse.data.drmObject) {
+    const playReadyUrl = directorResponse.data.drmObject.playReadyUrl
+    if (playReadyUrl) {
+      directorResponse.data.drmObject.playReadyUrl = `${Director.getEndpoint()}${playReadyUrl}`
+    }
+    const widevineUrl = directorResponse.data.drmObject.widevineUrl
+    if (widevineUrl) {
+      directorResponse.data.drmObject.widevineUrl = `${Director.getEndpoint()}${widevineUrl}`
+    }
+    const fairPlayUrl = directorResponse.data.drmObject.fairPlayUrl
+    if (fairPlayUrl) {
+      directorResponse.data.drmObject.fairPlayUrl = `${Director.getEndpoint()}${fairPlayUrl}`
+    }
   }
   return directorResponse
 }

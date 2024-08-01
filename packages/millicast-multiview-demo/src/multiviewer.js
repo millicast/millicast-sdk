@@ -12,10 +12,9 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 // Config data
 const accountId = params.accountId || import.meta.env.MILLICAST_ACCOUNT_ID
 const streamName = params.streamName || import.meta.env.MILLICAST_STREAM_NAME
-const drmKeyId = import.meta.env.MILLICAST_DRM_VID2_KEYID
-const drmIv = import.meta.env.MILLICAST_DRM_VID2_IV
 const metadata = params.metadata === 'true'
 const enableDRM = params.drm === 'true'
+const subscriberToken = params.subscriberToken || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
 const disableVideo = params.disableVideo === 'true'
 const disableAudio = params.disableAudio === 'true'
 const connectOptions = {
@@ -43,7 +42,7 @@ let transceiverMidToSourceIdMap = {}
 let transceiverToLayersMap = {}
 
 // Create a new viewer instance
-const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
+const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken, enableDRM)
 let viewer
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -62,11 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       switch (name) {
         case 'active': {
           const sourceId = data.sourceId || mainSourceId
-          // TODO: remove this hardcoded encryption property
-          data.encryption = {
-            keyId: drmKeyId,
-            iv: drmIv
-          }
           if (sourceId === mainSourceId) {
             addMainSource(data)
           } else {
@@ -123,7 +117,7 @@ const addRemoteSource = async (data) => {
   if (audioMediaId) {
     audioElement.id = 'mid-' + audioMediaId
   }
-  if (data.encryption) {
+  if (data.encryption && enableDRM) {
     const drmOptions = {
       videoElement,
       audioElement,
@@ -152,7 +146,7 @@ const addMainSource = async (data) => {
       mediaId
     }
   })
-  if (data.encryption) {
+  if (data.encryption && enableDRM) {
     const drmOptions = {
       videoElement: mainVideoElement,
       audioElement: mainAudioElement,

@@ -22,7 +22,7 @@ const accountId = !!href.searchParams.get("accountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 // this is required for DRM streams, otherwise Director API will return errors
-const subscriberToken = import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
+const subscriberToken = href.searchParams.get("subscriberToken") || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
 
 const metadata = href.searchParams.get("metadata") === "true";
 const enableDRM = href.searchParams.get("drm") === 'true';
@@ -66,11 +66,7 @@ const newViewer = () => {
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
     if (event.name === "active") {
-      // TODO: remove hardcoded encryption property
-      const encryption = event.data.encryption || {
-        keyId: import.meta.env.MILLICAST_DRM_VID_KEYID,
-        iv: import.meta.env.MILLICAST_DRM_VID_IV
-      };
+      const encryption = event.data.encryption
       if (encryption && enableDRM) {
         const drmOptions = {
           videoElement: document.querySelector("video"),

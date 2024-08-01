@@ -1248,11 +1248,22 @@ declare module '@millicast/sdk' {
     layer?: LayerInfo;
   }
 
+  /**
+   * DRM profile from director API which includes the URLs of license servers
+   */
+  export interface DRMProfile {
+    playReadyUrl?: string;
+    widevineUrl?: string;
+    fairPlayUrl?: string;
+  }
+
   export type DirectorResponse = {
     urls: string[];
     jwt: string;
     iceServers: RTCIceServer[];
+    drmObject?: DRMProfile;
   };
+
   export type TokenGeneratorCallback = () => Promise<DirectorResponse>
   class BaseWebRTC extends events.EventEmitter {
     constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);

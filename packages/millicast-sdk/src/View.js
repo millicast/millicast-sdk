@@ -236,6 +236,7 @@ export default class View extends BaseWebRTC {
   stop () {
     super.stop()
     this.drmOptionsMap?.clear()
+    this.DRMProfile = null
     this.worker?.terminate()
     this.worker = null
     this.payloadTypeCodec = {}
@@ -283,7 +284,6 @@ export default class View extends BaseWebRTC {
     })
     if (subscriberData.drmObject) {
       // cache the DRM license server URLs
-      // TODO: verify the payload
       this.DRMProfile = subscriberData.drmObject
     }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
@@ -453,10 +453,15 @@ export default class View extends BaseWebRTC {
       audio: { codec: 'opus', encryption: 'clear' }
     }
     if (this.DRMProfile) {
-      // TODO: replace with spread operator
-      drmOptions.prLicenseUrl = this.DRMProfile.playReadyUrl
-      drmOptions.wvLicenseUrl = this.DRMProfile.widevineUrl
-      // drmOptions.fpsCertificateUrl = this.DRMProfile.fpsCertificateUrl
+      if (this.DRMProfile.playReadyUrl) {
+        drmOptions.prLicenseUrl = this.DRMProfile.playReadyUrl
+      }
+      if (this.DRMProfile.widevineUrl) {
+        drmOptions.wvLicenseUrl = this.DRMProfile.widevineUrl
+      }
+      if (this.DRMProfile.fairPlayUrl) {
+        drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl
+      }
     }
     try {
       rtcDrmConfigure(drmOptions)
