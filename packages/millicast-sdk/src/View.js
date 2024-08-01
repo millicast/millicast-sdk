@@ -415,7 +415,7 @@ export default class View extends BaseWebRTC {
 
   /**
    * @typedef {Object} EncryptionParameters
-   * @property {String} keyId 16-byte KID, in lowercase hexadecimal without separators
+   * @property {String} keyId 16-byte KeyID, in lowercase hexadecimal without separators
    * @property {String} iv 16-byte initialization vector, in lowercase hexadecimal without separators
    * /
 

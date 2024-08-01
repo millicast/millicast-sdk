@@ -1359,6 +1359,42 @@ declare module '@millicast/sdk' {
     sendMetadata(message: String | Object, uuid: String): void;
     webRTCPeer?: PeerConnection;
   }
+
+  /**
+   * DRM encryption parameters
+   */
+  export type EncryptionParameters = {
+    /** 16-byte KeyID, in lowercase hexadecimal without separators */
+    keyId: string;
+
+    /** 16-byte initialization vector, in lowercase hexadecimal without separators */
+    iv: string;
+  }
+
+
+  /**
+   * The configuration for DRM playback
+   */
+  export type DRMOptions = {
+    /** The video element */
+    videoElement: HTMLVideoElement;
+
+    /** The video encryption parameters */
+    videoEncParams: EncryptionParameters;
+
+    /** The video media ID of RTCRtpTransceiver */
+    videoMid: string;
+
+    /** The audio element */
+    audioElement: HTMLAudioElement;
+
+    /** The audio encryption parameters */
+    audioEncParams?: EncryptionParameters;
+
+    /** The audio media ID of RTCRtpTransceiver */
+    audioMid?: string;
+  }
+
   /**
    * @class View
    * @extends BaseWebRTC
@@ -1463,6 +1499,28 @@ declare module '@millicast/sdk' {
      * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
      */
     unproject(mediaIds: Array<string>): Promise<void>;
+
+    /**
+     * Configure DRM protected stream.
+     * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+     */
+    configureDRM(options: DRMOptions);
+
+    /**
+     * Remove DRM configuration for a mediaId
+     */
+    removeDRMConfiguration (mediaId: string);
+
+    /**
+     * Check if there are any DRM protected Track
+     */
+    get isDRMOn(): boolean;
+
+    /** Exchange the DRM configuration between two transceivers
+     *  Make sure both of the transceivers have been used for DRM protected streams
+     */
+    exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string);
+
     replaceConnection(): Promise<void>;
     webRTCPeer?: PeerConnection;
   }
