@@ -2,7 +2,7 @@
   "packages": [
     "packages/*"
   ],
-  "useWorkspaces": true,
+  "useNx" : true,
   "npmClient": "npm",
   "version": "0.1.40"
 }

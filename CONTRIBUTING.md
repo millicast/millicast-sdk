@@ -23,10 +23,10 @@ Whenever you are working on a new feature, fix or change, make sure you create a
 
 ### Building packages
 
-As the project is built using [Lerna](https://lerna.js.org/), we can rely on it to manage our packages dependencies, so you just need to run at project's root directory
+As the project is managed using NPM, we can rely on it to manage our workspace package dependencies, so you just need to run at project's root directory
 
 ```sh
-npm run prepare
+npm install
 ```
 
 You will need to add a `.env` file in all demo packages (`packages/millicast-publisher-demo`, `packages/millicast-viewer-demo`, `packages/millicast-chromecast-receiver`, `packages/millicast-multiview-demo` & `packages/millicast-webaudio-delay-demo`). You can simply copy the `.env.sample` to get started:

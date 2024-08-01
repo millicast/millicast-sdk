@@ -10,3 +10,4 @@ test-environment.js
 **/.DS_Store
 **/src/TransformWorker.worker.js
 vite.config.*.timestamp-*
+.nx/
