@@ -132,7 +132,7 @@ declare module '@millicast/sdk' {
      * re-connects a few times, this will reflect the duration only since the last time a 
      * successful connection was established
      */
-    connectionTime: Number
+    connectionDurationMs: Number
   }
 
   export class Logger {
