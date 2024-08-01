@@ -11,7 +11,7 @@
                 "{options.outputPath}"
             ],
             "options": {
-                "outputPath": "dist/millicast-sdk",
+                "outputPath": "dist/packages/millicast-sdk",
                 "main": "packages/millicast-sdk/src/index.ts",
                 "tsConfig": "packages/millicast-sdk/tsconfig.lib.json",
                 "assets": [
