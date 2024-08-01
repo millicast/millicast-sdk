@@ -935,6 +935,7 @@ declare module '@millicast/sdk' {
    * @property {String} streamName - Millicast publisher Stream Name.
    * @property {String} streamAccountId - Millicast Account ID.
    * @property {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
+   * @property {Boolean} [isDRMEnabled] - if DRM is enabled, default is false
    */
   /**
    * Simplify API calls to find the best server and region to publish and subscribe to.
@@ -1030,7 +1031,7 @@ declare module '@millicast/sdk' {
      * //Start connection to broadcast
      * await millicastView.connect(options)
      */
-    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string): Promise<MillicastDirectorResponse>;
+    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string, isDRMEnabled?: boolean): Promise<MillicastDirectorResponse>;
   }
   export type MillicastDirectorResponse = {
     /**
