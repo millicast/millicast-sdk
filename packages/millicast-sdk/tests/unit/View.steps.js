@@ -15,6 +15,13 @@ jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   }))
 )
 
+jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
+  rtcDrmConfigure: jest.fn(), 
+  rtcDrmOnTrack: jest.fn(), 
+  rtcDrmEnvironments: jest.fn(), 
+  rtcDrmFeedFrame: jest.fn()
+}))
+
 const mockTokenGenerator = jest.fn(() => {
   return {
     urls: [
