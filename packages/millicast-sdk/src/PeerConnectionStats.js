@@ -92,26 +92,30 @@ const parseWebRTCStats = (webRTCStats) => {
   const statsObject = {
     ...filteredStats,
     audio: {
-      inbounds: webRTCStats.input.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      inbounds: webRTCStats.input.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrate: bitrate * 8,
         ...rest
       })),
-      outbounds: webRTCStats.output.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      outbounds: webRTCStats.output.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrate: bitrate * 8,
         ...rest
       }))
     },
     video: {
-      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrate: bitrate * 8,
         ...rest
       })),
-      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrate: bitrate * 8,
         ...rest
       }))
     },
