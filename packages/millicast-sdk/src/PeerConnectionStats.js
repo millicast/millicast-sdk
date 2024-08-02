@@ -104,14 +104,16 @@ const parseWebRTCStats = (webRTCStats) => {
       }))
     },
     video: {
-      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrate: bitrate * 8,
         ...rest
       })),
-      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrate: bitrate * 8,
         ...rest
       }))
     },
