@@ -5,10 +5,10 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/packages/millicast-viewer-demo',
+  cacheDir: '../../node_modules/.vite/packages/millicast-publisher-demo',
 
   server: {
-    port: 10002,
+    port: 10001,
     host: 'localhost',
   },
 
@@ -20,7 +20,7 @@ export default defineConfig({
   // },
 
   build: {
-    outDir: '../../dist/packages/millicast-viewer-demo',
+    outDir: '../../dist/packages/millicast-publisher-demo',
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {

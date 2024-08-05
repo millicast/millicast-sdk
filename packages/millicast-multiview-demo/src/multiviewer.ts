@@ -1,4 +1,4 @@
-import { View, Director } from '@nx-create-lib-app/millicast-sdk';
+import { View, Director } from '@nx-millicast/millicast-sdk';
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)

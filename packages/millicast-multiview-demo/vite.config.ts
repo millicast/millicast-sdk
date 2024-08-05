@@ -8,12 +8,7 @@ export default defineConfig({
   cacheDir: '../../node_modules/.vite/packages/millicast-multiviewer-demo',
 
   server: {
-    port: 4201,
-    host: 'localhost',
-  },
-
-  preview: {
-    port: 4301,
+    port: 10005,
     host: 'localhost',
   },
 

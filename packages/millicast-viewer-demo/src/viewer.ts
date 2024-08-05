@@ -1,4 +1,4 @@
-import { View, Director, Logger } from '@nx-create-lib-app/millicast-sdk';
+import { View, Director, Logger } from "@nx-millicast/millicast-sdk";
 
 window.Logger = Logger;
 
