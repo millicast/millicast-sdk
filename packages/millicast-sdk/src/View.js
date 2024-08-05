@@ -286,6 +286,9 @@ export default class View extends BaseWebRTC {
       // cache the DRM license server URLs
       this.DRMProfile = subscriberData.drmObject
     }
+    if (subscriberData.subscriberToken) {
+      this.subscriberToken = subscriberData.subscriberToken
+    }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
@@ -413,6 +416,18 @@ export default class View extends BaseWebRTC {
     return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
   }
 
+  async onRtcDrmFetch (url, opts) {
+    if (!opts.headers) {
+      opts.headers = new Headers()
+    }
+    if (this.subscriberToken) {
+      opts.headers.append('Authorization', `Bearer ${this.subscriberToken}`)
+    } else {
+      logger.warn('onRtcDrmFetch: no subscriberToken')
+    }
+    return fetch(url, opts)
+  }
+
   /**
    * @typedef {Object} EncryptionParameters
    * @property {String} keyId 16-byte KeyID, in lowercase hexadecimal without separators
@@ -450,7 +465,8 @@ export default class View extends BaseWebRTC {
       videoElement: options.videoElement,
       audioElement: options.audioElement,
       video: { codec: 'h264', encryption: 'cbcs', keyId: this.hexToUint8Array(options.videoEncParams.keyId), iv: this.hexToUint8Array(options.videoEncParams.iv) },
-      audio: { codec: 'opus', encryption: 'clear' }
+      audio: { codec: 'opus', encryption: 'clear' },
+      onFetch: this.onRtcDrmFetch.bind(this)
     }
     if (this.DRMProfile) {
       if (this.DRMProfile.playReadyUrl) {

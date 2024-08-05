@@ -196,6 +196,7 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
+      if (subscriberToken) data.data.subscriberToken = subscriberToken
       return data.data
     } catch (e) {
       logger.error('Error while getting subscriber connection path. ', e)
