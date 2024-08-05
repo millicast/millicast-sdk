@@ -19,7 +19,7 @@
     "build": "nx build @millicast/sdk",
     "build-docs": "nx build-docs @millicast/sdk",
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "start": "nx run-many -t serve",
+    "start": "nx run-many -t serve --parallel --maxParallel=100",
     "start-docs": "nx start-docs @millicast/sdk",
     "test": "nx test @millicast/sdk",
     "test-e2e": "nx run-many --target=test-e2e --all --parallel --output-style=stream"

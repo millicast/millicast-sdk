@@ -1,9 +1,9 @@
 {
-  "name": "millicast-multiviewer-demo",
+  "name": "millicast-chromecast-receiver",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "packages/millicast-multiviewer-demo/src",
+  "sourceRoot": "packages/millicast-chromecast-receiver/src",
   "tags": [],
-  "// targets": "to see all targets run: nx show project millicast-multiviewer-demo --web",
+  "// targets": "to see all targets run: nx show project millicast-chromecast-receiver --web",
   "targets": {}
 }

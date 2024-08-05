@@ -2,13 +2,7 @@
   "name": "millicast-chromecast-receiver",
   "author": "Millicast, Inc.",
   "private": true,
-  "scripts": {
-    "prepare": "node prepare.js",
-    "build": "vite build"
-  },
-  "dependencies": {
-    "@millicast/sdk": "file:../millicast-sdk"
-  },
+  "type": "module",
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/plugin-transform-runtime": "^7.13.10",

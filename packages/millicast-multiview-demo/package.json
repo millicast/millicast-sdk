@@ -2,15 +2,6 @@
   "name": "millicast-multiview-demo",
   "author": "Millicast, Inc.",
   "type": "module",
-  "scripts": {
-    "prepare": "node prepare.js",
-    "build": "vite build",
-    "preview": "vite preview",
-        "start": "concurrently \"nodemon --watch dist --watch ../millicast-sdk --exec vite\" \"nodemon --watch src --watch ../millicast-sdk --exec vite build\""
-  },
-  "dependencies": {
-    "@millicast/sdk": "file:../millicast-sdk"
-  },
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/plugin-transform-runtime": "^7.13.10",
