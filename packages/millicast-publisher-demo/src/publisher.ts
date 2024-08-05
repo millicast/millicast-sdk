@@ -1,17 +1,17 @@
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { Director, Logger } from "@millicast/sdk"
+import { Director, Logger } from "@nx-millicast/millicast-sdk"
 
 window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
-if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
 }
 
-const streamName = import.meta.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
-const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
-const publishToken = import.meta.env.MILLICAST_PUBLISH_TOKEN
+const streamName = import.meta.env.VITE_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
+const accountId = import.meta.env.VITE_ACCOUNT_ID
+const publishToken = import.meta.env.VITE_PUBLISH_TOKEN
 const disableVideo = false
 const disableAudio = false
 const disableStereo = false

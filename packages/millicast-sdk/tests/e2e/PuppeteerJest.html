@@ -1,60 +1,68 @@
 <html>
-   <head>
-      <title>PuppeteerJest</title>
-      <script src="../../dist/millicast.umd.js"></script>
-      <script>
-         const startPublisher = async (publishToken, streamName, options) => {
-            const millicast = window.millicast
-            millicast.Logger.setLevel(millicast.Logger.DEBUG)
-            const tokenGenerator = () => millicast.Director.getPublisher(publishToken, streamName)
-            const publish = new millicast.Publish(streamName, tokenGenerator)
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-            document.getElementById('my-video').srcObject = mediaStream
-            await publish.connect({
-               ...options,
-               mediaStream
-            })
-            window.publish = publish
-         }
+  <head>
+    <title>PuppeteerJest</title>
+    <script src="../../../../dist/packages/millicast-sdk/millicast.umd.js"></script>
+    <script>
+      const startPublisher = async (publishToken, streamName, options) => {
+        const millicast = window.millicast
+        millicast.Logger.setLevel(millicast.Logger.DEBUG)
+        const tokenGenerator = () => millicast.Director.getPublisher(publishToken, streamName)
+        const publish = new millicast.Publish(streamName, tokenGenerator)
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+        document.getElementById('my-video').srcObject = mediaStream
+        await publish.connect({
+          ...options,
+          mediaStream
+        })
+        window.publish = publish
+      }
 
-         const startViewer = (streamName, accountId) => {
-            return new Promise(resolve => {
-               const millicast = window.millicast
-               const video = document.getElementById('my-video')
-               millicast.Logger.setLevel(millicast.Logger.DEBUG)
-               const tokenGenerator = () => millicast.Director.getSubscriber(streamName, accountId)
-               const view = new millicast.View(streamName, tokenGenerator)
-               video.addEventListener('timeupdate', () => {
-                  if (video.currentTime > 1){
-                     resolve()
-                  }
-               })
-               view.on('track', (event) => {
-                  video.srcObject = event.streams[0]
-               })
-               view.connect()
-            })
-         }
-
-         const getVideoPixelSums = () => {
-            const canvas = document.createElement('canvas')
-            const id = document.getElementById('my-video')
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(id, 0, 0, id.videoHeight - 1, id.videoWidth - 1)
-            const imageData = ctx.getImageData(0, 0, id.videoHeight - 1, id.videoWidth - 1).data
-            const sum = imageData.reduce((total, current) => total + current)
-            if (sum === 255 * (Math.pow(id.videoHeight - 1, (id.videoWidth - 1) * (id.videoWidth - 1)))) {
-               return 0
+      const startViewer = (streamName, accountId) => {
+        return new Promise(resolve => {
+          const millicast = window.millicast
+          const video = document.getElementById('my-video')
+          millicast.Logger.setLevel(millicast.Logger.DEBUG)
+          const tokenGenerator = () => millicast.Director.getSubscriber(streamName, accountId)
+          const view = new millicast.View(streamName, tokenGenerator)
+          video.addEventListener('timeupdate', () => {
+            if (video.currentTime > 1) {
+              resolve()
             }
-            return sum
-         }
-      </script>
-   </head>
-   <body>
-      <h1>PuppeteerJest</h1>
-      <br />
-      <h3>Run 'npm test' for test with Jest!</h3>
-      <br />
-      <video id='my-video' muted autoplay controls width='640' height='480' style='display: block;margin: 0 auto;'></video>
-   </body>
+          })
+          view.on('track', event => {
+            video.srcObject = event.streams[0]
+          })
+          view.connect()
+        })
+      }
+
+      const getVideoPixelSums = () => {
+        const canvas = document.createElement('canvas')
+        const id = document.getElementById('my-video')
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(id, 0, 0, id.videoHeight - 1, id.videoWidth - 1)
+        const imageData = ctx.getImageData(0, 0, id.videoHeight - 1, id.videoWidth - 1).data
+        const sum = imageData.reduce((total, current) => total + current)
+        if (sum === 255 * Math.pow(id.videoHeight - 1, (id.videoWidth - 1) * (id.videoWidth - 1))) {
+          return 0
+        }
+        return sum
+      }
+    </script>
+  </head>
+  <body>
+    <h1>PuppeteerJest</h1>
+    <br />
+    <h3>Run 'npm test' for test with Jest!</h3>
+    <br />
+    <video
+      id="my-video"
+      muted
+      autoplay
+      controls
+      width="640"
+      height="480"
+      style="display: block; margin: 0 auto"
+    ></video>
+  </body>
 </html>

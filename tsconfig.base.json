@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@nx-create-lib-app/millicast-sdk": [
+      "@nx-millicast/millicast-sdk": [
         "packages/millicast-sdk/src/index.ts"
       ]
     }
