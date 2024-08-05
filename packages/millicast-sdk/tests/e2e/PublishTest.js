@@ -72,7 +72,7 @@ class MillicastPublishTest {
     try {
       const broadcastOptions = options ?? {
         mediaStream: this.mediaStream,
-        bandwidth: bandwidth,
+        bandwidth,
         disableVideo: false,
         disableAudio: false,
         simulcast: this.selectedCodec === 'h264' || this.selectedCodec === 'vp8' ? this.simulcast : false,

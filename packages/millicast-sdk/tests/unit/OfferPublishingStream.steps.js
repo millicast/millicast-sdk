@@ -99,7 +99,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp with h264 codec and recording option', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp, 'h264', true)
@@ -118,7 +118,7 @@ defineFeature(feature, test => {
 
     given('a local sdp and a previous active connection to server', async () => {
       signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       await signaling.connect()
@@ -154,7 +154,7 @@ defineFeature(feature, test => {
 
     when('I offer a null sdp', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       try {
@@ -177,7 +177,7 @@ defineFeature(feature, test => {
 
     given('I have previous connection to server', async () => {
       signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       await signaling.connect()
@@ -265,7 +265,7 @@ defineFeature(feature, test => {
 
     when('I offer a sdp with invalid codec', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       try {
@@ -298,7 +298,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp with vp8 codec', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp, 'vp8')
@@ -328,7 +328,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp with vp9 codec', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp, 'vp9')
@@ -358,7 +358,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp with av1 codec', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp, 'av1')
@@ -389,7 +389,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp with av1 codec', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp, 'av1')
@@ -420,7 +420,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp with av1 codec', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp, 'av1')
@@ -450,7 +450,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp using options object', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       const signalingPublishOptions = {
@@ -483,7 +483,7 @@ defineFeature(feature, test => {
 
     when('I offer a sdp', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.publish(localSdp)
@@ -512,7 +512,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp and I set the events active and inactive as events that i want to get', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       const signalingPublishOptions = {
