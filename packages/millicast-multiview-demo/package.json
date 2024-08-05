@@ -1,6 +1,7 @@
 {
   "name": "millicast-multiview-demo",
   "author": "Millicast, Inc.",
+  "type": "module",
   "scripts": {
     "prepare": "node prepare.js",
     "build": "vite build",

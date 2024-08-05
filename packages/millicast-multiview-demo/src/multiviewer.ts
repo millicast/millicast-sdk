@@ -1,7 +1,7 @@
-import { Director, View } from "@millicast/sdk"
+import { View, Director } from '@nx-create-lib-app/millicast-sdk';
 
-if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
 }
 
 // Get query params
@@ -10,8 +10,8 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 });
 
 // Config data
-const accountId = params.accountId || import.meta.env.MILLICAST_ACCOUNT_ID
-const streamName = params.streamName || import.meta.env.MILLICAST_STREAM_NAME
+const accountId = params.accountId || import.meta.env.VITE_ACCOUNT_ID
+const streamName = params.streamName || import.meta.env.VITE_STREAM_NAME
 
 // This will store the main transceiver video mid
 const mainTransceiver = '0'
