@@ -72,7 +72,7 @@ class MillicastPublishTest {
     try {
       const broadcastOptions = options ?? {
         mediaStream: this.mediaStream,
-        bandwidth: bandwidth,
+        bandwidth,
         disableVideo: false,
         disableAudio: false,
         simulcast: this.selectedCodec === 'h264' || this.selectedCodec === 'vp8' ? this.simulcast : false,
@@ -226,7 +226,7 @@ class MillicastPublishTest {
           <td>${track.qualityLimitationReason}</td>
           <td>${track.framesPerSecond || '-'}</td>
           <td>${track.totalBytesSent}</td>
-          <td>${track.bitrate / 1000}</td>
+          <td>${track.bitrateBitsPerSecond / 1000}</td>
           <td>${new Date(track.timestamp).toISOString()}</td>
         </tr>
       `)
@@ -243,7 +243,7 @@ class MillicastPublishTest {
           <td>-</td>
           <td>-</td>
           <td>${track.totalBytesSent}</td>
-          <td>${track.bitrate / 1000}</td>
+          <td>${track.bitrateBitsPerSecond / 1000}</td>
           <td>${new Date(track.timestamp).toISOString()}</td>
         </tr>
       `)

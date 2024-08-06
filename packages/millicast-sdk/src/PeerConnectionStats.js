@@ -46,7 +46,8 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} totalPacketsLost - Total packets lost.
  * @property {Number} packetsLostRatioPerSecond - Total packet lost ratio per second.
  * @property {Number} packetsLostDeltaPerSecond - Total packet lost delta per second.
- * @property {Number} bitrate - Current bitrate in bits per second.
+ * @property {Number} bitrate - Current bitrate in Bytes per second.
+ * @property {Number} bitrateBitsPerSecond - Current bitrate in bits per second.
  * @property {Number} packetRate - The rate at which packets are being received, measured in packets per second.
  * @property {Number} jitterBufferDelay - Total delay in seconds currently experienced by the jitter buffer.
  * @property {Number} jitterBufferEmittedCount - Total number of packets emitted from the jitter buffer.
@@ -62,7 +63,8 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {String} [qualityLimitationReason] - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
  * @property {Number} timestamp - Timestamp of report.
  * @property {Number} totalBytesSent - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
- * @property {Number} bitrate - Current bitrate in bits per second.
+ * @property {Number} bitrate - Current bitrate in Bytes per second.
+ * @property {Number} bitrateBitsPerSecond - Current bitrate in bits per second.
  * @property {Number} bytesSentDelta - Change in the number of bytes sent since the last report.
  * @property {Number} totalPacketsSent - Total number of packets sent.
  * @property {Number} packetsSentDelta - Change in the number of packets sent since the last report.
@@ -107,13 +109,15 @@ const parseWebRTCStats = (webRTCStats) => {
       inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
-        bitrate: bitrate * 8,
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
         ...rest
       })),
       outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
-        bitrate: bitrate * 8,
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
         ...rest
       }))
     },

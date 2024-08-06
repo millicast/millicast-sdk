@@ -20,7 +20,7 @@ function transformWebRTCStatsToCMCD (diagnostics) {
       ts: Math.round(stat.timestamp) || '', // Timestamp to the nearest millisecond
       ot: type === 'audio' ? 'a' : 'v', // 'a' for audio, 'v' for video
       bl: stat.jitterBufferDelay || 0, // Buffer length from jitterBufferDelay, default to 0 if not available
-      br: Math.round(stat.bitrate || 0), // Bitrate, rounded to nearest integer, default to 0 if not available
+      br: Math.round(stat.bitrateBitsPerSecond || 0), // Bitrate, rounded to nearest integer, default to 0 if not available
       pld: stat.packetsLostDeltaPerSecond || 0, // Packets lost delta per second, default to 0 if not available
       j: stat.jitter || 0, // Jitter, default to 0 if not available
       mtp: stat.packetRate || 0, // Measured throughput, approximated by packet rate, default to 0 if not available
