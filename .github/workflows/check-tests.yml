@@ -41,11 +41,7 @@ jobs:
         uses: ./.github/actions/setup-install
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
-        run: |
-          rm -rf ../../**/package-lock.json
-          rm -rf ../../**/node_modules
-          npm i
-          npm run test-e2e
+        run: npm run test-e2e
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
           PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
