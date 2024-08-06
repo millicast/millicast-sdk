@@ -420,6 +420,10 @@ export default class View extends BaseWebRTC {
     if (!opts.headers) {
       opts.headers = new Headers()
     }
+    // our server doesn't support x-dt-custom-data
+    if (opts.headers.get('x-dt-custom-data')) {
+      opts.headers.delete('x-dt-custom-data')
+    }
     if (this.subscriberToken) {
       opts.headers.append('Authorization', `Bearer ${this.subscriberToken}`)
     } else {
