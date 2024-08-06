@@ -42,7 +42,7 @@ jobs:
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: |
-          npm i
+          rm -rf ../**/package-lock.json && npm i
           npm run test-e2e
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
