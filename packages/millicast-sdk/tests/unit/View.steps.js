@@ -81,6 +81,8 @@ defineFeature(feature, test => {
     })
 
     then('peer connection state is connected', async () => {
+      // PeerConnection's track event is asynchronous now
+      await new Promise((resolve) => setTimeout(resolve, 100))
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       expect(videoElement.srcObject).not.toBeNull()
     })
