@@ -4,6 +4,8 @@ import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
+import { hexToUint8Array } from './utils/StringUtils'
+import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
@@ -148,31 +150,6 @@ export default class View extends BaseWebRTC {
     logger.debug('Viewer select layer values: ', layer)
     await this.signaling.cmd('select', { layer })
     logger.info('Connected to streamName: ', this.streamName)
-  }
-
-  hexToUint8Array (hexString) {
-    if (!hexString) {
-      return new Uint8Array()
-    }
-    const length = hexString.length
-    const uint8Array = new Uint8Array(length / 2)
-    for (let i = 0; i < length; i += 2) {
-      uint8Array[i / 2] = parseInt(hexString.substr(i, 2), 16)
-    }
-    return uint8Array
-  }
-
-  swapPropertyValues (obj1, obj2, key) {
-    // Check if both objects have the property
-    //
-    if (Object.prototype.hasOwnProperty.call(obj1, key) &&
-      Object.prototype.hasOwnProperty.call(obj2, key)) {
-      const temp = obj1[key]
-      obj1[key] = obj2[key]
-      obj2[key] = temp
-    } else {
-      console.error(`One or both objects do not have the property "${key}"`)
-    }
   }
 
   /**
@@ -441,10 +418,10 @@ export default class View extends BaseWebRTC {
   /**
    * @typedef {Object} DRMOptions - the options for DRM playback
    * @property {HTMLVideoElement} videoElement - the video HTML element
-   * @property {EncryptionParameters} videoEncParams - the video encryption parameters
+   * @property {EncryptionParameters} videoEncryptionParams - the video encryption parameters
    * @property {String} videoMid - the video media ID of RTCRtpTransceiver
    * @property {HTMLAudioElement} audioElement - the audio HTML audioElement
-   * @property {EncryptionParameters} [audioEncParams] - the audio encryption parameters
+   * @property {EncryptionParameters} [audioEncryptionParams] - the audio encryption parameters
    * @property {String} [audioMid] - the audio media ID of RTCRtpTransceiver
    */
 
@@ -468,7 +445,7 @@ export default class View extends BaseWebRTC {
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
-      video: { codec: 'h264', encryption: 'cbcs', keyId: this.hexToUint8Array(options.videoEncParams.keyId), iv: this.hexToUint8Array(options.videoEncParams.iv) },
+      video: { codec: 'h264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
       audio: { codec: 'opus', encryption: 'clear' },
       onFetch: this.onRtcDrmFetch.bind(this)
     }
@@ -527,8 +504,8 @@ export default class View extends BaseWebRTC {
     if (sourceDRMOptions === null) {
       throw new Error('No DRM configuration found for ' + sourceMediaId)
     }
-    this.swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')
-    this.swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv')
+    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')
+    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv')
     try {
       rtcDrmConfigure(targetDRMOptions)
     } catch (error) {

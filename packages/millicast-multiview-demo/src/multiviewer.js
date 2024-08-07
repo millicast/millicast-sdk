@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   mainAudioElement = document.getElementById('mid-1')
   try {
     viewer = new View(streamName, tokenGenerator)
-    viewer.on('onMetadata', (metadata) => {
+    viewer.on('metadata', (metadata) => {
       console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
     })
     // Listen for broadcast events
@@ -121,7 +121,7 @@ const addRemoteSource = async (data) => {
     const drmOptions = {
       videoElement,
       audioElement,
-      videoEncParams: data.encryption,
+      videoEncryptionParams: data.encryption,
       videoMid: videoMediaId,
     }
     if (audioMediaId) {
@@ -150,7 +150,7 @@ const addMainSource = async (data) => {
     const drmOptions = {
       videoElement: mainVideoElement,
       audioElement: mainAudioElement,
-      videoEncParams: data.encryption,
+      videoEncryptionParams: data.encryption,
       videoMid: mainVideoMid,
     }
     const audioTrackMapping = tracksMapping.find(track => track.media === 'audio')

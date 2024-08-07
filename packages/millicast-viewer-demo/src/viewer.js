@@ -71,7 +71,7 @@ const newViewer = () => {
         const drmOptions = {
           videoElement: document.querySelector("video"),
           audioElement: document.querySelector("audio"),
-          videoEncParams: encryption,
+          videoEncryptionParams: encryption,
           videoMid: '0',
         };
         const audioTrackInfo = event.data.tracks.find((track) => track.type === 'audio')

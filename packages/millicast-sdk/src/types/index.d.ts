@@ -1392,7 +1392,7 @@ declare module '@millicast/sdk' {
     videoElement: HTMLVideoElement;
 
     /** The video encryption parameters */
-    videoEncParams: EncryptionParameters;
+    videoEncryptionParams: EncryptionParameters;
 
     /** The video media ID of RTCRtpTransceiver */
     videoMid: string;
@@ -1401,7 +1401,7 @@ declare module '@millicast/sdk' {
     audioElement: HTMLAudioElement;
 
     /** The audio encryption parameters */
-    audioEncParams?: EncryptionParameters;
+    audioEncryptionParams?: EncryptionParameters;
 
     /** The audio media ID of RTCRtpTransceiver */
     audioMid?: string;
