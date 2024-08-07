@@ -25,7 +25,7 @@ const expectedObject = {
   streamName: expect.any(String),
   subscriberId: expect.any(String),
   connection: expect.any(String),
-  version: version,
+  version,
   timestamp: expect.any(String),
   userAgent: expect.any(String),
   stats: expect.any(Array)

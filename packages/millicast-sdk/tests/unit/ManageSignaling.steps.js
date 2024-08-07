@@ -17,7 +17,7 @@ defineFeature(feature, test => {
   beforeEach(async () => {
     server = new WS(publishWebSocketLocation, { jsonProtocol: true })
     signaling = new Signaling({
-      streamName: streamName,
+      streamName,
       url: publishWebSocketLocation
     })
   })
@@ -64,7 +64,7 @@ defineFeature(feature, test => {
     when('I want to connect to no responding server', async () => {
       server.on('connection', () => server.error())
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       signaling.on('wsConnectionError', handler)
