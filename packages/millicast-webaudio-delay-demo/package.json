@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@maslick/radiaslider": "^1.9.8"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",

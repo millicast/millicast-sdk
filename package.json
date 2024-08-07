@@ -50,6 +50,7 @@
     "@changesets/cli": "^2.27.1",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
+    "@maslick/radiaslider": "^1.9.8",
     "@nx/js": "19.5.3",
     "@nx/eslint": "19.5.3",
     "@nx/eslint-plugin": "19.5.3",
