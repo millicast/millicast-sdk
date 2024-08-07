@@ -1,0 +1,9 @@
+{
+  "name": "millicast-publisher-demo",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "packages/millicast-publisher-demo/src",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project millicast-publisher-demo --web",
+  "targets": {}
+}

@@ -1,4 +1,4 @@
-<script src="../../dist/millicast.umd.js"></script>
+<script src="../../../../dist//packages/millicast-sdk/millicast.umd.js"></script>
 <script src="./utils/test-environment.js"></script>
 <script src="./ViewTest.js"></script>
 
@@ -8,13 +8,14 @@
     border-collapse: collapse;
     width: 100%;
   }
-  
-  #stats table td, #stats table th {
+
+  #stats table td,
+  #stats table th {
     border: 1px solid #dddddd;
     text-align: left;
     padding: 8px;
   }
-  
+
   #stats table tr:nth-child(even) {
     background-color: #dddddd;
   }
@@ -23,15 +24,22 @@
 <div>
   <h1>View</h1>
   <br />
-  <video autoplay playsinline controls muted id="millicast-view-test" width="1280" height="720" style="display: block;margin: 0 auto;"></video>
+  <video
+    autoplay
+    playsinline
+    controls
+    muted
+    id="millicast-view-test"
+    width="1280"
+    height="720"
+    style="display: block; margin: 0 auto"
+  ></video>
 </div>
-<br>
+<br />
 <fieldset>
-  <button onclick="millicastViewTest.testMigrate()">
-    Test Migrate
-  </button>
+  <button onclick="millicastViewTest.testMigrate()">Test Migrate</button>
 </fieldset>
-<br>
+<br />
 <div id="stats">
   <table>
     <tr>
@@ -48,18 +56,15 @@
       <th>Bitrate (kbps)</th>
       <th>Timestamp</th>
     </tr>
-    <tbody id='tracks-info'>
-      
-    </tbody>
+    <tbody id="tracks-info"></tbody>
   </table>
-  <br>
+  <br />
   <table>
     <tr>
       <th>Candidate type</th>
       <th>Current RTT (sec.)</th>
       <th>Total RTT (sec.)</th>
     </tr>
-    <tbody id='candidate-info'>
-    </tbody>
+    <tbody id="candidate-info"></tbody>
   </table>
 </div>
