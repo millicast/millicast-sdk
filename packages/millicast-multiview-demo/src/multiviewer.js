@@ -14,7 +14,7 @@ const accountId = params.accountId || import.meta.env.MILLICAST_ACCOUNT_ID
 const streamName = params.streamName || import.meta.env.MILLICAST_STREAM_NAME
 const metadata = params.metadata === 'true'
 const enableDRM = params.drm === 'true'
-const subscriberToken = params.subscriberToken || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
+const subscriberToken = params.token || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
 const disableVideo = params.disableVideo === 'true'
 const disableAudio = params.disableAudio === 'true'
 const connectOptions = {
