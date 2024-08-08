@@ -22,7 +22,7 @@ const accountId = !!href.searchParams.get("accountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
 // this is required for DRM streams, otherwise Director API will return errors
-const subscriberToken = href.searchParams.get("subscriberToken") || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
+const subscriberToken = href.searchParams.get("token") || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
 
 const metadata = href.searchParams.get("metadata") === "true";
 const enableDRM = href.searchParams.get("drm") === 'true';
