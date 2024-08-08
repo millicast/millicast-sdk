@@ -305,6 +305,8 @@ export default class View extends BaseWebRTC {
           }
         }
         this.emit('metadata', metadata)
+        // FIXME : Remove in v0.3.0
+        this.emit('onMetadata', metadata)
       }
     }
 
