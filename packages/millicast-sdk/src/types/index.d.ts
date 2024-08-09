@@ -376,7 +376,6 @@ declare module '@millicast/sdk' {
      * - Current frame width if it's video report.
      */
     frameWidth?: number;
-
     /**
      * - Total number of key frames that have been decoded if it's video report.
      */
@@ -418,15 +417,17 @@ declare module '@millicast/sdk' {
      */
     packetsLostDeltaPerSecond: number;
     /**
-     * - Current bitrate in bits per second.
+     * - Current bitrate in Bytes per second.
      */
     bitrate: number;
-
+    /**
+     * - Current bitrate in bits per second.
+     */
+    bitrateBitsPerSecond: number;
     /**
      * - Total delay in seconds currently experienced by the jitter buffer.
      */
     jitterBufferDelay : number;
-
     /**
      * - Total number of packets emitted from the jitter buffer.
      */
@@ -467,15 +468,17 @@ declare module '@millicast/sdk' {
      */
     totalBytesSent: number;
     /**
-     * - Current bitrate in bits per second.
+     * - Current bitrate in Bytes per second.
      */
     bitrate: number;
-
+    /**
+     * - Current bitrate in bits per second.
+     */
+    bitrateBitsPerSecond: number;
     /**
      *  - Change in the number of bytes sent since the last report.
      */
     bytesSentDelta: number;
-
     /**
      *  - Total number of packets sent.
      */
@@ -496,7 +499,6 @@ declare module '@millicast/sdk' {
      * - Total number of retransmitted packets sent.
      */
     retransmittedPacketsSent: number; 
-
     /**
      * - Change in the number of retransmitted packets sent since the last report.
      */
@@ -518,7 +520,6 @@ declare module '@millicast/sdk' {
      * 
      */  
     [qualityLimitationDurations] : Date
-
   };
 
   class PeerConnectionStats extends events.EventEmitter {
