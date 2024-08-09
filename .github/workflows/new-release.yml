@@ -28,10 +28,10 @@ jobs:
 
       - name: Install deploy docs deppendencies
         run: yarn
-        working-directory: ./.github/actions/github-pages-deploy-action-4.1.1
+        working-directory: ./.github/actions/github-pages-deploy-action-4.6.3
       
       - name: Deploy docs
-        uses: "./.github/actions/github-pages-deploy-action-4.1.1"
+        uses: "./.github/actions/github-pages-deploy-action-4.6.3"
         with:
           branch: docs
           folder: packages/millicast-sdk/docs
