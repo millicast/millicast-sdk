@@ -42,6 +42,7 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
+    this.transceiverMap = new Map()
   }
 
   /**
@@ -171,17 +172,17 @@ export default class PeerConnection extends EventEmitter {
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack (media, streams) {
-    try {
-      let transceiver = this.peer.addTransceiver(media, {
-        direction: 'recvonly',
-        streams
-      })
-      transceiver = await getTransceiverWithMid(transceiver, streams)
-      return transceiver
-    } catch (e) {
-      logger.error('Error while adding the remote track: ', e)
-      throw e
-    }
+    return new Promise((resolve, reject) => {
+      try {
+        const transceiver = this.peer.addTransceiver(media, {
+          direction: 'recvonly',
+          streams
+        })
+        this.transceiverMap.set(transceiver, resolve)
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 
   /**
@@ -406,6 +407,10 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
   return instance
 }
 
+async function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 /**
  * Emits peer events.
  * @param {PeerConnection} instanceClass - PeerConnection instance.
@@ -414,9 +419,19 @@ const instanceRTCPeerConnection = (instanceClass, config) => {
  * @fires PeerConnection#connectionStateChange
  */
 const addPeerEvents = (instanceClass, peer) => {
-  peer.ontrack = (event) => {
+  peer.ontrack = async (event) => {
     logger.info('New track from peer.')
     logger.debug('Track event value: ', event)
+    const resolve = instanceClass.transceiverMap.get(event.transceiver)
+    if (resolve) {
+      // we could add retry here to avoid unexpected situations
+      // that leads to infinite loop and reject it if needed
+      while (!event.transceiver.mid) {
+        await delay(100)
+      }
+      resolve(event.transceiver)
+      instanceClass.transceiverMap.delete(event.transceiver)
+    }
 
     /**
      * New track event.
@@ -424,7 +439,9 @@ const addPeerEvents = (instanceClass, peer) => {
      * @event PeerConnection#track
      * @type {RTCTrackEvent}
      */
-    instanceClass.emit(webRTCEvents.track, event)
+    setTimeout(() => {
+      instanceClass.emit(webRTCEvents.track, event)
+    }, 0)
   }
 
   if (peer.connectionState) {
@@ -514,26 +531,6 @@ const addReceiveTransceivers = (peer, options) => {
       direction: 'recvonly'
     })
   }
-}
-
-const getTransceiverWithMid = async (transceiver, streams, retries = 0) => {
-  return new Promise((resolve, reject) => {
-    if (transceiver.mid) {
-      for (const stream of streams) {
-        stream.addTrack(transceiver.receiver.track)
-      }
-      resolve(transceiver)
-    } else if (retries >= 10) {
-      reject(new Error('Error, maximum number of retries has been reached'))
-    } else {
-      retries++
-      setTimeout(() => {
-        getTransceiverWithMid(transceiver, streams, retries)
-          .then(resolve)
-          .catch(reject)
-      }, 50)
-    }
-  })
 }
 
 const getConnectionState = (peer) => {

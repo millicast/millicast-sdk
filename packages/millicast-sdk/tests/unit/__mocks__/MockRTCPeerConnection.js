@@ -112,8 +112,6 @@ export default class MockRTCPeerConnection {
     return this.senders
   }
 
-  ontrack (event) {}
-
   onconnectionstatechange (state) {
     this.connectionState = state
   }

@@ -15,6 +15,13 @@ jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   }))
 )
 
+jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
+  rtcDrmConfigure: jest.fn(),
+  rtcDrmOnTrack: jest.fn(),
+  rtcDrmEnvironments: jest.fn(),
+  rtcDrmFeedFrame: jest.fn()
+}))
+
 const mockTokenGenerator = jest.fn(() => {
   return {
     urls: [
@@ -74,6 +81,8 @@ defineFeature(feature, test => {
     })
 
     then('peer connection state is connected', async () => {
+      // PeerConnection's track event is asynchronous now
+      await new Promise((resolve) => setTimeout(resolve, 100))
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       expect(videoElement.srcObject).not.toBeNull()
     })
