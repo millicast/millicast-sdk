@@ -71,12 +71,14 @@ const newViewer = () => {
   });
 
   millicastView.on('metadata', (metadata) => {
-    console.log('Metadata event:', metadata)
     if (metadata.unregistered) {
       console.log('received SEI unregistered messsage', metadata.unregistered)
     } 
     if (metadata.timecode) {
       console.log('received timecode messsage', metadata.timecode)
+    }
+    if (metadata.seiPicTimingTimeCodeArray) {
+      console.log('received PIC timing message', metadata.seiPicTimingTimeCodeArray)
     }
   })
 

@@ -287,10 +287,11 @@ export default class View extends BaseWebRTC {
         const metadata = event.data.metadata
         metadata.mid = event.data.mid
         metadata.track = this.tracksMidValues[event.data.mid]
-
-        const uuid = metadata.uuid
-        metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-        metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+        if (metadata.uuid) {
+          const uuid = metadata.uuid
+          metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+          metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+        }
         if (metadata.timecode) {
           metadata.timecode = new Date(decoder.decode(metadata.timecode))
         }
