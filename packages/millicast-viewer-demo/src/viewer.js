@@ -101,6 +101,10 @@ const newViewer = () => {
     }
   })
 
+  millicastView.on('error', (error) => {
+    console.log('Error from Millicast SDK', error)
+  })
+
   return millicastView
 }
 

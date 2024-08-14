@@ -130,6 +130,10 @@ export default class View extends BaseWebRTC {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
+   * millicastView.on('error', (error) => {
+   *   console.error('Error from Millicast SDK', error)
+   * })
+   *
    * //Start connection to broadcast
    * try {
    *  await millicastView.connect()
@@ -471,6 +475,7 @@ export default class View extends BaseWebRTC {
       }
       drmOptions.videoElement.addEventListener('rtcdrmerror', (event) => {
         logger.error('DRM error: ', event.detail.message, 'in video element:', drmOptions.videoElement.id)
+        this.emit('error', new Error(event.detail.message))
       })
     } catch (error) {
       logger.error('Failed to configure DRM with options:', options, 'error is:', error)

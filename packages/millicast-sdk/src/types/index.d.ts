@@ -1076,7 +1076,7 @@ declare module '@millicast/sdk' {
      */
     subscriberToken?: string;
   };
-  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated';
+  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated' | 'error';
 
   export type ViewConnectOptions = {
     /**
