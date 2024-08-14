@@ -146,7 +146,7 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Add remote receving track.
+   * Add remote receiving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array&lt;MediaStream>} streams - Streams the track will belong to.
    * @return {Promise&lt;RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
@@ -289,10 +289,11 @@ export default class View extends BaseWebRTC {
         const metadata = event.data.metadata
         metadata.mid = event.data.mid
         metadata.track = this.tracksMidValues[event.data.mid]
-
-        const uuid = metadata.uuid
-        metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-        metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+        if (metadata.uuid) {
+          const uuid = metadata.uuid
+          metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+          metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+        }
         if (metadata.timecode) {
           metadata.timecode = new Date(decoder.decode(metadata.timecode))
         }
@@ -306,10 +307,9 @@ export default class View extends BaseWebRTC {
             logger.info('The content could not be converted to JSON, returning raw bytes instead')
           }
         }
-
-        // for backwards compatibility, emit the old event as well
-        this.emit('onMetadata', metadata)
         this.emit('metadata', metadata)
+        // FIXME : Remove in v0.3.0
+        this.emit('onMetadata', metadata)
       }
     }
 
