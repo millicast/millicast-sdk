@@ -26,6 +26,8 @@ defineFeature(feature, test => {
     })
 
     then('track event is fired', async () => {
+      // PeerConnection's track event is asynchronous now
+      await new Promise((resolve) => setTimeout(resolve, 100))
       expect(handler).toBeCalledTimes(1)
       expect(handler).toBeCalledWith({ streams: ['new stream incoming'] })
     })

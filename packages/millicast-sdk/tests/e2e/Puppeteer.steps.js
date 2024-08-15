@@ -12,15 +12,15 @@ const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 let browser = null
 let page = null
 
-afterEach(async () => {
-  if (browser) {
-    await browser.close()
-  }
-  browser = null
-  page = null
-})
-
 defineFeature(feature, test => {
+  afterEach(async () => {
+    if (browser) {
+      await browser.close()
+    }
+    browser = null
+    page = null
+  })
+
   test('Load example page with Puppeteer', ({ given, when, then }) => {
     given('i have a browser opened', async () => {
       browser = await puppeteer.launch({ args: ['--no-sandbox'] })
