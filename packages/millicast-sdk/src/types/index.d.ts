@@ -936,6 +936,7 @@ declare module '@millicast/sdk' {
    * @property {String} streamName - Millicast publisher Stream Name.
    * @property {String} streamAccountId - Millicast Account ID.
    * @property {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
+   * @property {Boolean} [isDRMEnabled] - if DRM is enabled, default is false
    */
   /**
    * Simplify API calls to find the best server and region to publish and subscribe to.
@@ -1031,7 +1032,7 @@ declare module '@millicast/sdk' {
      * //Start connection to broadcast
      * await millicastView.connect(options)
      */
-    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string): Promise<MillicastDirectorResponse>;
+    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string, isDRMEnabled?: boolean): Promise<MillicastDirectorResponse>;
   }
   export type MillicastDirectorResponse = {
     /**
@@ -1075,7 +1076,7 @@ declare module '@millicast/sdk' {
      */
     subscriberToken?: string;
   };
-  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated';
+  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated' | 'error';
 
   export type ViewConnectOptions = {
     /**
@@ -1249,11 +1250,22 @@ declare module '@millicast/sdk' {
     layer?: LayerInfo;
   }
 
+  /**
+   * DRM profile from director API which includes the URLs of license servers
+   */
+  export interface DRMProfile {
+    playReadyUrl?: string;
+    widevineUrl?: string;
+    fairPlayUrl?: string;
+  }
+
   export type DirectorResponse = {
     urls: string[];
     jwt: string;
     iceServers: RTCIceServer[];
+    drmObject?: DRMProfile;
   };
+
   export type TokenGeneratorCallback = () => Promise<DirectorResponse>
   class BaseWebRTC extends events.EventEmitter {
     constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);
@@ -1360,6 +1372,42 @@ declare module '@millicast/sdk' {
     sendMetadata(message: String | Object, uuid: String): void;
     webRTCPeer?: PeerConnection;
   }
+
+  /**
+   * DRM encryption parameters
+   */
+  export type EncryptionParameters = {
+    /** 16-byte KeyID, in lowercase hexadecimal without separators */
+    keyId: string;
+
+    /** 16-byte initialization vector, in lowercase hexadecimal without separators */
+    iv: string;
+  }
+
+
+  /**
+   * The configuration for DRM playback
+   */
+  export type DRMOptions = {
+    /** The video element */
+    videoElement: HTMLVideoElement;
+
+    /** The video encryption parameters */
+    videoEncryptionParams: EncryptionParameters;
+
+    /** The video media ID of RTCRtpTransceiver */
+    videoMid: string;
+
+    /** The audio element */
+    audioElement: HTMLAudioElement;
+
+    /** The audio encryption parameters */
+    audioEncryptionParams?: EncryptionParameters;
+
+    /** The audio media ID of RTCRtpTransceiver */
+    audioMid?: string;
+  }
+
   /**
    * @class View
    * @extends BaseWebRTC
@@ -1464,6 +1512,28 @@ declare module '@millicast/sdk' {
      * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
      */
     unproject(mediaIds: Array<string>): Promise<void>;
+
+    /**
+     * Configure DRM protected stream.
+     * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+     */
+    configureDRM(options: DRMOptions);
+
+    /**
+     * Remove DRM configuration for a mediaId
+     */
+    removeDRMConfiguration (mediaId: string);
+
+    /**
+     * Check if there are any DRM protected Track
+     */
+    get isDRMOn(): boolean;
+
+    /** Exchange the DRM configuration between two transceivers
+     *  Make sure both of the transceivers have been used for DRM protected streams
+     */
+    exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string);
+
     replaceConnection(): Promise<void>;
     webRTCPeer?: PeerConnection;
   }

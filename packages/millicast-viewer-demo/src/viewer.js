@@ -21,7 +21,11 @@ const accountId = !!href.searchParams.get("accountId")
   ? href.searchParams.get("accountId")
   : import.meta.env.MILLICAST_ACCOUNT_ID;
 
+// this is required for DRM streams, otherwise Director API will return errors
+const subscriberToken = href.searchParams.get("token") || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
+
 const metadata = href.searchParams.get("metadata") === "true";
+const enableDRM = href.searchParams.get("drm") === 'true';
 const disableVideo = href.searchParams.get("disableVideo") === "true";
 const disableAudio = href.searchParams.get("disableAudio") === "true";
 const muted =
@@ -49,7 +53,6 @@ const disableFull =
     href.searchParams.get("disableFull") !== null) ||
   disableControls;
 
-//console.log(disableVolume, disablePlay, disableFull);
 let playing = false;
 let fullBtn = document.querySelector("#fullBtn");
 let video = document.querySelector("video");
@@ -58,26 +61,48 @@ let video = document.querySelector("video");
 let millicastView = null
 
 const newViewer = () => {
-  const tokenGenerator = () => Director.getSubscriber(streamName, accountId)
+  const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken, enableDRM);
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
+    if (event.name === "active") {
+      const encryption = event.data.encryption
+      if (encryption && enableDRM) {
+        const drmOptions = {
+          videoElement: document.querySelector("video"),
+          audioElement: document.querySelector("audio"),
+          videoEncryptionParams: encryption,
+          videoMid: '0',
+        };
+        const audioTrackInfo = event.data.tracks.find((track) => track.type === 'audio')
+        if (audioTrackInfo) {
+          drmOptions.audioMid = audioTrackInfo.mediaId;
+        }
+        millicastView.configureDRM(drmOptions);
+      }
+    }
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
   });
   millicastView.on("track", (event) => {
-    addStream(event.streams[0]);
+    if (!millicastView.isDRMOn) addStream(event.streams[0]);
   });
 
   millicastView.on('metadata', (metadata) => {
-    console.log('Metadata event:', metadata)
     if (metadata.unregistered) {
       console.log('received SEI unregistered messsage', metadata.unregistered)
     } 
     if (metadata.timecode) {
       console.log('received timecode messsage', metadata.timecode)
     }
+    if (metadata.seiPicTimingTimeCodeArray) {
+      console.log('received PIC timing message', metadata.seiPicTimingTimeCodeArray)
+    }
+  })
+
+  millicastView.on('error', (error) => {
+    console.log('Error from Millicast SDK', error)
   })
 
   return millicastView
@@ -147,7 +172,7 @@ const addStream = (stream) => {
       } else if (video.paused) {
         try{ tmp.paused(); } catch (e) {}
       }
-      //Replace the video when media has started playing              
+      //Replace the video when media has started playing
       tmp.addEventListener('loadedmetadata', (event) => {
       video.parentNode.replaceChild(tmp, video);
       //Pause previous video to avoid duplicated audio until the old PC is closed
@@ -190,6 +215,7 @@ const subscribe = async () => {
   try {
     isSubscribed = true
     const options = {
+      enableDRM,
       metadata,
       disableVideo,
       disableAudio,
