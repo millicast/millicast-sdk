@@ -15,7 +15,7 @@
     "../../node_modules/jsdoc-i18n-plugin/index.js"
   ],
   "markdown": {
-    "idInHeadings": true 
+    "idInHeadings": true
   },
   "i18n": {
     "locale": "en",

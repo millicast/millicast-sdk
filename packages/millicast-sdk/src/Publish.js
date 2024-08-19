@@ -335,4 +335,4 @@ export default class Publish extends BaseWebRTC {
       logger.warn(warningMessage)
     }
   }
-};
+}

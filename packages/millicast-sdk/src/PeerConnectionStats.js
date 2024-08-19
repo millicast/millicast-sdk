@@ -192,4 +192,4 @@ export default class PeerConnectionStats extends EventEmitter {
     logger.info('Stopping peer connection stats')
     this.collection.stop()
   }
-};
+}

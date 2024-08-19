@@ -2,7 +2,6 @@
   "root": true,
   "ignorePatterns": ["**/*"],
   "plugins": ["@nx"],
-  "extends": "standard",
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
@@ -33,7 +32,7 @@
       "rules": {}
     },
     {
-      "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
+      "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx", "*.steps.js", "*.test.js", "**/__mocks__/**"],
       "env": {
         "jest": true
       },

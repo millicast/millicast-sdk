@@ -1,8 +1,8 @@
-import * as js_logger from 'js-logger';
-import * as events from 'events';
+import * as js_logger from 'js-logger'
+import * as events from 'events'
 
 declare module '@millicast/sdk' {
-  
+
   export type LogLevel = {
     /**
      * - The numerical representation of the level.
@@ -26,7 +26,7 @@ declare module '@millicast/sdk' {
    * to its documentation or following our examples.
    *
    *
-   * 
+   *
    * @property {LogLevel} TRACE - Logger.TRACE
    * @property {LogLevel} DEBUG - Logger.DEBUG
    * @property {LogLevel} INFO  - Logger.INFO
@@ -80,10 +80,10 @@ declare module '@millicast/sdk' {
      */
     statsFormat : StatsFormat;
   }
-  
+
   export type DiagnosticsResponse = {
     /**
-     * Represents the Millicast product in use. 
+     * Represents the Millicast product in use.
      */
     client: string;
     /**
@@ -115,28 +115,28 @@ declare module '@millicast/sdk' {
      */
     connection: string,
     /**
-     * 
+     *
      */
     streamViewId
     /**
-     * A collection of log events reocrded until the diagnose method  was called 
+     * A collection of log events reocrded until the diagnose method  was called
      */
-    history : Array<String>,
+    history : Array<string>,
     /**
-     * represents a collection of the webRTC stats collected before the diagnose call. 
+     * represents a collection of the webRTC stats collected before the diagnose call.
      */
     stats : Array<Object>,
 
     /**
-     * Represents how long the stream has been connected for. If a stream disconnects and 
-     * re-connects a few times, this will reflect the duration only since the last time a 
+     * Represents how long the stream has been connected for. If a stream disconnects and
+     * re-connects a few times, this will reflect the duration only since the last time a
      * successful connection was established
      */
-    connectionDurationMs: Number
+    connectionDurationMs: number
   }
 
   export class Logger {
-    enabledFor: (level: any, loggerName: any) => boolean;
+    enabledFor: (level: any, loggerName: any) => boolean
     /**
      * @function
      * @name getHistory
@@ -151,14 +151,14 @@ declare module '@millicast/sdk' {
      * //   "[Publish]  2021-04-05T14:09:27.066Z - Broadcasting"
      * // ]
      */
-    getHistory: () => Array<string>;
+    getHistory: () => Array<string>
     /**
      * @function
      * @name getHistoryMaxSize
      * @description Get the maximum count of logs preserved during a session.
      * @example Logger.getHistoryMaxSize()
      */
-    getHistoryMaxSize: () => number;
+    getHistoryMaxSize: () => number
     /**
      * @function
      * @name setHistoryMaxSize
@@ -167,7 +167,7 @@ declare module '@millicast/sdk' {
      * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
      * @example Logger.setHistoryMaxSize(100)
      */
-    setHistoryMaxSize: (maxSize: number) => void;
+    setHistoryMaxSize: (maxSize: number) => void
     /**
      * @function
      * @name setLevel
@@ -180,7 +180,7 @@ declare module '@millicast/sdk' {
      * // Module Level
      * Logger.get('Publish').setLevel(Logger.DEBUG)
      */
-    setLevel: (level: LogLevel) => void;
+    setLevel: (level: LogLevel) => void
     /**
      * @function
      * @name getLevel
@@ -198,7 +198,7 @@ declare module '@millicast/sdk' {
      * // Output
      * // {value: 5, name: 'WARN'}
      */
-    getLevel: () => LogLevel;
+    getLevel: () => LogLevel
     /**
      * @function
      * @name get
@@ -252,7 +252,7 @@ declare module '@millicast/sdk' {
      *
      * Logger.setHandler(myHandler, Logger.INFO)
      */
-    setHandler: (handler: (messages: any[], context: any, level: LogLevel, name: string | null) => any, level: LogLevel) => void;
+    setHandler: (handler: (messages: any[], context: any, level: LogLevel, name: string | null) => any, level: LogLevel) => void
     /**
      * @function
      * @name diagnose
@@ -279,13 +279,13 @@ declare module '@millicast/sdk' {
      *
      * // Output: Diagnostics object with specified configuration
      */
-    diagnose: (config: DiagnosticReportConfiguration) => DiagnosticsResponse;
+    diagnose: (config: DiagnosticReportConfiguration) => DiagnosticsResponse
     /**
      * @var
      * @name VERSION
      * @description Returns the current SDK version.
      */
-    VERSION: String;
+    VERSION: string
     useDefaults(options?: js_logger.ILoggerOpts): void;
 	  createDefaultHandler(options?: any): js_logger.ILogHandler;
     static get TRACE(): js_logger.ILogLevel;
@@ -498,7 +498,7 @@ declare module '@millicast/sdk' {
     /**
      * - Total number of retransmitted packets sent.
      */
-    retransmittedPacketsSent: number; 
+    retransmittedPacketsSent: number;
     /**
      * - Change in the number of retransmitted packets sent since the last report.
      */
@@ -517,20 +517,20 @@ declare module '@millicast/sdk' {
     framesSent : number;
     /**
      * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
-     * 
-     */  
+     *
+     */
     [qualityLimitationDurations] : Date
   };
 
   class PeerConnectionStats extends events.EventEmitter {
     constructor(peer: PeerConnection, config : PeerConnectionConfig);
-    peer: PeerConnection;
-    stats: ConnectionStats;
-    emitInterval: NodeJS.Timer;
-    previousStats: ConnectionStats;
+    peer: PeerConnection
+    stats: ConnectionStats
+    emitInterval: NodeJS.Timer
+    previousStats: ConnectionStats
     /**
      * Initialize the statistics monitoring of the RTCPeerConnection.
-     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.  
+     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.
      */
     init(statsIntervalMs : number): void;
     /**
@@ -621,12 +621,13 @@ declare module '@millicast/sdk' {
       streamName: any;
       url: string;
     });
-    streamName: any;
-    wsUrl: string;
-    webSocket: WebSocket;
-    transactionManager: any;
-    serverId: any;
-    clusterId: any;
+
+    streamName: any
+    wsUrl: string
+    webSocket: WebSocket
+    transactionManager: any
+    serverId: any
+    clusterId: any
     /**
      * Starts a WebSocket connection with signaling server.
      * @example const response = await millicastSignaling.connect()
@@ -767,7 +768,7 @@ declare module '@millicast/sdk' {
    */
   export class PeerConnection extends events.EventEmitter {
     /**
-     * 
+     *
      * @property {Array<Object>} codecs
      * @property {String} codecs.codec - Audio or video codec name.
      * @property {String} codecs.mimeType - Audio or video codec mime type.
@@ -781,10 +782,10 @@ declare module '@millicast/sdk' {
      * @param {"audio"|"video"} kind - Type of media for which you wish to get sender capabilities.
      * @returns {MillicastCapabilities} Object with all capabilities supported by user's browser and Millicast Media Server.
      */
-    static getCapabilities(kind: "audio" | "video"): MillicastCapabilities;
-    sessionDescription: RTCSessionDescriptionInit;
-    peer: RTCPeerConnection;
-    peerConnectionStats: PeerConnectionStats;
+    static getCapabilities(kind: 'audio' | 'video'): MillicastCapabilities;
+    sessionDescription: RTCSessionDescriptionInit
+    peer: RTCPeerConnection
+    peerConnectionStats: PeerConnectionStats
     /**
      * Instantiate a new RTCPeerConnection.
      * @param {PeerConnectionConfig} config - Peer configuration.
@@ -792,7 +793,7 @@ declare module '@millicast/sdk' {
      * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
      * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig, mode : "Publisher" | "Viewer"): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode : 'Publisher' | 'Viewer'): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -840,6 +841,7 @@ declare module '@millicast/sdk' {
       disableVideo: boolean;
       setSDPToPeer: boolean;
     }): Promise<string>;
+
     /**
      * Add remote receiving track.
      * @param {String} media - Media kind ('audio' | 'video').
@@ -1001,7 +1003,7 @@ declare module '@millicast/sdk' {
      * //Start broadcast
      * await millicastPublish.connect(broadcastOptions)
      */
-    static getPublisher(options: DirectorPublisherOptions | string, streamName?: string, streamType?: ("WebRtc" | "Rtmp")): Promise<MillicastDirectorResponse>;
+    static getPublisher(options: DirectorPublisherOptions | string, streamName?: string, streamType?: ('WebRtc' | 'Rtmp')): Promise<MillicastDirectorResponse>;
     /**
      * Get subscriber connection data.
      * @param {DirectorSubscriberOptions | String} options - Millicast options.
@@ -1060,7 +1062,7 @@ declare module '@millicast/sdk' {
     /**
      * - Millicast Stream Type.
      */
-    streamType?: ("WebRtc" | "Rtmp");
+    streamType?: ('WebRtc' | 'Rtmp');
   };
   export type DirectorSubscriberOptions = {
     /**
@@ -1216,7 +1218,7 @@ declare module '@millicast/sdk' {
     /**
      * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
      */
-    priority?: Number;
+    priority?: number;
   }
 
   export interface PeerConnectionConfig extends RTCConfiguration {
@@ -1269,16 +1271,16 @@ declare module '@millicast/sdk' {
   export type TokenGeneratorCallback = () => Promise<DirectorResponse>
   class BaseWebRTC extends events.EventEmitter {
     constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);
-    webRTCPeer?: PeerConnection;
-    signaling: Signaling;
-    streamName: string;
-    autoReconnect: boolean | undefined;
-    reconnectionInterval: number;
-    alreadyDisconnected: boolean;
-    firstReconnection: boolean;
-    stopReconnection: boolean;
-    tokenGenerator: TokenGeneratorCallback;
-    options: ViewConnectOptions | PublishConnectOptions;
+    webRTCPeer?: PeerConnection
+    signaling: Signaling
+    streamName: string
+    autoReconnect: boolean | undefined
+    reconnectionInterval: number
+    alreadyDisconnected: boolean
+    firstReconnection: boolean
+    stopReconnection: boolean
+    tokenGenerator: TokenGeneratorCallback
+    options: ViewConnectOptions | PublishConnectOptions
     /**
     * Get current RTC peer connection.
     * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -1369,8 +1371,8 @@ declare module '@millicast/sdk' {
      * @param {String | Object} message The data to be sent as SEI user unregistered data.
      * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
      */
-    sendMetadata(message: String | Object, uuid: String): void;
-    webRTCPeer?: PeerConnection;
+    sendMetadata(message: string | Object, uuid: string): void;
+    webRTCPeer?: PeerConnection
   }
 
   /**
@@ -1383,7 +1385,6 @@ declare module '@millicast/sdk' {
     /** 16-byte initialization vector, in lowercase hexadecimal without separators */
     iv: string;
   }
-
 
   /**
    * The configuration for DRM playback
@@ -1535,6 +1536,6 @@ declare module '@millicast/sdk' {
     exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string);
 
     replaceConnection(): Promise<void>;
-    webRTCPeer?: PeerConnection;
+    webRTCPeer?: PeerConnection
   }
 }
