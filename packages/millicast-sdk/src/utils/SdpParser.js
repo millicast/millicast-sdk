@@ -379,7 +379,7 @@ const SdpParser = {
           const id = offeredMedia.getId()
           const header = 'a=extmap:' + key + ' ' + val + '\r\n'
           const regex = new RegExp('(a=mid:' + id + '\r\n(?:.*\r\n)*?)', 'g')
-          localDescription = localDescription.replace(regex, (_, p1, p2) => p1 + header)
+          localDescription = localDescription.replace(regex, (_, p1) => p1 + header)
         }
       })
     }

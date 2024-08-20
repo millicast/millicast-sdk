@@ -90,6 +90,7 @@ export const peerConnectionStatsEvents = {
    * @param {Object} webRTCStats - The statistics object containing various WebRTC stats
    */
 const parseWebRTCStats = (webRTCStats) => {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const { input, output, rawStats, ...filteredStats } = webRTCStats
   const statsObject = {
     ...filteredStats,
@@ -180,6 +181,7 @@ export default class PeerConnectionStats extends EventEmitter {
    * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
    * @returns {null} Method deprecated and no longer returns meaningful data.
    */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   parseStats (rawStats) {
     logger.warn('The parseStats method is deprecated and will be removed in future releases.')
     return null

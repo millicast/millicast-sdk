@@ -191,7 +191,7 @@ class SPSState {
           }
         : undefined
 
-      function parseHRDParameters (reader) {
+      const parseHRDParameters = (reader) => {
         const cpb_cnt_minus1 = reader.readExpGolombUnsigned()
         reader.skip(4) // bit_rate_scale
         reader.skip(4) // cpb_size_scale
@@ -229,6 +229,7 @@ class SPSState {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   collectH265SPS (rbsp) {
     // TODO: parse H265 SPS
   }
@@ -245,6 +246,7 @@ class SPSState {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   collectH265PPS (rbsp) {
     // TODO: parse H265 PPS
   }

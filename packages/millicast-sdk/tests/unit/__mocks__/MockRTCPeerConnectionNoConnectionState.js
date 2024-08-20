@@ -11,7 +11,7 @@ export const defaultConfig = {
 }
 
 export default class MockRTCPeerConnectionNoConnectionState extends MockRTCPeerConnection {
-  constructor (config = null) {
+  constructor () {
     super()
     this.connectionState = null
     this.iceConnectionState = 'new'
@@ -22,7 +22,7 @@ export default class MockRTCPeerConnectionNoConnectionState extends MockRTCPeerC
     this.iceConnectionState = 'connected'
   }
 
-  onconnectionstatechange (state) {}
+  onconnectionstatechange () {}
 
   oniceconnectionstatechange (state) {
     this.iceConnectionState = state

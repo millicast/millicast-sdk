@@ -14,8 +14,12 @@ let synchronizationSourcesWithMetadata = []
 
 function createReceiverTransform (mid) {
   return new TransformStream({
-    start () {},
-    flush () {},
+    start () {
+      // This function is intentionally left empty
+    },
+    flush () {
+      // This function is intentionally left empty
+    },
     async transform (encodedFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
@@ -59,8 +63,12 @@ function refreshSynchronizationSources (newSyncSource) {
 
 function createSenderTransform () {
   return new TransformStream({
-    start () {},
-    flush () {},
+    start () {
+      // This function is intentionally left empty
+    },
+    flush () {
+      // This function is intentionally left empty
+    },
     async transform (encodedFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {

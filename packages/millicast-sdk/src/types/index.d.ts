@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as js_logger from 'js-logger'
 import * as events from 'events'
 

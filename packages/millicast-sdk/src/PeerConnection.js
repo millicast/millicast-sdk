@@ -445,7 +445,7 @@ const addPeerEvents = (instanceClass, peer) => {
   }
 
   if (peer.connectionState) {
-    peer.onconnectionstatechange = (event) => {
+    peer.onconnectionstatechange = () => {
       logger.info('Peer connection state change: ', peer.connectionState)
       /**
       * Peer connection state change. Could be new, connecting, connected, disconnected, failed or closed.
@@ -457,7 +457,7 @@ const addPeerEvents = (instanceClass, peer) => {
     }
   } else {
     // ConnectionStateChange does not exists in Firefox.
-    peer.oniceconnectionstatechange = (event) => {
+    peer.oniceconnectionstatechange = () => {
       logger.info('Peer ICE connection state change: ', peer.iceConnectionState)
       /**
       * @fires PeerConnection#connectionStateChange
@@ -465,7 +465,7 @@ const addPeerEvents = (instanceClass, peer) => {
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }
   }
-  peer.onnegotiationneeded = async (event) => {
+  peer.onnegotiationneeded = async () => {
     if (!peer.remoteDescription) return
     logger.info('Peer onnegotiationneeded, updating local description')
     const offer = await peer.createOffer()
