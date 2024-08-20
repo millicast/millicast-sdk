@@ -7,7 +7,7 @@ const feature = loadFeature('../features/ManageSignaling.feature', { loadRelativ
 
 global.WebSocket = WebSocket
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   const publishWebSocketLocation = 'ws://localhost:8080'
   const streamName = 'My Stream Name'
   let server = null
@@ -18,7 +18,7 @@ defineFeature(feature, test => {
     server = new WS(publishWebSocketLocation, { jsonProtocol: true })
     signaling = new Signaling({
       streamName,
-      url: publishWebSocketLocation
+      url: publishWebSocketLocation,
     })
   })
 
@@ -65,7 +65,7 @@ defineFeature(feature, test => {
       server.on('connection', () => server.error())
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       signaling.on('wsConnectionError', handler)
       await signaling.connect()

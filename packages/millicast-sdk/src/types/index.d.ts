@@ -3,17 +3,16 @@ import * as js_logger from 'js-logger'
 import * as events from 'events'
 
 declare module '@millicast/sdk' {
-
   export type LogLevel = {
     /**
      * - The numerical representation of the level.
      */
-    value: number;
+    value: number
     /**
      * - Human readable name of the log level.
      */
-    name: string;
-  };
+    name: string
+  }
   /**
    * @module Logger
    * @description Manages all log messages from SDK modules, you can use this logger to add your custom
@@ -57,64 +56,64 @@ declare module '@millicast/sdk' {
    * // Timer name: 35282.997802734375 ms
    */
 
-  export type StatsFormat = Logger.JSON | Logger.CMCD;
+  export type StatsFormat = Logger.JSON | Logger.CMCD
 
   export type DiagnosticReportConfiguration = {
     /**
      *  Number of stats objects to be included in the diagnostics report.
      */
-    statsCount : number;
+    statsCount: number
 
     /**
      *  Amount of history messages to be returned.
      */
-    historySize : number;
+    historySize: number
 
     /**
      * Levels of history messages to be included. Defaults to Logger.TRACE
      * Possible values include 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'
      */
-    minLogLevel : string;
+    minLogLevel: string
 
     /**
      * Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
      */
-    statsFormat : StatsFormat;
+    statsFormat: StatsFormat
   }
 
   export type DiagnosticsResponse = {
     /**
      * Represents the Millicast product in use.
      */
-    client: string;
+    client: string
     /**
      * The version of the Millicast client in use
      */
-    version: string,
+    version: string
     /**
      * UNIX timestamp to indicate when this report was generated
      */
-    timestamp: number,
+    timestamp: number
     /**
      * Device user agent string
      */
-    userAgent: string,
+    userAgent: string
     /**
      * The account Id for which the stream is being published/viewed
      */
-    accountId:string,
+    accountId: string
     /**
      * The Millicast stream name being published/viewed
      */
-    streamName: string,
+    streamName: string
     /**
      * A session level identifier for the client instancce
      */
-    subscriberId:string,
+    subscriberId: string
     /**
      * Connection status.
      */
-    connection: string,
+    connection: string
     /**
      *
      */
@@ -122,11 +121,11 @@ declare module '@millicast/sdk' {
     /**
      * A collection of log events reocrded until the diagnose method  was called
      */
-    history : Array<string>,
+    history: Array<string>
     /**
      * represents a collection of the webRTC stats collected before the diagnose call.
      */
-    stats : Array<Object>,
+    stats: Array<Object>
 
     /**
      * Represents how long the stream has been connected for. If a stream disconnects and
@@ -221,7 +220,7 @@ declare module '@millicast/sdk' {
      * myLogger.getLevel()
      * // {value: 3, name: 'INFO'}
      */
-    get: (name: string) => any;
+    get: (name: string) => any
     /**
      * Callback which handles log messages.
      *
@@ -253,7 +252,10 @@ declare module '@millicast/sdk' {
      *
      * Logger.setHandler(myHandler, Logger.INFO)
      */
-    setHandler: (handler: (messages: any[], context: any, level: LogLevel, name: string | null) => any, level: LogLevel) => void
+    setHandler: (
+      handler: (messages: any[], context: any, level: LogLevel, name: string | null) => any,
+      level: LogLevel
+    ) => void
     /**
      * @function
      * @name diagnose
@@ -262,13 +264,13 @@ declare module '@millicast/sdk' {
      * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
      * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
      * @param {String} [config.minLogLevel] - Levels of history messages to be included.
-          * examples of minLogLevel values in level order:
-          * 1 - TRACE
-          * 2 - DEBUG
-          * 3 - INFO
-          * 4 - WARN
-          * 5 - ERROR
-          * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
+     * examples of minLogLevel values in level order:
+     * 1 - TRACE
+     * 2 - DEBUG
+     * 3 - INFO
+     * 4 - WARN
+     * 5 - ERROR
+     * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
      * @param {String} [config.statsFormat='JSON'] - Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
      * @returns {Object} An object containing relevant diagnostics information such as userAgent, SDK version, and stats data.
      * @example
@@ -287,244 +289,244 @@ declare module '@millicast/sdk' {
      * @description Returns the current SDK version.
      */
     VERSION: string
-    useDefaults(options?: js_logger.ILoggerOpts): void;
-	  createDefaultHandler(options?: any): js_logger.ILogHandler;
-    static get TRACE(): js_logger.ILogLevel;
-    static get DEBUG(): js_logger.ILogLevel;
-    static get INFO(): js_logger.ILogLevel;
-    static get TIME(): js_logger.ILogLevel;
-    static get WARN(): js_logger.ILogLevel;
-    static get ERROR(): js_logger.ILogLevel;
-    static get OFF(): js_logger.ILogLevel;
-    trace(...x: any[]): void;
-    debug(...x: any[]): void;
-    info(...x: any[]): void;
-    log(...x: any[]): void;
-    warn(...x: any[]): void;
-    error(...x: any[]): void;
-    time(label: string): void;
-    timeEnd(label: string): void;
+    useDefaults(options?: js_logger.ILoggerOpts): void
+    createDefaultHandler(options?: any): js_logger.ILogHandler
+    static get TRACE(): js_logger.ILogLevel
+    static get DEBUG(): js_logger.ILogLevel
+    static get INFO(): js_logger.ILogLevel
+    static get TIME(): js_logger.ILogLevel
+    static get WARN(): js_logger.ILogLevel
+    static get ERROR(): js_logger.ILogLevel
+    static get OFF(): js_logger.ILogLevel
+    trace(...x: any[]): void
+    debug(...x: any[]): void
+    info(...x: any[]): void
+    log(...x: any[]): void
+    warn(...x: any[]): void
+    error(...x: any[]): void
+    time(label: string): void
+    timeEnd(label: string): void
   }
 
   export type ConnectionStats = {
     /**
      * - All RTCPeerConnection stats without parsing. Reference {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport}.
      */
-    raw: RTCStatsReport;
+    raw: RTCStatsReport
     /**
      * - Parsed audio information.
      */
-    audio: TrackReport;
+    audio: TrackReport
     /**
      * - Parsed video information.
      */
-    video: TrackReport;
+    video: TrackReport
     /**
      * - The available outbound capacity of the network connection. The higher the value, the more bandwidth you can assume is available for outgoing data. The value is reported in bits per second.
      *
      * This value comes from the nominated candidate-pair.
      */
-    availableOutgoingBitrate: number;
+    availableOutgoingBitrate: number
     /**
      * - Total round trip time is the total time in seconds that has elapsed between sending STUN requests and receiving the responses.
      *
      * This value comes from the nominated candidate-pair.
      */
-    totalRoundTripTime: number;
+    totalRoundTripTime: number
     /**
      * - Current round trip time indicate the number of seconds it takes for data to be sent by this peer to the remote peer and back over the connection described by this pair of ICE candidates.
      *
      * This value comes from the nominated candidate-pair.
      */
-    currentRoundTripTime: number;
+    currentRoundTripTime: number
     /**
      * - Local candidate type from the nominated candidate-pair which indicates the type of ICE candidate the object represents.
      */
-    candidateType: RTCIceCandidateType;
-  };
+    candidateType: RTCIceCandidateType
+  }
   export type TrackReport = {
     /**
      * - Parsed information of each inbound-rtp.
      */
-    inbounds: Array<InboundStats>;
+    inbounds: Array<InboundStats>
     /**
      * - Parsed information of each outbound-rtp.
      */
-    outbounds: Array<OutboundStats>;
-  };
+    outbounds: Array<OutboundStats>
+  }
   export type InboundStats = {
     /**
      * - inbound-rtp Id.
      */
-    id: string;
+    id: string
     /**
      * - Current Jitter measured in seconds.
      */
-    jitter: number;
+    jitter: number
     /**
      * - Mime type if related report had codec report associated.
      */
-    mimeType?: string;
+    mimeType?: string
     /**
      * - Current framerate if it's video report.
      */
-    framesPerSecond?: number;
+    framesPerSecond?: number
     /**
      * - Current frame height if it's video report.
      */
-    frameHeight?: number;
+    frameHeight?: number
     /**
      * - Current frame width if it's video report.
      */
-    frameWidth?: number;
+    frameWidth?: number
     /**
      * - Total number of key frames that have been decoded if it's video report.
      */
-    keyFramesDecoded?: number;
+    keyFramesDecoded?: number
     /**
      * - Total number of frames that have been decoded if it's video report.
      */
-    framesDecoded?: number;
+    framesDecoded?: number
     /**
      * - Total number of frames that have been dropped if it's video report.
      */
-    framesDropped?: number;
+    framesDropped?: number
     /**
      * - Total number of frames that have been received if it's video report.
      */
-    framesReceived?: number;
+    framesReceived?: number
     /**
      * - Timestamp of report.
      */
-    timestamp: number;
+    timestamp: number
     /**
      * - Total bytes received is an integer value which indicates the total number of bytes received so far from this synchronization source.
      */
-    totalBytesReceived: number;
+    totalBytesReceived: number
     /**
      * - Total packets received indicates the total number of packets of any kind that have been received on the connection described by the pair of candidates.
      */
-    totalPacketsReceived: number;
+    totalPacketsReceived: number
     /**
      * - Total packets lost.
      */
-    totalPacketsLost: number;
+    totalPacketsLost: number
     /**
      * - Total packet lost ratio per second.
      */
-    packetsLostRatioPerSecond: number;
+    packetsLostRatioPerSecond: number
     /**
      * - Total packet lost delta per second.
      */
-    packetsLostDeltaPerSecond: number;
+    packetsLostDeltaPerSecond: number
     /**
      * - Current bitrate in Bytes per second.
      */
-    bitrate: number;
+    bitrate: number
     /**
      * - Current bitrate in bits per second.
      */
-    bitrateBitsPerSecond: number;
+    bitrateBitsPerSecond: number
     /**
      * - Total delay in seconds currently experienced by the jitter buffer.
      */
-    jitterBufferDelay : number;
+    jitterBufferDelay: number
     /**
      * - Total number of packets emitted from the jitter buffer.
      */
-    jitterBufferEmittedCount : number;
-  };
+    jitterBufferEmittedCount: number
+  }
 
   export type OutboundStats = {
     /**
      * - outbound-rtp Id.
      */
-    id: string;
+    id: string
     /**
      * - Mime type if related report had codec report associated.
      */
-    mimeType?: string;
+    mimeType?: string
     /**
      * - Current framerate if it's video report.
      */
-    framesPerSecond?: number;
+    framesPerSecond?: number
     /**
      * - Current frame height if it's video report.
      */
-    frameHeight?: number;
+    frameHeight?: number
     /**
      * - Current frame width if it's video report.
      */
-    frameWidth?: number;
+    frameWidth?: number
     /**
      * - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
      */
-    qualityLimitationReason?: string;
+    qualityLimitationReason?: string
     /**
      * - Timestamp of report.
      */
-    timestamp: number;
+    timestamp: number
     /**
      * - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
      */
-    totalBytesSent: number;
+    totalBytesSent: number
     /**
      * - Current bitrate in Bytes per second.
      */
-    bitrate: number;
+    bitrate: number
     /**
      * - Current bitrate in bits per second.
      */
-    bitrateBitsPerSecond: number;
+    bitrateBitsPerSecond: number
     /**
      *  - Change in the number of bytes sent since the last report.
      */
-    bytesSentDelta: number;
+    bytesSentDelta: number
     /**
      *  - Total number of packets sent.
      */
-    totalPacketsSent : number;
+    totalPacketsSent: number
     /**
      * - Change in the number of packets sent since the last report.
      */
-    packetsSentDelta : number;
+    packetsSentDelta: number
     /**
      * - Rate at which packets are being sent, measured in packets per second.
      */
-    packetRate : number;
+    packetRate: number
     /**
      * - The target bitrate for the encoder, in bits per second.
      */
-    targetBitrate : number;
+    targetBitrate: number
     /**
      * - Total number of retransmitted packets sent.
      */
-    retransmittedPacketsSent: number;
+    retransmittedPacketsSent: number
     /**
      * - Change in the number of retransmitted packets sent since the last report.
      */
-    retransmittedPacketsSentDelta : number;
+    retransmittedPacketsSentDelta: number
     /**
      *  - Total number of bytes that have been retransmitted.
      */
-    retransmittedBytesSent : number;
+    retransmittedBytesSent: number
     /**
      *  - Change in the number of retransmitted bytes sent since the last report.
      */
-    retransmittedBytesSentDelta : number;
+    retransmittedBytesSentDelta: number
     /**
      * - Total number of frames sent(applicable for video).
      */
-    framesSent : number;
+    framesSent: number
     /**
      * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
      *
      */
-    [qualityLimitationDurations] : Date
-  };
+    [qualityLimitationDurations]: Date
+  }
 
   class PeerConnectionStats extends events.EventEmitter {
-    constructor(peer: PeerConnection, config : PeerConnectionConfig);
+    constructor(peer: PeerConnection, config: PeerConnectionConfig)
     peer: PeerConnection
     stats: ConnectionStats
     emitInterval: NodeJS.Timer
@@ -533,55 +535,55 @@ declare module '@millicast/sdk' {
      * Initialize the statistics monitoring of the RTCPeerConnection.
      * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.
      */
-    init(statsIntervalMs : number): void;
+    init(statsIntervalMs: number): void
     /**
      * Parse incoming RTCPeerConnection stats.
      * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
      * @returns {ConnectionStats} RTCPeerConnection stats parsed.
      */
-    parseStats(rawStats: RTCStatsReport): ConnectionStats;
+    parseStats(rawStats: RTCStatsReport): ConnectionStats
     /**
      * Stops the monitoring of RTCPeerConnection statistics.
      */
-    stop(): void;
+    stop(): void
   }
 
   export type ViewerCount = {
-    viewercount: number;
+    viewercount: number
   }
 
   export type MediaTrackInfo = {
-    trackId: string;
-    media: 'audio' | 'video';
+    trackId: string
+    media: 'audio' | 'video'
   }
 
   export type MediaStreamSource = {
-    readonly streamId: string;
-    sourceId: string;
-    readonly tracks: MediaTrackInfo[];
+    readonly streamId: string
+    sourceId: string
+    readonly tracks: MediaTrackInfo[]
   }
 
   export type MediaLayer = {
-    id: string;
-    bitrate: number;
-    simulcastIdx: number;
-    layers: LayerInfo[];
+    id: string
+    bitrate: number
+    simulcastIdx: number
+    layers: LayerInfo[]
   }
 
   export type Media = {
-    active: MediaLayer[];
-    inactive: MediaLayer[];
-    layers: LayerInfo[];
+    active: MediaLayer[]
+    inactive: MediaLayer[]
+    layers: LayerInfo[]
   }
 
   export type MediaStreamLayers = {
-    medias: Media[];
+    medias: Media[]
   }
 
   export type BroadcastEvent = {
-    type: string;
-    name: Event;
-    data: string | ViewerCount | MediaStreamSource | MediaStreamLayers;
+    type: string
+    name: Event
+    data: string | ViewerCount | MediaStreamSource | MediaStreamLayers
   }
 
   /**
@@ -618,10 +620,7 @@ declare module '@millicast/sdk' {
    * @param {String} options.url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
    */
   export class Signaling extends events.EventEmitter {
-    constructor(options?: {
-      streamName: any;
-      url: string;
-    });
+    constructor(options?: { streamName: any; url: string })
 
     streamName: any
     wsUrl: string
@@ -638,12 +637,12 @@ declare module '@millicast/sdk' {
      * @fires Signaling#wsConnectionClose
      * @fires Signaling#broadcastEvent
      */
-    connect(): Promise<WebSocket>;
+    connect(): Promise<WebSocket>
     /**
      * Close WebSocket connection with Millicast server.
      * @example millicastSignaling.close()
      */
-    close(): void;
+    close(): void
     /**
      * Establish WebRTC connection with Millicast Server as Subscriber role.
      * @param {String} sdp - The SDP information created by your offer.
@@ -651,7 +650,12 @@ declare module '@millicast/sdk' {
      * @example const response = await millicastSignaling.subscribe(sdp)
      * @return {Promise<String>} Promise object which represents the SDP command response.
      */
-    subscribe(sdp: string, options: SignalingSubscribeOptions | boolean, pinnedSourceId?: string, excludedSourceIds?: Array<string>): Promise<string>;
+    subscribe(
+      sdp: string,
+      options: SignalingSubscribeOptions | boolean,
+      pinnedSourceId?: string,
+      excludedSourceIds?: Array<string>
+    ): Promise<string>
     /**
      * Establish WebRTC connection with Millicast Server as Publisher role.
      * @param {String} sdp - The SDP information created by your offer.
@@ -659,105 +663,110 @@ declare module '@millicast/sdk' {
      * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
      * @return {Promise<String>} Promise object which represents the SDP command response.
      */
-    publish(sdp: string, options: SignalingPublishOptions | VideoCodec, record?: boolean, sourceId?: string): Promise<string>;
+    publish(
+      sdp: string,
+      options: SignalingPublishOptions | VideoCodec,
+      record?: boolean,
+      sourceId?: string
+    ): Promise<string>
     /**
      * Send command to the server.
      * @param {String} cmd - Command name.
      * @param {Object} [data] - Command parameters.
      * @return {Promise<Object>} Promise object which represents the command response.
      */
-    cmd(cmd: string, data?: any): Promise<any>;
+    cmd(cmd: string, data?: any): Promise<any>
   }
   export type LayerInfo = {
     /**
      * - rid value of the simulcast encoding of the track  (default: automatic selection)
      */
-    encodingId: string;
+    encodingId: string
     /**
      * - The spatial layer id to send to the outgoing stream (default: max layer available)
      */
-    spatialLayerId: number;
+    spatialLayerId: number
     /**
      * - The temporaral layer id to send to the outgoing stream (default: max layer available)
      */
-    temporalLayerId: number;
+    temporalLayerId: number
     /**
      * - Max spatial layer id (default: unlimited)
      */
-    maxSpatialLayerId: number;
+    maxSpatialLayerId: number
     /**
      * - Max temporal layer id (default: unlimited)
      */
-    maxTemporalLayerId: number;
-  };
+    maxTemporalLayerId: number
+  }
   export type SignalingSubscribeOptions = {
     /**
      * - Enable VAD multiplexing for secondary sources.
      */
-    vad: string;
+    vad: string
     /**
      * - Id of the main source that will be received by the default MediaStream.
      */
-    pinnedSourceId: string;
+    pinnedSourceId: string
     /**
      * - Do not receive media from the these source ids.
      */
-    excludedSourceIds: Array<string>;
+    excludedSourceIds: Array<string>
     /**
      * - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
      */
-    events: Array<string>;
+    events: Array<string>
     /**
      * - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
      */
-    layer: LayerInfo;
-  };
+    layer: LayerInfo
+  }
   export type SignalingPublishOptions = {
     /**
      * - Codec for publish stream.
      */
-    codec?: VideoCodec;
+    codec?: VideoCodec
     /**
      * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
      */
-    record?: boolean;
+    record?: boolean
     /**
      * - Source unique id. **Only available in Tokens with multisource enabled.***
      */
-    sourceId?: string;
+    sourceId?: string
     /**
      * - Override which events will be delivered by the server ("active" | "inactive").
      */
-    events: Array<string>;
-  };
+    events: Array<string>
+  }
   interface CodecInfo {
     /**
      * - Audio or video codec name.
      */
-    codec: VideoCodec | AudioCodec;
+    codec: VideoCodec | AudioCodec
     /**
      * - Audio or video codec mime type.
      */
-    mimetype: string;
+    mimetype: string
   }
 
-  export type VideoCodec = 'vp8' | 'vp9' | 'h264' | 'av1';
-  export type AudioCodec = 'opus' | 'multiopus';
+  export type VideoCodec = 'vp8' | 'vp9' | 'h264' | 'av1'
+  export type AudioCodec = 'opus' | 'multiopus'
 
   export type MillicastCapabilities = {
-    codecs: Array<CodecInfo>;
+    codecs: Array<CodecInfo>
     /**
      * - In case of SVC support, a list of scalability modes supported.
      */
-    scalabilityModes?: Array<string>;
+    scalabilityModes?: Array<string>
     /**
      * - Only for audio, the number of audio channels supported.
      */
-    channels?: number;
+    channels?: number
     /**
      * - An array specifying the URI of the header extension, as described in RFC 5285.
      */
-    headerExtensions: Array<RTCRtpHeaderExtensionCapability>;
+    headerExtensions: Array<RTCRtpHeaderExtensionCapability>
   }
 
   /**
@@ -783,7 +792,7 @@ declare module '@millicast/sdk' {
      * @param {"audio"|"video"} kind - Type of media for which you wish to get sender capabilities.
      * @returns {MillicastCapabilities} Object with all capabilities supported by user's browser and Millicast Media Server.
      */
-    static getCapabilities(kind: 'audio' | 'video'): MillicastCapabilities;
+    static getCapabilities(kind: 'audio' | 'video'): MillicastCapabilities
     sessionDescription: RTCSessionDescriptionInit
     peer: RTCPeerConnection
     peerConnectionStats: PeerConnectionStats
@@ -794,23 +803,23 @@ declare module '@millicast/sdk' {
      * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
      * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig, mode : 'Publisher' | 'Viewer'): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode: 'Publisher' | 'Viewer'): Promise<void>
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
      */
-    getRTCPeer(): RTCPeerConnection;
+    getRTCPeer(): RTCPeerConnection
     /**
      * Close RTC peer connection.
      * @fires PeerConnection#connectionStateChange
      */
-    closeRTCPeer(): Promise<void>;
+    closeRTCPeer(): Promise<void>
     /**
      * Set SDP information to remote peer.
      * @param {String} sdp - New SDP to be set in the remote peer.
      * @returns {Promise<void>} Promise object which resolves when SDP information was successfully set.
      */
-    setRTCRemoteSDP(sdp: string): Promise<void>;
+    setRTCRemoteSDP(sdp: string): Promise<void>
     /**
      * Get the SDP modified depending the options. Optionally set the SDP information to local peer.
      * @param {Object} options
@@ -830,18 +839,18 @@ declare module '@millicast/sdk' {
      * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
      */
     getRTCLocalSDP(options?: {
-      stereo: boolean;
-      dtx: boolean;
-      mediaStream: MediaStream | Array<MediaStreamTrack>;
-      codec: VideoCodec;
-      simulcast: boolean;
-      scalabilityMode: string;
-      absCaptureTime: boolean;
-      dependencyDescriptor: boolean;
-      disableAudio: boolean;
-      disableVideo: boolean;
-      setSDPToPeer: boolean;
-    }): Promise<string>;
+      stereo: boolean
+      dtx: boolean
+      mediaStream: MediaStream | Array<MediaStreamTrack>
+      codec: VideoCodec
+      simulcast: boolean
+      scalabilityMode: string
+      absCaptureTime: boolean
+      dependencyDescriptor: boolean
+      disableAudio: boolean
+      disableVideo: boolean
+      setSDPToPeer: boolean
+    }): Promise<string>
 
     /**
      * Add remote receiving track.
@@ -849,35 +858,35 @@ declare module '@millicast/sdk' {
      * @param {Array<MediaStream>} streams - Streams the track will belong to.
      * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
      */
-    addRemoteTrack(media: string, streams: Array<MediaStream>): Promise<RTCRtpTransceiver>;
+    addRemoteTrack(media: string, streams: Array<MediaStream>): Promise<RTCRtpTransceiver>
     /**
      * Update remote SDP information to restrict bandwidth.
      * @param {String} sdp - Remote SDP.
      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
      * @return {String} Updated SDP information with new bandwidth restriction.
      */
-    updateBandwidthRestriction(sdp: string, bitrate: number): string;
+    updateBandwidthRestriction(sdp: string, bitrate: number): string
     /**
      * Set SDP information to remote peer with bandwidth restriction.
      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
      * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
      */
-    updateBitrate(bitrate?: number): Promise<void>;
+    updateBitrate(bitrate?: number): Promise<void>
     /**
      * Get peer connection state.
      * @returns {RTCPeerConnectionState?} Promise object which represents the peer connection state.
      */
-    getRTCPeerStatus(): RTCPeerConnectionState | null;
+    getRTCPeerStatus(): RTCPeerConnectionState | null
     /**
      * Replace current audio or video track that is being broadcasted.
      * @param {MediaStreamTrack} mediaStreamTrack - New audio or video track to replace the current one.
      */
-    replaceTrack(mediaStreamTrack: MediaStreamTrack): void;
+    replaceTrack(mediaStreamTrack: MediaStreamTrack): void
     /**
      * Get sender tracks
      * @returns {Array<MediaStreamTrack>} An array with all tracks in sender peer.
      */
-    getTracks(): Array<MediaStreamTrack>;
+    getTracks(): Array<MediaStreamTrack>
     /**
      * Initialize the statistics monitoring of the RTCPeerConnection.
      *
@@ -915,12 +924,12 @@ declare module '@millicast/sdk' {
      *   console.log('Stats from event: ', stats)
      * })
      */
-    initStats(options : PeerConnectionConfig): void;
+    initStats(options: PeerConnectionConfig): void
     /**
      * Stops the monitoring of RTCPeerConnection statistics.
      * @example peerConnection.stopStats()
      */
-    stopStats(): void;
+    stopStats(): void
   }
   /**
    * @typedef {Object} MillicastDirectorResponse
@@ -955,28 +964,28 @@ declare module '@millicast/sdk' {
      *
      * @param {String} url - New Director API endpoint
      */
-    static setEndpoint(url: string): void;
+    static setEndpoint(url: string): void
     /**
      * Get current Director API endpoint where requests will be sent.
      *
      * By default, https://director.millicast.com is the current API endpoint.
      * @returns {String} API base url
      */
-    static getEndpoint(): string;
+    static getEndpoint(): string
     /**
      * Set Websocket Live domain from Director API response.
      * If it is set to empty, it will not parse the response.
      *
      * @param {String} domain - New Websocket Live domain
-    */
-    static setLiveDomain(domain: string): void;
+     */
+    static setLiveDomain(domain: string): void
     /**
      * Get current Websocket Live domain.
      *
      * By default is empty which corresponds to not parse the Director response.
      * @returns {String} Websocket Live domain
-    */
-    static getLiveDomain(): string;
+     */
+    static getLiveDomain(): string
     /**
      * Get publisher connection data.
      * @param {DirectorPublisherOptions} options - Millicast options.
@@ -1004,7 +1013,11 @@ declare module '@millicast/sdk' {
      * //Start broadcast
      * await millicastPublish.connect(broadcastOptions)
      */
-    static getPublisher(options: DirectorPublisherOptions | string, streamName?: string, streamType?: ('WebRtc' | 'Rtmp')): Promise<MillicastDirectorResponse>;
+    static getPublisher(
+      options: DirectorPublisherOptions | string,
+      streamName?: string,
+      streamType?: 'WebRtc' | 'Rtmp'
+    ): Promise<MillicastDirectorResponse>
     /**
      * Get subscriber connection data.
      * @param {DirectorSubscriberOptions | String} options - Millicast options.
@@ -1035,93 +1048,107 @@ declare module '@millicast/sdk' {
      * //Start connection to broadcast
      * await millicastView.connect(options)
      */
-    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string, isDRMEnabled?: boolean): Promise<MillicastDirectorResponse>;
+    static getSubscriber(
+      options: DirectorSubscriberOptions | string,
+      streamAccountId?: string,
+      subscriberToken?: string,
+      isDRMEnabled?: boolean
+    ): Promise<MillicastDirectorResponse>
   }
   export type MillicastDirectorResponse = {
     /**
      * - WebSocket available URLs.
      */
-    urls: Array<string>;
+    urls: Array<string>
     /**
      * - Access token for signaling initialization.
      */
-    jwt: string;
+    jwt: string
     /**
      * - Object which represents a list of Ice servers.
      */
-    iceServers: Array<RTCIceServer>;
-  };
+    iceServers: Array<RTCIceServer>
+  }
   export type DirectorPublisherOptions = {
     /**
      * - Millicast Publishing Token.
      */
-    token: string;
+    token: string
     /**
      * - Millicast Stream Name.
      */
-    streamName: string;
+    streamName: string
     /**
      * - Millicast Stream Type.
      */
-    streamType?: ('WebRtc' | 'Rtmp');
-  };
+    streamType?: 'WebRtc' | 'Rtmp'
+  }
   export type DirectorSubscriberOptions = {
     /**
      * - Millicast publisher Stream Name.
      */
-    streamName: string;
+    streamName: string
     /**
      * - Millicast Account ID.
      */
-    streamAccountId: string;
+    streamAccountId: string
     /**
      * - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
      */
-    subscriberToken?: string;
-  };
-  export type Event = 'active' | 'inactive' | 'stopped' | 'vad' | 'layers' | 'migrate' | 'viewercount' | 'updated' | 'error';
+    subscriberToken?: string
+  }
+  export type Event =
+    | 'active'
+    | 'inactive'
+    | 'stopped'
+    | 'vad'
+    | 'layers'
+    | 'migrate'
+    | 'viewercount'
+    | 'updated'
+    | 'error'
 
   export type ViewConnectOptions = {
     /**
      * - True to modify SDP for supporting dtx in opus. Otherwise False.
      */
-    dtx?: boolean;
+    dtx?: boolean
     /**
      * - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
      */
-    absCaptureTime?: boolean;
+    absCaptureTime?: boolean
     /**
      * - Enable metadata extraction. This feature is only supported with the H.264 codec.
      */
-    metadata?: boolean;
+    metadata?: boolean
     /**
      * - Disable the opportunity to receive video stream.
      */
-    disableVideo?: boolean;
+    disableVideo?: boolean
     /**
      * - Disable the opportunity to receive audio stream.
      */
-    disableAudio?: boolean;
+    disableAudio?: boolean
     /**
      * - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
      */
-    multiplexedAudioTracks?: number;
+    multiplexedAudioTracks?: number
     /**
      * - Id of the main source that will be received by the default MediaStream.
      */
-    pinnedSourceId?: string;
+    pinnedSourceId?: string
     /**
      * - Do not receive media from the these source ids.
      */
-    excludedSourceIds?: Array<string>;
+    excludedSourceIds?: Array<string>
     /**
      * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
      */
-    events?: Array<Event>;
+    events?: Array<Event>
     /**
      * - Options to configure the new RTCPeerConnection.
      */
-    peerConfig?: RTCConfiguration;
+    peerConfig?: RTCConfiguration
     /**
      * - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
      */
@@ -1129,149 +1156,154 @@ declare module '@millicast/sdk' {
       /**
        * - rid value of the simulcast encoding of the track  (default: automatic selection)
        */
-      encodingId: string;
+      encodingId: string
       /**
        * - The spatial layer id to send to the outgoing stream (default: max layer available)
        */
-      spatialLayerId: number;
+      spatialLayerId: number
       /**
        * - The temporaral layer id to send to the outgoing stream (default: max layer available)
        */
-      temporalLayerId: number;
+      temporalLayerId: number
       /**
        * - Max spatial layer id (default: unlimited)
        */
-      maxSpatialLayerId: number;
+      maxSpatialLayerId: number
       /**
        * - Max temporal layer id (default: unlimited)
        */
-      maxTemporalLayerId: number;
-    };
+      maxTemporalLayerId: number
+    }
   }
 
   export type PublishConnectOptions = {
     /**
      * - Source unique id. Only avialable if stream is multisource.
      */
-    sourceId?: string;
+    sourceId?: string
     /**
      * - True to modify SDP for support stereo. Otherwise False.
      */
-    stereo?: boolean;
+    stereo?: boolean
     /**
      * - True to modify SDP for supporting dtx in opus. Otherwise False.
      */
-    dtx?: boolean;
+    dtx?: boolean
     /**
      * - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
      */
-    absCaptureTime?: boolean;
+    absCaptureTime?: boolean
     /**
      * - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
      */
-    dependencyDescriptor?: boolean;
+    dependencyDescriptor?: boolean
     /**
      * - MediaStream to offer in a stream. This object must have
      * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
      */
-    mediaStream: MediaStream | Array<MediaStreamTrack>;
+    mediaStream: MediaStream | Array<MediaStreamTrack>
     /**
      * - Broadcast bandwidth. 0 for unlimited.
      */
-    bandwidth?: number;
+    bandwidth?: number
     /**
      * - Enable metadata insertion. This feature is only supported with the H.264 codec.
      */
-    metadata?: boolean;
+    metadata?: boolean
     /**
      * - Disable the opportunity to send video stream.
      */
-    disableVideo?: boolean;
+    disableVideo?: boolean
     /**
      * - Disable the opportunity to send audio stream.
      */
-    disableAudio?: boolean;
+    disableAudio?: boolean
     /**
      * - Codec for publish stream.
      */
-    codec?: VideoCodec;
+    codec?: VideoCodec
     /**
      * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
      */
-    simulcast?: boolean;
+    simulcast?: boolean
     /**
      * - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
      * **Only available in Google Chrome.**
      */
-    scalabilityMode?: string;
+    scalabilityMode?: string
     /**
      * - Options to configure the new RTCPeerConnection.
      */
-    peerConfig?: PeerConnectionConfig;
+    peerConfig?: PeerConnectionConfig
     /**
      * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
      */
-    record?: boolean;
+    record?: boolean
     /**
      * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
      */
-    events?: Array<string>;
+    events?: Array<string>
     /**
      * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
      */
-    priority?: number;
+    priority?: number
   }
 
   export interface PeerConnectionConfig extends RTCConfiguration {
     /**
      * - whether stats collection should be auto initialized. Defaults to `true`
      */
-    autoInitStats: boolean;
+    autoInitStats: boolean
 
     /**
      * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
      */
-    statsIntervalMs : number;
+    statsIntervalMs: number
   }
 
   export type ViewProjectSourceMapping = {
     /**
      * - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
      */
-    trackId?: string;
+    trackId?: string
     /**
      * - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
      */
-    mediaId?: string;
+    mediaId?: string
     /**
      * - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
      */
-    media?: 'audio' | 'video';
+    media?: 'audio' | 'video'
     /**
      * - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
      */
-    layer?: LayerInfo;
+    layer?: LayerInfo
   }
 
   /**
    * DRM profile from director API which includes the URLs of license servers
    */
   export interface DRMProfile {
-    playReadyUrl?: string;
-    widevineUrl?: string;
-    fairPlayUrl?: string;
+    playReadyUrl?: string
+    widevineUrl?: string
+    fairPlayUrl?: string
   }
 
   export type DirectorResponse = {
-    urls: string[];
-    jwt: string;
-    iceServers: RTCIceServer[];
-    drmObject?: DRMProfile;
-  };
+    urls: string[]
+    jwt: string
+    iceServers: RTCIceServer[]
+    drmObject?: DRMProfile
+  }
 
   export type TokenGeneratorCallback = () => Promise<DirectorResponse>
   class BaseWebRTC extends events.EventEmitter {
-    constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);
+    constructor(
+      streamName: string,
+      tokenGenerator: TokenGeneratorCallback,
+      loggerInstance: Logger | any,
+      autoReconnect?: boolean
+    )
     webRTCPeer?: PeerConnection
     signaling: Signaling
     streamName: string
@@ -1283,28 +1315,28 @@ declare module '@millicast/sdk' {
     tokenGenerator: TokenGeneratorCallback
     options: ViewConnectOptions | PublishConnectOptions
     /**
-    * Get current RTC peer connection.
-    * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
-    */
-    getRTCPeerConnection(): RTCPeerConnection;
+     * Get current RTC peer connection.
+     * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
+     */
+    getRTCPeerConnection(): RTCPeerConnection
     /**
      * Stops connection.
      */
-    stop(): void;
+    stop(): void
     /**
      * Get if the current connection is active.
      * @returns {Boolean} - True if connected, false if not.
      */
-    isActive(): boolean;
+    isActive(): boolean
     /**
      * Sets reconnection if autoReconnect is enabled.
      */
-    setReconnect(): void;
+    setReconnect(): void
     /**
      * Reconnects to last broadcast.
      * @fires BaseWebRTC#reconnect
      */
-    reconnect(): Promise<void>;
+    reconnect(): Promise<void>
   }
   /**
    * @class Publish
@@ -1323,7 +1355,7 @@ declare module '@millicast/sdk' {
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
    */
   export class Publish extends BaseWebRTC {
-    constructor(streamName: any, tokenGenerator: any, autoReconnect?: boolean);
+    constructor(streamName: any, tokenGenerator: any, autoReconnect?: boolean)
     /**
      * Starts broadcast to an existing stream name.
      *
@@ -1358,21 +1390,21 @@ declare module '@millicast/sdk' {
      *  console.log('Connection failed, handle error', e)
      * }
      */
-    connect(options?: PublishConnectOptions): Promise<void>;
+    connect(options?: PublishConnectOptions): Promise<void>
     /**
      * Initialize recording in an active stream and change the current record option.
      */
-    record(): Promise<void>;
+    record(): Promise<void>
     /**
      * Finalize recording in an active stream and change the current record option.
      */
-    unrecord(): Promise<void>;
+    unrecord(): Promise<void>
     /**
      * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codecs.
      * @param {String | Object} message The data to be sent as SEI user unregistered data.
      * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
      */
-    sendMetadata(message: string | Object, uuid: string): void;
+    sendMetadata(message: string | Object, uuid: string): void
     webRTCPeer?: PeerConnection
   }
 
@@ -1381,10 +1413,10 @@ declare module '@millicast/sdk' {
    */
   export type EncryptionParameters = {
     /** 16-byte KeyID, in lowercase hexadecimal without separators */
-    keyId: string;
+    keyId: string
 
     /** 16-byte initialization vector, in lowercase hexadecimal without separators */
-    iv: string;
+    iv: string
   }
 
   /**
@@ -1392,22 +1424,22 @@ declare module '@millicast/sdk' {
    */
   export type DRMOptions = {
     /** The video element */
-    videoElement: HTMLVideoElement;
+    videoElement: HTMLVideoElement
 
     /** The video encryption parameters */
-    videoEncryptionParams: EncryptionParameters;
+    videoEncryptionParams: EncryptionParameters
 
     /** The video media ID of RTCRtpTransceiver */
-    videoMid: string;
+    videoMid: string
 
     /** The audio element */
-    audioElement: HTMLAudioElement;
+    audioElement: HTMLAudioElement
 
     /** The audio encryption parameters */
-    audioEncryptionParams?: EncryptionParameters;
+    audioEncryptionParams?: EncryptionParameters
 
     /** The audio media ID of RTCRtpTransceiver */
-    audioMid?: string;
+    audioMid?: string
   }
 
   /**
@@ -1426,7 +1458,12 @@ declare module '@millicast/sdk' {
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
    */
   export class View extends BaseWebRTC {
-    constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, mediaElement?: HTMLVideoElement, autoReconnect?: boolean);
+    constructor(
+      streamName: string,
+      tokenGenerator: TokenGeneratorCallback,
+      mediaElement?: HTMLVideoElement,
+      autoReconnect?: boolean
+    )
     /**
      * @typedef {Object} LayerInfo
      * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
@@ -1486,19 +1523,19 @@ declare module '@millicast/sdk' {
      *  console.log('Connection failed, handle error', e)
      * }
      */
-    connect(options?: ViewConnectOptions): Promise<void>;
+    connect(options?: ViewConnectOptions): Promise<void>
     /**
      * Select the simulcast encoding layer and svc layers for the main video track
      * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
      */
-    select(layer?: LayerInfo): Promise<void>;
+    select(layer?: LayerInfo): Promise<void>
     /**
      * Add remote receiving track.
      * @param {String} media - Media kind ('audio' | 'video').
      * @param {Array<MediaStream>} streams - Streams the track will belong to.
      * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
      */
-    addRemoteTrack(media: 'audio' | 'video', streams: Array<MediaStream>): Promise<RTCRtpTransceiver>;
+    addRemoteTrack(media: 'audio' | 'video', streams: Array<MediaStream>): Promise<RTCRtpTransceiver>
     /**
      * Start projecting source in selected media ids.
      * @param {String} sourceId                          - Selected source id.
@@ -1508,35 +1545,35 @@ declare module '@millicast/sdk' {
      * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
      * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
      */
-    project(sourceId: string, mapping: ViewProjectSourceMapping[]): Promise<void>;
+    project(sourceId: string, mapping: ViewProjectSourceMapping[]): Promise<void>
     /**
      * Stop projecting attached source in selected media ids.
      * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
      */
-    unproject(mediaIds: Array<string>): Promise<void>;
+    unproject(mediaIds: Array<string>): Promise<void>
 
     /**
      * Configure DRM protected stream.
      * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
      */
-    configureDRM(options: DRMOptions);
+    configureDRM(options: DRMOptions)
 
     /**
      * Remove DRM configuration for a mediaId
      */
-    removeDRMConfiguration (mediaId: string);
+    removeDRMConfiguration(mediaId: string)
 
     /**
      * Check if there are any DRM protected Track
      */
-    get isDRMOn(): boolean;
+    get isDRMOn(): boolean
 
     /** Exchange the DRM configuration between two transceivers
      *  Make sure both of the transceivers have been used for DRM protected streams
      */
-    exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string);
+    exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string)
 
-    replaceConnection(): Promise<void>;
+    replaceConnection(): Promise<void>
     webRTCPeer?: PeerConnection
   }
 }

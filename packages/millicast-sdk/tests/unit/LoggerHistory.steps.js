@@ -9,10 +9,10 @@ beforeEach(() => {
 
 const feature = loadFeature('../features/LoggerHistory.feature', { loadRelativePath: true, errors: true })
 
-const arrayGenerator = l => Array.from(Array(l).keys())
+const arrayGenerator = (l) => Array.from(Array(l).keys())
 const matcher = (i, message = 'This is a log message number') => expect.stringMatching(`${message} ${i}`)
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Get history with logger turned OFF', ({ given, when, then }) => {
     given('I set logger level at OFF', async () => {
       Logger.setLevel(Logger.OFF)
@@ -37,15 +37,13 @@ defineFeature(feature, test => {
     })
 
     when('I log 5 messages at INFO level', async () => {
-      logNumbers.forEach(i => Logger.info(`This is a log message number ${i}`))
+      logNumbers.forEach((i) => Logger.info(`This is a log message number ${i}`))
     })
 
     then('I get those messages from history', async () => {
       const history = Logger.getHistory()
       expect(history.length).toBe(5)
-      expect(history).toEqual(expect.arrayContaining(
-        logNumbers.map(i => matcher(i))
-      ))
+      expect(history).toEqual(expect.arrayContaining(logNumbers.map((i) => matcher(i))))
     })
   })
 
@@ -57,15 +55,13 @@ defineFeature(feature, test => {
     })
 
     when('I log 6 messages at INFO level', async () => {
-      logNumbers.forEach(i => Logger.info(`This is a log message number ${i}`))
+      logNumbers.forEach((i) => Logger.info(`This is a log message number ${i}`))
     })
 
     then('I get the last 5 messages from history', async () => {
       const history = Logger.getHistory()
       expect(history.length).toBe(5)
-      expect(history).toEqual(expect.arrayContaining(
-        logNumbers.slice(1).map(i => matcher(i))
-      ))
+      expect(history).toEqual(expect.arrayContaining(logNumbers.slice(1).map((i) => matcher(i))))
     })
   })
 
@@ -106,7 +102,7 @@ defineFeature(feature, test => {
 
     given('I have 5 previous log messages and history max size is 5', async () => {
       Logger.setHistoryMaxSize(5)
-      logNumbers.forEach(i => Logger.info(`This is a previous log message ${i}`))
+      logNumbers.forEach((i) => Logger.info(`This is a previous log message ${i}`))
     })
 
     when('I set history max size to 6 and I log a message at ERROR level', async () => {
@@ -117,10 +113,12 @@ defineFeature(feature, test => {
     then('I get all log messages from history', async () => {
       const history = Logger.getHistory()
       expect(history.length).toBe(6)
-      expect(history).toEqual(expect.arrayContaining([
-        ...logNumbers.map(i => matcher(i, 'This is a previous log message')),
-        expect.stringMatching('This is a log message')
-      ]))
+      expect(history).toEqual(
+        expect.arrayContaining([
+          ...logNumbers.map((i) => matcher(i, 'This is a previous log message')),
+          expect.stringMatching('This is a log message'),
+        ])
+      )
     })
   })
 

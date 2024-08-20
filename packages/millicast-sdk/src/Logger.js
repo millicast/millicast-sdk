@@ -51,7 +51,7 @@ const enabledFor = (level, loggerName) => {
 
 const historyHandler = (messages, context) => {
   messages = Array.prototype.slice.call(messages)
-  messages = messages.map((m) => typeof m === 'object' ? JSON.stringify(m) : m)
+  messages = messages.map((m) => (typeof m === 'object' ? JSON.stringify(m) : m))
   formatter(messages, context)
 
   if (maxLogHistorySize !== 0) {
@@ -134,7 +134,9 @@ const Logger = {
    * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
    * @example Logger.setHistoryMaxSize(100)
    */
-  setHistoryMaxSize: maxSize => { maxLogHistorySize = maxSize },
+  setHistoryMaxSize: (maxSize) => {
+    maxLogHistorySize = maxSize
+  },
 
   /**
    * @function
@@ -148,7 +150,7 @@ const Logger = {
    * // Module Level
    * Logger.get('Publish').setLevel(Logger.DEBUG)
    */
-  setLevel: level => {
+  setLevel: (level) => {
     loggerLevel = level
     for (const key in namedLoggerLevels) {
       namedLoggerLevels[key] = level
@@ -195,12 +197,14 @@ const Logger = {
    * myLogger.getLevel()
    * // {value: 3, name: 'INFO'}
    */
-  get: name => {
+  get: (name) => {
     if (!namedLoggerLevels[name]) {
       namedLoggerLevels[name] = loggerLevel
     }
     const logger = jsLogger.get(name)
-    logger.setLevel = (level) => { namedLoggerLevels[name] = level }
+    logger.setLevel = (level) => {
+      namedLoggerLevels[name] = level
+    }
     logger.getLevel = () => namedLoggerLevels[name]
     return logger
   },
@@ -235,7 +239,9 @@ const Logger = {
    *
    * Logger.setHandler(myHandler, Logger.INFO)
    */
-  setHandler: (handler, level) => { customHandlers.push({ handler, level }) },
+  setHandler: (handler, level) => {
+    customHandlers.push({ handler, level })
+  },
   /**
    * @function
    * @name diagnose
@@ -244,13 +250,13 @@ const Logger = {
    * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
    * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
    * @param {String} [config.minLogLevel] - Levels of history messages to be included.
-        * examples of minLogLevel values in level order:
-        * 1 - TRACE
-        * 2 - DEBUG
-        * 3 - INFO
-        * 4 - WARN
-        * 5 - ERROR
-        * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
+   * examples of minLogLevel values in level order:
+   * 1 - TRACE
+   * 2 - DEBUG
+   * 3 - INFO
+   * 4 - WARN
+   * 5 - ERROR
+   * If 'INFO' (3) given, return INFO (3), WARN (4), and ERROR (5) level messages.
    * @param {String} [config.statsFormat='JSON'] - Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
    * @returns {Object} An object containing relevant diagnostics information such as userAgent, SDK version, and stats data.
    * @example
@@ -268,7 +274,7 @@ const Logger = {
       statsCount: 60,
       historySize: 1000,
       minLogLevel: 'TRACE',
-      statsFormat: 'JSON'
+      statsFormat: 'JSON',
     }
     // Method originally only took statsCount:number, check for backwards compatibility
     if (typeof config === 'number') {
@@ -286,11 +292,13 @@ const Logger = {
     }
 
     if (!LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
-      throw new Error('Invalid Argument Exception : the minLogLevel parameter only excepts "trace", "debug", "info", "warn", and "error" as arguments.')
+      throw new Error(
+        'Invalid Argument Exception : the minLogLevel parameter only excepts "trace", "debug", "info", "warn", and "error" as arguments.'
+      )
     }
     if (LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
       const filteredLogLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(minLogLevel.toUpperCase()))
-      const filteredLevels = history.filter((log) => filteredLogLevels.some(level => log.includes(level)))
+      const filteredLevels = history.filter((log) => filteredLogLevels.some((level) => log.includes(level)))
       result.history = filteredLevels.slice(-historySize)
     }
     return result
@@ -302,7 +310,7 @@ const Logger = {
    * @name VERSION
    * @description Returns the current SDK version.
    */
-  VERSION: version
+  VERSION: version,
 }
 
 export default Logger

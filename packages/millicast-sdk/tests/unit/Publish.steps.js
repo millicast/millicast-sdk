@@ -14,22 +14,22 @@ jest.mock('../../src/Signaling')
 jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
-    terminate: jest.fn()
+    terminate: jest.fn(),
   }))
 )
 
 const mockTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: process.env.JWT_TEST_TOKEN ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
+    urls: ['ws://localhost:8080'],
+    jwt:
+      process.env.JWT_TEST_TOKEN ??
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U',
   }
 })
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Instance publisher without tokenGenerator', ({ given, when, then }) => {
     let expectError
 
@@ -146,7 +146,7 @@ defineFeature(feature, test => {
     when('I broadcast a stream with bandwidth restriction', async () => {
       await publisher.connect({
         mediaStream,
-        bandwidth: 1000
+        bandwidth: 1000,
       })
     })
 
@@ -230,7 +230,9 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of Publish with invalid token generator', async () => {
-      const errorTokenGenerator = jest.fn(() => { throw new Error('Error getting token') })
+      const errorTokenGenerator = jest.fn(() => {
+        throw new Error('Error getting token')
+      })
       publisher = new Publish('streamName', errorTokenGenerator)
     })
 
@@ -244,7 +246,11 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Broadcast to stream with record option but no record available from token', ({ given, when, then }) => {
+  test('Broadcast to stream with record option but no record available from token', ({
+    given,
+    when,
+    then,
+  }) => {
     let publisher
     let expectError
 
@@ -268,15 +274,14 @@ defineFeature(feature, test => {
 
     given('an instance of Publish', async () => {
       publisher = new Publish('streamName', mockTokenGenerator)
-      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue(
-        {
-          codecs: [
-            { codec: 'vp8', mimeType: 'video/VP8' },
-            { codec: 'vp9', mimeType: 'video/VP9' },
-            { codec: 'h264', mimeType: 'video/H264' }
-          ],
-          headerExtensions: []
-        })
+      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue({
+        codecs: [
+          { codec: 'vp8', mimeType: 'video/VP8' },
+          { codec: 'vp9', mimeType: 'video/VP9' },
+          { codec: 'h264', mimeType: 'video/H264' },
+        ],
+        headerExtensions: [],
+      })
     })
 
     when('I broadcast with unsupported codec', async () => {
@@ -293,16 +298,15 @@ defineFeature(feature, test => {
 
     given('an instance of Publish', async () => {
       publisher = new Publish('streamName', mockTokenGenerator)
-      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue(
-        {
-          codecs: [
-            { codec: 'vp8', mimeType: 'video/VP8' },
-            { codec: 'vp9', mimeType: 'video/VP9' },
-            { codec: 'h264', mimeType: 'video/H264' },
-            { codec: 'h265', mimeType: 'video/H265' }
-          ],
-          headerExtensions: []
-        })
+      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue({
+        codecs: [
+          { codec: 'vp8', mimeType: 'video/VP8' },
+          { codec: 'vp9', mimeType: 'video/VP9' },
+          { codec: 'h264', mimeType: 'video/H264' },
+          { codec: 'h265', mimeType: 'video/H265' },
+        ],
+        headerExtensions: [],
+      })
     })
 
     when('I broadcast a stream with H265 codec', async () => {

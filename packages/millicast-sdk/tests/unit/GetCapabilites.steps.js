@@ -9,22 +9,34 @@ beforeEach(() => {
 })
 
 global.RTCRtpSender = {
-  getCapabilities: jest.fn()
+  getCapabilities: jest.fn(),
 }
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Browser supports more codecs than Millicast', ({ given, when, then }) => {
     let capabilities
 
     const browserCapabilities = {
       codecs: [
-        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f' },
-        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
-        { clockRate: 90000, mimeType: 'video/H265', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H264',
+          sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f',
+        },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H264',
+          sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f',
+        },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H265',
+          sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f',
+        },
         { clockRate: 90000, mimeType: 'video/rtx' },
-        { clockRate: 90000, mimeType: 'video/red' }
+        { clockRate: 90000, mimeType: 'video/red' },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser supports H264, H265, red and rtx', async () => {
@@ -38,7 +50,7 @@ defineFeature(feature, test => {
     then('returns H264 and H265 in codecs property', async () => {
       expect(capabilities.codecs).toEqual([
         { codec: 'h264', mimeType: 'video/H264' },
-        { codec: 'h265', mimeType: 'video/H265' }
+        { codec: 'h265', mimeType: 'video/H265' },
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
@@ -52,12 +64,20 @@ defineFeature(feature, test => {
         { clockRate: 90000, mimeType: 'video/VP8' },
         { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=0' },
         { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=2' },
-        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f' },
-        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H264',
+          sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f',
+        },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H264',
+          sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f',
+        },
         { clockRate: 90000, mimeType: 'video/H265' },
-        { clockRate: 90000, mimeType: 'video/AV1X' }
+        { clockRate: 90000, mimeType: 'video/AV1X' },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser supports H264, H265, VP8, VP9 and AV1', async () => {
@@ -74,7 +94,7 @@ defineFeature(feature, test => {
         { codec: 'vp9', mimeType: 'video/VP9' },
         { codec: 'h264', mimeType: 'video/H264' },
         { codec: 'h265', mimeType: 'video/H265' },
-        { codec: 'av1', mimeType: 'video/AV1X' }
+        { codec: 'av1', mimeType: 'video/AV1X' },
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
@@ -85,10 +105,20 @@ defineFeature(feature, test => {
 
     const browserCapabilities = {
       codecs: [
-        { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=0', scalabilityModes: ['L1T2', 'L1T3'] },
-        { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=2', scalabilityModes: ['L0T1', 'L0T2'] }
+        {
+          clockRate: 90000,
+          mimeType: 'video/VP9',
+          sdpFmtpLine: 'profile-id=0',
+          scalabilityModes: ['L1T2', 'L1T3'],
+        },
+        {
+          clockRate: 90000,
+          mimeType: 'video/VP9',
+          sdpFmtpLine: 'profile-id=2',
+          scalabilityModes: ['L0T1', 'L0T2'],
+        },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser supports VP9 with scalability modes', async () => {
@@ -101,7 +131,7 @@ defineFeature(feature, test => {
 
     then('returns VP9 with all scalability modes available', async () => {
       expect(capabilities.codecs).toEqual([
-        { codec: 'vp9', mimeType: 'video/VP9', scalabilityModes: ['L1T2', 'L1T3', 'L0T1', 'L0T2'] }
+        { codec: 'vp9', mimeType: 'video/VP9', scalabilityModes: ['L1T2', 'L1T3', 'L0T1', 'L0T2'] },
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
@@ -112,10 +142,20 @@ defineFeature(feature, test => {
 
     const browserCapabilities = {
       codecs: [
-        { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=0', scalabilityModes: ['L1T2', 'L1T3'] },
-        { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=2', scalabilityModes: ['L1T2', 'L1T3'] }
+        {
+          clockRate: 90000,
+          mimeType: 'video/VP9',
+          sdpFmtpLine: 'profile-id=0',
+          scalabilityModes: ['L1T2', 'L1T3'],
+        },
+        {
+          clockRate: 90000,
+          mimeType: 'video/VP9',
+          sdpFmtpLine: 'profile-id=2',
+          scalabilityModes: ['L1T2', 'L1T3'],
+        },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser supports VP9 with scalability modes repeated', async () => {
@@ -128,7 +168,7 @@ defineFeature(feature, test => {
 
     then('returns VP9 with all scalability modes available', async () => {
       expect(capabilities.codecs).toEqual([
-        { codec: 'vp9', mimeType: 'video/VP9', scalabilityModes: ['L1T2', 'L1T3'] }
+        { codec: 'vp9', mimeType: 'video/VP9', scalabilityModes: ['L1T2', 'L1T3'] },
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
@@ -140,13 +180,21 @@ defineFeature(feature, test => {
       codecs: [
         { clockRate: 90000, mimeType: 'video/VP8', sdpFmtpLine: 'max-fs=12288;max-fr=60' },
         { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'max-fs=12288;max-fr=60' },
-        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'profile-level-id=42e01f;level-asymmetry-allowed=1;packetization-mode=1' },
-        { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'profile-level-id=42e01f;level-asymmetry-allowed=1' },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H264',
+          sdpFmtpLine: 'profile-level-id=42e01f;level-asymmetry-allowed=1;packetization-mode=1',
+        },
+        {
+          clockRate: 90000,
+          mimeType: 'video/H264',
+          sdpFmtpLine: 'profile-level-id=42e01f;level-asymmetry-allowed=1',
+        },
         { clockRate: 90000, mimeType: 'video/ulpfec' },
         { clockRate: 90000, mimeType: 'video/red' },
-        { clockRate: 90000, mimeType: 'video/rtx' }
+        { clockRate: 90000, mimeType: 'video/rtx' },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
     given('I am in Firefeox', async () => {
       changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
@@ -161,7 +209,7 @@ defineFeature(feature, test => {
       expect(capabilities.codecs).toEqual([
         { codec: 'vp8', mimeType: 'video/VP8' },
         { codec: 'vp9', mimeType: 'video/VP9' },
-        { codec: 'h264', mimeType: 'video/H264' }
+        { codec: 'h264', mimeType: 'video/H264' },
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
@@ -174,13 +222,15 @@ defineFeature(feature, test => {
       codecs: [
         { channels: 2, clockRate: 48000, mimeType: 'audio/opus', sdpFmtpLine: 'minptime=10;useinbandfec=1' },
         { channels: 1, clockRate: 16000, mimeType: 'audio/ISAC' },
-        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' }
+        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser audio capabilities', async () => {
-      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
+      changeBrowserMock(
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
+      )
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
@@ -191,7 +241,7 @@ defineFeature(feature, test => {
     then('returns opus and multiopus codecs', async () => {
       expect(capabilities.codecs).toEqual([
         { codec: 'multiopus', mimeType: 'audio/multiopus', channels: 6 },
-        { codec: 'opus', mimeType: 'audio/opus', channels: 2 }
+        { codec: 'opus', mimeType: 'audio/opus', channels: 2 },
       ])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
@@ -204,13 +254,15 @@ defineFeature(feature, test => {
       codecs: [
         { channels: 2, clockRate: 48000, mimeType: 'audio/opus', sdpFmtpLine: 'minptime=10;useinbandfec=1' },
         { channels: 1, clockRate: 16000, mimeType: 'audio/ISAC' },
-        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' }
+        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser audio capabilities', async () => {
-      changeBrowserMock('Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1')
+      changeBrowserMock(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1'
+      )
       jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
     })
 
@@ -219,9 +271,7 @@ defineFeature(feature, test => {
     })
 
     then('returns opus codec', async () => {
-      expect(capabilities.codecs).toEqual([
-        { codec: 'opus', mimeType: 'audio/opus', channels: 2 }
-      ])
+      expect(capabilities.codecs).toEqual([{ codec: 'opus', mimeType: 'audio/opus', channels: 2 }])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
   })
@@ -233,9 +283,9 @@ defineFeature(feature, test => {
       codecs: [
         { channels: 2, clockRate: 48000, mimeType: 'audio/opus', sdpFmtpLine: 'minptime=10;useinbandfec=1' },
         { channels: 1, clockRate: 16000, mimeType: 'audio/ISAC' },
-        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' }
+        { channels: 1, clockRate: 32000, mimeType: 'audio/ISAC' },
       ],
-      headerExtensions: []
+      headerExtensions: [],
     }
 
     given('my browser audio capabilities', async () => {
@@ -248,9 +298,7 @@ defineFeature(feature, test => {
     })
 
     then('returns opus codec', async () => {
-      expect(capabilities.codecs).toEqual([
-        { codec: 'opus', mimeType: 'audio/opus', channels: 2 }
-      ])
+      expect(capabilities.codecs).toEqual([{ codec: 'opus', mimeType: 'audio/opus', channels: 2 }])
       expect(capabilities.headerExtensions).toEqual(browserCapabilities.headerExtensions)
     })
   })
@@ -261,7 +309,9 @@ defineFeature(feature, test => {
     const browserCapabilities = null
 
     given('I am in Chrome', async () => {
-      changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
+      changeBrowserMock(
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
+      )
     })
 
     when('I get data capabilities', async () => {

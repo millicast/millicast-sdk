@@ -5,7 +5,7 @@ import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 const feature = loadFeature('../features/ChangeMediaTrack.feature', { loadRelativePath: true, errors: true })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
   })
@@ -16,7 +16,10 @@ defineFeature(feature, test => {
 
     given('I have a peer connected', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' },
+      ]
       const mediaStream = new MediaStream(tracks)
       await peerConnection.getRTCLocalSDP({ mediaStream, disableVideo: false, disableAudio: false })
     })
@@ -30,8 +33,8 @@ defineFeature(feature, test => {
       expect(peerConnection.peer.getSenders()).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            track: { ...track }
-          })
+            track: { ...track },
+          }),
         ])
       )
     })
@@ -72,8 +75,8 @@ defineFeature(feature, test => {
       expect(peerConnection.peer.getSenders()).toEqual(
         expect.not.arrayContaining([
           expect.objectContaining({
-            track: { ...track }
-          })
+            track: { ...track },
+          }),
         ])
       )
     })

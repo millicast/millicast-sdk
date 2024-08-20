@@ -13,9 +13,9 @@ let _cluster = ''
 let _connectionTime = 0
 const _stats = []
 
-function transformWebRTCStatsToCMCD (diagnostics) {
+function transformWebRTCStatsToCMCD(diagnostics) {
   // Helper function to map individual stat objects to CMCD-like structure
-  function mapStats (type, stat) {
+  function mapStats(type, stat) {
     return {
       ts: Math.round(stat.timestamp) || '', // Timestamp to the nearest millisecond
       ot: type === 'audio' ? 'a' : 'v', // 'a' for audio, 'v' for video
@@ -25,17 +25,19 @@ function transformWebRTCStatsToCMCD (diagnostics) {
       j: stat.jitter || 0, // Jitter, default to 0 if not available
       mtp: stat.packetRate || 0, // Measured throughput, approximated by packet rate, default to 0 if not available
       mid: stat.mid || '', // Media ID or track identifier, default to empty string if not available
-      mimeType: stat.mimeType || '' // MIME type of the media stream, default to empty string if not available
+      mimeType: stat.mimeType || '', // MIME type of the media stream, default to empty string if not available
     }
   }
 
   diagnostics.stats = diagnostics.stats.reduce((acc, stat) => {
-    const audioStats = stat.audio.inbounds.length !== 0
-      ? stat.audio.inbounds.map(statAudio => mapStats('audio', statAudio))
-      : stat.audio.outbounds.map(statAudio => mapStats('audio', statAudio))
-    const videoStats = stat.video.inbounds.length !== 0
-      ? stat.video.inbounds.map(statVideo => mapStats('video', statVideo))
-      : stat.video.outbounds.map(statVideo => mapStats('video', statVideo))
+    const audioStats =
+      stat.audio.inbounds.length !== 0
+        ? stat.audio.inbounds.map((statAudio) => mapStats('audio', statAudio))
+        : stat.audio.outbounds.map((statAudio) => mapStats('audio', statAudio))
+    const videoStats =
+      stat.video.inbounds.length !== 0
+        ? stat.video.inbounds.map((statVideo) => mapStats('video', statVideo))
+        : stat.video.outbounds.map((statVideo) => mapStats('video', statVideo))
 
     return acc.concat([...audioStats, ...videoStats])
   }, [])
@@ -44,14 +46,30 @@ function transformWebRTCStatsToCMCD (diagnostics) {
 }
 
 const Diagnostics = {
-  initAccountId: (accountId) => { _accountId = _accountId === '' ? accountId : _accountId },
-  initStreamName: (streamName) => { _streamName = _streamName === '' ? streamName : _streamName },
-  initSubscriberId: (subscriberId) => { _subscriberId = _subscriberId === '' ? subscriberId : _subscriberId },
-  initStreamViewId: (streamViewId) => { _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId },
-  initFeedId: (feedId) => { _feedId = _feedId === '' ? feedId : _feedId },
-  setConnectionTime: (connectionTime) => { _connectionTime = _connectionTime === 0 ? connectionTime : _connectionTime },
-  setConnectionState: (connectionState) => { _connection = connectionState },
-  setClusterId: (clusterId) => { _cluster = _cluster === '' ? clusterId : _cluster },
+  initAccountId: (accountId) => {
+    _accountId = _accountId === '' ? accountId : _accountId
+  },
+  initStreamName: (streamName) => {
+    _streamName = _streamName === '' ? streamName : _streamName
+  },
+  initSubscriberId: (subscriberId) => {
+    _subscriberId = _subscriberId === '' ? subscriberId : _subscriberId
+  },
+  initStreamViewId: (streamViewId) => {
+    _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId
+  },
+  initFeedId: (feedId) => {
+    _feedId = _feedId === '' ? feedId : _feedId
+  },
+  setConnectionTime: (connectionTime) => {
+    _connectionTime = _connectionTime === 0 ? connectionTime : _connectionTime
+  },
+  setConnectionState: (connectionState) => {
+    _connection = connectionState
+  },
+  setClusterId: (clusterId) => {
+    _cluster = _cluster === '' ? clusterId : _cluster
+  },
 
   addStats: (stats) => {
     if (_stats.length === MAX_STATS_HISTORY_SIZE) {
@@ -79,7 +97,7 @@ const Diagnostics = {
       subscriberId: _subscriberId,
       connection: _connection,
       stats: _stats.slice(-configuredStatsCount),
-      connectionDurationMs: (new Date().getTime() - _connectionTime)
+      connectionDurationMs: new Date().getTime() - _connectionTime,
     }
 
     if (_feedId !== '') {
@@ -92,7 +110,7 @@ const Diagnostics = {
     }
 
     return diagnostics
-  }
+  },
 }
 
 export default Diagnostics

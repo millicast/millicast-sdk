@@ -4,10 +4,13 @@ import TransactionManager from 'transaction-manager'
 import Signaling from '../../src/Signaling'
 import './__mocks__/MockBrowser'
 import { WebSocket } from 'mock-socket'
-const feature = loadFeature('../features/OfferPublishingStream.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/OfferPublishingStream.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 
 global.RTCRtpSender = {
-  getCapabilities: jest.fn()
+  getCapabilities: jest.fn(),
 }
 
 global.WebSocket = WebSocket
@@ -19,17 +22,25 @@ beforeEach(() => {
       { clockRate: 90000, mimeType: 'video/VP8' },
       { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=0' },
       { clockRate: 90000, mimeType: 'video/VP9', sdpFmtpLine: 'profile-id=2' },
-      { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f' },
-      { clockRate: 90000, mimeType: 'video/H264', sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f' },
+      {
+        clockRate: 90000,
+        mimeType: 'video/H264',
+        sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f',
+      },
+      {
+        clockRate: 90000,
+        mimeType: 'video/H264',
+        sdpFmtpLine: 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f',
+      },
       { clockRate: 90000, mimeType: 'video/H265' },
-      { clockRate: 90000, mimeType: 'video/AV1X' }
+      { clockRate: 90000, mimeType: 'video/AV1X' },
     ],
-    headerExtensions: []
+    headerExtensions: [],
   }
   jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ ...browserCapabilities })
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   const publishWebSocketLocation = 'ws://localhost:8080'
   const streamName = 'MyStreamName'
   const accountId = 'MyAccountId'
@@ -92,7 +103,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -100,7 +111,7 @@ defineFeature(feature, test => {
     when('I offer my local sdp with h264 codec and recording option', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp, 'h264', true)
     })
@@ -119,7 +130,7 @@ defineFeature(feature, test => {
     given('a local sdp and a previous active connection to server', async () => {
       signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       await signaling.connect()
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
@@ -128,7 +139,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -155,7 +166,7 @@ defineFeature(feature, test => {
     when('I offer a null sdp', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       try {
         await signaling.publish(null, 'h264')
@@ -178,7 +189,7 @@ defineFeature(feature, test => {
     given('I have previous connection to server', async () => {
       signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       await signaling.connect()
       jest.spyOn(TransactionManager.prototype, 'cmd').mockRejectedValue(errorMessage)
@@ -208,7 +219,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -266,7 +277,7 @@ defineFeature(feature, test => {
     when('I offer a sdp with invalid codec', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       try {
         await signaling.publish(localSdp, 'myCodec264')
@@ -291,7 +302,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp('vp8'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -299,7 +310,7 @@ defineFeature(feature, test => {
     when('I offer my local sdp with vp8 codec', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp, 'vp8')
     })
@@ -321,7 +332,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp('vp9'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -329,7 +340,7 @@ defineFeature(feature, test => {
     when('I offer my local sdp with vp9 codec', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp, 'vp9')
     })
@@ -341,7 +352,11 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Offer a SDP with no previous connection and av1 codec and browser supports av1x', ({ given, when, then }) => {
+  test('Offer a SDP with no previous connection and av1 codec and browser supports av1x', ({
+    given,
+    when,
+    then,
+  }) => {
     let response
 
     given('a local sdp and no previous connection to server', async () => {
@@ -351,7 +366,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp('av1'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -359,7 +374,7 @@ defineFeature(feature, test => {
     when('I offer my local sdp with av1 codec', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp, 'av1')
     })
@@ -371,18 +386,24 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Offer a SDP with no previous connection and av1 codec and browser supports av1', ({ given, when, then }) => {
+  test('Offer a SDP with no previous connection and av1 codec and browser supports av1', ({
+    given,
+    when,
+    then,
+  }) => {
     let response
 
     given('a local sdp and no previous connection to server', async () => {
-      jest.spyOn(RTCRtpSender, 'getCapabilities').mockReturnValue({ codecs: [{ clockRate: 90000, mimeType: 'video/AV1' }] })
+      jest
+        .spyOn(RTCRtpSender, 'getCapabilities')
+        .mockReturnValue({ codecs: [{ clockRate: 90000, mimeType: 'video/AV1' }] })
       jest.spyOn(TransactionManager.prototype, 'cmd').mockImplementation(() => {
         return {
           feedId: 12345,
           publisherId,
           sdp: offerSdp('av1'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -390,7 +411,7 @@ defineFeature(feature, test => {
     when('I offer my local sdp with av1 codec', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp, 'av1')
     })
@@ -402,7 +423,11 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Offer a SDP with no previous connection and av1 codec and browser does not have getCapabilities', ({ given, when, then }) => {
+  test('Offer a SDP with no previous connection and av1 codec and browser does not have getCapabilities', ({
+    given,
+    when,
+    then,
+  }) => {
     let response
 
     given('a local sdp and no previous connection to server', async () => {
@@ -413,7 +438,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp('av1'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -421,7 +446,7 @@ defineFeature(feature, test => {
     when('I offer my local sdp with av1 codec', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp, 'av1')
     })
@@ -443,7 +468,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp('av1'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -451,10 +476,10 @@ defineFeature(feature, test => {
     when('I offer my local sdp using options object', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       const signalingPublishOptions = {
-        codec: 'av1'
+        codec: 'av1',
       }
       response = await signaling.publish(localSdp, signalingPublishOptions)
     })
@@ -476,7 +501,7 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp(),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
@@ -484,7 +509,7 @@ defineFeature(feature, test => {
     when('I offer a sdp', async () => {
       const signaling = new Signaling({
         streamName,
-        url: publishWebSocketLocation
+        url: publishWebSocketLocation,
       })
       response = await signaling.publish(localSdp)
     })
@@ -505,22 +530,25 @@ defineFeature(feature, test => {
           publisherId,
           sdp: offerSdp('av1'),
           streamId: `${accountId}/${streamName}`,
-          uuid: 'feeds://uuid1234/5678'
+          uuid: 'feeds://uuid1234/5678',
         }
       })
     })
 
-    when('I offer my local sdp and I set the events active and inactive as events that i want to get', async () => {
-      const signaling = new Signaling({
-        streamName,
-        url: publishWebSocketLocation
-      })
-      const signalingPublishOptions = {
-        codec: 'av1',
-        events: ['active', 'inactive']
+    when(
+      'I offer my local sdp and I set the events active and inactive as events that i want to get',
+      async () => {
+        const signaling = new Signaling({
+          streamName,
+          url: publishWebSocketLocation,
+        })
+        const signalingPublishOptions = {
+          codec: 'av1',
+          events: ['active', 'inactive'],
+        }
+        response = await signaling.publish(localSdp, signalingPublishOptions)
       }
-      response = await signaling.publish(localSdp, signalingPublishOptions)
-    })
+    )
 
     then('returns a filtered sdp to offer to remote peer', async () => {
       expect(response).toBeDefined()

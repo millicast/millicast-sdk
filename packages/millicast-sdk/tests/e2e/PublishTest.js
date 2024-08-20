@@ -6,13 +6,13 @@ const token = window.token
 const tokenGenerator = () => millicast.Director.getPublisher({ token, streamName })
 
 class MillicastPublishTest {
-  constructor () {
+  constructor() {
     millicast.Logger.setLevel(millicast.Logger.DEBUG)
     millicast.Director.setEndpoint(window.directorEndpoint)
     this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
   }
 
-  async init () {
+  async init() {
     this.media = window.media
     this.mediaStream = await this.media.getMedia()
     console.log('GetMedia response:', this.mediaStream)
@@ -20,13 +20,13 @@ class MillicastPublishTest {
     this.setCodecOptions()
   }
 
-  async loadCamera () {
+  async loadCamera() {
     this.mediaStream = await this.media.getMedia()
     console.log('GetMedia response:', this.mediaStream)
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
 
-  async loadVideo () {
+  async loadVideo() {
     const videoUrl = document.getElementById('video-src').value
     const videoElement = document.getElementById('millicast-media-video-test')
     if (videoUrl) {
@@ -41,7 +41,7 @@ class MillicastPublishTest {
     }
   }
 
-  setCodecOptions () {
+  setCodecOptions() {
     const capabilities = millicast.PeerConnection.getCapabilities('video')
     const options = []
 
@@ -58,15 +58,15 @@ class MillicastPublishTest {
       for (const scalability of capabilities.codecs[0].scalabilityModes) {
         scalabilityOptions.push(`<option value='${scalability}'>${scalability}</option>`)
       }
-      scalabilityOptions.push('<option value=\'none\'>None</option>')
+      scalabilityOptions.push("<option value='none'>None</option>")
       document.getElementById('scalability-mode-select').innerHTML = scalabilityOptions.join('\n')
     } else {
-      document.getElementById('scalability-mode-select').innerHTML = '<option value=\'none\'>None</option>'
+      document.getElementById('scalability-mode-select').innerHTML = "<option value='none'>None</option>"
     }
     this.selectedScalabilityMode = document.getElementById('scalability-mode-select').value
   }
 
-  async testStart (options = undefined) {
+  async testStart(options = undefined) {
     const bandwidth = Number.parseInt(document.getElementById('bitrate-select').value)
 
     try {
@@ -80,7 +80,7 @@ class MillicastPublishTest {
         scalabilityMode: this.selectedScalabilityMode === 'none' ? null : this.selectedScalabilityMode,
         record: false,
         absCaptureTime: true,
-        events: ['active', 'inactive', 'viewercount']
+        events: ['active', 'inactive', 'viewercount'],
       }
       this.millicastPublish.on('broadcastEvent', (data) => {
         console.log('Broadcast Event: ', data)
@@ -92,9 +92,13 @@ class MillicastPublishTest {
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
           const viewLink = `http://localhost:10002/?streamAccountId=${accountId}&streamId=${streamName}`
-          document.getElementById('viewer').innerHTML = `<iframe src="${viewLink}" height=480 width=854 style="border:none;"></iframe>`
+          document.getElementById(
+            'viewer'
+          ).innerHTML = `<iframe src="${viewLink}" height=480 width=854 style="border:none;"></iframe>`
           console.log('Broadcast viewer link: ', viewLink)
-          document.getElementById('broadcast-status-label').innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
+          document.getElementById(
+            'broadcast-status-label'
+          ).innerHTML = `LIVE! View link: <a href='${viewLink}'>${viewLink}</a>`
         }
       })
       await this.millicastPublish.connect(broadcastOptions)
@@ -112,7 +116,7 @@ class MillicastPublishTest {
     }
   }
 
-  testStop () {
+  testStop() {
     this.millicastPublish.stop()
     this.testStopStats()
     console.log('Broadcast stopped')
@@ -121,34 +125,34 @@ class MillicastPublishTest {
     document.getElementById('viewer').innerHTML = '<div style="height: 480px; width: 640px;"></div>'
   }
 
-  changeCodec (selectObject) {
+  changeCodec(selectObject) {
     document.getElementById('scalability-mode-select').innerHTML = ''
     this.selectedCodec = selectObject.value
 
     const capabilities = millicast.PeerConnection.getCapabilities('video')
-    const selectedCapability = capabilities.codecs.find(x => x.codec === this.selectedCodec)
+    const selectedCapability = capabilities.codecs.find((x) => x.codec === this.selectedCodec)
     if (selectedCapability.scalabilityModes) {
       const scalabilityOptions = []
       for (const scalability of selectedCapability.scalabilityModes) {
         scalabilityOptions.push(`<option value='${scalability}'>${scalability}</option>`)
       }
-      scalabilityOptions.push('<option value=\'none\'>None</option>')
+      scalabilityOptions.push("<option value='none'>None</option>")
       document.getElementById('scalability-mode-select').innerHTML = scalabilityOptions.join('\n')
     } else {
-      document.getElementById('scalability-mode-select').innerHTML = '<option value=\'none\'>None</option>'
+      document.getElementById('scalability-mode-select').innerHTML = "<option value='none'>None</option>"
     }
     this.selectedScalabilityMode = document.getElementById('scalability-mode-select').value
   }
 
-  changeScalability (selectObject) {
+  changeScalability(selectObject) {
     this.selectedScalabilityMode = selectObject.value
   }
 
-  setSimulcast (checkboxObject) {
+  setSimulcast(checkboxObject) {
     this.simulcast = checkboxObject.checked
   }
 
-  async testUpdateBitrate (selectObject) {
+  async testUpdateBitrate(selectObject) {
     if (this.millicastPublish.isActive()) {
       const bitrate = selectObject.value
       await this.millicastPublish.webRTCPeer.updateBitrate(bitrate)
@@ -156,22 +160,22 @@ class MillicastPublishTest {
     }
   }
 
-  testMuteAudio (checkboxObject) {
+  testMuteAudio(checkboxObject) {
     const muted = this.media.muteAudio(checkboxObject.checked)
     console.log('MuteAudio response:', muted)
   }
 
-  testMuteVideo (checkboxObject) {
+  testMuteVideo(checkboxObject) {
     const muted = this.media.muteVideo(checkboxObject.checked)
     console.log('MuteVideo response:', muted)
   }
 
-  async testChangeVideo () {
-    const currentVideoDevice = (this.mediaStream.getVideoTracks()[0]).getSettings().deviceId
+  async testChangeVideo() {
+    const currentVideoDevice = this.mediaStream.getVideoTracks()[0].getSettings().deviceId
 
     const deviceList = await this.media.getMediaDevices()
     console.log(deviceList.videoinput)
-    const newDevice = deviceList.videoinput.find(vi => vi.deviceId !== currentVideoDevice)
+    const newDevice = deviceList.videoinput.find((vi) => vi.deviceId !== currentVideoDevice)
     console.log(newDevice)
 
     const newStream = await this.media.changeVideo(newDevice.deviceId)
@@ -184,16 +188,16 @@ class MillicastPublishTest {
     document.getElementById('millicast-media-video-test').srcObject = this.mediaStream
   }
 
-  testGetStats () {
+  testGetStats() {
     this.millicastPublish.webRTCPeer.initStats()
     document.getElementById('stats').classList.add('show')
   }
 
-  testMigrate () {
+  testMigrate() {
     this.millicastPublish.signaling.emit('migrate')
   }
 
-  testStopStats () {
+  testStopStats() {
     this.millicastPublish.webRTCPeer.stopStats()
     document.getElementById('stats').classList.remove('show')
     const candidateInfo = document.getElementById('candidate-info')
@@ -201,7 +205,7 @@ class MillicastPublishTest {
     candidateInfo.innerHTML = tracksInfo.innerHTML = ''
   }
 
-  loadStatsInTable (stats) {
+  loadStatsInTable(stats) {
     const candidateInfo = document.getElementById('candidate-info')
     candidateInfo.innerHTML = `
       <tr>

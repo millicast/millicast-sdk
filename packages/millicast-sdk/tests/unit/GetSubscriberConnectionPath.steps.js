@@ -1,29 +1,35 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { mockFetchJsonReturnValue, mockFetchRejectValue } from './__mocks__/Fetch'
 import Director from '../../src/Director'
-const feature = loadFeature('../features/GetSubscriberConnectionPath.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/GetSubscriberConnectionPath.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 
-const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
+const dummyToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   beforeEach(() => {
     fetch.mockClear()
     Director.setLiveDomain('')
   })
 
-  test('Subscribe to an existing unrestricted stream, valid accountId and no token', ({ given, when, then }) => {
+  test('Subscribe to an existing unrestricted stream, valid accountId and no token', ({
+    given,
+    when,
+    then,
+  }) => {
     let accountId
     let streamName
     let response
     const mockedResponse = {
       data: {
         wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
-        urls: [
-          'wss://live-west.millicast.com/ws/v2/sub/12345'
-        ],
+        urls: ['wss://live-west.millicast.com/ws/v2/sub/12345'],
         jwt: dummyToken,
-        streamAccountId: 'Existing_accountId'
-      }
+        streamAccountId: 'Existing_accountId',
+      },
     }
     given('I have an existing stream name, accountId and no token', async () => {
       accountId = 'Existing_accountId'
@@ -48,12 +54,10 @@ defineFeature(feature, test => {
     const mockedResponse = {
       data: {
         wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
-        urls: [
-          'wss://live-west.millicast.com/ws/v2/sub/12345'
-        ],
+        urls: ['wss://live-west.millicast.com/ws/v2/sub/12345'],
         jwt: dummyToken,
-        streamAccountId: 'Existing_accountId'
-      }
+        streamAccountId: 'Existing_accountId',
+      },
     }
     given('I have an existing stream name and valid token', async () => {
       token = 'Valid_token'
@@ -71,7 +75,11 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Subscribe to an existing unrestricted stream, invalid accountId and no token', ({ given, when, then }) => {
+  test('Subscribe to an existing unrestricted stream, invalid accountId and no token', ({
+    given,
+    when,
+    then,
+  }) => {
     let accountId
     let streamName
     let responseError
@@ -81,10 +89,10 @@ defineFeature(feature, test => {
           status: 'fail',
           data: {
             streamId: 'tnJhvKkk/klr0vxjk',
-            message: 'stream not found'
-          }
-        }
-      }
+            message: 'stream not found',
+          },
+        },
+      },
     }
     given('I have an existing stream name, invalid accountId and no token', async () => {
       accountId = 'Unexisting_accountId'
@@ -113,12 +121,10 @@ defineFeature(feature, test => {
     const mockedResponse = {
       data: {
         wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
-        urls: [
-          'wss://live-west.millicast.com/ws/v2/sub/12345'
-        ],
+        urls: ['wss://live-west.millicast.com/ws/v2/sub/12345'],
         jwt: dummyToken,
-        streamAccountId: 'Existing_accountId'
-      }
+        streamAccountId: 'Existing_accountId',
+      },
     }
     given('I have an existing stream name, accountId and no token', async () => {
       accountId = 'Existing_accountId'
@@ -141,19 +147,21 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Subscribe to an existing unrestricted stream, valid accountId, no token and options as object', ({ given, when, then }) => {
+  test('Subscribe to an existing unrestricted stream, valid accountId, no token and options as object', ({
+    given,
+    when,
+    then,
+  }) => {
     let accountId
     let streamName
     let response
     const mockedResponse = {
       data: {
         wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
-        urls: [
-          'wss://live-west.millicast.com/ws/v2/sub/12345'
-        ],
+        urls: ['wss://live-west.millicast.com/ws/v2/sub/12345'],
         jwt: dummyToken,
-        streamAccountId: 'Existing_accountId'
-      }
+        streamAccountId: 'Existing_accountId',
+      },
     }
     given('I have an existing stream name, accountId and no token', async () => {
       accountId = 'Existing_accountId'
@@ -171,19 +179,21 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Subscribe to an existing stream, valid accountId, no token and custom live websocket domain', ({ given, when, then }) => {
+  test('Subscribe to an existing stream, valid accountId, no token and custom live websocket domain', ({
+    given,
+    when,
+    then,
+  }) => {
     let accountId
     let streamName
     let response
     const mockedResponse = {
       data: {
         wsUrl: 'wss://live-west.millicast.com/ws/v2/sub/12345',
-        urls: [
-          'wss://test.com/ws/v2/sub/12345'
-        ],
+        urls: ['wss://test.com/ws/v2/sub/12345'],
         jwt: dummyToken,
-        streamAccountId: 'Existing_accountId'
-      }
+        streamAccountId: 'Existing_accountId',
+      },
     }
     given('I have an existing stream name, accountId and no token', async () => {
       accountId = 'Existing_accountId'

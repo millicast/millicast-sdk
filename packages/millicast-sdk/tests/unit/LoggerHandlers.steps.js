@@ -2,7 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import Logger from '../../src/Logger'
 const feature = loadFeature('../features/LoggerHandlers.feature', { loadRelativePath: true, errors: true })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Gets messages from same level', ({ given, when, then }) => {
     const handler = jest.fn()
 
@@ -16,10 +16,10 @@ defineFeature(feature, test => {
 
     then('I receive this message in handler', async () => {
       expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith(
-        expect.objectContaining({ 0: 'This is a log message' }),
-        { level: Logger.INFO, filterLevel: Logger.TRACE }
-      )
+      expect(handler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+        level: Logger.INFO,
+        filterLevel: Logger.TRACE,
+      })
     })
   })
 
@@ -52,10 +52,10 @@ defineFeature(feature, test => {
 
     then('I receive this message in handler', async () => {
       expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith(
-        expect.objectContaining({ 0: 'This is a log message' }),
-        { level: Logger.ERROR, filterLevel: Logger.TRACE }
-      )
+      expect(handler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+        level: Logger.ERROR,
+        filterLevel: Logger.TRACE,
+      })
     })
   })
 
@@ -74,16 +74,16 @@ defineFeature(feature, test => {
 
     then('both handlers receive this message', async () => {
       expect(infoHandler).toBeCalledTimes(1)
-      expect(infoHandler).toBeCalledWith(
-        expect.objectContaining({ 0: 'This is a log message' }),
-        { level: Logger.ERROR, filterLevel: Logger.TRACE }
-      )
+      expect(infoHandler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+        level: Logger.ERROR,
+        filterLevel: Logger.TRACE,
+      })
 
       expect(errorHandler).toBeCalledTimes(1)
-      expect(errorHandler).toBeCalledWith(
-        expect.objectContaining({ 0: 'This is a log message' }),
-        { level: Logger.ERROR, filterLevel: Logger.TRACE }
-      )
+      expect(errorHandler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+        level: Logger.ERROR,
+        filterLevel: Logger.TRACE,
+      })
     })
   })
 })

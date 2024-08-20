@@ -10,8 +10,14 @@ const lastPayloadTypeLowerRange = 65
 const firstPayloadTypeUpperRange = 96
 const lastPayloadTypeUpperRange = 127
 
-const payloadTypeLowerRange = Array.from({ length: (lastPayloadTypeLowerRange - firstPayloadTypeLowerRange) + 1 }, (_, i) => i + firstPayloadTypeLowerRange)
-const payloadTypeUppperRange = Array.from({ length: (lastPayloadTypeUpperRange - firstPayloadTypeUpperRange) + 1 }, (_, i) => i + firstPayloadTypeUpperRange)
+const payloadTypeLowerRange = Array.from(
+  { length: lastPayloadTypeLowerRange - firstPayloadTypeLowerRange + 1 },
+  (_, i) => i + firstPayloadTypeLowerRange
+)
+const payloadTypeUppperRange = Array.from(
+  { length: lastPayloadTypeUpperRange - firstPayloadTypeUpperRange + 1 },
+  (_, i) => i + firstPayloadTypeUpperRange
+)
 
 const firstHeaderExtensionIdLowerRange = 1
 const lastHeaderExtensionIdLowerRange = 14
@@ -19,8 +25,14 @@ const lastHeaderExtensionIdLowerRange = 14
 const firstHeaderExtensionIdUpperRange = 16
 const lastHeaderExtensionIdUpperRange = 255
 
-const headerExtensionIdLowerRange = Array.from({ length: (lastHeaderExtensionIdLowerRange - firstHeaderExtensionIdLowerRange) + 1 }, (_, i) => i + firstHeaderExtensionIdLowerRange)
-const headerExtensionIdUppperRange = Array.from({ length: (lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange) + 1 }, (_, i) => i + firstHeaderExtensionIdUpperRange)
+const headerExtensionIdLowerRange = Array.from(
+  { length: lastHeaderExtensionIdLowerRange - firstHeaderExtensionIdLowerRange + 1 },
+  (_, i) => i + firstHeaderExtensionIdLowerRange
+)
+const headerExtensionIdUppperRange = Array.from(
+  { length: lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange + 1 },
+  (_, i) => i + firstHeaderExtensionIdUpperRange
+)
 
 /**
  * @module SdpParser
@@ -37,15 +49,19 @@ const SdpParser = {
    * @returns {String} SDP parsed with simulcast support.
    * @example SdpParser.setSimulcast(sdp, 'h264')
    */
-  setSimulcast (sdp, codec) {
+  setSimulcast(sdp, codec) {
     logger.info('Setting simulcast. Codec: ', codec)
     const browserData = new UserAgent()
     if (!browserData.isChromium()) {
-      logger.warn('Your browser does not appear to support Simulcast. For a better experience, use a Chromium based browser.')
+      logger.warn(
+        'Your browser does not appear to support Simulcast. For a better experience, use a Chromium based browser.'
+      )
       return sdp
     }
     if (codec !== 'h264' && codec !== 'vp8') {
-      logger.warn(`Your selected codec ${codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`)
+      logger.warn(
+        `Your selected codec ${codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`
+      )
       return sdp
     }
     // Check if there is video available to set simulcast
@@ -72,11 +88,32 @@ const SdpParser = {
         // Add to ssrc list
         ssrcs.push(ssrc)
         // Add sdp stuff
-        sdp += 'a=ssrc-group:FID ' + ssrc + ' ' + rtx + '\r\n' +
-            'a=ssrc:' + ssrc + ' cname:' + cname + '\r\n' +
-            'a=ssrc:' + ssrc + ' msid:' + msid + '\r\n' +
-            'a=ssrc:' + rtx + ' cname:' + cname + '\r\n' +
-            'a=ssrc:' + rtx + ' msid:' + msid + '\r\n'
+        sdp +=
+          'a=ssrc-group:FID ' +
+          ssrc +
+          ' ' +
+          rtx +
+          '\r\n' +
+          'a=ssrc:' +
+          ssrc +
+          ' cname:' +
+          cname +
+          '\r\n' +
+          'a=ssrc:' +
+          ssrc +
+          ' msid:' +
+          msid +
+          '\r\n' +
+          'a=ssrc:' +
+          rtx +
+          ' cname:' +
+          cname +
+          '\r\n' +
+          'a=ssrc:' +
+          rtx +
+          ' msid:' +
+          msid +
+          '\r\n'
       }
       // Add SIM group
       sdp += 'a=ssrc-group:SIM ' + ssrcs.join(' ') + '\r\n'
@@ -98,12 +135,9 @@ const SdpParser = {
    * @returns {String} SDP parsed with stereo support.
    * @example SdpParser.setStereo(sdp)
    */
-  setStereo (sdp) {
+  setStereo(sdp) {
     logger.info('Replacing SDP response for support stereo')
-    sdp = sdp.replace(
-      /useinbandfec=1/g,
-      'useinbandfec=1; stereo=1'
-    )
+    sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1; stereo=1')
     logger.info('Replaced SDP response for support stereo')
     logger.debug('New SDP value: ', sdp)
     return sdp
@@ -117,12 +151,9 @@ const SdpParser = {
    * @returns {String} SDP parsed with dtx support.
    * @example SdpParser.setDTX(sdp)
    */
-  setDTX (sdp) {
+  setDTX(sdp) {
     logger.info('Replacing SDP response for support dtx')
-    sdp = sdp.replace(
-      'useinbandfec=1',
-      'useinbandfec=1; usedtx=1'
-    )
+    sdp = sdp.replace('useinbandfec=1', 'useinbandfec=1; usedtx=1')
     logger.info('Replaced SDP response for support dtx')
     logger.debug('New SDP value: ', sdp)
     return sdp
@@ -136,7 +167,7 @@ const SdpParser = {
    * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  setAbsoluteCaptureTime (sdp) {
+  setAbsoluteCaptureTime(sdp) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
     const header = 'a=extmap:' + id + ' http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n'
 
@@ -158,9 +189,12 @@ const SdpParser = {
    * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  setDependencyDescriptor (sdp) {
+  setDependencyDescriptor(sdp) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
-    const header = 'a=extmap:' + id + ' https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension\r\n'
+    const header =
+      'a=extmap:' +
+      id +
+      ' https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension\r\n'
 
     const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm
 
@@ -181,7 +215,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with desired bitrate.
    * @example SdpParser.setVideoBitrate(sdp, 1000)
    */
-  setVideoBitrate (sdp, bitrate) {
+  setVideoBitrate(sdp, bitrate) {
     if (bitrate < 1) {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
@@ -205,7 +239,7 @@ const SdpParser = {
    * @returns {String} SDP without the line.
    * @example SdpParser.removeSdpLine(sdp, 'custom line')
    */
-  removeSdpLine (sdp, sdpLine) {
+  removeSdpLine(sdp, sdpLine) {
     logger.debug('SDP before trimming: ', sdp)
     sdp = sdp
       .split('\n')
@@ -226,7 +260,7 @@ const SdpParser = {
    * @param {String} newCodecName - New codec name to replace.
    * @returns {String} SDP updated with new codec name.
    */
-  adaptCodecName (sdp, codec, newCodecName) {
+  adaptCodecName(sdp, codec, newCodecName) {
     if (!sdp) {
       return sdp
     }
@@ -245,7 +279,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with multiopus support.
    * @example SdpParser.setMultiopus(sdp, mediaStream)
    */
-  setMultiopus (sdp, mediaStream) {
+  setMultiopus(sdp, mediaStream) {
     const browserData = new UserAgent()
     if (!browserData.isFirefox() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
       if (!sdp.includes('multiopus/48000/6')) {
@@ -257,9 +291,16 @@ const SdpParser = {
         // Get free payload number for multiopus
         const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
         // Add multiopus
-        const multiopus = audio.replace('\r\n', ' ') + pt + '\r\n' +
-              'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
-              'a=fmtp:' + pt + ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
+        const multiopus =
+          audio.replace('\r\n', ' ') +
+          pt +
+          '\r\n' +
+          'a=rtpmap:' +
+          pt +
+          ' multiopus/48000/6\r\n' +
+          'a=fmtp:' +
+          pt +
+          ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
         // Change sdp
         sdp = sdp.replace(audio, multiopus)
         logger.info('Multiopus offer created')
@@ -278,15 +319,15 @@ const SdpParser = {
    * @param {String} sdp - Current SDP.
    * @returns {Array<Number>} All available payload type ids.
    */
-  getAvailablePayloadTypeRange (sdp) {
+  getAvailablePayloadTypeRange(sdp) {
     const regex = /m=(?:.*) (?:.*) UDP\/TLS\/RTP\/SAVPF (.*)\r\n/gm
 
     const matches = sdp.matchAll(regex)
     let ptAvailable = payloadTypeUppperRange.concat(payloadTypeLowerRange)
 
     for (const match of matches) {
-      const usedNumbers = match[1].split(' ').map(n => parseInt(n))
-      ptAvailable = ptAvailable.filter(n => !usedNumbers.includes(n))
+      const usedNumbers = match[1].split(' ').map((n) => parseInt(n))
+      ptAvailable = ptAvailable.filter((n) => !usedNumbers.includes(n))
     }
 
     return ptAvailable
@@ -299,15 +340,15 @@ const SdpParser = {
    * @param {String} sdp - Current SDP.
    * @returns {Array<Number>} All available header extension IDs.
    */
-  getAvailableHeaderExtensionIdRange (sdp) {
+  getAvailableHeaderExtensionIdRange(sdp) {
     const regex = /a=extmap:(\d+)(?:.*)\r\n/gm
 
     const matches = sdp.matchAll(regex)
     let idAvailable = headerExtensionIdLowerRange.concat(headerExtensionIdUppperRange)
 
     for (const match of matches) {
-      const usedNumbers = match[1].split(' ').map(n => parseInt(n))
-      idAvailable = idAvailable.filter(n => !usedNumbers.includes(n))
+      const usedNumbers = match[1].split(' ').map((n) => parseInt(n))
+      idAvailable = idAvailable.filter((n) => !usedNumbers.includes(n))
     }
 
     return idAvailable
@@ -321,7 +362,7 @@ const SdpParser = {
    * @param {String} localDescription - Updated local sdp
    * @param {String} remoteDescription - Previous remote sdp
    */
-  renegotiate (localDescription, remoteDescription) {
+  renegotiate(localDescription, remoteDescription) {
     const offer = SDPInfo.parse(localDescription)
     const answer = SDPInfo.parse(remoteDescription)
 
@@ -363,7 +404,7 @@ const SdpParser = {
    * @param {String} remoteDescription - Remote sdp
    * @returns {String} SDP updated with missing extensions.
    */
-  updateMissingVideoExtensions (localDescription, remoteDescription) {
+  updateMissingVideoExtensions(localDescription, remoteDescription) {
     const offer = SDPInfo.parse(localDescription)
     const answer = SDPInfo.parse(remoteDescription)
     // Get extensions of answer
@@ -385,7 +426,7 @@ const SdpParser = {
     }
     return localDescription
   },
-  getCodecPayloadType (sdp) {
+  getCodecPayloadType(sdp) {
     const reg = /a=rtpmap:(\d+) (\w+)\/\d+/g
     const matches = sdp.matchAll(reg)
     const codecMap = {}
@@ -394,12 +435,12 @@ const SdpParser = {
       codecMap[match[1]] = match[2]
     }
     return codecMap
-  }
+  },
 }
 
 // Checks if mediaStream has more than 2 audio channels.
 const hasAudioMultichannel = (mediaStream) => {
-  return mediaStream.getAudioTracks().some(value => value.getSettings().channelCount > 2)
+  return mediaStream.getAudioTracks().some((value) => value.getSettings().channelCount > 2)
 }
 
 export default SdpParser

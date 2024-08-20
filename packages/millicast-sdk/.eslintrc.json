@@ -15,7 +15,15 @@
       "rules": {}
     },
     {
-      "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx", "*.steps.js", "*.test.js", "*/tests/**"],
+      "files": [
+        "*.spec.ts",
+        "*.spec.tsx",
+        "*.spec.js",
+        "*.spec.jsx",
+        "*.steps.js",
+        "*.test.js",
+        "*/tests/**"
+      ],
       "env": {
         "jest": true
       },

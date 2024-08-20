@@ -12,18 +12,19 @@ let payloadTypeCodec = {}
 const synchronizationSources = {}
 let synchronizationSourcesWithMetadata = []
 
-function createReceiverTransform (mid) {
+function createReceiverTransform(mid) {
   return new TransformStream({
-    start () {
+    start() {
       // This function is intentionally left empty
     },
-    flush () {
+    flush() {
       // This function is intentionally left empty
     },
-    async transform (encodedFrame, controller) {
+    async transform(encodedFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
-        const frameCodec = payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
+        const frameCodec =
+          payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
         if (frameCodec === 'H264') {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec)
           if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
@@ -32,44 +33,47 @@ function createReceiverTransform (mid) {
         }
         self.postMessage({
           event: 'complete',
-          frame: { type: encodedFrame.type, timestamp: encodedFrame.timestamp, data: encodedFrame.data }
+          frame: { type: encodedFrame.type, timestamp: encodedFrame.timestamp, data: encodedFrame.data },
         })
       }
       controller.enqueue(encodedFrame)
-    }
+    },
   })
 }
 
-function clearMetadata () {
-  if (Object.keys(synchronizationSources).sort().join() === synchronizationSourcesWithMetadata.sort().join()) {
+function clearMetadata() {
+  if (
+    Object.keys(synchronizationSources).sort().join() === synchronizationSourcesWithMetadata.sort().join()
+  ) {
     metadata.shift()
     synchronizationSourcesWithMetadata = []
   }
 }
 
-function refreshSynchronizationSources (newSyncSource) {
+function refreshSynchronizationSources(newSyncSource) {
   const now = new Date().getTime()
   synchronizationSources[newSyncSource] = now
 
-  const sourcesToDelete = Object.keys(synchronizationSources)
-    .filter(source => (now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT))
+  const sourcesToDelete = Object.keys(synchronizationSources).filter(
+    (source) => now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT
+  )
 
-  sourcesToDelete.forEach(source => {
+  sourcesToDelete.forEach((source) => {
     delete synchronizationSources[source]
     delete synchronizationSourcesWithMetadata[source]
   })
   clearMetadata()
 }
 
-function createSenderTransform () {
+function createSenderTransform() {
   return new TransformStream({
-    start () {
+    start() {
       // This function is intentionally left empty
     },
-    flush () {
+    flush() {
       // This function is intentionally left empty
     },
-    async transform (encodedFrame, controller) {
+    async transform(encodedFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
@@ -96,14 +100,12 @@ function createSenderTransform () {
         }
       }
       controller.enqueue(encodedFrame)
-    }
+    },
   })
 }
 
-function setupPipe ({ readable, writable }, transform) {
-  readable
-    .pipeThrough(transform)
-    .pipeTo(writable)
+function setupPipe({ readable, writable }, transform) {
+  readable.pipeThrough(transform).pipeTo(writable)
 }
 
 // eslint-disable-next-line no-undef
@@ -137,7 +139,7 @@ addEventListener('message', (event) => {
     case 'metadata-sei-user-data-unregistered':
       metadata.push({
         uuid: event.data.uuid,
-        payload: event.data.payload
+        payload: event.data.payload,
       })
       break
     default:

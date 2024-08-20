@@ -5,7 +5,10 @@ import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../features/PublisherReconnection.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/PublisherReconnection.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 let Publish
 let setTimeout
 
@@ -13,10 +16,8 @@ jest.useFakeTimers()
 
 const mockTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
+    urls: ['ws://localhost:8080'],
+    jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U',
   }
 })
 
@@ -29,16 +30,20 @@ jest.mock('../../src/Signaling', () => {
     __esModule: true,
     ...originalSignaling,
     default: class MockSignaling extends originalSignaling.default {
-      async connect () { return Promise.resolve() }
-      async publish () { return Promise.resolve('SDP') }
-    }
+      async connect() {
+        return Promise.resolve()
+      }
+      async publish() {
+        return Promise.resolve('SDP')
+      }
+    },
   }
 })
 
 jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
-    terminate: jest.fn()
+    terminate: jest.fn(),
   }))
 )
 
@@ -51,7 +56,7 @@ beforeEach(() => {
   })
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Reconnection when peer has an error', ({ given, when, then }) => {
     let publisher
 
@@ -106,7 +111,11 @@ defineFeature(feature, test => {
     })
   })
 
-  test('No reconnect when signaling has an error and reconnection is already being executed', ({ given, when, then }) => {
+  test('No reconnect when signaling has an error and reconnection is already being executed', ({
+    given,
+    when,
+    then,
+  }) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
@@ -178,11 +187,16 @@ defineFeature(feature, test => {
       publisher.on('reconnect', reconnectHandler)
       await publisher.connect({ mediaStream })
       publisher.webRTCPeer.peer.connectionState = 'failed'
-      jest.spyOn(publisher, 'isActive').mockImplementation(() => { return false })
+      jest.spyOn(publisher, 'isActive').mockImplementation(() => {
+        return false
+      })
     })
 
     when('reconnection is called and fails', () => {
-      jest.spyOn(publisher, 'connect').mockImplementation(() => { publisher.stopReconnection = false; throw new Error(errorMessage) })
+      jest.spyOn(publisher, 'connect').mockImplementation(() => {
+        publisher.stopReconnection = false
+        throw new Error(errorMessage)
+      })
       publisher.reconnect({ error: new Error(errorMessage) })
     })
 
@@ -192,7 +206,10 @@ defineFeature(feature, test => {
         expect(setTimeout).toHaveBeenCalledTimes(i)
         expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), interval)
         expect(reconnectHandler).toHaveBeenCalledTimes(i)
-        expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: interval, error: new Error(errorMessage) })
+        expect(reconnectHandler).toHaveBeenLastCalledWith({
+          timeout: interval,
+          error: new Error(errorMessage),
+        })
         jest.runOnlyPendingTimers()
         interval = interval * 2
       }
@@ -231,7 +248,9 @@ defineFeature(feature, test => {
     })
 
     when('reconnection is called and peer is inactive', () => {
-      jest.spyOn(publisher, 'isActive').mockImplementation(() => { return false })
+      jest.spyOn(publisher, 'isActive').mockImplementation(() => {
+        return false
+      })
       jest.spyOn(publisher, 'connect').mockImplementation(jest.fn)
       publisher.reconnect()
     })

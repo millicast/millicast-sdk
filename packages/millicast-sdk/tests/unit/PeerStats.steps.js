@@ -5,7 +5,7 @@ jest.mock('events')
 jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
-    terminate: jest.fn()
+    terminate: jest.fn(),
   }))
 )
 
@@ -17,22 +17,22 @@ describe('PeerConnectionStats', () => {
     mockStatsInput = {
       input: {
         audio: [],
-        video: []
+        video: [],
       },
       output: {
         audio: [],
-        video: []
-      }
+        video: [],
+      },
     }
     mockStatsOutput = {
       audio: {
         inbounds: [],
-        outbounds: []
+        outbounds: [],
       },
       video: {
         inbounds: [],
-        outbounds: []
-      }
+        outbounds: [],
+      },
     }
     statsInstance = new PeerConnectionStats(mockPeer)
   })
@@ -60,9 +60,6 @@ describe('PeerConnectionStats', () => {
     statsInstance.collection.emit('stats', mockStatsInput)
 
     expect(emitSpy).toHaveBeenCalledTimes(1)
-    expect(emitSpy).toHaveBeenCalledWith(
-      peerConnectionStatsEvents.stats,
-      mockStatsOutput
-    )
+    expect(emitSpy).toHaveBeenCalledWith(peerConnectionStatsEvents.stats, mockStatsOutput)
   })
 })
