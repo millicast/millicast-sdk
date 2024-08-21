@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
-import WebRTCStats from '@dolbyio/webrtc-stats'
+import { WebRTCStats } from '@dolbyio/webrtc-stats'
 
 const logger = Logger.get('PeerConnectionStats')
 
@@ -46,7 +46,8 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} totalPacketsLost - Total packets lost.
  * @property {Number} packetsLostRatioPerSecond - Total packet lost ratio per second.
  * @property {Number} packetsLostDeltaPerSecond - Total packet lost delta per second.
- * @property {Number} bitrate - Current bitrate in bits per second.
+ * @property {Number} bitrate - Current bitrate in Bytes per second.
+ * @property {Number} bitrateBitsPerSecond - Current bitrate in bits per second.
  * @property {Number} packetRate - The rate at which packets are being received, measured in packets per second.
  * @property {Number} jitterBufferDelay - Total delay in seconds currently experienced by the jitter buffer.
  * @property {Number} jitterBufferEmittedCount - Total number of packets emitted from the jitter buffer.
@@ -62,7 +63,8 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {String} [qualityLimitationReason] - If it's video report, indicate the reason why the media quality in the stream is currently being reduced by the codec during encoding, or none if no quality reduction is being performed.
  * @property {Number} timestamp - Timestamp of report.
  * @property {Number} totalBytesSent - Total bytes sent indicates the total number of payload bytes that hve been sent so far on the connection described by the candidate pair.
- * @property {Number} bitrate - Current bitrate in bits per second.
+ * @property {Number} bitrate - Current bitrate in Bytes per second.
+ * @property {Number} bitrateBitsPerSecond - Current bitrate in bits per second.
  * @property {Number} bytesSentDelta - Change in the number of bytes sent since the last report.
  * @property {Number} totalPacketsSent - Total number of packets sent.
  * @property {Number} packetsSentDelta - Change in the number of packets sent since the last report.
@@ -92,26 +94,34 @@ const parseWebRTCStats = (webRTCStats) => {
   const statsObject = {
     ...filteredStats,
     audio: {
-      inbounds: webRTCStats.input.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      inbounds: webRTCStats.input.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
         ...rest
       })),
-      outbounds: webRTCStats.output.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      outbounds: webRTCStats.output.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
         ...rest
       }))
     },
     video: {
-      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
         ...rest
       })),
-      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, ...rest }) => ({
+      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
         packetsLostRatioPerSecond,
         packetsLostDeltaPerSecond,
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
         ...rest
       }))
     },
@@ -153,9 +163,9 @@ export default class PeerConnectionStats extends EventEmitter {
       })
 
       this.collection.on('stats', (stats) => {
-        const parsedSats = parseWebRTCStats(stats)
-        Diagnostics.addStats(parsedSats)
-        this.emit(peerConnectionStatsEvents.stats, parsedSats)
+        const parsedStats = parseWebRTCStats(stats)
+        Diagnostics.addStats(parsedStats)
+        this.emit(peerConnectionStatsEvents.stats, parsedStats)
       })
       this.collection.start()
       this.initialized = true

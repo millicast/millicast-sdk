@@ -219,7 +219,9 @@
             </g>
           </svg>
         </div>
-        <google-cast-launcher class="mt-2 mr-3 float-right"></google-cast-launcher>
+        <google-cast-launcher
+          class="mt-2 mr-3 float-right"
+        ></google-cast-launcher>
         <div id="vidContainer" class="">
           <!--<div class="vidCtrls footer w-100 mb-2 px-2">
                 <button id="playBtn" class="btn baseBtn float-left" style="">
@@ -251,6 +253,6 @@
     ></script>
     <!-- Google Cast -->
     <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
-    <script src="./dist/viewer.umd.js"></script>
+    <script type="module" src="/src/viewer.ts"></script>
   </body>
 </html>

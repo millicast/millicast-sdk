@@ -99,7 +99,7 @@ class MillicastViewTest {
           <td>${track.packetsLostRatioPerSecond}</td>
           <td>${track.totalPacketsLost}</td>
           <td>${track.jitter}</td>
-          <td>${track.bitrate / 1000}</td>
+          <td>${track.bitrateBitsPerSecond / 1000}</td>
           <td>${new Date(track.timestamp).toISOString()}</td>
         </tr>
       `)
@@ -118,7 +118,7 @@ class MillicastViewTest {
           <td>${track.packetsLostRatioPerSecond}</td>
           <td>${track.totalPacketsLost}</td>
           <td>${track.jitter}</td>
-          <td>${track.bitrate / 1000}</td>
+          <td>${track.bitrateBitsPerSecond / 1000}</td>
           <td>${new Date(track.timestamp).toISOString()}</td>
         </tr>
       `)

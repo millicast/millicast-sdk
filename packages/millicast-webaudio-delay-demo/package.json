@@ -2,15 +2,8 @@
   "name": "millicast-webaudio-delay-demo",
   "author": "Millicast, Inc.",
   "private": true,
-  "scripts": {
-    "prepare": "node prepare.js",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "concurrently \"nodemon --watch dist --watch ../millicast-sdk --exec vite\" \"nodemon --watch src --watch ../millicast-sdk --exec vite build\""
-  },
+  "type": "module",
   "dependencies": {
-    "@maslick/radiaslider": "^1.9.8",
-    "@millicast/sdk": "file:../millicast-sdk"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",

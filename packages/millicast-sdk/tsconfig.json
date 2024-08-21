@@ -1,14 +1,22 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
-    "incremental": true,
-    "allowJs": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "outDir": "dist",
-    "strict": false,
-    "skipLibCheck": true
+    // "module": "commonjs",
+    // "forceConsistentCasingInFileNames": true,
+    // "strict": true,
+    // "noImplicitOverride": true,
+    // "noPropertyAccessFromIndexSignature": true,
+    // "noImplicitReturns": true,
+    // "noFallthroughCasesInSwitch": true
   },
-  "include": ["./src"],
-  "exclude": ["./node_modules/**/*"]
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
 }
