@@ -4,7 +4,10 @@ import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 
-const feature = loadFeature('../features/ViewerReconnection.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/ViewerReconnection.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 let View
 let setTimeout
 
@@ -12,10 +15,8 @@ jest.useFakeTimers()
 
 const mockTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: 'this-is-a-jwt-dummy-token'
+    urls: ['ws://localhost:8080'],
+    jwt: 'this-is-a-jwt-dummy-token',
   }
 })
 
@@ -26,16 +27,20 @@ jest.mock('../../src/Signaling', () => {
     __esModule: true,
     ...originalSignaling,
     default: class MockSignaling extends originalSignaling.default {
-      async connect () { return Promise.resolve() }
-      async subscribe () { return Promise.resolve('SDP') }
-    }
+      async connect() {
+        return Promise.resolve()
+      }
+      async subscribe() {
+        return Promise.resolve('SDP')
+      }
+    },
   }
 })
 
 jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
-    terminate: jest.fn()
+    terminate: jest.fn(),
   }))
 )
 
@@ -43,7 +48,7 @@ jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
   rtcDrmConfigure: jest.fn(),
   rtcDrmOnTrack: jest.fn(),
   rtcDrmEnvironments: jest.fn(),
-  rtcDrmFeedFrame: jest.fn()
+  rtcDrmFeedFrame: jest.fn(),
 }))
 
 beforeEach(() => {
@@ -55,7 +60,7 @@ beforeEach(() => {
   })
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Reconnection when peer has an error', ({ given, when, then }) => {
     let viewer
 
@@ -110,7 +115,11 @@ defineFeature(feature, test => {
     })
   })
 
-  test('No reconnect when signaling has an error and reconnection is already being executed', ({ given, when, then }) => {
+  test('No reconnect when signaling has an error and reconnection is already being executed', ({
+    given,
+    when,
+    then,
+  }) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
@@ -182,11 +191,16 @@ defineFeature(feature, test => {
       viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
-      jest.spyOn(viewer, 'isActive').mockImplementation(() => { return false })
+      jest.spyOn(viewer, 'isActive').mockImplementation(() => {
+        return false
+      })
     })
 
     when('reconnection is called and fails', () => {
-      jest.spyOn(viewer, 'connect').mockImplementation(() => { viewer.stopReconnection = false; throw new Error(errorMessage) })
+      jest.spyOn(viewer, 'connect').mockImplementation(() => {
+        viewer.stopReconnection = false
+        throw new Error(errorMessage)
+      })
       viewer.reconnect({ error: new Error(errorMessage) })
     })
 
@@ -196,7 +210,10 @@ defineFeature(feature, test => {
         expect(setTimeout).toHaveBeenCalledTimes(i)
         expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), interval)
         expect(reconnectHandler).toHaveBeenCalledTimes(i)
-        expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: interval, error: new Error(errorMessage) })
+        expect(reconnectHandler).toHaveBeenLastCalledWith({
+          timeout: interval,
+          error: new Error(errorMessage),
+        })
         jest.runOnlyPendingTimers()
         interval = interval * 2
       }
@@ -236,7 +253,9 @@ defineFeature(feature, test => {
     })
 
     when('reconnection is called and peer is inactive', () => {
-      jest.spyOn(viewer, 'isActive').mockImplementation(() => { return false })
+      jest.spyOn(viewer, 'isActive').mockImplementation(() => {
+        return false
+      })
       jest.spyOn(viewer, 'connect').mockImplementation(jest.fn)
       viewer.reconnect()
     })

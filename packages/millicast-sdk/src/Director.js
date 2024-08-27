@@ -5,7 +5,7 @@ import FetchError from './utils/FetchError'
 const logger = Logger.get('Director')
 const streamTypes = {
   WEBRTC: 'WebRtc',
-  RTMP: 'Rtmp'
+  RTMP: 'Rtmp',
 }
 
 let liveWebsocketDomain = ''
@@ -74,7 +74,7 @@ const Director = {
    * If it is set to empty, it will not parse the response.
    * @param {String} domain - New Websocket Live domain
    * @returns {void}
-  */
+   */
   setLiveDomain: (domain) => {
     liveWebsocketDomain = domain.replace(/\/$/, '')
   },
@@ -85,7 +85,7 @@ const Director = {
    * @description Get current Websocket Live domain.
    * By default is empty which corresponds to not parse the Director response.
    * @returns {String} Websocket Live domain
-  */
+   */
   getLiveDomain: () => {
     return liveWebsocketDomain
   },
@@ -179,9 +179,15 @@ const Director = {
   getSubscriber: async (options, streamAccountId = null, subscriberToken = null, isDRMEnabled = false) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
-    logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
+    logger.info(
+      `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
+    )
 
-    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName, isDrm: isDRMEnabled }
+    const payload = {
+      streamAccountId: optionsParsed.streamAccountId,
+      streamName: optionsParsed.streamName,
+      isDrm: isDRMEnabled,
+    }
     let headers = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
@@ -202,28 +208,28 @@ const Director = {
       logger.error('Error while getting subscriber connection path. ', e)
       throw e
     }
-  }
+  },
 }
 
 const getPublisherOptions = (options, legacyStreamName, legacyStreamType) => {
-  let parsedOptions = (typeof options === 'object') ? options : {}
+  let parsedOptions = typeof options === 'object' ? options : {}
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       token: options,
       streamName: legacyStreamName,
-      streamType: legacyStreamType
+      streamType: legacyStreamType,
     }
   }
   return parsedOptions
 }
 
 const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberToken) => {
-  let parsedOptions = (typeof options === 'object') ? options : {}
+  let parsedOptions = typeof options === 'object' ? options : {}
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       streamName: options,
       streamAccountId: legacyStreamAccountId,
-      subscriberToken: legacySubscriberToken
+      subscriberToken: legacySubscriberToken,
     }
   }
   return parsedOptions
@@ -232,7 +238,7 @@ const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberTo
 const parseIncomingDirectorResponse = (directorResponse) => {
   if (Director.getLiveDomain()) {
     const domainRegex = /\/\/(.*?)\//
-    const urlsParsed = directorResponse.data.urls.map(url => {
+    const urlsParsed = directorResponse.data.urls.map((url) => {
       const matched = domainRegex.exec(url)
       return url.replace(matched[1], Director.getLiveDomain())
     })

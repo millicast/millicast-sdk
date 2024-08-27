@@ -11,7 +11,7 @@ jest.mock('../../src/Signaling')
 jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
-    terminate: jest.fn()
+    terminate: jest.fn(),
   }))
 )
 
@@ -19,19 +19,17 @@ jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
   rtcDrmConfigure: jest.fn(),
   rtcDrmOnTrack: jest.fn(),
   rtcDrmEnvironments: jest.fn(),
-  rtcDrmFeedFrame: jest.fn()
+  rtcDrmFeedFrame: jest.fn(),
 }))
 
 const mockTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: 'this-is-a-jwt-dummy-token'
+    urls: ['ws://localhost:8080'],
+    jwt: 'this-is-a-jwt-dummy-token',
   }
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   beforeEach(() => {
     jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
   })
@@ -198,7 +196,9 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of View with invalid token generator', async () => {
-      const errorTokenGenerator = jest.fn(() => { throw new Error('Error getting token') })
+      const errorTokenGenerator = jest.fn(() => {
+        throw new Error('Error getting token')
+      })
       viewer = new View('streamName', errorTokenGenerator)
     })
 

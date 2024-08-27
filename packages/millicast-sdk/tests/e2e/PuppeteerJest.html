@@ -12,13 +12,13 @@
         document.getElementById('my-video').srcObject = mediaStream
         await publish.connect({
           ...options,
-          mediaStream
+          mediaStream,
         })
         window.publish = publish
       }
 
       const startViewer = (streamName, accountId) => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           const millicast = window.millicast
           const video = document.getElementById('my-video')
           millicast.Logger.setLevel(millicast.Logger.DEBUG)
@@ -29,7 +29,7 @@
               resolve()
             }
           })
-          view.on('track', event => {
+          view.on('track', (event) => {
             video.srcObject = event.streams[0]
           })
           view.connect()

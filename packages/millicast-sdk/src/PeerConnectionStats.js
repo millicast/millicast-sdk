@@ -51,7 +51,7 @@ const logger = Logger.get('PeerConnectionStats')
  * @property {Number} packetRate - The rate at which packets are being received, measured in packets per second.
  * @property {Number} jitterBufferDelay - Total delay in seconds currently experienced by the jitter buffer.
  * @property {Number} jitterBufferEmittedCount - Total number of packets emitted from the jitter buffer.
-*/
+ */
 
 /**
  * @typedef {Object} OutboundStats
@@ -79,59 +79,88 @@ const logger = Logger.get('PeerConnectionStats')
  */
 
 export const peerConnectionStatsEvents = {
-  stats: 'stats'
+  stats: 'stats',
 }
 
 /**
-   * Parses incoming WebRTC statistics
-   * This method takes statistical data from @dolbyio/webrtc-stats and transforms it into
-   * a structured format compatible with previous versions.
-   *
-   * @param {Object} webRTCStats - The statistics object containing various WebRTC stats
-   */
+ * Parses incoming WebRTC statistics
+ * This method takes statistical data from @dolbyio/webrtc-stats and transforms it into
+ * a structured format compatible with previous versions.
+ *
+ * @param {Object} webRTCStats - The statistics object containing various WebRTC stats
+ */
 const parseWebRTCStats = (webRTCStats) => {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const { input, output, rawStats, ...filteredStats } = webRTCStats
   const statsObject = {
     ...filteredStats,
     audio: {
-      inbounds: webRTCStats.input.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
-        packetsLostRatioPerSecond,
-        packetsLostDeltaPerSecond,
-        bitrateBitsPerSecond: bitrate * 8,
-        bitrate,
-        ...rest
-      })),
-      outbounds: webRTCStats.output.audio.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
-        packetsLostRatioPerSecond,
-        packetsLostDeltaPerSecond,
-        bitrateBitsPerSecond: bitrate * 8,
-        bitrate,
-        ...rest
-      }))
+      inbounds: webRTCStats.input.audio.map(
+        ({
+          packetLossRatio: packetsLostRatioPerSecond,
+          packetLossDelta: packetsLostDeltaPerSecond,
+          bitrate,
+          ...rest
+        }) => ({
+          packetsLostRatioPerSecond,
+          packetsLostDeltaPerSecond,
+          bitrateBitsPerSecond: bitrate * 8,
+          bitrate,
+          ...rest,
+        })
+      ),
+      outbounds: webRTCStats.output.audio.map(
+        ({
+          packetLossRatio: packetsLostRatioPerSecond,
+          packetLossDelta: packetsLostDeltaPerSecond,
+          bitrate,
+          ...rest
+        }) => ({
+          packetsLostRatioPerSecond,
+          packetsLostDeltaPerSecond,
+          bitrateBitsPerSecond: bitrate * 8,
+          bitrate,
+          ...rest,
+        })
+      ),
     },
     video: {
-      inbounds: webRTCStats.input.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
-        packetsLostRatioPerSecond,
-        packetsLostDeltaPerSecond,
-        bitrateBitsPerSecond: bitrate * 8,
-        bitrate,
-        ...rest
-      })),
-      outbounds: webRTCStats.output.video.map(({ packetLossRatio: packetsLostRatioPerSecond, packetLossDelta: packetsLostDeltaPerSecond, bitrate, ...rest }) => ({
-        packetsLostRatioPerSecond,
-        packetsLostDeltaPerSecond,
-        bitrateBitsPerSecond: bitrate * 8,
-        bitrate,
-        ...rest
-      }))
+      inbounds: webRTCStats.input.video.map(
+        ({
+          packetLossRatio: packetsLostRatioPerSecond,
+          packetLossDelta: packetsLostDeltaPerSecond,
+          bitrate,
+          ...rest
+        }) => ({
+          packetsLostRatioPerSecond,
+          packetsLostDeltaPerSecond,
+          bitrateBitsPerSecond: bitrate * 8,
+          bitrate,
+          ...rest,
+        })
+      ),
+      outbounds: webRTCStats.output.video.map(
+        ({
+          packetLossRatio: packetsLostRatioPerSecond,
+          packetLossDelta: packetsLostDeltaPerSecond,
+          bitrate,
+          ...rest
+        }) => ({
+          packetsLostRatioPerSecond,
+          packetsLostDeltaPerSecond,
+          bitrateBitsPerSecond: bitrate * 8,
+          bitrate,
+          ...rest,
+        })
+      ),
     },
-    raw: webRTCStats.rawStats
+    raw: webRTCStats.rawStats,
   }
   return statsObject
 }
 
 export default class PeerConnectionStats extends EventEmitter {
-  constructor (peer, options = { statsIntervalMs: 1000, autoInitStats: true }) {
+  constructor(peer, options = { statsIntervalMs: 1000, autoInitStats: true }) {
     super()
     this.peer = peer
     this.collection = null
@@ -146,9 +175,11 @@ export default class PeerConnectionStats extends EventEmitter {
    *
    * @param {number} [statsIntervalMs] The interval, in Milliseconds, at which stats need to be returned
    */
-  init (statsIntervalMs) {
+  init(statsIntervalMs) {
     if (this.initialized) {
-      logger.warn('PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.')
+      logger.warn(
+        'PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.'
+      )
       return
     }
     logger.info('Initializing peer connection stats')
@@ -159,7 +190,7 @@ export default class PeerConnectionStats extends EventEmitter {
         getStats: () => {
           return peer.getStats()
         },
-        includeRawStats: true
+        includeRawStats: true,
       })
 
       this.collection.on('stats', (stats) => {
@@ -180,7 +211,8 @@ export default class PeerConnectionStats extends EventEmitter {
    * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
    * @returns {null} Method deprecated and no longer returns meaningful data.
    */
-  parseStats (rawStats) {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  parseStats(rawStats) {
     logger.warn('The parseStats method is deprecated and will be removed in future releases.')
     return null
   }
@@ -188,8 +220,8 @@ export default class PeerConnectionStats extends EventEmitter {
   /**
    * Stops the monitoring of RTCPeerConnection statistics.
    */
-  stop () {
+  stop() {
     logger.info('Stopping peer connection stats')
     this.collection.stop()
   }
-};
+}

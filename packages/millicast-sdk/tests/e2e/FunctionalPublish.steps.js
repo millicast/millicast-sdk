@@ -10,7 +10,8 @@ const feature = loadFeature('../features/FunctionalPublish.feature', { loadRelat
 jest.setTimeout(20000)
 const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 const publishToken = process.env.PUBLISH_TOKEN
-const streamName = process.env.STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
+const streamName =
+  process.env.STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
 const accountId = process.env.ACCOUNT_ID
 const startPublisher = () => null
 const startViewer = () => null
@@ -19,7 +20,7 @@ const defaultOptions = {
   disableVideo: false,
   disableAudio: false,
   simulcast: false,
-  scalabilityMode: null
+  scalabilityMode: null,
 }
 let browser = null
 
@@ -33,15 +34,11 @@ afterEach(async () => {
 beforeEach(async () => {
   browser = await puppeteer.launch({
     // executablePath: process.env.CHROME_LOCATION,
-    args: [
-      '--no-sandbox',
-      '--use-fake-device-for-media-stream',
-      '--use-fake-ui-for-media-stream'
-    ]
+    args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'],
   })
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Broadcasting stream', ({ given, when, then }) => {
     let broadcastPage
     let viewerPage
@@ -57,13 +54,20 @@ defineFeature(feature, test => {
       await viewerPage.goto(pageLocation)
       options = {
         ...defaultOptions,
-        codec
+        codec,
       }
     })
 
     when('I broadcast a stream and connect to stream as viewer', async () => {
-      await broadcastPage.evaluate(async ({ options, publishToken, streamName }) => await startPublisher(publishToken, streamName, options), { options, publishToken, streamName })
-      await viewerPage.evaluate(async ({ streamName, accountId }) => await startViewer(streamName, accountId), { streamName, accountId })
+      await broadcastPage.evaluate(
+        async ({ options, publishToken, streamName }) =>
+          await startPublisher(publishToken, streamName, options),
+        { options, publishToken, streamName }
+      )
+      await viewerPage.evaluate(
+        async ({ streamName, accountId }) => await startViewer(streamName, accountId),
+        { streamName, accountId }
+      )
 
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
 

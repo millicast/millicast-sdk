@@ -2,9 +2,12 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import PeerConnection, { webRTCEvents } from '../../src/PeerConnection'
 import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
-const feature = loadFeature('../features/ManagePeerConnection.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/ManagePeerConnection.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
   })
@@ -54,7 +57,7 @@ defineFeature(feature, test => {
 
     when('I get the RTC peer', async () => {
       await peerConnection.createRTCPeer({
-        bundlePolicy: 'max-bundle'
+        bundlePolicy: 'max-bundle',
       })
       peer = peerConnection.getRTCPeer()
     })
@@ -62,7 +65,7 @@ defineFeature(feature, test => {
     then('returns the peer', async () => {
       expect(peer).toMatchObject(peerConnection.peer)
       expect(peer.getConfiguration()).toMatchObject({
-        bundlePolicy: 'max-bundle'
+        bundlePolicy: 'max-bundle',
       })
     })
   })

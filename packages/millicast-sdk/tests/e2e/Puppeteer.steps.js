@@ -12,7 +12,7 @@ const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 let browser = null
 let page = null
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     if (browser) {
       await browser.close()

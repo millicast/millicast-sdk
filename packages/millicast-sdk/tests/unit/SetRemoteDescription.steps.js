@@ -2,9 +2,12 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import PeerConnection from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
-const feature = loadFeature('../features/SetRemoteDescription.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/SetRemoteDescription.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
   })
@@ -36,7 +39,9 @@ defineFeature(feature, test => {
     })
 
     when('I set the remote description and peer returns an error', async () => {
-      jest.spyOn(global.RTCPeerConnection.prototype, 'setRemoteDescription').mockRejectedValue(new Error('Invalid answer'))
+      jest
+        .spyOn(global.RTCPeerConnection.prototype, 'setRemoteDescription')
+        .mockRejectedValue(new Error('Invalid answer'))
       try {
         await peerConnection.setRTCRemoteSDP(sdp)
       } catch (error) {

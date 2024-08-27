@@ -1,10 +1,10 @@
 export default class BitStreamReader {
-  constructor (uint8Array) {
+  constructor(uint8Array) {
     this.data = uint8Array
     this.bitOffset = 0
   }
 
-  readBits (numBits) {
+  readBits(numBits) {
     if (this.bitOffset + numBits > this.data.length * 8) {
       throw new Error('Attempted to read past the end of the bitstream')
     }
@@ -20,11 +20,11 @@ export default class BitStreamReader {
     return value
   }
 
-  skip (numBits) {
+  skip(numBits) {
     this.bitOffset += numBits
   }
 
-  readExpGolombUnsigned () {
+  readExpGolombUnsigned() {
     let leadingZeros = -1
     for (let b = 0; b === 0; leadingZeros++) {
       b = this.readBits(1)
@@ -32,8 +32,8 @@ export default class BitStreamReader {
     return (1 << leadingZeros) - 1 + this.readBits(leadingZeros)
   }
 
-  readExpGolombSigned () {
+  readExpGolombSigned() {
     const value = this.readExpGolombUnsigned()
-    return (value % 2 === 0) ? -(value / 2) : ((value + 1) / 2)
+    return value % 2 === 0 ? -(value / 2) : (value + 1) / 2
   }
 }

@@ -5,7 +5,7 @@ import './__mocks__/MockRTCPeerConnection'
 import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
 const feature = loadFeature('../features/GetPeerStatus.feature', { loadRelativePath: true, errors: true })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
   })

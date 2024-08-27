@@ -3,9 +3,12 @@ import PeerConnection, { webRTCEvents } from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
-const feature = loadFeature('../features/PeerConnectionEvent.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/PeerConnectionEvent.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
   })

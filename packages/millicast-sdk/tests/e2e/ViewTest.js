@@ -4,25 +4,28 @@ const accountId = window.accountId
 const streamName = window.streamName
 
 class MillicastViewTest {
-  constructor () {
+  constructor() {
     millicast.Logger.setLevel(millicast.Logger.DEBUG)
     millicast.Director.setEndpoint(window.directorEndpoint)
     const href = new URL(window.location.href)
-    this.streamAccountId = (href.searchParams.get('streamAccountId')) ? href.searchParams.get('streamAccountId') : accountId
-    this.streamName = (href.searchParams.get('streamName')) ? href.searchParams.get('streamName') : streamName
+    this.streamAccountId = href.searchParams.get('streamAccountId')
+      ? href.searchParams.get('streamAccountId')
+      : accountId
+    this.streamName = href.searchParams.get('streamName') ? href.searchParams.get('streamName') : streamName
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false
-    const tokenGenerator = () => millicast.Director.getSubscriber({ streamName: this.streamName, streamAccountId: this.streamAccountId })
+    const tokenGenerator = () =>
+      millicast.Director.getSubscriber({ streamName: this.streamName, streamAccountId: this.streamAccountId })
     this.millicastView = new millicast.View(this.streamName, tokenGenerator)
     this.tracks = []
   }
 
-  async init () {
+  async init() {
     this.subscribe()
   }
 
-  async subscribe () {
+  async subscribe() {
     try {
       this.millicastView.on('track', (event) => {
         this.tracks.push(event)
@@ -36,7 +39,7 @@ class MillicastViewTest {
       const options = {
         disableVideo: this.disableVideo,
         disableAudio: this.disableAudio,
-        absCaptureTime: true
+        absCaptureTime: true,
       }
       this.millicastView.on('connectionStateChange', (state) => {
         console.log('Event from connectionStateChange: ', state)
@@ -54,26 +57,26 @@ class MillicastViewTest {
     }
   }
 
-  testMigrate () {
+  testMigrate() {
     this.millicastView.signaling.emit('migrate')
   }
 
-  addStreamToVideoTag (event) {
+  addStreamToVideoTag(event) {
     this.addStream(event.streams[0])
   }
 
-  addStream (stream) {
+  addStream(stream) {
     this.playing = true
     const video = document.getElementById('millicast-view-test')
 
     if (this.disableVideo) {
-      if (video)video.parentNode.removeChild(video)
+      if (video) video.parentNode.removeChild(video)
     } else {
       video.srcObject = stream
     }
   }
 
-  loadStatsInTable (stats) {
+  loadStatsInTable(stats) {
     const candidateInfo = document.getElementById('candidate-info')
     candidateInfo.innerHTML = `
       <tr>

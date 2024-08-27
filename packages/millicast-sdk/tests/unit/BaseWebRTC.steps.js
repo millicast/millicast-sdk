@@ -4,7 +4,7 @@ import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 const feature = loadFeature('../features/BaseWebRTC.feature', { loadRelativePath: true, errors: true })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
   })

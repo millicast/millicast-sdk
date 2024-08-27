@@ -16,7 +16,7 @@ jest.mock('../../src/Signaling')
 jest.mock('../../src/workers/TransformWorker.worker.js', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
-    terminate: jest.fn()
+    terminate: jest.fn(),
   }))
 )
 
@@ -24,7 +24,7 @@ jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
   rtcDrmConfigure: jest.fn(),
   rtcDrmOnTrack: jest.fn(),
   rtcDrmEnvironments: jest.fn(),
-  rtcDrmFeedFrame: jest.fn()
+  rtcDrmFeedFrame: jest.fn(),
 }))
 
 const expectedObject = {
@@ -35,28 +35,26 @@ const expectedObject = {
   version,
   timestamp: expect.any(String),
   userAgent: expect.any(String),
-  stats: expect.any(Array)
+  stats: expect.any(Array),
 }
 
 const mockViewTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: 'this-is-a-jwt-dummy-token'
+    urls: ['ws://localhost:8080'],
+    jwt: 'this-is-a-jwt-dummy-token',
   }
 })
 
 const mockPublishTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: process.env.JWT_TEST_TOKEN ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
+    urls: ['ws://localhost:8080'],
+    jwt:
+      process.env.JWT_TEST_TOKEN ??
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U',
   }
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   beforeEach(() => {
     jest.restoreAllMocks()
     jest.spyOn(MockRTCPeerConnection.prototype, 'peerStatsValue').mockReturnValue(rawStats)

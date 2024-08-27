@@ -3,17 +3,17 @@ import UAParser from 'ua-parser-js'
 const chromeExcludedOS = ['iOS']
 
 export default class UserAgent extends UAParser {
-  constructor () {
+  constructor() {
     super(window.navigator.userAgent)
   }
 
-  isChromium () {
+  isChromium() {
     const browserData = this.getUA()
 
     return browserData.match(/Chrome/i)
   }
 
-  isChrome () {
+  isChrome() {
     const browserData = this.getBrowser()
     if (!browserData.name) {
       return false
@@ -27,7 +27,7 @@ export default class UserAgent extends UAParser {
     return browserData.name.match(/Chrome/i) && osAllowed
   }
 
-  isFirefox () {
+  isFirefox() {
     const browserData = this.getBrowser()
     if (!browserData.name) {
       return false
@@ -35,7 +35,7 @@ export default class UserAgent extends UAParser {
     return browserData.name.match(/Firefox/i)
   }
 
-  isOpera () {
+  isOpera() {
     const browserData = this.getBrowser()
     if (!browserData.name) {
       return false
@@ -43,7 +43,7 @@ export default class UserAgent extends UAParser {
     return browserData.name.match(/Opera/i)
   }
 
-  isSafari () {
+  isSafari() {
     const browserData = this.getBrowser()
     if (!browserData.name) {
       return false

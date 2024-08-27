@@ -3,13 +3,18 @@ import PeerConnection, { ConnectionType } from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
-const feature = loadFeature('../features/UpdateBitrateWebRTC.feature', { loadRelativePath: true, errors: true })
+const feature = loadFeature('../features/UpdateBitrateWebRTC.feature', {
+  loadRelativePath: true,
+  errors: true,
+})
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   const config = { autoInitStats: true }
   afterEach(async () => {
     jest.restoreAllMocks()
-    changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
+    changeBrowserMock(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
+    )
   })
 
   test('Update bitrate with restrictions', ({ given, when, then }) => {

@@ -7,28 +7,28 @@ export const defaultConfig = {
   iceServers: [],
   iceTransportPolicy: 'all',
   rtcpMuxPolicy: 'require',
-  sdpSemantics: 'unified-plan'
+  sdpSemantics: 'unified-plan',
 }
 
 export default class MockRTCPeerConnectionNoConnectionState extends MockRTCPeerConnection {
-  constructor (config = null) {
+  constructor() {
     super()
     this.connectionState = null
     this.iceConnectionState = 'new'
   }
 
-  setRemoteDescription (answer) {
+  setRemoteDescription(answer) {
     this.currentRemoteDescription = answer
     this.iceConnectionState = 'connected'
   }
 
-  onconnectionstatechange (state) {}
+  onconnectionstatechange() {}
 
-  oniceconnectionstatechange (state) {
+  oniceconnectionstatechange(state) {
     this.iceConnectionState = state
   }
 
-  emitMockEvent (eventName, data) {
+  emitMockEvent(eventName, data) {
     if (eventName === 'ontrack') {
       this.ontrack(data)
     } else if (eventName === 'oniceconnectionstatechange') {

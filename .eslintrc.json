@@ -2,7 +2,6 @@
   "root": true,
   "ignorePatterns": ["**/*"],
   "plugins": ["@nx"],
-  "extends": "standard",
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
@@ -33,11 +32,33 @@
       "rules": {}
     },
     {
-      "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
+      "files": [
+        "*.spec.ts",
+        "*.spec.tsx",
+        "*.spec.js",
+        "*.spec.jsx",
+        "*.steps.js",
+        "*.test.js",
+        "**/__mocks__/**"
+      ],
       "env": {
         "jest": true
       },
-      "rules": {}
+      "rules": {
+        "@typescript-eslint/no-empty-function": [
+          "error",
+          {
+            "allow": [
+              "functions", // Allows regular function declarations
+              "arrowFunctions", // Allows empty arrow functions
+              "methods", // Allows empty methods (e.g., in classes)
+              "constructors", // Allows empty constructors
+              "private-constructors", // Allows empty private constructors
+              "protected-constructors" // Allows empty protected constructors
+            ]
+          }
+        ]
+      }
     }
   ]
 }
