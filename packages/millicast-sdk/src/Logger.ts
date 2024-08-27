@@ -113,8 +113,19 @@ const customHandlers: { handler: ILogHandler; level: LogLevel }[] = []
 /** @constant {LogLevel} ERROR - Logger.ERROR */
 /** @constant {LogLevel} OFF   - Logger.OFF */
 
-const Logger: any = {
+// TS compiler error complaining about not having CreateDefaultHandlerOptions type and it is not exported by
+// jsLogger so it is copied here so that we can type Logger
+interface CreateDefaultHandlerOptions {
+  formatter?: ILogHandler
+}
+
+const createDefaultHandler = jsLogger.createDefaultHandler as (
+  options?: CreateDefaultHandlerOptions
+) => ILogHandler
+
+const Logger = {
   ...jsLogger,
+  createDefaultHandler,
   enabledFor,
   /**
    * @function
