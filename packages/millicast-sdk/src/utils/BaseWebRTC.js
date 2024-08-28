@@ -2,7 +2,6 @@ import EventEmitter from 'events'
 import PeerConnection, { webRTCEvents } from '../PeerConnection'
 import { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
-import { log } from 'console'
 let logger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
