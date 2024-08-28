@@ -1,5 +1,14 @@
 # @millicast/sdk
 
+## 0.2.1
+
+### Patch Changes
+
+- 635e55e: Added bitrateBitsPerSecond stats attribute. Now bitrate attribute is shown in Bytes per second and bitrateBitsPerSecond in bits per second.
+- 1d7fc65: Add connection duration to timestamp.
+- 405861e: Fix security vulnerabilities.
+- 22b150f: Metadata UUID is now optional.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -102,7 +102,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.subscribe(localSdp)
@@ -154,7 +154,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       response = await signaling.subscribe(localSdp)
@@ -205,7 +205,7 @@ defineFeature(feature, test => {
 
     when('I offer my local sdp using options object', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       const signalingSubscribeOptions = {
@@ -248,7 +248,7 @@ defineFeature(feature, test => {
         a=rtcp-fb:123 nack pli
       `
       signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       await signaling.connect()
@@ -284,7 +284,7 @@ defineFeature(feature, test => {
 
     when('I offer a null sdp', async () => {
       const signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       try {
@@ -308,7 +308,7 @@ defineFeature(feature, test => {
 
     given('I have previous connection to server', async () => {
       signaling = new Signaling({
-        streamName: streamName,
+        streamName,
         url: publishWebSocketLocation
       })
       await signaling.connect()

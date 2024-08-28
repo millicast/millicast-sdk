@@ -4,15 +4,20 @@ import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
+import { hexToUint8Array } from './utils/StringUtils'
+import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')
+logger.setLevel(Logger.DEBUG)
 
 const connectOptions = {
   metadata: false,
+  enableDRM: false,
   disableVideo: false,
   disableAudio: false,
   peerConfig: {
@@ -46,6 +51,8 @@ export default class View extends BaseWebRTC {
     this.payloadTypeCodec = {}
     // Follows the media id values of each transceiver's track from the 'track' events.
     this.tracksMidValues = {}
+    // mapping media ID of RTCRtcTransceiver to DRM Options
+    this.drmOptionsMap = null
     if (mediaElement) {
       this.on(webRTCEvents.track, e => {
         mediaElement.srcObject = e.streams[0]
@@ -70,6 +77,7 @@ export default class View extends BaseWebRTC {
    * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
    * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
+   * @param {Boolean} [options.drm = false]             - Enable the DRM protected stream playback.
    * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
    * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
    * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
@@ -81,6 +89,7 @@ export default class View extends BaseWebRTC {
    * @param {Object} [options.forcePlayoutDelay = false]- Ask the server to use the playout delay header extension.
    * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
    * @param {Number} [options.forcePlayoutDelay.max]    - Set maximum playout delay value.
+   * @param {Boolean} [options.enableDRM]               - Enable DRM, default is false.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
@@ -121,6 +130,10 @@ export default class View extends BaseWebRTC {
    *   addStreamToYourVideoTag(event.streams[0])
    * })
    *
+   * millicastView.on('error', (error) => {
+   *   console.error('Error from Millicast SDK', error)
+   * })
+   *
    * //Start connection to broadcast
    * try {
    *  await millicastView.connect()
@@ -144,14 +157,18 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Add remote receving track.
+   * Add remote receiving track.
    * @param {String} media - Media kind ('audio' | 'video').
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack (media, streams) {
-    logger.info('Viewer adding remote % track', media)
-    return this.webRTCPeer.addRemoteTrack(media, streams)
+    logger.info('Viewer adding remote track', media)
+    const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
+    for (const stream of streams) {
+      stream.addTrack(transceiver.receiver.track)
+    }
+    return transceiver
   }
 
   /**
@@ -199,6 +216,8 @@ export default class View extends BaseWebRTC {
 
   stop () {
     super.stop()
+    this.drmOptionsMap?.clear()
+    this.DRMProfile = null
     this.worker?.terminate()
     this.worker = null
     this.payloadTypeCodec = {}
@@ -216,12 +235,12 @@ export default class View extends BaseWebRTC {
     let subscriberData
     try {
       subscriberData = await this.tokenGenerator()
-      //  Set the iceServers from the subscribe data into the peerConfig
+      // Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
-      if (this.options.metadata) {
-        this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams
-      }
+      // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
+      this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && (this.options.enableDRM || this.options.metadata)
     } catch (error) {
+      // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
@@ -244,6 +263,13 @@ export default class View extends BaseWebRTC {
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
+    if (subscriberData.drmObject) {
+      // cache the DRM license server URLs
+      this.DRMProfile = subscriberData.drmObject
+    }
+    if (subscriberData.subscriberToken) {
+      this.subscriberToken = subscriberData.subscriberToken
+    }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
@@ -258,9 +284,61 @@ export default class View extends BaseWebRTC {
       if (!this.worker) {
         this.worker = new TransformWorker()
       }
+      this.worker.onmessage = (message) => {
+        if (message.data.event === 'closedCaption') {
+          const { startTime, endTime, text } = message.data
+          this.emit('closedCaption', { startTime, endTime, text })
+          return
+        }
+        if (message.data.event === 'metadata') {
+          const decoder = new TextDecoder()
+          const metadata = message.data.metadata
+          metadata.mid = message.data.mid
+          metadata.track = this.tracksMidValues[message.data.mid]
+          if (metadata.uuid) {
+            const uuid = metadata.uuid
+            metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+            metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+          }
+          if (metadata.timecode) {
+            metadata.timecode = new Date(decoder.decode(metadata.timecode))
+          }
+          if (metadata.unregistered) {
+            const content = decoder.decode(metadata.unregistered)
+            try {
+              const json = JSON.parse(content)
+              metadata.unregistered = json
+            } catch (e) {
+              // was not a JSON, just return the raw bytes (i.e. do nothing)
+              logger.info('The content could not be converted to JSON, returning raw bytes instead')
+            }
+          }
+          this.emit('metadata', metadata)
+          // FIXME : Remove in v0.3.0
+          this.emit('onMetadata', metadata)
+        }
+      }
+    }
 
-      webRTCPeerInstance.on('track', (trackEvent) => {
-        this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
+    webRTCPeerInstance.on('track', (trackEvent) => {
+      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
+      if (this.isDRMOn) {
+        const mediaId = trackEvent.transceiver.mid
+        const drmOptions = this.getDRMConfiguration(mediaId)
+        try {
+          rtcDrmOnTrack(trackEvent, drmOptions)
+        } catch (error) {
+          logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
+          this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
+        }
+        this.worker.addEventListener('message', (message) => {
+          if (message.data.event === 'complete') {
+            // feed the frame to DRM processing worker
+            rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+          }
+        })
+      }
+      if (this.options.metadata) {
         if (supportsRTCRtpScriptTransform) {
           // eslint-disable-next-line no-undef
           trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
@@ -280,41 +358,8 @@ export default class View extends BaseWebRTC {
             writable
           }, [readable, writable])
         }
-      })
-
-      this.worker.onmessage = (message) => {
-        const decoder = new TextDecoder()
-        if (message.data.event === 'closedCaption') {
-          const { startTime, endTime, text } = message.data
-          this.emit('closedCaption', { startTime, endTime, text })
-          return
-        }
-        const metadata = message.data.metadata
-        metadata.mid = message.data.mid
-        metadata.track = this.tracksMidValues[message.data.mid]
-
-        const uuid = metadata.uuid
-        metadata.uuid = uuid.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-        metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
-        if (metadata.timecode) {
-          metadata.timecode = new Date(decoder.decode(metadata.timecode))
-        }
-        if (metadata.unregistered) {
-          const content = decoder.decode(metadata.unregistered)
-          try {
-            const json = JSON.parse(content)
-            metadata.unregistered = json
-          } catch (e) {
-            // was not a JSON, just return the raw bytes (i.e. do nothing)
-            logger.info('The content could not be converted to JSON, returning raw bytes instead')
-          }
-        }
-
-        // for backwards compatibility, emit the old event as well
-        this.emit('onMetadata', metadata)
-        this.emit('metadata', metadata)
       }
-    }
+    })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
     const signalingConnectPromise = signalingInstance.connect()
@@ -356,4 +401,134 @@ export default class View extends BaseWebRTC {
       })
     }
   }
-};
+
+  getDRMConfiguration (mediaId) {
+    return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
+  }
+
+  async onRtcDrmFetch (url, opts) {
+    if (!opts.headers) {
+      opts.headers = new Headers()
+    }
+    // our server doesn't support x-dt-custom-data
+    if (opts.headers.get('x-dt-custom-data')) {
+      opts.headers.delete('x-dt-custom-data')
+    }
+    if (this.subscriberToken) {
+      opts.headers.append('Authorization', `Bearer ${this.subscriberToken}`)
+    } else {
+      logger.warn('onRtcDrmFetch: no subscriberToken')
+    }
+    return fetch(url, opts)
+  }
+
+  /**
+   * @typedef {Object} EncryptionParameters
+   * @property {String} keyId 16-byte KeyID, in lowercase hexadecimal without separators
+   * @property {String} iv 16-byte initialization vector, in lowercase hexadecimal without separators
+   * /
+
+  /**
+   * @typedef {Object} DRMOptions - the options for DRM playback
+   * @property {HTMLVideoElement} videoElement - the video HTML element
+   * @property {EncryptionParameters} videoEncryptionParams - the video encryption parameters
+   * @property {String} videoMid - the video media ID of RTCRtpTransceiver
+   * @property {HTMLAudioElement} audioElement - the audio HTML audioElement
+   * @property {EncryptionParameters} [audioEncryptionParams] - the audio encryption parameters
+   * @property {String} [audioMid] - the audio media ID of RTCRtpTransceiver
+   */
+
+  /**
+   * Configure DRM protected stream.
+   * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+   * @param {DRMOptions} options - the options for DRM playback
+  */
+  configureDRM (options) {
+    if (!options) {
+      throw new Error('Required DRM options is not provided')
+    }
+    if (!this.drmOptionsMap) {
+      // map transceiver's mediaId to its DRM options
+      this.drmOptionsMap = new Map()
+    }
+    const drmOptions = {
+      merchant: 'dolby',
+      sessionId: '',
+      environment: rtcDrmEnvironments.Staging,
+      customTransform: this.options.metadata,
+      videoElement: options.videoElement,
+      audioElement: options.audioElement,
+      video: { codec: 'h264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
+      audio: { codec: 'opus', encryption: 'clear' },
+      onFetch: this.onRtcDrmFetch.bind(this)
+    }
+    if (this.DRMProfile) {
+      if (this.DRMProfile.playReadyUrl) {
+        drmOptions.prLicenseUrl = this.DRMProfile.playReadyUrl
+      }
+      if (this.DRMProfile.widevineUrl) {
+        drmOptions.wvLicenseUrl = this.DRMProfile.widevineUrl
+      }
+      if (this.DRMProfile.fairPlayUrl) {
+        drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl
+      }
+    }
+    try {
+      rtcDrmConfigure(drmOptions)
+      this.drmOptionsMap.set(options.videoMid, drmOptions)
+      if (options.audioMid) {
+        this.drmOptionsMap.set(options.audioMid, drmOptions)
+      }
+      drmOptions.videoElement.addEventListener('rtcdrmerror', (event) => {
+        logger.error('DRM error: ', event.detail.message, 'in video element:', drmOptions.videoElement.id)
+        this.emit('error', new Error(event.detail.message))
+      })
+    } catch (error) {
+      logger.error('Failed to configure DRM with options:', options, 'error is:', error)
+    }
+  }
+
+  /**
+   * Remove DRM configuration for a mediaId
+   * @param {String} mediaId
+   */
+  removeDRMConfiguration (mediaId) {
+    this.drmOptionsMap?.delete(mediaId)
+  }
+
+  /**
+   * Check if there are any DRM protected Track
+   */
+  get isDRMOn () {
+    return !!this.drmOptionsMap && this.drmOptionsMap.size > 0
+  }
+
+  /**
+   * Exchange the DRM configuration between two transceivers
+   * Both of the transceivers should be used for DRM protected streams
+   * @param {String} targetMediaId
+   * @param {String} sourceMediaId
+   */
+  exchangeDRMConfiguration (targetMediaId, sourceMediaId) {
+    const targetDRMOptions = this.getDRMConfiguration(targetMediaId)
+    const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId)
+    if (targetDRMOptions === null) {
+      throw new Error('No DRM configuration found for ' + targetMediaId)
+    }
+    if (sourceDRMOptions === null) {
+      throw new Error('No DRM configuration found for ' + sourceMediaId)
+    }
+    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')
+    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv')
+    try {
+      rtcDrmConfigure(targetDRMOptions)
+    } catch (error) {
+      logger.error('Failed to configure DRM with options:', targetDRMOptions, 'error is:', error)
+    }
+    try {
+      rtcDrmConfigure(sourceDRMOptions)
+    } catch (error) {
+      logger.error('Failed to configure DRM with options:', sourceDRMOptions, 'error is:', error)
+    }
+  }
+}

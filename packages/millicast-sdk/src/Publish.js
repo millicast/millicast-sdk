@@ -312,7 +312,7 @@ export default class Publish extends BaseWebRTC {
     if (this.options?.metadata && this.worker) {
       this.worker.postMessage({
         action: 'metadata-sei-user-data-unregistered',
-        uuid: uuid,
+        uuid,
         payload: message
       })
     } else {
