@@ -106,7 +106,7 @@ const Director = {
    * const tokenGenerator = () => Director.getPublisher({token, streamName})
    *
    * //Create a new instance
-   * const millicastPublish = new Publish(streamName, tokenGenerator)
+   * const millicastPublish = new Publish(tokenGenerator)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStreamImplementation()
@@ -161,7 +161,7 @@ const Director = {
    * const tokenGenerator = () => Director.getSubscriber({streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'})
    *
    * //Create a new instance
-   * const millicastView = new View(streamName, tokenGenerator)
+   * const millicastView = new View(tokenGenerator)
    *
    * //Set track event handler to receive streams from Publisher.
    * millicastView.on('track', (event) => {

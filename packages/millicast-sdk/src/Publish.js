@@ -40,18 +40,12 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class Publish extends BaseWebRTC {
-  constructor(streamName, tokenGenerator, autoReconnect = true) {
-    if (streamName) {
-      logger.warn(
-        'The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator'
-      )
-    }
-    super(null, tokenGenerator, logger, autoReconnect)
+  constructor(tokenGenerator, autoReconnect = true) {
+    super(tokenGenerator, logger, autoReconnect)
   }
 
   /**
@@ -89,9 +83,7 @@ export default class Publish extends BaseWebRTC {
    * const tokenGenerator = () => getYourPublisherConnection(token, streamName)
    *
    * //Create a new instance
-   * // streamName is not necessary in the constructor anymore, could be null or undefined
-   * const streamName = "My Millicast Stream Name"
-   * const millicastPublish = new Publish(streamName, tokenGenerator)
+   * const millicastPublish = new Publish(tokenGenerator)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStream()

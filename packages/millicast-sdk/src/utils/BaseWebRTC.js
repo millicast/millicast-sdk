@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import PeerConnection, { webRTCEvents } from '../PeerConnection'
 import { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
+import { log } from 'console'
 let logger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
@@ -28,13 +29,12 @@ const baseInterval = 1000
  * @classdesc Base class for common actions about peer connection and reconnect mechanism for Publishers and Viewer instances.
  *
  * @constructor
- * @param {String} streamName - Deprecated: Millicast existing stream name. Use tokenGenerator instead.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Object} loggerInstance - Logger instance from the extended classes.
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
 export default class BaseWebRTC extends EventEmitter {
-  constructor(streamName, tokenGenerator, loggerInstance, autoReconnect) {
+  constructor(tokenGenerator, loggerInstance, autoReconnect) {
     super()
     logger = loggerInstance
     if (!tokenGenerator) {

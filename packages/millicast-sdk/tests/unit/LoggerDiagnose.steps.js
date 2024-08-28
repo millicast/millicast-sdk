@@ -68,7 +68,7 @@ defineFeature(feature, (test) => {
 
     given('connection has failed', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      viewer = new View('streamName', mockErrorTokenGenerator)
+      viewer = new View(mockErrorTokenGenerator)
 
       expectedError = expect(() => viewer.connect())
       expectedError.rejects.toThrow(Error)
@@ -88,7 +88,7 @@ defineFeature(feature, (test) => {
     let diagnose
 
     given('connection to a stream', async () => {
-      viewer = new View('streamName', mockViewTokenGenerator)
+      viewer = new View(mockViewTokenGenerator)
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
@@ -107,7 +107,7 @@ defineFeature(feature, (test) => {
     let diagnose
 
     given('connection to a stream and stats enabled', async () => {
-      viewer = new View('streamName', mockViewTokenGenerator)
+      viewer = new View(mockViewTokenGenerator)
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       viewer.webRTCPeer.initStats()
@@ -132,7 +132,7 @@ defineFeature(feature, (test) => {
     const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
     given('a stream being published', async () => {
-      publisher = new Publish('streamName', mockPublishTokenGenerator)
+      publisher = new Publish(mockPublishTokenGenerator)
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
@@ -154,7 +154,7 @@ defineFeature(feature, (test) => {
 
     given('a stream cannot be published', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      publisher = new Publish('streamName', mockErrorTokenGenerator)
+      publisher = new Publish(mockErrorTokenGenerator)
 
       expectedError = expect(() => publisher.connect({ mediaStream }))
       expectedError.rejects.toThrow(Error)
@@ -176,7 +176,7 @@ defineFeature(feature, (test) => {
     given('I am in Firefox and start a connection to a stream', async () => {
       changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
 
-      viewer = new View('streamName', mockViewTokenGenerator)
+      viewer = new View(mockViewTokenGenerator)
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
