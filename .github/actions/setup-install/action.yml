@@ -10,7 +10,7 @@ runs:
           node_modules
           .nx/cache
         key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'nx.json', 'workspace.json') }}-v2
-        restore-key: |
+        restore-keys: |
           ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'nx.json', 'workspace.json') }}-v3
 
     - name: Setup Node.js and Cache
