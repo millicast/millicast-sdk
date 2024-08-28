@@ -10,7 +10,7 @@ export default class UserAgent extends UAParser {
   isChromium() {
     const browserData = this.getUA()
 
-    return browserData.match(/Chrome/i)
+    return !!browserData.match(/Chrome/i)
   }
 
   isChrome() {
@@ -22,9 +22,9 @@ export default class UserAgent extends UAParser {
 
     let osAllowed = true
     const regex = new RegExp(chromeExcludedOS.join('|'), 'i')
-    osAllowed = !regex.test(osData.name)
+    osAllowed = !regex.test(osData.name || '')
 
-    return browserData.name.match(/Chrome/i) && osAllowed
+    return !!browserData.name.match(/Chrome/i) && osAllowed
   }
 
   isFirefox() {
@@ -32,7 +32,7 @@ export default class UserAgent extends UAParser {
     if (!browserData.name) {
       return false
     }
-    return browserData.name.match(/Firefox/i)
+    return !!browserData.name.match(/Firefox/i)
   }
 
   isOpera() {
@@ -40,7 +40,7 @@ export default class UserAgent extends UAParser {
     if (!browserData.name) {
       return false
     }
-    return browserData.name.match(/Opera/i)
+    return !!browserData.name.match(/Opera/i)
   }
 
   isSafari() {
@@ -48,6 +48,6 @@ export default class UserAgent extends UAParser {
     if (!browserData.name) {
       return false
     }
-    return browserData.name.match(/Safari/i)
+    return !!browserData.name.match(/Safari/i)
   }
 }

@@ -58,7 +58,7 @@
     "joi": "^17.12.0",
     "transaction-manager": "^2.1.3",
     "semantic-sdp": "^3.22.0",
-    "ua-parser-js": "^0.7.30",
+    "ua-parser-js": "^1.0.38",
     "puppeteer": "^21.6.1",
     "jest-cucumber": "^3.0.1",
     "jest-websocket-mock": "^2.2.0",
