@@ -23,6 +23,7 @@ jobs:
         uses: ./.github/actions/setup-install
       - name: Check Linter and Build 📑
         run: |
+          npx nx reset
           npm run build
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
