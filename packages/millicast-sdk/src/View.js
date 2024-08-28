@@ -285,6 +285,11 @@ export default class View extends BaseWebRTC {
         this.worker = new TransformWorker()
       }
       this.worker.onmessage = (message) => {
+        if (message.data.event === 'closedCaption') {
+          const { startTime, endTime, text } = message.data
+          this.emit('closedCaption', { startTime, endTime, text })
+          return
+        }
         if (message.data.event === 'metadata') {
           const decoder = new TextDecoder()
           const metadata = message.data.metadata
