@@ -3,16 +3,6 @@ description: Setup nodejs and install npm packages
 runs:
   using: 'composite'
   steps:
-    - name: Cache Node Modules and Nx Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          node_modules
-          .nx/cache
-        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'nx.json', 'workspace.json') }}-v2
-        restore-keys: |
-          ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'nx.json', 'workspace.json') }}-v3
-
     - name: Setup Node.js and Cache
       uses: actions/setup-node@v4
       with:
