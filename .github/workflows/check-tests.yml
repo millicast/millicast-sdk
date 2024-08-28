@@ -23,8 +23,7 @@ jobs:
         uses: ./.github/actions/setup-install
       - name: Check Linter and Build 📑
         run: |
-          npx nx reset
-          npm run build
+          npx nx build @millicast/sdk
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
@@ -45,7 +44,7 @@ jobs:
         uses: ./.github/actions/setup-install
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
-        run: npm run test-e2e
+        run: npx nx run-many --target=test-e2e --all --parallel --output-style=stream
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
           PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
@@ -57,4 +56,4 @@ jobs:
       - name: Setup and Install
         uses: ./.github/actions/setup-install
       - name: build docs
-        run: npm run build-docs
+        run: npx nx build-docs @millicast/sdk

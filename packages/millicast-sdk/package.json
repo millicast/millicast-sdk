@@ -19,11 +19,11 @@
   "scripts": {
     "build": "nx build",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
-    "start-docs": "npm run build-docs && serve docs",
-    "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
-    "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
-    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --verbose",
-    "test-all": "npm run build && jest --testMatch '**/*.steps.js'",
+    "start-docs": "nx build-docs && serve docs",
+    "test-unit": "nx build && jest --testMatch '**/unit/*.steps.js'",
+    "test-unit-coverage": "nx build && jest --testMatch '**/unit/*.steps.js' --coverage",
+    "test-e2e": "nx build && jest --testMatch '**/e2e/*.steps.js' --verbose",
+    "test-all": "nx build && jest --testMatch '**/*.steps.js'",
     "test": "npm run test-all"
   },
   "babel": {
