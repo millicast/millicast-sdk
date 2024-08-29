@@ -1,5 +1,6 @@
 export default class FetchError extends Error {
-  constructor(message, status) {
+  private status: number
+  constructor(message: string, status: number) {
     super(message)
     this.name = 'FetchError'
     this.status = status
