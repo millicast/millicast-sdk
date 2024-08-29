@@ -13,4 +13,6 @@ runs:
 
     - name: install packages
       shell: bash
-      run: npm install
+      run: |
+        git config --global url."git@github.com:".insteadOf git://github.com/
+        npm install
