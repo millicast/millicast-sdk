@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup-install
       - name: Check Linter and Build 📑
         run: |
-          npx nx build @millicast/sdk --verbose
+          npx nx run @millicast/sdk:build --verbose
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
