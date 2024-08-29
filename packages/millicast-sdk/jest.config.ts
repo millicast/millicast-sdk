@@ -10,7 +10,7 @@ export default {
   moduleNameMapper: {
     '^uuid$': require.resolve('uuid'),
   },
-  resolver: './jest_resolver.js',
+  resolver: './jest_resolver.ts',
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/packages/millicast-sdk',
 }
