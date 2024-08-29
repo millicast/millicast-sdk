@@ -1,4 +1,4 @@
-module.exports = (request: string, options: { defaultResolver: (arg0: any, arg1: any) => any }) => {
+module.exports = (request, options) => {
   // Remove any query parameters in the request path
   // (e.g. ?worker, which Vite uses for worker imports)
   if (request.includes('?')) {
