@@ -14,5 +14,5 @@ runs:
     - name: install packages
       shell: bash
       run: |
-        nx reset
+        npx nx reset
         npm install
