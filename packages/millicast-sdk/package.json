@@ -19,7 +19,7 @@
   "scripts": {
     "build": "nx build @millicast/sdk",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
-    "start-docs": "nx build-docs && serve docs",
+    "start-docs": "npm run build-docs && serve docs",
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
     "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
     "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js'",
