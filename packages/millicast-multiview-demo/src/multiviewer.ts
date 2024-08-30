@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   mainVideoElement = document.getElementById('mid-0')
   mainAudioElement = document.getElementById('mid-1')
   try {
-    viewer = new View(streamName, tokenGenerator)
+    viewer = new View(tokenGenerator)
     viewer.on('metadata', (metadata) => {
       console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
     })
