@@ -3,6 +3,7 @@
   "compilerOptions": {
     "allowJs": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "module": "commonjs",
     "forceConsistentCasingInFileNames": true,
     "strict": true,

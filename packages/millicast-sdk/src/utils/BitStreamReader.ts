@@ -1,10 +1,12 @@
 export default class BitStreamReader {
-  constructor(uint8Array) {
+  private data: Uint8Array
+  private bitOffset = 0
+
+  constructor(uint8Array: Uint8Array) {
     this.data = uint8Array
-    this.bitOffset = 0
   }
 
-  readBits(numBits) {
+  readBits(numBits: number) {
     if (this.bitOffset + numBits > this.data.length * 8) {
       throw new Error('Attempted to read past the end of the bitstream')
     }
@@ -20,7 +22,7 @@ export default class BitStreamReader {
     return value
   }
 
-  skip(numBits) {
+  skip(numBits: number) {
     this.bitOffset += numBits
   }
 
