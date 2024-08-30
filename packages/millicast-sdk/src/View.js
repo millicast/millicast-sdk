@@ -41,19 +41,13 @@ const connectOptions = {
  *
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
- * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
-  constructor(streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
-    if (streamName) {
-      logger.warn(
-        'The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator'
-      )
-    }
-    super(null, tokenGenerator, logger, autoReconnect)
+  constructor(tokenGenerator, mediaElement = null, autoReconnect = true) {
+    super(tokenGenerator, logger, autoReconnect)
     // States what payload type is associated with each codec from the SDP answer.
     this.payloadTypeCodec = {}
     // Follows the media id values of each transceiver's track from the 'track' events.
@@ -113,8 +107,7 @@ export default class View extends BaseWebRTC {
    *
    * //Create a new instance
    * // Stream name is not necessary in the constructor anymore, could be null | undefined
-   * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(streamName, tokenGenerator, videoElement)
+   * const millicastView = new View(tokenGenerator, videoElement)
    *
    * //Start connection to broadcast
    * try {
@@ -130,7 +123,7 @@ export default class View extends BaseWebRTC {
    *
    * //Create a new instance
    * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(streamName, tokenGenerator)
+   * const millicastView = new View(tokenGenerator)
    *
    * //Set track event handler to receive streams from Publisher.
    * millicastView.on('track', (event) => {

@@ -14,7 +14,7 @@ defineFeature(feature, (test) => {
     let peer = null
 
     given('I have a BaseWebRTC instanced and existing peer', async () => {
-      baseWebRTC = new BaseWebRTC('test', () => {}, null, false)
+      baseWebRTC = new BaseWebRTC(() => {}, null, false)
       await baseWebRTC.webRTCPeer.createRTCPeer()
     })
 
@@ -32,7 +32,7 @@ defineFeature(feature, (test) => {
     let peer = null
 
     given('I have a BaseWebRTC instanced and no existing peer', async () => {
-      baseWebRTC = new BaseWebRTC('test', () => {}, null, false)
+      baseWebRTC = new BaseWebRTC(() => {}, null, false)
       baseWebRTC.webRTCPeer = null
     })
 
