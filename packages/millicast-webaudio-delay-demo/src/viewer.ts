@@ -27,8 +27,6 @@ let delayNode
 const MaxDelay = 30
 
 document.body.onclick = async () => {
-  document.body.onclick = () => {}
-
   document.getElementById('slider').removeChild(document.getElementById('play'))
   document.getElementById('myCanvas').style.display = 'inherit'
 

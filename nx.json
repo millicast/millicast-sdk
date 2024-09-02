@@ -34,7 +34,7 @@
       "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": [
-      "{workspaceRoot}/.github/workflows/ci.yml"
+      "{workspaceRoot}/.github/workflows/check-tests.yml"
     ]
   },
   "targetDefaults": {
