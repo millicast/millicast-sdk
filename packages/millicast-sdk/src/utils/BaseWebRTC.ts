@@ -1,8 +1,11 @@
 import EventEmitter from 'events'
 import PeerConnection, { webRTCEvents } from '../PeerConnection'
-import { signalingEvents } from '../Signaling'
+import Signaling, { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
-let logger
+import { TokenGeneratorCallback } from '../types/Director.types'
+import { ILogger } from 'js-logger'
+import { PublishConnectOptions, ReconnectData, ViewConnectOptions } from '../types/BaseWebRTC.types'
+let logger: ILogger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
 
@@ -33,7 +36,18 @@ const baseInterval = 1000
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
 export default class BaseWebRTC extends EventEmitter {
-  constructor(tokenGenerator, loggerInstance, autoReconnect) {
+  webRTCPeer: PeerConnection
+  signaling: Signaling | null
+  autoReconnect: boolean
+  reconnectionInterval: number
+  alreadyDisconnected: boolean
+  firstReconnection: boolean
+  stopReconnection: boolean
+  isReconnecting: boolean
+  tokenGenerator: TokenGeneratorCallback
+  options: ViewConnectOptions | PublishConnectOptions | null
+  
+  constructor(tokenGenerator: TokenGeneratorCallback, loggerInstance: ILogger, autoReconnect: boolean) {
     super()
     logger = loggerInstance
     if (!tokenGenerator) {
@@ -56,7 +70,7 @@ export default class BaseWebRTC extends EventEmitter {
    * Get current RTC peer connection.
    * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
    */
-  getRTCPeerConnection() {
+  getRTCPeerConnection(): RTCPeerConnection | null {
     return this.webRTCPeer ? this.webRTCPeer.getRTCPeer() : null
   }
 
@@ -76,7 +90,7 @@ export default class BaseWebRTC extends EventEmitter {
    * Get if the current connection is active.
    * @returns {Boolean} - True if connected, false if not.
    */
-  isActive() {
+  isActive(): boolean {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
@@ -86,9 +100,9 @@ export default class BaseWebRTC extends EventEmitter {
    * Sets reconnection if autoReconnect is enabled.
    */
   setReconnect() {
-    this.signaling.on('migrate', () => this.replaceConnection())
+    this.signaling?.on('migrate', () => this.replaceConnection())
     if (this.autoReconnect) {
-      this.signaling.on(signalingEvents.connectionError, () => {
+      this.signaling?.on(signalingEvents.connectionError, () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
           this.firstReconnection = false
           this.reconnect({ error: new Error('Signaling error: wsConnectionError') })
@@ -98,7 +112,7 @@ export default class BaseWebRTC extends EventEmitter {
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         Diagnostics.setConnectionState(state)
         if (state === 'connected') {
-          Diagnostics.setConnectionTime(new Date())
+          Diagnostics.setConnectionTime(new Date().getTime())
         }
         if (
           (state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) &&
@@ -125,10 +139,10 @@ export default class BaseWebRTC extends EventEmitter {
   /**
    * Reconnects to last broadcast.
    * @fires BaseWebRTC#reconnect
-   * @param {Object} [data] - This object contains the error property. It may be expanded to contain more information in the future.
+   * @param {ReconnectData} [data] - This object contains the error property. It may be expanded to contain more information in the future.
    * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
    */
-  async reconnect(data) {
+  async reconnect(data: ReconnectData) {
     try {
       logger.info('Attempting to reconnect...')
       if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
@@ -153,15 +167,18 @@ export default class BaseWebRTC extends EventEmitter {
         this.firstReconnection = true
         this.isReconnecting = false
       }
-    } catch (error) {
+    } catch (error: any) {
       this.isReconnecting = false
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
       logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
       setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
     }
   }
+
+  async replaceConnection() {}
+  async connect(_options: ViewConnectOptions | PublishConnectOptions | null) {}
 }
 
-const nextReconnectInterval = (interval) => {
+const nextReconnectInterval = (interval: number) => {
   return interval < maxReconnectionInterval ? interval * 2 : interval
 }
