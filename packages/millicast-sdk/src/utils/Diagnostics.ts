@@ -1,7 +1,7 @@
 import { version } from '../../package.json'
 import {
   ConnectionStats,
-  Diagnostics,
+  DiagnosticsObject,
   CMCDDiagnostics,
   InboundStats,
   OutboundStats,
@@ -21,7 +21,7 @@ let _cluster = ''
 let _connectionTime = 0
 const _stats: ConnectionStats[] = []
 
-function transformWebRTCStatsToCMCD(diagnostics: Diagnostics): CMCDDiagnostics {
+function transformWebRTCStatsToCMCD(diagnostics: DiagnosticsObject): CMCDDiagnostics {
   // Helper function to map individual stat objects to CMCD-like structure
   function mapStats(type: 'video' | 'audio', stat: Partial<InboundStats & OutboundStats>): CMCDStats {
     return {
@@ -86,7 +86,7 @@ const Diagnostics = {
     _stats.push(stats)
   },
 
-  get: (statsCount = MAX_STATS_HISTORY_SIZE, statsFormat = 'JSON'): Diagnostics | CMCDDiagnostics => {
+  get: (statsCount = MAX_STATS_HISTORY_SIZE, statsFormat = 'JSON'): DiagnosticsObject | CMCDDiagnostics => {
     let configuredStatsCount
     if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
       configuredStatsCount = MAX_STATS_HISTORY_SIZE
@@ -94,7 +94,7 @@ const Diagnostics = {
       configuredStatsCount = statsCount
     }
 
-    const diagnostics: Diagnostics = {
+    const diagnostics: DiagnosticsObject = {
       client: '@millicast/millicast-sdk',
       version,
       timestamp: new Date().toISOString(),

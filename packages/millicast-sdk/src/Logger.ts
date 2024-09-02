@@ -1,6 +1,7 @@
-import jsLogger, { ILogLevel, ILogHandler } from 'js-logger'
+import jsLogger, { ILogLevel, ILogHandler, ILogger } from 'js-logger'
 import { version } from '../package.json'
 import Diagnostics from './utils/Diagnostics'
+import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/stats.types'
 
 /**
  * @module Logger
@@ -221,7 +222,7 @@ const Logger = {
    * myLogger.getLevel()
    * // {value: 3, name: 'INFO'}
    */
-  get: (name: string) => {
+  get: (name: string): ILogger => {
     if (!namedLoggerLevels[name]) {
       namedLoggerLevels[name] = loggerLevel
     }
@@ -292,7 +293,12 @@ const Logger = {
    *
    * // Output: Diagnostics object with specified configuration
    */
-  diagnose: (config = {}) => {
+  diagnose: (config: DiagnosticsOptions = {
+    statsCount: 60,
+    historySize: 1000,
+    minLogLevel: 'TRACE',
+    statsFormat: 'JSON',
+  }): DiagnosticsObject | CMCDDiagnostics => {
     let finalConfig
     const defaultConfig = {
       statsCount: 60,

@@ -222,7 +222,7 @@ export type OutboundStats = {
   mid?: string
 }
 
-export interface Diagnostics {
+export type DiagnosticsObject = {
   client: string
   version: string
   timestamp: string
@@ -239,7 +239,14 @@ export interface Diagnostics {
   history?: string[]
 }
 
-export type CMCDDiagnostics = Omit<Diagnostics, 'stats'> & {
+export type DiagnosticsOptions = {
+  statsCount: number,
+  historySize: number,
+  minLogLevel: string,
+  statsFormat: string
+}
+
+export type CMCDDiagnostics = Omit<DiagnosticsObject, 'stats'> & {
   stats: CMCDStats[]
 }
 
