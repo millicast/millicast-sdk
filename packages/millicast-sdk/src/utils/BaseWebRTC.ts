@@ -175,8 +175,8 @@ export default class BaseWebRTC extends EventEmitter {
     }
   }
 
-  async replaceConnection() {}
-  async connect(_options: ViewConnectOptions | PublishConnectOptions | null) {}
+  async replaceConnection() { /* tslint:disable:no-empty */ }
+  async connect(_options: ViewConnectOptions | PublishConnectOptions | null) { /* tslint:disable:no-empty */ }
 }
 
 const nextReconnectInterval = (interval: number) => {
