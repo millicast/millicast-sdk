@@ -467,6 +467,9 @@ export default class View extends BaseWebRTC {
       if (this.DRMProfile.fairPlayUrl) {
         drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl
       }
+      if (this.DRMProfile.fairPlayCertUrl) {
+        drmOptions.fpsCertificateUrl = this.DRMProfile.fairPlayCertUrl
+      }
     }
     try {
       rtcDrmConfigure(drmOptions)
