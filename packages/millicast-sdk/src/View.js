@@ -448,7 +448,7 @@ export default class View extends BaseWebRTC {
     }
     const drmOptions = {
       merchant: 'dolby',
-      sessionId: '',
+      // TODO: change to Product when backend is ready
       environment: rtcDrmEnvironments.Staging,
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
@@ -466,6 +466,9 @@ export default class View extends BaseWebRTC {
       }
       if (this.DRMProfile.fairPlayUrl) {
         drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl
+      }
+      if (this.DRMProfile.fairPlayCertUrl) {
+        drmOptions.fpsCertificateUrl = this.DRMProfile.fairPlayCertUrl
       }
     }
     try {
