@@ -448,7 +448,7 @@ export default class View extends BaseWebRTC {
     }
     const drmOptions = {
       merchant: 'dolby',
-      sessionId: '',
+      // TODO: change to Product when backend is ready
       environment: rtcDrmEnvironments.Staging,
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
