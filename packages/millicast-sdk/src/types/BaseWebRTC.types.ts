@@ -1,72 +1,4 @@
-import { VideoCodec } from "../utils/Codecs"
-
-export type ViewConnectOptions = {
-  /**
-   * - True to modify SDP for supporting dtx in opus. Otherwise False.
-   */
-  dtx?: boolean
-  /**
-   * - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   */
-  absCaptureTime?: boolean
-  /**
-   * - Enable metadata extraction. This feature is only supported with the H.264 codec.
-   */
-  metadata?: boolean
-  /**
-   * - Disable the opportunity to receive video stream.
-   */
-  disableVideo?: boolean
-  /**
-   * - Disable the opportunity to receive audio stream.
-   */
-  disableAudio?: boolean
-  /**
-   * - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
-   */
-  multiplexedAudioTracks?: number
-  /**
-   * - Id of the main source that will be received by the default MediaStream.
-   */
-  pinnedSourceId?: string
-  /**
-   * - Do not receive media from the these source ids.
-   */
-  excludedSourceIds?: Array<string>
-  /**
-   * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
-   */
-  events?: Array<Event>
-  /**
-   * - Options to configure the new RTCPeerConnection.
-   */
-  peerConfig?: PeerConnectionConfig
-  /**
-   * - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   */
-  layer?: {
-    /**
-     * - rid value of the simulcast encoding of the track  (default: automatic selection)
-     */
-    encodingId: string
-    /**
-     * - The spatial layer id to send to the outgoing stream (default: max layer available)
-     */
-    spatialLayerId: number
-    /**
-     * - The temporaral layer id to send to the outgoing stream (default: max layer available)
-     */
-    temporalLayerId: number
-    /**
-     * - Max spatial layer id (default: unlimited)
-     */
-    maxSpatialLayerId: number
-    /**
-     * - Max temporal layer id (default: unlimited)
-     */
-    maxTemporalLayerId: number
-  }
-}
+import { VideoCodec } from '../utils/Codecs'
 
 export type PublishConnectOptions = {
   /**
@@ -103,6 +35,10 @@ export type PublishConnectOptions = {
    */
   metadata?: boolean
   /**
+   * - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+   */
+  multiplexedAudioTracks?: number
+  /**
    * - Disable the opportunity to send video stream.
    */
   disableVideo?: boolean
@@ -132,6 +68,10 @@ export type PublishConnectOptions = {
    */
   record?: boolean
   /**
+   * - Enable Drm
+   */
+  enableDRM?: boolean
+  /**
    * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    */
   events?: Array<string>
@@ -145,12 +85,16 @@ export interface PeerConnectionConfig extends RTCConfiguration {
   /**
    * - whether stats collection should be auto initialized. Defaults to `true`
    */
-  autoInitStats: boolean
+  autoInitStats?: boolean
 
   /**
    * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
    */
-  statsIntervalMs: number
+  statsIntervalMs?: number
+  /**
+   * encoded insertable streams
+   */
+  encodedInsertableStreams?: boolean
 }
 
 export type ReconnectData = {

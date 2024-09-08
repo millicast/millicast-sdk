@@ -4,7 +4,8 @@ import Signaling, { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
 import { TokenGeneratorCallback } from '../types/Director.types'
 import { ILogger } from 'js-logger'
-import { PublishConnectOptions, ReconnectData, ViewConnectOptions } from '../types/BaseWebRTC.types'
+import { PublishConnectOptions, ReconnectData } from '../types/BaseWebRTC.types'
+import { ViewConnectOptions } from '../types/View.types'
 let logger: ILogger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
@@ -36,17 +37,17 @@ const baseInterval = 1000
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
 export default class BaseWebRTC extends EventEmitter {
-  webRTCPeer: PeerConnection
-  signaling: Signaling | null
-  autoReconnect: boolean
-  reconnectionInterval: number
-  alreadyDisconnected: boolean
-  firstReconnection: boolean
-  stopReconnection: boolean
-  isReconnecting: boolean
-  tokenGenerator: TokenGeneratorCallback
-  options: ViewConnectOptions | PublishConnectOptions | null
-  
+  protected webRTCPeer: PeerConnection
+  protected signaling: Signaling | null
+  protected autoReconnect: boolean
+  private reconnectionInterval: number
+  private alreadyDisconnected: boolean
+  private firstReconnection: boolean
+  protected stopReconnection: boolean
+  private isReconnecting: boolean
+  protected tokenGenerator: TokenGeneratorCallback
+  protected options: ViewConnectOptions | PublishConnectOptions | null
+
   constructor(tokenGenerator: TokenGeneratorCallback, loggerInstance: ILogger, autoReconnect: boolean) {
     super()
     logger = loggerInstance
@@ -142,7 +143,7 @@ export default class BaseWebRTC extends EventEmitter {
    * @param {ReconnectData} [data] - This object contains the error property. It may be expanded to contain more information in the future.
    * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
    */
-  async reconnect(data: ReconnectData) {
+  async reconnect(data?: ReconnectData) {
     try {
       logger.info('Attempting to reconnect...')
       if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
@@ -175,8 +176,12 @@ export default class BaseWebRTC extends EventEmitter {
     }
   }
 
-  async replaceConnection() { /* tslint:disable:no-empty */ }
-  async connect(_options: ViewConnectOptions | PublishConnectOptions | null) { /* tslint:disable:no-empty */ }
+  async replaceConnection() {
+    /* tslint:disable:no-empty */
+  }
+  async connect(options: unknown): Promise<void> {
+    /* tslint:disable:no-empty */
+  }
 }
 
 const nextReconnectInterval = (interval: number) => {

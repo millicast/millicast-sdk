@@ -47,6 +47,7 @@ export type DirectorResponse = {
   jwt: string
   iceServers: RTCIceServer[]
   drmObject?: DRMProfile
+  subscriberToken?: string
 }
 
 /**

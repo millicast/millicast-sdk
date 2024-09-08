@@ -53,8 +53,15 @@ export const signalingEvents = {
  */
 
 export default class Signaling extends EventEmitter {
+  public streamName: string | null
+  public wsUrl: string
+  public webSocket: any = null
+  public transactionManager: any = null
+  public serverId: any = null
+  public clusterId: any = null
+  public streamViewId: any = null
   constructor(
-    options = {
+    options: { streamName: string | null; url: string } = {
       streamName: null,
       url: 'ws://localhost:8080/',
     }
@@ -62,11 +69,6 @@ export default class Signaling extends EventEmitter {
     super()
     this.streamName = options.streamName
     this.wsUrl = options.url
-    this.webSocket = null
-    this.transactionManager = null
-    this.serverId = null
-    this.clusterId = null
-    this.streamViewId = null
   }
 
   /**
@@ -106,7 +108,7 @@ export default class Signaling extends EventEmitter {
       this.transactionManager = new TransactionManager(this.webSocket)
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
-        this.transactionManager.on('event', (evt) => {
+        this.transactionManager.on('event', (evt: any) => {
           /**
            * Passthrough of available Millicast broadcast events.
            *
@@ -189,7 +191,7 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe(sdp, options, pinnedSourceId = null, excludedSourceIds = null) {
+  async subscribe(sdp: any, options: any, pinnedSourceId = null, excludedSourceIds = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
     const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
@@ -197,7 +199,7 @@ export default class Signaling extends EventEmitter {
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = {
+    const data: any = {
       sdp,
       streamId: this.streamName,
       pinnedSourceId: optionsParsed.pinnedSourceId,
@@ -236,7 +238,7 @@ export default class Signaling extends EventEmitter {
       this.streamViewId = result.streamViewId
 
       // Save for diagnostics
-      Diagnostics.initStreamName(this.streamName)
+      Diagnostics.initStreamName(this.streamName || '')
       Diagnostics.initSubscriberId(this.serverId)
       Diagnostics.initStreamViewId(result.streamViewId)
       Diagnostics.setClusterId(this.clusterId)
@@ -254,13 +256,13 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish(sdp, options, record = null, sourceId = null) {
+  async publish(sdp: any, options: any, record = null, sourceId = null) {
     const optionsParsed = getPublishOptions(options, record, sourceId)
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
     const supportedVideoCodecs =
-      PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc) => cdc.codec) ?? []
+      PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: any) => cdc.codec) ?? []
 
     const videoCodecs = Object.values(VideoCodec)
     if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
@@ -280,7 +282,7 @@ export default class Signaling extends EventEmitter {
       sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
     }
 
-    const data = {
+    const data: any = {
       name: this.streamName,
       sdp,
       codec: optionsParsed.codec,
@@ -326,7 +328,7 @@ export default class Signaling extends EventEmitter {
       this.clusterId = result.clusterId
 
       // Save for diagnostics
-      Diagnostics.initStreamName(this.streamName)
+      Diagnostics.initStreamName(this.streamName || '')
       Diagnostics.initSubscriberId(this.serverId)
       Diagnostics.initFeedId(result.feedId)
       Diagnostics.setClusterId(this.clusterId)
@@ -343,14 +345,14 @@ export default class Signaling extends EventEmitter {
    * @param {Object} [data] - Command parameters.
    * @return {Promise<Object>} Promise object which represents the command response.
    */
-  async cmd(cmd, data) {
+  async cmd(cmd: any, data: any) {
     logger.info(`Sending cmd: ${cmd}`)
 
     return this.transactionManager.cmd(cmd, data)
   }
 }
 
-const getSubscribeOptions = (options, legacyPinnedSourceId, legacyExcludedSourceIds) => {
+const getSubscribeOptions = (options: any, legacyPinnedSourceId: any, legacyExcludedSourceIds: any) => {
   let parsedOptions = typeof options === 'object' ? options : {}
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
@@ -362,7 +364,7 @@ const getSubscribeOptions = (options, legacyPinnedSourceId, legacyExcludedSource
   return parsedOptions
 }
 
-const getPublishOptions = (options, legacyRecord, legacySourceId) => {
+const getPublishOptions = (options: any, legacyRecord: any, legacySourceId: any) => {
   let parsedOptions = typeof options === 'object' ? options : {}
   if (Object.keys(parsedOptions).length === 0) {
     const defaultCodec = VideoCodec.H264
