@@ -326,7 +326,7 @@ export default class View extends BaseWebRTC {
           logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
           this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
         }
-        this.worker.addEventListener('message', (message) => {
+        this.worker?.addEventListener('message', (message) => {
           if (message.data.event === 'complete') {
             // feed the frame to DRM processing worker
             rtcDrmFeedFrame(message.data.frame, null, drmOptions)
