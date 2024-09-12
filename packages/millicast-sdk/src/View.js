@@ -305,7 +305,6 @@ export default class View extends BaseWebRTC {
     signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
       if (event.data.sourceId === null) {
         if (event.name === 'active') {
-          console.log('active event in View')
           this.isMainStreamActive = true
           while (this.eventQueue.length > 0) {
             this.onTrackEvent(this.eventQueue.shift())
@@ -359,7 +358,6 @@ export default class View extends BaseWebRTC {
   }
 
   onTrackEvent (trackEvent) {
-    console.log('track event in View')
     this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
     if (this.isDRMOn) {
       const mediaId = trackEvent.transceiver.mid
