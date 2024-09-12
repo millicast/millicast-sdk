@@ -22,11 +22,19 @@ let apiEndpoint = defaultApiEndpoint
  */
 
 /**
+ * @typedef {Object} DRMObject
+ * @property {String} fairPlayCertUrl - URL of the FairPlay certificate server.
+ * @property {String} fairPlayUrl - URL of the FairPlay license server.
+ * @property {String} widevineUrl - URL of the Widevine license server.
+ */
+
+/**
  * @typedef {Object} MillicastDirectorResponse
  * @global
  * @property {Array<String>} urls - WebSocket available URLs.
  * @property {String} jwt - Access token for signaling initialization.
  * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
+ * @property {DRMObject} [drmObject] - DRM proxy server information.
  */
 
 /**
@@ -176,12 +184,12 @@ const Director = {
    * await millicastView.connect(options)
    */
 
-  getSubscriber: async (options, streamAccountId = null, subscriberToken = null, isDRMEnabled = false) => {
+  getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
 
-    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName, isDrm: isDRMEnabled }
+    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
     let headers = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }

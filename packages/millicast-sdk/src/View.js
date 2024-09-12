@@ -304,14 +304,18 @@ export default class View extends BaseWebRTC {
 
     signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
       if (event.data.sourceId === null) {
-        if (event.name === 'active') {
-          this.isMainStreamActive = true
-          while (this.eventQueue.length > 0) {
-            this.onTrackEvent(this.eventQueue.shift())
-          }
-        }
-        if (event.name === 'inactive') {
-          this.isMainStreamActive = false
+        switch (event.name) {
+          case 'active':
+            this.isMainStreamActive = true
+            while (this.eventQueue.length > 0) {
+              this.onTrackEvent(this.eventQueue.shift())
+            }
+            break
+          case 'inactive':
+            this.isMainStreamActive = false
+            break
+          default:
+            break
         }
       }
     })
@@ -454,7 +458,7 @@ export default class View extends BaseWebRTC {
     const drmOptions = {
       merchant: 'dolby',
       // TODO: change to Product when backend is ready
-      environment: rtcDrmEnvironments.Staging,
+      environment: rtcDrmEnvironments.Production,
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
