@@ -38,10 +38,11 @@ const connectOptions = {
  * @constructor
  * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
+ * @param {HTMLMediaElement} [mediaElement=null] - Deprecated: Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
-  constructor (streamName, tokenGenerator, autoReconnect = true) {
+  constructor (streamName, tokenGenerator, mediaElement = null, autoReconnect = true) {
     if (streamName) {
       logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
     }
@@ -457,7 +458,6 @@ export default class View extends BaseWebRTC {
     }
     const drmOptions = {
       merchant: 'dolby',
-      // TODO: change to Product when backend is ready
       environment: rtcDrmEnvironments.Production,
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
