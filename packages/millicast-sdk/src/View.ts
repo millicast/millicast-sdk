@@ -382,7 +382,10 @@ export default class View extends BaseWebRTC {
           logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
           this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
         }
-        this.worker?.addEventListener('message', (message) => {
+        if (!this.worker) {
+          this.worker = new TransformWorker()
+        }
+        this.worker.addEventListener('message', (message) => {
           if (message.data.event === 'complete') {
             // feed the frame to DRM processing worker
             rtcDrmFeedFrame(message.data.frame, null, drmOptions)
@@ -514,6 +517,7 @@ export default class View extends BaseWebRTC {
     const drmOptions: any = {
       merchant: 'dolby',
       sessionId: '',
+      // TODO: change to Product when backend is ready
       environment: (rtcDrmEnvironments as any).Staging,
       customTransform: this.options?.metadata,
       videoElement: options.videoElement,
@@ -536,6 +540,9 @@ export default class View extends BaseWebRTC {
       }
       if (this.DRMProfile.fairPlayUrl) {
         drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl
+      }
+      if (this.DRMProfile.fairPlayCertUrl) {
+        drmOptions.fpsCertificateUrl = this.DRMProfile.fairPlayCertUrl
       }
     }
     try {

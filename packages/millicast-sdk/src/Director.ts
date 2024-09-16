@@ -283,6 +283,10 @@ const parseIncomingDirectorResponse = (directorResponse: { data: DirectorRespons
     if (fairPlayUrl) {
       directorResponse.data.drmObject.fairPlayUrl = `${Director.getEndpoint()}${fairPlayUrl}`
     }
+    const fairPlayCertUrl = directorResponse.data.drmObject.fairPlayCertUrl
+    if (fairPlayCertUrl) {
+      directorResponse.data.drmObject.fairPlayCertUrl = `${Director.getEndpoint()}${fairPlayCertUrl}`
+    }
   }
   return directorResponse
 }
