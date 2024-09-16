@@ -57,6 +57,7 @@ export interface DRMProfile {
   playReadyUrl?: string
   widevineUrl?: string
   fairPlayUrl?: string
+  fairPlayCertUrl?: string
 }
 
 export type TokenGeneratorCallback = () => Promise<DirectorResponse>
