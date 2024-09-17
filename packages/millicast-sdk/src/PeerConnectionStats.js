@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import { WebRTCStats } from '@dolbyio/webrtc-stats'
+import { peerConfigType } from './types/PeerConnection.types'
 
 const logger = Logger.get('PeerConnectionStats')
 
@@ -160,7 +161,7 @@ const parseWebRTCStats = (webRTCStats) => {
 }
 
 export default class PeerConnectionStats extends EventEmitter {
-  constructor(peer, options = { statsIntervalMs: 1000, autoInitStats: true }) {
+  constructor(peer, options: peerConfigType = { statsIntervalMs: 1000, autoInitStats: true }) {
     super()
     this.peer = peer
     this.collection = null

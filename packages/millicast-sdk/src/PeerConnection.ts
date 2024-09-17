@@ -5,10 +5,14 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './utils/Codecs'
+import { sdpOptions, MillicastCapability, peerConfigType } from './types/PeerConnection.types'
 
 const logger = Logger.get('PeerConnection')
 
-export const ConnectionType = {
+export const ConnectionType: {
+  Publisher: 'Publisher',
+  Viewer: 'Viewer',
+} = {
   Publisher: 'Publisher',
   Viewer: 'Viewer',
 }
@@ -19,10 +23,8 @@ export const webRTCEvents = {
 
 const localSDPOptions = {
   stereo: false,
-  mediaStream: null,
   codec: 'h264',
   simulcast: false,
-  scalabilityMode: null,
   disableAudio: false,
   disableVideo: false,
   setSDPToPeer: true,
@@ -36,11 +38,11 @@ const localSDPOptions = {
  * @constructor
  */
 export default class PeerConnection extends EventEmitter {
-  public mode: any
-  public sessionDescription: any
-  public peer: any
-  public peerConnectionStats: any
-  public transceiverMap: any
+  public mode: 'Publisher' | 'Viewer' | null
+  public sessionDescription: RTCSessionDescriptionInit | null
+  public peer: RTCPeerConnection | null
+  public peerConnectionStats: PeerConnectionStats | null
+  public transceiverMap: Map<RTCRtpTransceiver, (value: RTCRtpTransceiver | PromiseLike<RTCRtpTransceiver>) => void>
   constructor() {
     super()
     this.mode = null
@@ -55,11 +57,11 @@ export default class PeerConnection extends EventEmitter {
    * @param {RTCConfiguration} config - Peer configuration.
    * @param {Boolean} [config.autoInitStats = true] - True to initialize statistics monitoring of the RTCPeerConnection accessed via Logger.get(), false to opt-out.
    * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
-   * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
+   * @param {"Publisher" | "Viewer"} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
    */
   async createRTCPeer(
-    config: any = { autoInitStats: true, statsIntervalMs: 1000 },
-    mode = ConnectionType.Viewer
+    config: peerConfigType = { autoInitStats: true, statsIntervalMs: 1000 },
+    mode: 'Publisher' | 'Viewer' = ConnectionType.Viewer
   ) {
     logger.info('Creating new RTCPeerConnection')
     logger.debug('RTC configuration provided by user: ', config)
@@ -96,12 +98,12 @@ export default class PeerConnection extends EventEmitter {
    * @param {String} sdp - New SDP to be set in the remote peer.
    * @returns {Promise<void>} Promise object which resolves when SDP information was successfully set.
    */
-  async setRTCRemoteSDP(sdp: any) {
+  async setRTCRemoteSDP(sdp: string): Promise<void> {
     logger.info('Setting RTC Remote SDP')
-    const answer = { type: 'answer', sdp }
+    const answer:RTCSessionDescriptionInit = { type: 'answer', sdp }
 
     try {
-      await this.peer.setRemoteDescription(answer)
+      await this.peer?.setRemoteDescription(answer)
       logger.info('RTC Remote SDP was set successfully.')
       logger.debug('RTC Remote SDP new value: ', sdp)
     } catch (e) {
@@ -128,49 +130,52 @@ export default class PeerConnection extends EventEmitter {
    * @param {Boolean} options.setSDPToPeer - True to set the SDP to local peer.
    * @returns {Promise<String>} Promise object which represents the SDP information of the created offer.
    */
-  async getRTCLocalSDP(options: any = localSDPOptions) {
+  async getRTCLocalSDP(options: sdpOptions = localSDPOptions): Promise<string | undefined> {
     logger.info('Getting RTC Local SDP')
     options = { ...localSDPOptions, ...options }
     logger.debug('Options: ', options)
 
-    const mediaStream = getValidMediaStream(options.mediaStream)
-    if (mediaStream) {
-      addMediaStreamToPeer(this.peer, mediaStream, options)
-    } else {
-      addReceiveTransceivers(this.peer, options)
-    }
-
-    logger.info('Creating peer offer')
-    const response = await this.peer.createOffer()
-    logger.info('Peer offer created')
-    logger.debug('Peer offer response: ', response.sdp)
-
-    this.sessionDescription = response
-    if (!options.disableAudio) {
-      if (options.stereo) {
-        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+    if (this.peer) {
+      const mediaStream = getValidMediaStream(options.mediaStream)
+      if (mediaStream) {
+        addMediaStreamToPeer(this.peer, mediaStream, options)
+      } else {
+        addReceiveTransceivers(this.peer, options)
       }
-      if (options.dtx) {
-        this.sessionDescription.sdp = SdpParser.setDTX(this.sessionDescription.sdp)
+
+      logger.info('Creating peer offer')
+      const response = await this.peer.createOffer() || null
+      logger.info('Peer offer created')
+      logger.debug('Peer offer response: ', response.sdp)
+
+      this.sessionDescription = response
+      if (!options.disableAudio) {
+        if (options.stereo) {
+          this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+        }
+        if (options.dtx) {
+          this.sessionDescription.sdp = SdpParser.setDTX(this.sessionDescription.sdp)
+        }
+        this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
       }
-      this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream!)
+    
+      if (!options.disableVideo && options.simulcast) {
+        this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
+      }
+      if (options.absCaptureTime) {
+        this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp)
+      }
+      if (options.dependencyDescriptor) {
+        this.sessionDescription.sdp = SdpParser.setDependencyDescriptor(this.sessionDescription.sdp)
+      }
+  
+      if (options.setSDPToPeer) {
+        await this.peer.setLocalDescription(this.sessionDescription)
+        logger.info('Peer local description set')
+      }
+  
     }
-    if (!options.disableVideo && options.simulcast) {
-      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
-    }
-    if (options.absCaptureTime) {
-      this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp)
-    }
-    if (options.dependencyDescriptor) {
-      this.sessionDescription.sdp = SdpParser.setDependencyDescriptor(this.sessionDescription.sdp)
-    }
-
-    if (options.setSDPToPeer) {
-      await this.peer.setLocalDescription(this.sessionDescription)
-      logger.info('Peer local description set')
-    }
-
-    return this.sessionDescription.sdp
+    return this.sessionDescription?.sdp
   }
 
   /**
@@ -179,14 +184,16 @@ export default class PeerConnection extends EventEmitter {
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
-  async addRemoteTrack(media: any, streams: any) {
+  async addRemoteTrack(media: string, streams: Array<MediaStream>): Promise<RTCRtpTransceiver> {
     return new Promise((resolve, reject) => {
       try {
-        const transceiver = this.peer.addTransceiver(media, {
-          direction: 'recvonly',
-          streams,
-        })
-        this.transceiverMap.set(transceiver, resolve)
+        if (this.peer) {
+          const transceiver = this.peer.addTransceiver(media, {
+            direction: 'recvonly',
+            streams,
+          })
+          this.transceiverMap.set(transceiver, resolve)
+        }
       } catch (e) {
         reject(e)
       }
@@ -199,7 +206,7 @@ export default class PeerConnection extends EventEmitter {
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @return {String} Updated SDP information with new bandwidth restriction.
    */
-  updateBandwidthRestriction(sdp: any, bitrate: any) {
+  updateBandwidthRestriction(sdp?: string, bitrate?: number): string {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
@@ -215,7 +222,7 @@ export default class PeerConnection extends EventEmitter {
    * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
    * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
    */
-  async updateBitrate(bitrate = 0) {
+  async updateBitrate(bitrate = 0): Promise<void> {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
@@ -228,7 +235,7 @@ export default class PeerConnection extends EventEmitter {
     logger.info('Updating bitrate to value: ', bitrate)
     this.sessionDescription = await this.peer.createOffer()
     await this.peer.setLocalDescription(this.sessionDescription)
-    const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
+    const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription?.sdp, bitrate)
     await this.setRTCRemoteSDP(sdp)
     logger.info('Bitrate restrictions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
   }
@@ -251,13 +258,13 @@ export default class PeerConnection extends EventEmitter {
    * Replace current audio or video track that is being broadcasted.
    * @param {MediaStreamTrack} mediaStreamTrack - New audio or video track to replace the current one.
    */
-  replaceTrack(mediaStreamTrack: any) {
+  replaceTrack(mediaStreamTrack: MediaStreamTrack) {
     if (!this.peer) {
       logger.error('Could not change track if there is not an active connection.')
       return
     }
 
-    const currentSender = this.peer.getSenders().find((s: any) => s.track.kind === mediaStreamTrack.kind)
+    const currentSender = this.peer.getSenders().find((s: RTCRtpSender) => s.track?.kind === mediaStreamTrack.kind)
 
     if (currentSender) {
       currentSender.replaceTrack(mediaStreamTrack)
@@ -281,9 +288,9 @@ export default class PeerConnection extends EventEmitter {
    * @param {"audio"|"video"} kind - Type of media for which you wish to get sender capabilities.
    * @returns {MillicastCapability} Object with all capabilities supported by user's browser and Millicast Media Server.
    */
-  static getCapabilities(kind: any) {
+  static getCapabilities(kind: 'audio' | 'video'): MillicastCapability | null {
     const browserData = new UserAgent()
-    const browserCapabilities = RTCRtpSender.getCapabilities(kind)
+    const browserCapabilities = RTCRtpSender.getCapabilities(kind) as MillicastCapability
 
     if (browserCapabilities) {
       const codecs: any = {}
@@ -302,9 +309,9 @@ export default class PeerConnection extends EventEmitter {
         if (matches) {
           const codecName = matches[1].toLowerCase()
           codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType }
-          if ((codec as any).scalabilityModes) {
+          if (codec.scalabilityModes) {
             let modes = codecs[codecName].scalabilityModes || []
-            modes = [...modes, ...(codec as any).scalabilityModes]
+            modes = [...modes, ...codec.scalabilityModes]
             codecs[codecName].scalabilityModes = [...new Set(modes)]
           }
           if (codec.channels) {
@@ -325,8 +332,8 @@ export default class PeerConnection extends EventEmitter {
    * Get sender tracks
    * @returns {Array<MediaStreamTrack>} An array with all tracks in sender peer.
    */
-  getTracks() {
-    return this.peer?.getSenders()?.map((sender: any) => sender.track)
+  getTracks(): (MediaStreamTrack | null)[] {
+    return this.peer?.getSenders().map((sender: RTCRtpSender) => sender.track) || []
   }
 
   /**
@@ -364,7 +371,7 @@ export default class PeerConnection extends EventEmitter {
    *   console.log('Stats from event: ', stats)
    * })
    */
-  initStats(options: any) {
+  initStats(options: peerConfigType) {
     if (this.peerConnectionStats) {
       logger.warn(
         'PeerConnection.initStats() has already been called. Automatic initialization occurs via View.connect(), Publish.connect() or this.createRTCPeer(). See options'
@@ -387,17 +394,17 @@ export default class PeerConnection extends EventEmitter {
   }
 }
 
-const isMediaStreamValid = (mediaStream: any) =>
-  mediaStream?.getAudioTracks().length <= 1 && mediaStream?.getVideoTracks().length <= 1
+const isMediaStreamValid = (mediaStream: MediaStream) =>
+  mediaStream.getAudioTracks().length <= 1 && mediaStream.getVideoTracks().length <= 1
 
-const getValidMediaStream = (mediaStream: any) => {
+const getValidMediaStream = (mediaStream?: MediaStream | Array<MediaStreamTrack>) => {
   if (!mediaStream) {
     return null
   }
 
   if (mediaStream instanceof MediaStream && isMediaStreamValid(mediaStream)) {
     return mediaStream
-  } else if (!(mediaStream instanceof MediaStream)) {
+  } else if (mediaStream instanceof Array) {
     logger.info('Creating MediaStream to add received tracks.')
     const stream = new MediaStream()
     for (const track of mediaStream) {
@@ -413,13 +420,13 @@ const getValidMediaStream = (mediaStream: any) => {
   throw new Error('MediaStream must have 1 audio track and 1 video track, or at least one of them.')
 }
 
-const instanceRTCPeerConnection = (instanceClass: any, config: any) => {
+const instanceRTCPeerConnection = (instanceClass: PeerConnection, config: peerConfigType): RTCPeerConnection => {
   const instance = new RTCPeerConnection(config)
   addPeerEvents(instanceClass, instance)
   return instance
 }
 
-async function delay(ms: any) {
+async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -430,8 +437,8 @@ async function delay(ms: any) {
  * @fires PeerConnection#track
  * @fires PeerConnection#connectionStateChange
  */
-const addPeerEvents = (instanceClass: any, peer: any) => {
-  peer.ontrack = async (event: any) => {
+const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection) => {
+  peer.ontrack = async (event: RTCTrackEvent) => {
     logger.info('New track from peer.')
     logger.debug('Track event value: ', event)
     const resolve = instanceClass.transceiverMap.get(event.transceiver)
@@ -491,10 +498,10 @@ const addPeerEvents = (instanceClass: any, peer: any) => {
   }
 }
 
-const addMediaStreamToPeer = (peer: any, mediaStream: any, options: any) => {
+const addMediaStreamToPeer = (peer: RTCPeerConnection, mediaStream: MediaStream, options: sdpOptions) => {
   logger.info('Adding mediaStream tracks to RTCPeerConnection')
   for (const track of mediaStream.getTracks()) {
-    const initOptions: any = {
+    const initOptions: RTCRtpTransceiverInit = {
       streams: [mediaStream],
     }
 
@@ -518,7 +525,7 @@ const addMediaStreamToPeer = (peer: any, mediaStream: any, options: any) => {
   }
 }
 
-const addReceiveTransceivers = (peer: any, options: any) => {
+const addReceiveTransceivers = (peer: RTCPeerConnection, options: sdpOptions) => {
   const browserData = new UserAgent()
   if (!options.disableVideo) {
     const transceiver = peer.addTransceiver('video', {
@@ -528,7 +535,7 @@ const addReceiveTransceivers = (peer: any, options: any) => {
       transceiver.setCodecPreferences(
         RTCRtpReceiver.getCapabilities('video')?.codecs.filter(
           (codec) => codec.mimeType !== 'video/H264' || codec.sdpFmtpLine?.includes('profile-level-id=4')
-        )
+        ) || []
       )
     }
   }
@@ -537,14 +544,16 @@ const addReceiveTransceivers = (peer: any, options: any) => {
       direction: 'recvonly',
     })
   }
-  for (let i = 0; i < options.multiplexedAudioTracks; i++) {
-    peer.addTransceiver('audio', {
-      direction: 'recvonly',
-    })
+  if (options.multiplexedAudioTracks) {
+    for (let i = 0; i < options.multiplexedAudioTracks; i++) {
+      peer.addTransceiver('audio', {
+        direction: 'recvonly',
+      })
+    }
   }
 }
 
-const getConnectionState = (peer: any) => {
+const getConnectionState = (peer: RTCPeerConnection) => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState
   switch (connectionState) {
     case 'checking':

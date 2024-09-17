@@ -6,8 +6,6 @@ import {
   DirectorResponse,
   DirectorSubscriberOptions,
   MillicastDirectorResponse,
-  DRMProfile,
-  TokenGeneratorCallback,
 } from './types/Director.types'
 
 const logger = Logger.get('Director')

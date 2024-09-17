@@ -49,7 +49,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with simulcast support.
    * @example SdpParser.setSimulcast(sdp, 'h264')
    */
-  setSimulcast(sdp, codec) {
+  setSimulcast(sdp?, codec?) {
     logger.info('Setting simulcast. Codec: ', codec)
     const browserData = new UserAgent()
     if (!browserData.isChromium()) {
@@ -135,7 +135,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with stereo support.
    * @example SdpParser.setStereo(sdp)
    */
-  setStereo(sdp) {
+  setStereo(sdp?: string) {
     logger.info('Replacing SDP response for support stereo')
     sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1; stereo=1')
     logger.info('Replaced SDP response for support stereo')
@@ -151,7 +151,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with dtx support.
    * @example SdpParser.setDTX(sdp)
    */
-  setDTX(sdp) {
+  setDTX(sdp?) {
     logger.info('Replacing SDP response for support dtx')
     sdp = sdp.replace('useinbandfec=1', 'useinbandfec=1; usedtx=1')
     logger.info('Replaced SDP response for support dtx')
@@ -167,7 +167,7 @@ const SdpParser = {
    * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  setAbsoluteCaptureTime(sdp) {
+  setAbsoluteCaptureTime(sdp?) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
     const header = 'a=extmap:' + id + ' http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n'
 
@@ -189,7 +189,7 @@ const SdpParser = {
    * @returns {String} SDP mungled with abs-capture-time header extension.
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
-  setDependencyDescriptor(sdp) {
+  setDependencyDescriptor(sdp?) {
     const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
     const header =
       'a=extmap:' +
@@ -215,7 +215,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with desired bitrate.
    * @example SdpParser.setVideoBitrate(sdp, 1000)
    */
-  setVideoBitrate(sdp, bitrate) {
+  setVideoBitrate(sdp?, bitrate?) {
     if (bitrate < 1) {
       logger.info('Remove bitrate restrictions')
       sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
@@ -279,7 +279,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with multiopus support.
    * @example SdpParser.setMultiopus(sdp, mediaStream)
    */
-  setMultiopus(sdp, mediaStream) {
+  setMultiopus(sdp?, mediaStream?: MediaStream | null) {
     const browserData = new UserAgent()
     if (!browserData.isFirefox() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
       if (!sdp.includes('multiopus/48000/6')) {
@@ -404,7 +404,7 @@ const SdpParser = {
    * @param {String} remoteDescription - Remote sdp
    * @returns {String} SDP updated with missing extensions.
    */
-  updateMissingVideoExtensions(localDescription, remoteDescription) {
+  updateMissingVideoExtensions(localDescription?, remoteDescription) {
     const offer = SDPInfo.parse(localDescription)
     const answer = SDPInfo.parse(remoteDescription)
     // Get extensions of answer
