@@ -38,7 +38,7 @@ const connectOptions = {
  * @constructor
  * @param {String} streamName - Deprecated: Millicast existing stream name.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
+ * @param {HTMLMediaElement} [mediaElement=null] - Deprecated: Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
@@ -53,10 +53,11 @@ export default class View extends BaseWebRTC {
     this.tracksMidValues = {}
     // mapping media ID of RTCRtcTransceiver to DRM Options
     this.drmOptionsMap = null
+    // cache of events to coordinate re-emitting
+    this.eventQueue = []
+    this.isMainStreamActive = false
     if (mediaElement) {
-      this.on(webRTCEvents.track, e => {
-        mediaElement.srcObject = e.streams[0]
-      })
+      logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.')
     }
   }
 
@@ -98,26 +99,6 @@ export default class View extends BaseWebRTC {
    * @example
    * import View from '@millicast/sdk'
    *
-   * // Create media element
-   * const videoElement = document.createElement("video")
-   *
-   * //Define callback for generate new token
-   * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
-   *
-   * //Create a new instance
-   * // Stream name is not necessary in the constructor anymore, could be null | undefined
-   * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(streamName, tokenGenerator, videoElement)
-   *
-   * //Start connection to broadcast
-   * try {
-   *  await millicastView.connect()
-   * } catch (e) {
-   *  console.log('Connection failed, handle error', e)
-   * }
-   * @example
-   * import View from '@millicast/sdk'
-   *
    * //Define callback for generate new token
    * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
    *
@@ -143,6 +124,7 @@ export default class View extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+    this.eventQueue.length = 0
     await this.initConnection({ migrate: false })
   }
 
@@ -222,6 +204,7 @@ export default class View extends BaseWebRTC {
     this.worker = null
     this.payloadTypeCodec = {}
     this.tracksMidValues = {}
+    this.eventQueue.length = 0
   }
 
   async initConnection (data) {
@@ -277,7 +260,7 @@ export default class View extends BaseWebRTC {
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
-    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track))
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     if (this.options.metadata) {
@@ -315,46 +298,28 @@ export default class View extends BaseWebRTC {
       }
     }
 
-    webRTCPeerInstance.on('track', (trackEvent) => {
-      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
-      if (this.isDRMOn) {
-        const mediaId = trackEvent.transceiver.mid
-        const drmOptions = this.getDRMConfiguration(mediaId)
-        try {
-          rtcDrmOnTrack(trackEvent, drmOptions)
-        } catch (error) {
-          logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
-          this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
-        }
-        if (!this.worker) {
-          this.worker = new TransformWorker()
-        }
-        this.worker.addEventListener('message', (message) => {
-          if (message.data.event === 'complete') {
-            // feed the frame to DRM processing worker
-            rtcDrmFeedFrame(message.data.frame, null, drmOptions)
-          }
-        })
+    webRTCPeerInstance.on(webRTCEvents.track, (trackEvent) => {
+      if (!this.isMainStreamActive) {
+        this.eventQueue.push(trackEvent)
+        return
       }
-      if (this.options.metadata) {
-        if (supportsRTCRtpScriptTransform) {
-          // eslint-disable-next-line no-undef
-          trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
-            name: 'receiverTransform',
-            payloadTypeCodec: { ...this.payloadTypeCodec },
-            codec: this.options.metadata && 'h264',
-            mid: trackEvent.transceiver?.mid
-          })
-        } else if (supportsInsertableStreams) {
-          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-          this.worker.postMessage({
-            action: 'insertable-streams-receiver',
-            payloadTypeCodec: { ...this.payloadTypeCodec },
-            codec: this.options.metadata && 'h264',
-            mid: trackEvent.transceiver?.mid,
-            readable,
-            writable
-          }, [readable, writable])
+      this.onTrackEvent(trackEvent)
+    })
+
+    signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
+      if (event.data.sourceId === null) {
+        switch (event.name) {
+          case 'active':
+            this.isMainStreamActive = true
+            while (this.eventQueue.length > 0) {
+              this.onTrackEvent(this.eventQueue.shift())
+            }
+            break
+          case 'inactive':
+            this.isMainStreamActive = false
+            break
+          default:
+            break
         }
       }
     })
@@ -398,6 +363,51 @@ export default class View extends BaseWebRTC {
         }
       })
     }
+  }
+
+  onTrackEvent (trackEvent) {
+    this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
+    if (this.isDRMOn) {
+      const mediaId = trackEvent.transceiver.mid
+      const drmOptions = this.getDRMConfiguration(mediaId)
+      try {
+        rtcDrmOnTrack(trackEvent, drmOptions)
+      } catch (error) {
+        logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
+        this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
+      }
+      if (!this.worker) {
+        this.worker = new TransformWorker()
+      }
+      this.worker.addEventListener('message', (message) => {
+        if (message.data.event === 'complete') {
+          // feed the frame to DRM processing worker
+          rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+        }
+      })
+    }
+    if (this.options.metadata) {
+      if (supportsRTCRtpScriptTransform) {
+        // eslint-disable-next-line no-undef
+        trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'receiverTransform',
+          payloadTypeCodec: { ...this.payloadTypeCodec },
+          codec: this.options.metadata && 'h264',
+          mid: trackEvent.transceiver?.mid
+        })
+      } else if (supportsInsertableStreams) {
+        const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+        this.worker.postMessage({
+          action: 'insertable-streams-receiver',
+          payloadTypeCodec: { ...this.payloadTypeCodec },
+          codec: this.options.metadata && 'h264',
+          mid: trackEvent.transceiver?.mid,
+          readable,
+          writable
+        }, [readable, writable])
+      }
+    }
+    this.emit(webRTCEvents.track, trackEvent)
   }
 
   getDRMConfiguration (mediaId) {
@@ -451,8 +461,7 @@ export default class View extends BaseWebRTC {
     }
     const drmOptions = {
       merchant: 'dolby',
-      // TODO: change to Product when backend is ready
-      environment: rtcDrmEnvironments.Staging,
+      environment: rtcDrmEnvironments.Production,
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,

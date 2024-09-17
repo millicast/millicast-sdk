@@ -10,11 +10,6 @@ Feature: As a user I want to subscribe to a stream without managing connections
     When I subscribe to a stream with a connection path
     Then peer connection state is connected
 
-  Scenario: Subscribe to stream with media element
-    Given an instance of View with media element
-    When I subscribe to a stream with a connection path
-    Then peer connection state is connected
-
   Scenario: Connect subscriber without connection path
     Given I want to subscribe
     When I instance a View with a token generator without connection path
