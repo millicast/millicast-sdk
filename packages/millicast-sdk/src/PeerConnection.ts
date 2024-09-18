@@ -514,7 +514,7 @@ const addMediaStreamToPeer = (peer: RTCPeerConnection, mediaStream: MediaStream,
 
       if (options.scalabilityMode && new UserAgent().isChrome()) {
         logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
-        initOptions.sendEncodings = [{ scalabilityMode: options.scalabilityMode }]
+        initOptions.sendEncodings = [{ scalabilityMode: options.scalabilityMode } as RTCRtpEncodingParameters]
       } else if (options.scalabilityMode) {
         logger.warn('SVC is only supported in Google Chrome')
       }
@@ -555,7 +555,7 @@ const addReceiveTransceivers = (peer: RTCPeerConnection, options: sdpOptions) =>
 
 const getConnectionState = (peer: RTCPeerConnection) => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState
-  switch (connectionState) {
+  switch (connectionState as RTCIceConnectionState) {
     case 'checking':
       return 'connecting'
     case 'completed':

@@ -23,7 +23,7 @@ export type sdpOptions = {
 export interface CodecsType extends RTCRtpCodec {
   codec: string
   mimeType: string
-  scalabilityModes?: Array<String>
+  scalabilityModes?: Array<string>
   channels?: number
 }
 
