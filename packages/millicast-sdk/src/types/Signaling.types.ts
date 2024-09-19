@@ -1,12 +1,5 @@
 import { VideoCodec } from "../utils/Codecs"
-
-export type LayerInfo = {
-  encodingId: string
-  spatialLayerId: number
-  temporalLayerId: number
-  maxSpatialLayerId: number
-  maxTemporalLayerId: number
-}
+import { LayerInfo } from "./View.types"
 
 export type SignalingSubscribeOptions = {
   vad?: boolean

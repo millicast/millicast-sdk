@@ -4,8 +4,9 @@ import {
   DiagnosticsObject,
   CMCDDiagnostics,
   InboundStats,
-  OutboundStats,
   CMCDStats,
+  OutboundVideoStats,
+  OutboundAudioStats,
 } from '../types/stats.types'
 
 const MAX_STATS_HISTORY_SIZE = 60
@@ -23,7 +24,7 @@ const _stats: ConnectionStats[] = []
 
 function transformWebRTCStatsToCMCD(diagnostics: DiagnosticsObject): CMCDDiagnostics {
   // Helper function to map individual stat objects to CMCD-like structure
-  function mapStats(type: 'video' | 'audio', stat: Partial<InboundStats & OutboundStats>): CMCDStats {
+  function mapStats(type: 'video' | 'audio', stat: Partial<InboundStats & (OutboundAudioStats | OutboundVideoStats)>): CMCDStats {
     return {
       ts: stat.timestamp ? Math.round(stat.timestamp) : '', // Timestamp to the nearest millisecond
       ot: type === 'audio' ? 'a' : 'v', // 'a' for audio, 'v' for video

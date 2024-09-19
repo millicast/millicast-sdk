@@ -20,14 +20,14 @@ export type sdpOptions = {
   multiplexedAudioTracks?: number
 }
 
-export interface CodecsType extends RTCRtpCodec {
-  codec: string
+export interface CodecsType {
+  codec?: string
   mimeType: string
   scalabilityModes?: Array<string>
   channels?: number
 }
 
-export interface MillicastCapability extends RTCRtpCapabilities {
+export interface MillicastCapability {
   codecs: CodecsType[]
   headerExtensions: Array<RTCRtpHeaderExtensionCapability>
 }

@@ -30,7 +30,7 @@ export type ViewConnectOptions = {
   /**
    * - Id of the main source that will be received by the default MediaStream.
    */
-  pinnedSourceId?: string
+  pinnedSourceId?: string | null
   /**
    * - Enable Drm
    */
@@ -38,11 +38,11 @@ export type ViewConnectOptions = {
   /**
    * - Do not receive media from the these source ids.
    */
-  excludedSourceIds?: Array<string>
+  excludedSourceIds?: Array<string> | null
   /**
    * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
    */
-  events?: Array<Event>
+  events?: ('active' | 'inactive' | 'updated' | 'layers' | 'vad' | 'viewercount')[]
   /**
    * - Options to configure the new RTCPeerConnection.
    */
@@ -54,28 +54,12 @@ export type ViewConnectOptions = {
   /**
    * - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
    */
-  layer?: {
-    /**
-     * - rid value of the simulcast encoding of the track  (default: automatic selection)
-     */
-    encodingId: string
-    /**
-     * - The spatial layer id to send to the outgoing stream (default: max layer available)
-     */
-    spatialLayerId: number
-    /**
-     * - The temporaral layer id to send to the outgoing stream (default: max layer available)
-     */
-    temporalLayerId: number
-    /**
-     * - Max spatial layer id (default: unlimited)
-     */
-    maxSpatialLayerId: number
-    /**
-     * - Max temporal layer id (default: unlimited)
-     */
-    maxTemporalLayerId: number
-  }
+  layer?: LayerInfo
+  /**
+   * - Ask the server to use the playout delay header extension.
+   */
+  forcePlayoutDelay?: { min: number, max: number } | boolean
+  vad?: boolean
 }
 
 export type ViewProjectSourceMapping = {
@@ -152,4 +136,14 @@ export type EncryptionParameters = {
 
   /** 16-byte initialization vector, in lowercase hexadecimal without separators */
   iv: string
+}
+
+export type SEIUserUnregisteredData = string | object | number
+
+export interface MetadataObject {
+  mid: string
+  track: MediaStreamTrack
+  uuid: string
+  unregistered: SEIUserUnregisteredData
+  timecode: Date
 }
