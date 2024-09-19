@@ -5,7 +5,7 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './utils/Codecs'
-import { sdpOptions, MillicastCapability, peerConfigType } from './types/PeerConnection.types'
+import { sdpOptions, MillicastCapability, peerConfigType, CodecsType } from './types/PeerConnection.types'
 
 const logger = Logger.get('PeerConnection')
 
@@ -293,14 +293,14 @@ export default class PeerConnection extends EventEmitter {
     const browserCapabilities = RTCRtpSender.getCapabilities(kind) as MillicastCapability
 
     if (browserCapabilities) {
-      const codecs: any = {}
+      const codecs: { [key: string]: CodecsType } = {}
       let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i')
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i')
 
         if (browserData.isChrome()) {
-          codecs.multiopus = { mimeType: 'audio/multiopus', channels: 6 }
+          codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 }
         }
       }
 
