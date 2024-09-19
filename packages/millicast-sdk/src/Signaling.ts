@@ -5,8 +5,9 @@ import SdpParser from './utils/SdpParser'
 import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
-import { PublishCmd, PublishResponse, SignalingPublishOptions, SignalingSubscribeOptions, ViewCmd, ViewResponse } from './types/Signaling.types'
+import { PublishCmd, PublishResponse, SignalingPublishOptions, ViewCmd, ViewResponse } from './types/Signaling.types'
 import { CodecsType } from './types/PeerConnection.types'
+import { ViewConnectOptions } from './types/View.types'
 
 const logger = Logger.get('Signaling')
 
@@ -197,7 +198,7 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe(sdp = '', options: SignalingSubscribeOptions | boolean, pinnedSourceId = null, excludedSourceIds = null): Promise<string> {
+  async subscribe(sdp = '', options: ViewConnectOptions | boolean, pinnedSourceId = null, excludedSourceIds = null): Promise<string> {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
     const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
@@ -218,7 +219,7 @@ export default class Signaling extends EventEmitter {
       data.events = optionsParsed.events
     }
     if (optionsParsed.forcePlayoutDelay) {
-      data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay
+      data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay as { min: number, max: number }
     }
     if (optionsParsed.layer) {
       data.layer = optionsParsed.layer
@@ -370,8 +371,8 @@ export default class Signaling extends EventEmitter {
   }
 }
 
-const getSubscribeOptions = (options: SignalingSubscribeOptions | boolean, legacyPinnedSourceId: string | null, legacyExcludedSourceIds: string[] | null): SignalingSubscribeOptions => {
-  let parsedOptions = typeof options === 'object' ? options : {} as SignalingSubscribeOptions
+const getSubscribeOptions = (options: ViewConnectOptions | boolean, legacyPinnedSourceId: string | null, legacyExcludedSourceIds: string[] | null): ViewConnectOptions => {
+  let parsedOptions = typeof options === 'object' ? options : {} as ViewConnectOptions
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       vad: options as boolean,

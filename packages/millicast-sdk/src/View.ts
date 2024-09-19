@@ -23,8 +23,10 @@ import {
   Media,
   ViewProjectSourceMapping,
   DRMOptions,
+  MetadataObject,
+  SEIUserUnregisteredData,
 } from './types/View.types.js'
-import { DirectorResponse, DRMProfile } from './types/Director.types'
+import { DRMProfile } from './types/Director.types'
 
 const logger = Logger.get('View')
 logger.setLevel(Logger.DEBUG)
@@ -79,9 +81,9 @@ type DecodedJWT = {
  */
 export default class View extends BaseWebRTC {
   // States what payload type is associated with each codec from the SDP answer.
-  private payloadTypeCodec: { [key: string]: any } = {}
+  private payloadTypeCodec: { [key: number]: string } = {}
   // Follows the media id values of each transceiver's track from the 'track' events.
-  private tracksMidValues: { [key: string]: any } = {}
+  private tracksMidValues: { [key: string]: MediaStreamTrack } = {}
   // mapping media ID of RTCRtcTransceiver to DRM Options
   private drmOptionsMap: Map<string, any> | null = null
   private streamName = ''
@@ -210,11 +212,11 @@ export default class View extends BaseWebRTC {
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
-  async addRemoteTrack(media: Media, streams: Array<MediaStream>) {
+  async addRemoteTrack(media: Media, streams: Array<MediaStream>): Promise<RTCRtpTransceiver> {
     logger.info('Viewer adding remote track', media)
     const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
     for (const stream of streams) {
-      stream.addTrack((transceiver as any).receiver.track)
+      stream.addTrack(transceiver.receiver.track)
     }
     return transceiver
   }
@@ -237,7 +239,7 @@ export default class View extends BaseWebRTC {
       }
       const peer = this.webRTCPeer.getRTCPeer()
       // Check we have the mediaId in the transceivers
-      if (map.mediaId && !peer.getTransceivers().find((t: any) => t.mid === map.mediaId?.toString())) {
+      if (map.mediaId && !peer?.getTransceivers().find((t: RTCRtpTransceiver) => t.mid === map.mediaId?.toString())) {
         logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
         throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
       }
@@ -337,27 +339,27 @@ export default class View extends BaseWebRTC {
       if (!this.worker) {
         this.worker = new TransformWorker()
       }
-      this.worker!.onmessage = (message) => {
+      this.worker.onmessage = (message) => {
         if (message.data.event === 'metadata') {
           const decoder = new TextDecoder()
-          const metadata = message.data.metadata
+          const metadata: MetadataObject = message.data.metadata
           metadata.mid = message.data.mid
           metadata.track = this.tracksMidValues[message.data.mid]
-          if (metadata.uuid) {
-            const uuid = metadata.uuid as any
+          if (message.data.metadata.uuid) {
+            const uuid = message.data.metadata.uuid as Uint8Array
             metadata.uuid = uuid.reduce(
-              (str: string, byte: any) => str + byte.toString(16).padStart(2, '0'),
+              (str: string, byte: number) => str + byte.toString(16).padStart(2, '0'),
               ''
             )
             metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
           }
-          if (metadata.timecode) {
-            metadata.timecode = new Date(decoder.decode(metadata.timecode))
+          if (message.data.metadata.timecode) {
+            metadata.timecode = new Date(decoder.decode(message.data.metadata.timecode))
           }
-          if (metadata.unregistered) {
-            const content = decoder.decode(metadata.unregistered)
+          if (message.data.metadata.unregistered) {
+            const content = decoder.decode(message.data.metadata.unregistered)
             try {
-              const json = JSON.parse(content)
+              const json: SEIUserUnregisteredData = JSON.parse(content)
               metadata.unregistered = json
             } catch (e) {
               // was not a JSON, just return the raw bytes (i.e. do nothing)
@@ -430,9 +432,9 @@ export default class View extends BaseWebRTC {
     const subscribePromise = this.signaling.subscribe(localSdp, {
       ...this.options,
       vad: !!this.options?.multiplexedAudioTracks,
-    })
-    const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(
-      webRTCPeerInstance.sessionDescription
+    } as ViewConnectOptions)
+    const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
+      webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
     )
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
     const sdpSubscriber = promises[0]

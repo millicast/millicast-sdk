@@ -430,7 +430,7 @@ const SdpParser = {
   getCodecPayloadType(sdp = '') {
     const reg = new RegExp('a=rtpmap:(\\d+) (\\w+)/\\d+', 'g')
     const matches = sdp.matchAll(reg)
-    const codecMap: any = {}
+    const codecMap: { [key: string]: string } = {}
 
     for (const match of matches) {
       codecMap[match[1]] = match[2]

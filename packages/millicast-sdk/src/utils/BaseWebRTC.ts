@@ -179,7 +179,7 @@ export default class BaseWebRTC extends EventEmitter {
   async replaceConnection() {
     /* tslint:disable:no-empty */
   }
-  async connect(options: unknown): Promise<void> {
+  async connect(_options: unknown): Promise<void> {
     /* tslint:disable:no-empty */
   }
 }
