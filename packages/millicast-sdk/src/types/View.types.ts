@@ -1,6 +1,5 @@
-import { PeerConnectionConfig } from './BaseWebRTC.types'
-
-export type Media = 'audio' | 'video'
+import { Media, ViewServerEvent } from "./BaseWebRTC.types"
+import { PeerConnectionConfig } from "./PeerConnection.types"
 
 export type ViewConnectOptions = {
   /**
@@ -42,7 +41,7 @@ export type ViewConnectOptions = {
   /**
    * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
    */
-  events?: ('active' | 'inactive' | 'updated' | 'layers' | 'vad' | 'viewercount')[]
+  events?: ViewServerEvent[]
   /**
    * - Options to configure the new RTCPeerConnection.
    */
@@ -74,7 +73,7 @@ export type ViewProjectSourceMapping = {
   /**
    * - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
    */
-  media?: 'audio' | 'video'
+  media?: Media
   /**
    * - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
    */

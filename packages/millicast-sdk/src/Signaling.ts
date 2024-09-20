@@ -364,7 +364,7 @@ export default class Signaling extends EventEmitter {
    * @param {Object} [data] - Command parameters.
    * @return {Promise<Object>} Promise object which represents the command response.
    */
-  async cmd(cmd: string, data: object): Promise<object> {
+  async cmd(cmd: string, data?: object): Promise<object> {
     logger.info(`Sending cmd: ${cmd}`)
 
     return this.transactionManager?.cmd(cmd, data) as object

@@ -1,11 +1,12 @@
 import { VideoCodec } from "../utils/Codecs"
+import { PublishServerEvent, ViewServerEvent } from "./BaseWebRTC.types"
 import { LayerInfo } from "./View.types"
 
 export type SignalingSubscribeOptions = {
   vad?: boolean
   pinnedSourceId?: string | null
   excludedSourceIds?: string[] | null
-  events?: ('active' | 'inactive' | 'updated' | 'layers' | 'vad' | 'viewercount')[]
+  events?: ViewServerEvent[]
   layer?: LayerInfo
   forcePlayoutDelay?: {min: number, max: number}
   disableVideo?: boolean
@@ -16,7 +17,7 @@ export type SignalingPublishOptions = {
   codec?: VideoCodec
   record?: boolean | null
   sourceId?: string | null
-  events?: ('active' | 'inactive' | 'viewercount')[]
+  events?: PublishServerEvent[]
 	intraOnlyForwarding?: boolean
 	priority?: number
 	simulcastId?: string

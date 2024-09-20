@@ -20,13 +20,13 @@ import { TokenGeneratorCallback } from './types/Director.types'
 import {
   ViewConnectOptions,
   LayerInfo,
-  Media,
   ViewProjectSourceMapping,
   DRMOptions,
   MetadataObject,
   SEIUserUnregisteredData,
 } from './types/View.types.js'
 import { DRMProfile } from './types/Director.types'
+import { DecodedJWT, Media } from './types/BaseWebRTC.types'
 
 const logger = Logger.get('View')
 logger.setLevel(Logger.DEBUG)
@@ -59,11 +59,6 @@ const defaultConnectOptions: ViewConnectOptions = {
 //   audio: { codec: 'opus', encryption: 'clear' },
 //   onFetch: this.onRtcDrmFetch.bind(this),
 // }
-type DecodedJWT = {
-  millicast: {
-    streamName: string
-  }
-}
 
 /**
  * @class View
@@ -311,7 +306,7 @@ export default class View extends BaseWebRTC {
       throw new Error('Subscriber data required')
     }
     const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT
-    this.streamName = decodedJWT.millicast.streamName
+    this.streamName = decodedJWT['millicast'].streamName
     const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`,
@@ -373,11 +368,11 @@ export default class View extends BaseWebRTC {
       }
     }
 
-    webRTCPeerInstance.on('track', (trackEvent) => {
-      this.tracksMidValues[trackEvent.transceiver?.mid] = trackEvent.track
+    webRTCPeerInstance.on('track', (trackEvent: RTCTrackEvent) => {
+      this.tracksMidValues[trackEvent.transceiver?.mid as string] = trackEvent.track
       if (this.isDRMOn) {
         const mediaId = trackEvent.transceiver.mid
-        const drmOptions = this.getDRMConfiguration(mediaId)
+        const drmOptions = this.getDRMConfiguration(mediaId as string)
         try {
           rtcDrmOnTrack(trackEvent, drmOptions)
         } catch (error) {
@@ -396,7 +391,6 @@ export default class View extends BaseWebRTC {
       }
       if (this.options?.metadata) {
         if (supportsRTCRtpScriptTransform && this.worker) {
-          // eslint-disable-next-line no-undef
           trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
             name: 'receiverTransform',
             payloadTypeCodec: { ...this.payloadTypeCodec },
@@ -404,7 +398,7 @@ export default class View extends BaseWebRTC {
             mid: trackEvent.transceiver?.mid,
           })
         } else if (supportsInsertableStreams) {
-          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+          const { readable, writable } = (trackEvent.receiver as any).createEncodedStreams()
           this.worker?.postMessage(
             {
               action: 'insertable-streams-receiver',

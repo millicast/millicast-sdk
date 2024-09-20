@@ -1,8 +1,19 @@
 import { VideoCodec } from "../utils/Codecs"
 
-export type peerConfigType = RTCConfiguration & {
+export interface PeerConnectionConfig extends RTCConfiguration {
+  /**
+   * - whether stats collection should be auto initialized. Defaults to `true`
+   */
   autoInitStats?: boolean
+
+  /**
+   * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
+   */
   statsIntervalMs?: number
+  /**
+   * encoded insertable streams
+   */
+  encodedInsertableStreams?: boolean
 }
 
 export type sdpOptions = {
