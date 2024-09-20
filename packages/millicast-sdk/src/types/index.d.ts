@@ -56,7 +56,7 @@ declare module '@millicast/sdk' {
    * // Timer name: 35282.997802734375 ms
    */
 
-  export type StatsFormat = Logger.JSON | Logger.CMCD;
+  export type StatsFormat = 'JSON' | 'CMCD';
 
   export type DiagnosticReportConfiguration = {
     /**
@@ -519,7 +519,7 @@ declare module '@millicast/sdk' {
      * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
      * 
      */  
-    [qualityLimitationDurations] : Date
+    qualityLimitationDurations : Object
   };
 
   class PeerConnectionStats extends events.EventEmitter {
@@ -792,7 +792,7 @@ declare module '@millicast/sdk' {
      * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
      * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig, mode : "Publisher" | "Viewer"): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode? : "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
