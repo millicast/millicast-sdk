@@ -56,7 +56,7 @@ declare module '@millicast/sdk' {
    * // Timer name: 35282.997802734375 ms
    */
 
-  export type StatsFormat = Logger.JSON | Logger.CMCD;
+  export type StatsFormat = 'JSON' | 'CMCD';
 
   export type DiagnosticReportConfiguration = {
     /**
@@ -115,9 +115,9 @@ declare module '@millicast/sdk' {
      */
     connection: string,
     /**
-     * 
+     * Id of the stream
      */
-    streamViewId
+    streamViewId: string,
     /**
      * A collection of log events reocrded until the diagnose method  was called 
      */
@@ -435,6 +435,7 @@ declare module '@millicast/sdk' {
   };
 
   export type OutboundStats = {
+
     /**
      * - outbound-rtp Id.
      */
@@ -519,7 +520,7 @@ declare module '@millicast/sdk' {
      * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
      * 
      */  
-    [qualityLimitationDurations] : Date
+    qualityLimitationDurations? : Date
   };
 
   class PeerConnectionStats extends events.EventEmitter {
@@ -792,7 +793,7 @@ declare module '@millicast/sdk' {
      * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
      * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig, mode : "Publisher" | "Viewer"): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode? : "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -1032,8 +1033,34 @@ declare module '@millicast/sdk' {
      * //Start connection to broadcast
      * await millicastView.connect(options)
      */
-    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string, isDRMEnabled?: boolean): Promise<MillicastDirectorResponse>;
+    static getSubscriber(options: DirectorSubscriberOptions | string, streamAccountId?: string, subscriberToken?: string): Promise<MillicastDirectorResponse>;
   }
+
+  /**
+   * DRM options in Director API response
+   */
+  export type DRMObject = {
+    /**
+     * PlayReady license server URL.
+     */
+    playReadyUrl?: string;
+
+    /**
+     * widevine license server URL.
+     */
+    widevineUrl?: string;
+
+    /**
+     * fairPlay license server URL.
+     */
+    fairPlayUrl?: string;
+
+    /**
+     * fairPlay certificate server URL.
+     */
+    fairPlayCertUrl?: string;
+  }
+
   export type MillicastDirectorResponse = {
     /**
      * - WebSocket available URLs.
@@ -1047,7 +1074,13 @@ declare module '@millicast/sdk' {
      * - Object which represents a list of Ice servers.
      */
     iceServers: Array<RTCIceServer>;
+
+    /**
+     * DRM options
+     */
+    drmObject?: DRMObject;
   };
+
   export type DirectorPublisherOptions = {
     /**
      * - Millicast Publishing Token.
@@ -1250,23 +1283,7 @@ declare module '@millicast/sdk' {
     layer?: LayerInfo;
   }
 
-  /**
-   * DRM profile from director API which includes the URLs of license servers
-   */
-  export interface DRMProfile {
-    playReadyUrl?: string;
-    widevineUrl?: string;
-    fairPlayUrl?: string;
-  }
-
-  export type DirectorResponse = {
-    urls: string[];
-    jwt: string;
-    iceServers: RTCIceServer[];
-    drmObject?: DRMProfile;
-  };
-
-  export type TokenGeneratorCallback = () => Promise<DirectorResponse>
+  export type TokenGeneratorCallback = () => Promise<MillicastDirectorResponse>
   class BaseWebRTC extends events.EventEmitter {
     constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);
     webRTCPeer?: PeerConnection;
@@ -1517,7 +1534,7 @@ declare module '@millicast/sdk' {
      * Configure DRM protected stream.
      * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
      */
-    configureDRM(options: DRMOptions);
+    configureDRM(options: DRMOptions): void;
 
     /**
      * Remove DRM configuration for a mediaId
@@ -1532,7 +1549,7 @@ declare module '@millicast/sdk' {
     /** Exchange the DRM configuration between two transceivers
      *  Make sure both of the transceivers have been used for DRM protected streams
      */
-    exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string);
+    exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string): void;
 
     replaceConnection(): Promise<void>;
     webRTCPeer?: PeerConnection;

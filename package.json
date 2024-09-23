@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "prepare": "lerna bootstrap --ci",
-    "build": "lerna run build",
+    "build": "lerna run build --bail",
     "build:sdk": "lerna run build:watch --scope '@millicast/sdk' --parallel",
     "start:projects": "lerna run start --scope 'millicast-publisher-demo' --scope 'millicast-viewer-demo' --parallel",
     "delay": "node -e \"setTimeout(() => {}, 3000)\"",

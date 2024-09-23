@@ -6,9 +6,10 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "dist",
-    "strict": false,
-    "skipLibCheck": true
+    "strict": true,
+    "skipLibCheck": false,
+    "noEmitOnError": true,
   },
-  "include": ["./src"],
+  "include": ["./src/**/*.ts"],
   "exclude": ["./node_modules/**/*"]
 }

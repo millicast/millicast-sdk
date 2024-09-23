@@ -19,7 +19,7 @@
     "scripts"
   ],
   "scripts": {
-    "build": "vite build --config vite.config.debug.mjs && vite build && rollup -c",
+    "build": "tsc --build && vite build --config vite.config.debug.mjs && vite build && rollup -c",
     "build:watch": "vite build --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
