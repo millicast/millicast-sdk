@@ -17,7 +17,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "lerna run build --bail --verbose",
+    "build": "lerna run build --verbose",
     "build:sdk": "lerna run build:watch --scope '@millicast/sdk' --parallel",
     "start:projects": "lerna run start --scope 'millicast-publisher-demo' --scope 'millicast-viewer-demo' --parallel",
     "delay": "node -e \"setTimeout(() => {}, 3000)\"",
