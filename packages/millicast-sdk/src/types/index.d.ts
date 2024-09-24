@@ -520,7 +520,8 @@ declare module '@millicast/sdk' {
      * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
      * 
      */  
-    qualityLimitationDurations? : Date
+
+    qualityLimitationDurations : Object
   };
 
   class PeerConnectionStats extends events.EventEmitter {
