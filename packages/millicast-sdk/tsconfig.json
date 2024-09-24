@@ -7,8 +7,8 @@
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "strict": false,
-    "skipLibCheck": true
+    "skipLibCheck": false,
   },
-  "include": ["./src"],
+  "include": ["./src/**/*.ts"],
   "exclude": ["./node_modules/**/*"]
 }
