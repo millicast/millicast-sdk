@@ -1540,7 +1540,7 @@ declare module '@millicast/sdk' {
     /**
      * Remove DRM configuration for a mediaId
      */
-    removeDRMConfiguration (mediaId: string): void;
+    removeDRMConfiguration (mediaId: string);
 
     /**
      * Check if there are any DRM protected Track
