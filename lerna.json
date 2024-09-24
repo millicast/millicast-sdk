@@ -1,8 +1,13 @@
 {
   "packages": [
-    "packages/*"
+    "@millicast/sdk",
+    "millicast-chromecast-receiver",
+    "millicast-multiview-demo",
+    "millicast-publisher-demo",
+    "millicast-viewer-demo",
+    "millicast-webaudio-delay-demo"
   ],
-  "useWorkspaces": true,
   "npmClient": "npm",
+  "useNx": true,
   "version": "0.1.40"
 }
