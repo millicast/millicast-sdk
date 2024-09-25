@@ -1,83 +1,83 @@
 {
     "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": [
-                    "build",
-                    "test",
-                    "lint",
-                    "lint:format",
-                    "prepare",
-                    "build-docs",
-                    "test-unit",
-                    "test-unit-coverage",
-                    "test-e2e",
-                    "test-all"
-                ]
-            }
+    "default": {
+        "runner": "nx/tasks-runners/default",
+        "options": {
+            "cacheableOperations": [
+                "build",
+                "test",
+                "lint",
+                "lint:format",
+                "prepare",
+                "build-docs",
+                "test-unit",
+                "test-unit-coverage",
+                "test-e2e",
+                "test-all"
+            ]
         }
+    }
     },
     "targetDefaults": {
-        "test": {
-            "dependsOn": [
-                "^test"
-            ],
-            "inputs": [
-                "{projectRoot}/**/*",
-                "!{projectRoot}/**/*.md"
-            ],
-            "cache": true
-        },
-        "prepare": {
-            "dependsOn": [
-                "^prepare"
-            ],
-            "cache": true
-        },
-        "preview": {
-            "dependsOn": [
-                "^preview"
-            ]
-        },
-        "build:watch": {
-            "dependsOn": [
-                "^build:watch"
-            ]
-        },
-        "build": {
-            "outputs": [
-                "{projectRoot}//**/dist/*"
-            ],
-            "cache": true,
-            "dependsOn": []
-        },
-        "start": {
-            "dependsOn": []
-        },
-        "build-docs": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "start-docs": {
-            "dependsOn": []
-        },
-        "test-unit": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "test-unit-coverage": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "test-e2e": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "test-all": {
-            "cache": true,
-            "dependsOn": []
-        }
+    "test": {
+        "dependsOn": [
+            "^test"
+        ],
+        "inputs": [
+            "{projectRoot}/**/*",
+            "!{projectRoot}/**/*.md"
+        ],
+        "cache": true
+    },
+    "prepare": {
+        "dependsOn": [
+            "^prepare"
+        ],
+        "cache": true
+    },
+    "preview": {
+        "dependsOn": [
+            "^preview"
+        ]
+    },
+    "build:watch": {
+        "dependsOn": [
+            "^build:watch"
+        ]
+    },
+    "build": {
+        "outputs": [
+            "{projectRoot}//**/dist/*"
+        ],
+        "cache": true,
+        "dependsOn": []
+    },
+    "start": {
+        "dependsOn": []
+    },
+    "build-docs": {
+        "cache": true,
+        "dependsOn": []
+    },
+    "start-docs": {
+        "dependsOn": []
+    },
+    "test-unit": {
+        "cache": true,
+        "dependsOn": []
+    },
+    "test-unit-coverage": {
+        "cache": true,
+        "dependsOn": []
+    },
+    "test-e2e": {
+        "cache": true,
+        "dependsOn": []
+    },
+    "test-all": {
+        "cache": true,
+        "dependsOn": []
+    }
     },
     "affected": {
         "defaultBase": "main"
