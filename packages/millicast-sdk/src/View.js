@@ -444,6 +444,7 @@ export default class View extends BaseWebRTC {
    * @property {HTMLAudioElement} audioElement - the audio HTML audioElement
    * @property {EncryptionParameters} [audioEncryptionParams] - the audio encryption parameters
    * @property {String} [audioMid] - the audio media ID of RTCRtpTransceiver
+   * @property {Number} [mediaBufferMs] - average target latency in milliseconds
    */
 
   /**
@@ -468,6 +469,9 @@ export default class View extends BaseWebRTC {
       video: { codec: 'h264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
       audio: { codec: 'opus', encryption: 'clear' },
       onFetch: this.onRtcDrmFetch.bind(this)
+    }
+    if (options.mediaBufferMs) {
+      drmOptions.mediaBufferMs = options.mediaBufferMs
     }
     if (this.DRMProfile) {
       if (this.DRMProfile.playReadyUrl) {

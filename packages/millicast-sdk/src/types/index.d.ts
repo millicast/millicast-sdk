@@ -2,7 +2,7 @@ import * as js_logger from 'js-logger';
 import * as events from 'events';
 
 declare module '@millicast/sdk' {
-  
+
   export type LogLevel = {
     /**
      * - The numerical representation of the level.
@@ -62,25 +62,25 @@ declare module '@millicast/sdk' {
     /**
      *  Number of stats objects to be included in the diagnostics report.
      */
-    statsCount : number;
+    statsCount: number;
 
     /**
      *  Amount of history messages to be returned.
      */
-    historySize : number;
+    historySize: number;
 
     /**
      * Levels of history messages to be included. Defaults to Logger.TRACE
      * Possible values include 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'
      */
-    minLogLevel : string;
+    minLogLevel: string;
 
     /**
      * Format of the stats objects in the diagnostics report. Use Logger.JSON or Logger.CMCD.
      */
-    statsFormat : StatsFormat;
+    statsFormat: StatsFormat;
   }
-  
+
   export type DiagnosticsResponse = {
     /**
      * Represents the Millicast product in use. 
@@ -101,7 +101,7 @@ declare module '@millicast/sdk' {
     /**
      * The account Id for which the stream is being published/viewed
      */
-    accountId:string,
+    accountId: string,
     /**
      * The Millicast stream name being published/viewed
      */
@@ -109,7 +109,7 @@ declare module '@millicast/sdk' {
     /**
      * A session level identifier for the client instancce
      */
-    subscriberId:string,
+    subscriberId: string,
     /**
      * Connection status.
      */
@@ -121,11 +121,11 @@ declare module '@millicast/sdk' {
     /**
      * A collection of log events reocrded until the diagnose method  was called 
      */
-    history : Array<String>,
+    history: Array<String>,
     /**
      * represents a collection of the webRTC stats collected before the diagnose call. 
      */
-    stats : Array<Object>,
+    stats: Array<Object>,
 
     /**
      * Represents how long the stream has been connected for. If a stream disconnects and 
@@ -287,7 +287,7 @@ declare module '@millicast/sdk' {
      */
     VERSION: String;
     useDefaults(options?: js_logger.ILoggerOpts): void;
-	  createDefaultHandler(options?: any): js_logger.ILogHandler;
+    createDefaultHandler(options?: any): js_logger.ILogHandler;
     static get TRACE(): js_logger.ILogLevel;
     static get DEBUG(): js_logger.ILogLevel;
     static get INFO(): js_logger.ILogLevel;
@@ -427,11 +427,11 @@ declare module '@millicast/sdk' {
     /**
      * - Total delay in seconds currently experienced by the jitter buffer.
      */
-    jitterBufferDelay : number;
+    jitterBufferDelay: number;
     /**
      * - Total number of packets emitted from the jitter buffer.
      */
-    jitterBufferEmittedCount : number;
+    jitterBufferEmittedCount: number;
   };
 
   export type OutboundStats = {
@@ -483,49 +483,49 @@ declare module '@millicast/sdk' {
     /**
      *  - Total number of packets sent.
      */
-    totalPacketsSent : number;
+    totalPacketsSent: number;
     /**
      * - Change in the number of packets sent since the last report.
      */
-    packetsSentDelta : number;
+    packetsSentDelta: number;
     /**
      * - Rate at which packets are being sent, measured in packets per second.
      */
-    packetRate : number;
+    packetRate: number;
     /**
      * - The target bitrate for the encoder, in bits per second.
      */
-    targetBitrate : number;
+    targetBitrate: number;
     /**
      * - Total number of retransmitted packets sent.
      */
-    retransmittedPacketsSent: number; 
+    retransmittedPacketsSent: number;
     /**
      * - Change in the number of retransmitted packets sent since the last report.
      */
-    retransmittedPacketsSentDelta : number;
+    retransmittedPacketsSentDelta: number;
     /**
      *  - Total number of bytes that have been retransmitted.
      */
-    retransmittedBytesSent : number;
+    retransmittedBytesSent: number;
     /**
      *  - Change in the number of retransmitted bytes sent since the last report.
      */
-    retransmittedBytesSentDelta : number;
+    retransmittedBytesSentDelta: number;
     /**
      * - Total number of frames sent(applicable for video).
      */
-    framesSent : number;
+    framesSent: number;
     /**
      * Durations in seconds for which the quality of the media has been limited by the codec, categorized by the limitation reasons such as bandwidth, CPU, or other factors.
      * 
-     */  
+     */
 
-    qualityLimitationDurations : Object
+    qualityLimitationDurations: Object
   };
 
   class PeerConnectionStats extends events.EventEmitter {
-    constructor(peer: PeerConnection, config : PeerConnectionConfig);
+    constructor(peer: PeerConnection, config: PeerConnectionConfig);
     peer: PeerConnection;
     stats: ConnectionStats;
     emitInterval: NodeJS.Timer;
@@ -534,7 +534,7 @@ declare module '@millicast/sdk' {
      * Initialize the statistics monitoring of the RTCPeerConnection.
      * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.  
      */
-    init(statsIntervalMs : number): void;
+    init(statsIntervalMs: number): void;
     /**
      * Parse incoming RTCPeerConnection stats.
      * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
@@ -794,7 +794,7 @@ declare module '@millicast/sdk' {
      * @param {Number} [config.statsIntervalMs = 1000] - The default interval at which the SDK will return WebRTC stats to the consuming application.
      * @param {String} [mode = "Viewer"] - Type of connection that is trying to be created, either 'Viewer' or 'Publisher'.
      */
-    createRTCPeer(config?: PeerConnectionConfig, mode? : "Publisher" | "Viewer"): Promise<void>;
+    createRTCPeer(config?: PeerConnectionConfig, mode?: "Publisher" | "Viewer"): Promise<void>;
     /**
      * Get current RTC peer connection.
      * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
@@ -914,7 +914,7 @@ declare module '@millicast/sdk' {
      *   console.log('Stats from event: ', stats)
      * })
      */
-    initStats(options : PeerConnectionConfig): void;
+    initStats(options: PeerConnectionConfig): void;
     /**
      * Stops the monitoring of RTCPeerConnection statistics.
      * @example peerConnection.stopStats()
@@ -1262,7 +1262,7 @@ declare module '@millicast/sdk' {
     /**
      * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
      */
-    statsIntervalMs : number;
+    statsIntervalMs: number;
   }
 
   export type ViewProjectSourceMapping = {
@@ -1424,6 +1424,12 @@ declare module '@millicast/sdk' {
 
     /** The audio media ID of RTCRtpTransceiver */
     audioMid?: string;
+
+    /** The average target latency, it can be set to 0, 
+     * enabling zero-buffering mode (which is not recommended as it affects video playback smoothness). 
+     * The default value is 100 ms, except when PlayReady or Widevine L1 on Windows are used - those 
+     * require at least 600 ms buffer for SW-secure decryption/playback and 1200 ms for HW-secure one */
+    mediaBufferMs?: number;
   }
 
   /**
@@ -1540,7 +1546,7 @@ declare module '@millicast/sdk' {
     /**
      * Remove DRM configuration for a mediaId
      */
-    removeDRMConfiguration (mediaId: string) : void;
+    removeDRMConfiguration(mediaId: string): void;
 
     /**
      * Check if there are any DRM protected Track
@@ -1550,7 +1556,7 @@ declare module '@millicast/sdk' {
     /** Exchange the DRM configuration between two transceivers
      *  Make sure both of the transceivers have been used for DRM protected streams
      */
-    exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string): void;
+    exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string): void;
 
     replaceConnection(): Promise<void>;
     webRTCPeer?: PeerConnection;
