@@ -12,8 +12,6 @@
   "har": "retain-on-failure",
   "consoleLogValidation": true,
   "testdata": {
-    "username": "Admin",
-    "password": "admin123"
   },
   "apps": [
     {
