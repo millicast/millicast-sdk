@@ -9,6 +9,12 @@
     "strict": true,
     "skipLibCheck": false,
   },
-  "include": ["./src/**/*.ts"],
-  "exclude": ["./node_modules/**/*"]
+  "include": ["./src/**/*.ts", "e2e-tests/**/*.ts"],
+  "exclude": ["./node_modules/**/*"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS",
+      "esModuleInterop": true
+    }
+  }
 }

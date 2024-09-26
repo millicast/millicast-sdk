@@ -1,0 +1,100 @@
+{
+  "testConfig": {
+    "browserName": "chrome",
+    "headless": false,
+    "timeout": 90000,
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "appEnvironment": "",
+    "apps": [
+      {
+        "appName": "millicast-viewer-demo",
+        "appURL": "http://localhost:10002/",
+        "browserName": "chrome",
+        "skipConsoleErrors": [],
+        "testdata": {},
+        "runOn": "localhost",
+        "actorName": "",
+        "browserstack": {}
+      },
+      {
+        "appName": "millicast-publisher-demo",
+        "appURL": "http://localhost:10001/",
+        "browserName": "chrome",
+        "skipConsoleErrors": [],
+        "testdata": {},
+        "runOn": "localhost",
+        "actorName": "",
+        "browserstack": {}
+      }
+    ],
+    "video": "on",
+    "trace": "retain-on-failure",
+    "har": "retain-on-failure",
+    "screenshot": "only-on-failure",
+    "consoleLogValidation": true,
+    "multiContext": false,
+    "logLevel": "error",
+    "artifactsPath": "./packages/millicast-sdk/e2e-tests/test-reports/artifacts",
+    "reportPath": "./packages/millicast-sdk/e2e-tests/test-reports",
+    "reportFormatters": [
+      "json",
+      "html",
+      "junit",
+      "summary",
+      "progress"
+    ],
+    "reportFileName": "Orange_HRM_Report",
+    "selectorPath": "./packages/millicast-sdk/e2e-tests/locators",
+    "retry": 0,
+    "retainLogsForRetry": false,
+    "parallel": 1,
+    "verificationTimeout": 25000,
+    "testdata": {
+      "username": "Admin",
+      "password": "admin123"
+    },
+    "launchOptions": {
+      "chromium": {
+        "args": [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--use-fake-device-for-media-stream",
+          "--use-fake-ui-for-media-stream",
+          "--autoplay-policy=no-user-gesture-required"
+        ]
+      },
+      "chrome": {
+        "args": [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--use-fake-device-for-media-stream",
+          "--use-fake-ui-for-media-stream",
+          "--autoplay-policy=no-user-gesture-required",
+          "--disable-frame-rate-limit",
+          "--disable-gpu-vsync",
+          "--max-gum-fps='9999'"
+        ],
+        "channel": "chrome",
+        "headless": false
+      },
+      "edge": {
+        "args": [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--use-fake-device-for-media-stream",
+          "--use-fake-ui-for-media-stream",
+          "--autoplay-policy=no-user-gesture-required"
+        ]
+      },
+      "firefox": {
+        "firefoxUserPrefs": {
+          "media.navigator.streams.fake": true,
+          "media.navigator.permission.disabled": true
+        }
+      }
+    }
+  }
+}
