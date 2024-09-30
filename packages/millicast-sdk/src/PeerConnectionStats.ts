@@ -2,7 +2,7 @@ import EventEmitter from 'events'
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import { OnStats, WebRTCStats } from '@dolbyio/webrtc-stats'
-import { peerConfigType } from './types/PeerConnection.types'
+import { PeerConnectionConfig } from './types/PeerConnection.types'
 import { ConnectionStats } from './types/stats.types'
 
 const logger = Logger.get('PeerConnectionStats')
@@ -111,16 +111,11 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
           ...rest,
         })
       ),
-      outbounds: webRTCStats.output.audio.map(
-        ({
-          bitrate = 0,
-          ...rest
-        }) => ({
-          bitrateBitsPerSecond: bitrate * 8,
-          bitrate,
-          ...rest,
-        })
-      ),
+      outbounds: webRTCStats.output.audio.map(({ bitrate = 0, ...rest }) => ({
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
+        ...rest,
+      })),
     },
     video: {
       inbounds: webRTCStats.input.video.map(
@@ -137,16 +132,11 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
           ...rest,
         })
       ),
-      outbounds: webRTCStats.output.video.map(
-        ({
-          bitrate = 0,
-          ...rest
-        }) => ({
-          bitrateBitsPerSecond: bitrate * 8,
-          bitrate,
-          ...rest,
-        })
-      ),
+      outbounds: webRTCStats.output.video.map(({ bitrate = 0, ...rest }) => ({
+        bitrateBitsPerSecond: bitrate * 8,
+        bitrate,
+        ...rest,
+      })),
     },
     raw: webRTCStats.rawStats,
   }
@@ -157,8 +147,11 @@ export default class PeerConnectionStats extends EventEmitter {
   peer: RTCPeerConnection
   collection: WebRTCStats | null
   initialized: boolean
-  
-  constructor(peer: RTCPeerConnection, options: peerConfigType = { statsIntervalMs: 1000, autoInitStats: true }) {
+
+  constructor(
+    peer: RTCPeerConnection,
+    options: PeerConnectionConfig = { statsIntervalMs: 1000, autoInitStats: true }
+  ) {
     super()
     this.peer = peer
     this.collection = null

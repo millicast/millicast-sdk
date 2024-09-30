@@ -158,7 +158,7 @@ class SPSState {
       reader.readExpGolombUnsigned() // frame_crop_bottom_offset
     }
     // parse vui_parameters
-    let vui_parameters: VUIParameters
+    let vui_parameters: VUIParameters | undefined
     if (reader.readBits(1)) {
       // aspect_ratio_info
       if (reader.readBits(1)) {
@@ -276,7 +276,7 @@ class SPSState {
 
 const spsState = new SPSState()
 
-function findStartCodeIndex(frameBuffer, offset) {
+function findStartCodeIndex(frameBuffer: any, offset: any) {
   while (offset < frameBuffer.byteLength - 4) {
     if (
       frameBuffer[offset] === 0x00 &&
@@ -316,7 +316,7 @@ function removePreventionBytes(ebsp: Uint8Array) {
   return output
 }
 
-function getNalus(frameBuffer, codec) {
+function getNalus(frameBuffer: any, codec: any) {
   let offset = 0
   const headerSize = codec === 'H264' ? 1 : 2
   const nalus = []
@@ -344,7 +344,7 @@ function getNalus(frameBuffer, codec) {
   return nalus
 }
 
-function getSeiNalus(frameBuffer, codec) {
+function getSeiNalus(frameBuffer: any, codec: any) {
   let shouldSearchActiveSPS = true
   return getNalus(frameBuffer, codec).filter((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
@@ -412,7 +412,7 @@ function resolveUnregisteredMessageType(uuid: Uint8Array) {
   return UNREGISTERED_MESSAGE_TYPE.OTHER
 }
 
-function getSeiUserUnregisteredData(metadata, payloadContent: Uint8Array) {
+function getSeiUserUnregisteredData(metadata: any, payloadContent: Uint8Array) {
   let idx = 0
   metadata.uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
@@ -454,20 +454,20 @@ function convertSEITimestamp(data: Uint8Array) {
   return dateEncoded
 }
 
-function getSeiPicTimingTimecode(metadata, payloadContent: Uint8Array) {
+function getSeiPicTimingTimecode(metadata: any, payloadContent: Uint8Array) {
   if (!spsState.activeSPS) {
     console.warn('Cannot find the active SPS')
     return
   }
   const hrdParameters =
-    spsState.activeSPS.vui_parameters.nal_hrd_parameters ??
-    spsState.activeSPS.vui_parameters.vcl_hrd_parameters
+    spsState.activeSPS.vui_parameters?.nal_hrd_parameters ??
+    spsState.activeSPS.vui_parameters?.vcl_hrd_parameters
   const options = {
     cpb_dpb_delays_present_flag: hrdParameters ? 1 : 0,
     cpb_removal_delay_length_minus1: hrdParameters?.cpb_removal_delay_length_minus1 ?? 23,
     dpb_output_delay_length_minus1: hrdParameters?.dpb_output_delay_length_minus1 ?? 23,
     time_offset_length: hrdParameters ? hrdParameters.time_offset_length ?? 24 : undefined,
-    pic_struct_present_flag: spsState.activeSPS.vui_parameters.pic_struct_present_flag ?? 0,
+    pic_struct_present_flag: spsState.activeSPS.vui_parameters?.pic_struct_present_flag ?? 0,
   }
   if (!options.pic_struct_present_flag) {
     console.warn('pic_struct_present_flag is not present')
@@ -489,7 +489,7 @@ function getSeiPicTimingTimecode(metadata, payloadContent: Uint8Array) {
   for (let i = 0; i < numClockTS; i++) {
     const clock_timestamp_flag = reader.readBits(1)
     if (clock_timestamp_flag) {
-      const timecode = {}
+      const timecode: any = {}
       reader.skip(2) // ct_type
       reader.skip(1) // nuit_field_based_flag
       reader.skip(5) // counting_type
@@ -564,7 +564,7 @@ function getSeiPicTimingTimecode(metadata, payloadContent: Uint8Array) {
  * @param { 'H264' | 'H265' } codec
  * @returns { FrameMetaData }
  */
-export function extractH26xMetadata(encodedFrame: RTCEncodedVideoFrame, codec: string) {
+export function extractH26xMetadata(encodedFrame: RTCEncodedVideoFrame, codec: string): any {
   if (codec !== 'H264' && codec !== 'H265') {
     throw new Error(`Unsupported codec ${codec}`)
   }
@@ -589,19 +589,19 @@ export function extractH26xMetadata(encodedFrame: RTCEncodedVideoFrame, codec: s
   return metadata
 }
 
-function isValidUUID(uuid) {
+function isValidUUID(uuid: any) {
   const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
   return uuidRegEx.test(uuid)
 }
 
-function parseUUID(uuid) {
+function parseUUID(uuid: any) {
   return uuid
     .replace(/-/g, '')
     .match(/.{1,2}/g)
-    .map((byte) => parseInt(byte, 16))
+    .map((byte: any) => parseInt(byte, 16))
 }
 
-function createSEIMessageContent(uuid, payload, timecode) {
+function createSEIMessageContent(uuid: any, payload: any, timecode: any) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
   const timecodeArray = numberToByteArray(timecode)
   const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
@@ -613,7 +613,7 @@ function createSEIMessageContent(uuid, payload, timecode) {
   return content
 }
 
-function createSEITypeAndSize(content) {
+function createSEITypeAndSize(content: any) {
   const payloadSize = []
   const ffBytes = Math.floor(content.byteLength / 255)
   const lastPayloadTypeByte = content.byteLength % 255
@@ -625,7 +625,7 @@ function createSEITypeAndSize(content) {
   return new Uint8Array([0x05, ...payloadSize])
 }
 
-function createSEIMessageContentWithPrevensionBytes(content) {
+function createSEIMessageContentWithPrevensionBytes(content: any) {
   const preventionByteArray = []
 
   for (let i = 0; i < content.byteLength; i++) {
@@ -661,7 +661,7 @@ function numberToByteArray(num: number) {
   return new Uint8Array(array)
 }
 
-function createSEINalu({ uuid, payload, timecode }) {
+function createSEINalu({ uuid, payload, timecode }: any) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
   const content = createSEIMessageContent(uuid, payload, timecode)
@@ -679,7 +679,7 @@ function createSEINalu({ uuid, payload, timecode }) {
   return naluWithSEI
 }
 
-export function addH26xSEI({ uuid, payload, timecode }, encodedFrame: RTCEncodedVideoFrame) {
+export function addH26xSEI({ uuid, payload, timecode }: any, encodedFrame: RTCEncodedVideoFrame) {
   if (uuid === '' || payload === '') {
     throw new Error('uuid and payload cannot be empty')
   }

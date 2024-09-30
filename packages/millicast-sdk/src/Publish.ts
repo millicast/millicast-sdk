@@ -14,6 +14,7 @@ import { PublishConnectOptions } from './types/Publish.types'
 import { TokenGeneratorCallback } from './types/Director.types'
 import { DecodedJWT, ReconnectData } from './types/BaseWebRTC.types'
 import { SEIUserUnregisteredData } from './types/View.types'
+import { SignalingPublishOptions } from './types/Signaling.types'
 
 const logger = Logger.get('Publish')
 
@@ -54,10 +55,8 @@ export default class Publish extends BaseWebRTC {
   private streamName = ''
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
-  constructor(
-    tokenGenerator: TokenGeneratorCallback, 
-    autoReconnect = true
-  ) {
+  protected override options: PublishConnectOptions = connectOptions
+  constructor(tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
     super(tokenGenerator, logger, autoReconnect)
   }
 
@@ -141,8 +140,11 @@ export default class Publish extends BaseWebRTC {
       peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig },
       setSDPToPeer: false,
     }
-    this.options.metadata =
-      this.options.metadata && this.options.codec === VideoCodec.H264 && !this.options.disableVideo
+    if (this.options) {
+      this.options.metadata =
+        this.options.metadata && this.options.codec === VideoCodec.H264 && !this.options.disableVideo
+    }
+
     await this.initConnection({ migrate: false })
   }
 
@@ -204,9 +206,11 @@ export default class Publish extends BaseWebRTC {
     let publisherData
     try {
       publisherData = await this.tokenGenerator()
-      //  Set the iceServers from the publish data into the peerConfig
-      this.options.peerConfig.iceServers = publisherData?.iceServers
-      this.options.peerConfig.encodedInsertableStreams = this.options.metadata
+      if (this.options.peerConfig) {
+        //  Set the iceServers from the publish data into the peerConfig
+        this.options.peerConfig.iceServers = publisherData?.iceServers
+        this.options.peerConfig.encodedInsertableStreams = this.options.metadata
+      }
     } catch (error) {
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -250,7 +254,7 @@ export default class Publish extends BaseWebRTC {
       signalingEvents.broadcastEvent,
     ])
 
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.options)
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.options as SignalingPublishOptions)
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
@@ -286,14 +290,14 @@ export default class Publish extends BaseWebRTC {
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 
-    const publishPromise = this.signaling.publish(localSdp, this.options)
+    const publishPromise = this.signaling.publish(localSdp, this.options as SignalingPublishOptions)
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
       webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
     )
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
 
-    if (!this.options.disableVideo && this.options.bandwidth > 0) {
+    if (!this.options.disableVideo && this.options.bandwidth && this.options.bandwidth > 0) {
       remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }
 

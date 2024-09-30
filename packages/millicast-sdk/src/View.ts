@@ -87,6 +87,7 @@ export default class View extends BaseWebRTC {
   private subscriberToken: string | null = null
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
+  protected override options: ViewConnectOptions | null = null
   constructor(
     tokenGenerator: TokenGeneratorCallback,
     mediaElement: HTMLVideoElement | null = null,
@@ -234,7 +235,10 @@ export default class View extends BaseWebRTC {
       }
       const peer = this.webRTCPeer.getRTCPeer()
       // Check we have the mediaId in the transceivers
-      if (map.mediaId && !peer?.getTransceivers().find((t: RTCRtpTransceiver) => t.mid === map.mediaId?.toString())) {
+      if (
+        map.mediaId &&
+        !peer?.getTransceivers().find((t: RTCRtpTransceiver) => t.mid === map.mediaId?.toString())
+      ) {
         logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
         throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
       }
