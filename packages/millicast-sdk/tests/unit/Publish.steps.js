@@ -11,7 +11,7 @@ const feature = loadFeature('../features/Publish.feature', { loadRelativePath: t
 
 jest.mock('../../src/Signaling')
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn(),
@@ -87,7 +87,7 @@ defineFeature(feature, (test) => {
 
     when('I instance a Publish with token generator without connection path', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      publisher = new Publish( mockErrorTokenGenerator)
+      publisher = new Publish(mockErrorTokenGenerator)
       expectError = expect(() => publisher.connect({ mediaStream }))
     })
 

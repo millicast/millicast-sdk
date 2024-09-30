@@ -14,8 +14,8 @@ import {
   rtcDrmEnvironments,
   rtcDrmFeedFrame,
 } from './drm/rtc-drm-transform.js'
-import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
-import SdpParser from './utils/SdpParser.js'
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
+import SdpParser from './utils/SdpParser'
 import { TokenGeneratorCallback } from './types/Director.types'
 import {
   ViewConnectOptions,

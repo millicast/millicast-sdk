@@ -2,7 +2,7 @@ import PeerConnectionStats, { peerConnectionStatsEvents } from '../../src/PeerCo
 
 jest.mock('events')
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn(),

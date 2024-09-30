@@ -8,6 +8,6 @@ docs-translations
 puppeteerrc.cjs
 test-environment.js
 **/.DS_Store
-**/src/TransformWorker.worker.js
+**/src/TransformWorker.worker.ts
 vite.config.*.timestamp-*
 .nx/
