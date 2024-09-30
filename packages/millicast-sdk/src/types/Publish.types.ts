@@ -1,6 +1,6 @@
-import { VideoCodec } from "../utils/Codecs"
-import { PublishServerEvent } from "./BaseWebRTC.types"
-import { PeerConnectionConfig } from "./PeerConnection.types"
+import { VideoCodec } from '../utils/Codecs'
+import { PublishServerEvent } from './BaseWebRTC.types'
+import { PeerConnectionConfig } from './PeerConnection.types'
 
 export type PublishConnectOptions = {
   /**
@@ -27,7 +27,7 @@ export type PublishConnectOptions = {
    * - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    */
-  mediaStream: MediaStream | MediaStreamTrack[] | null
+  mediaStream: MediaStream | (MediaStreamTrack | null)[] | null
   /**
    * - Broadcast bandwidth. 0 for unlimited.
    */
@@ -51,7 +51,7 @@ export type PublishConnectOptions = {
   /**
    * - Codec for publish stream.
    */
-  codec?: VideoCodec
+  codec?: string
   /**
    * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
    */
@@ -81,4 +81,8 @@ export type PublishConnectOptions = {
    * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    */
   priority?: number
+  /**
+   * TODO
+   */
+  setSDPToPeer?: boolean
 }

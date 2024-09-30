@@ -1,6 +1,6 @@
-import { VideoCodec } from "../utils/Codecs"
-import { PublishServerEvent, ViewServerEvent } from "./BaseWebRTC.types"
-import { LayerInfo } from "./View.types"
+import { VideoCodec } from '../utils/Codecs'
+import { PublishServerEvent, ViewServerEvent } from './BaseWebRTC.types'
+import { LayerInfo } from './View.types'
 
 export type SignalingSubscribeOptions = {
   vad?: boolean
@@ -8,23 +8,23 @@ export type SignalingSubscribeOptions = {
   excludedSourceIds?: string[] | null
   events?: ViewServerEvent[]
   layer?: LayerInfo
-  forcePlayoutDelay?: {min: number, max: number}
+  forcePlayoutDelay?: { min: number; max: number }
   disableVideo?: boolean
   disableAudio?: boolean
 }
 
 export type SignalingPublishOptions = {
-  codec?: VideoCodec
+  codec?: string
   record?: boolean | null
   sourceId?: string | null
   events?: PublishServerEvent[]
-	intraOnlyForwarding?: boolean
-	priority?: number
-	simulcastId?: string
-	live?: boolean
-	vod?: boolean
-	norestream?: boolean
-	overrideBWE?: number
+  intraOnlyForwarding?: boolean
+  priority?: number
+  simulcastId?: string
+  live?: boolean
+  vod?: boolean
+  norestream?: boolean
+  overrideBWE?: number
   disableVideo?: boolean
   disableAudio?: boolean
 }
@@ -35,9 +35,9 @@ export type ViewCmd = SignalingSubscribeOptions & {
 
 export type ViewResponse = {
   sdp: string
-	subscriberId: string
-	clusterId: string
-	streamId: string
+  subscriberId: string
+  clusterId: string
+  streamId: string
   streamViewId: string
 }
 
@@ -46,10 +46,10 @@ export type PublishCmd = SignalingPublishOptions & {
 }
 
 export type PublishResponse = {
-  uuid: string;
-	feedId: string;
-	publisherId: string;
-	clusterId: string;
-	streamId: string;
-	sdp: string;
+  uuid: string
+  feedId: string
+  publisherId: string
+  clusterId: string
+  streamId: string
+  sdp: string
 }

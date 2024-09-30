@@ -18,7 +18,7 @@ export interface VUIParameters {
 }
 
 export interface SequenceParameterSet {
-  vui_parameters: VUIParameters
+  vui_parameters: VUIParameters | undefined
 }
 
 export interface PictureParameterSet {

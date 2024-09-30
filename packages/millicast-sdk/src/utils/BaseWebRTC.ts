@@ -4,7 +4,8 @@ import Signaling, { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
 import { TokenGeneratorCallback } from '../types/Director.types'
 import { ILogger } from 'js-logger'
-import { PublishConnectOptions, ReconnectData } from '../types/BaseWebRTC.types'
+import { ReconnectData } from '../types/BaseWebRTC.types'
+import { PublishConnectOptions } from '../types/Publish.types'
 import { ViewConnectOptions } from '../types/View.types'
 let logger: ILogger
 const maxReconnectionInterval = 32000

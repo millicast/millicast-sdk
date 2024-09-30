@@ -1,5 +1,6 @@
-import { Media, ViewServerEvent } from "./BaseWebRTC.types"
-import { PeerConnectionConfig } from "./PeerConnection.types"
+import { VideoCodec } from '../utils/Codecs'
+import { Media, ViewServerEvent } from './BaseWebRTC.types'
+import { PeerConnectionConfig } from './PeerConnection.types'
 
 export type ViewConnectOptions = {
   /**
@@ -57,8 +58,15 @@ export type ViewConnectOptions = {
   /**
    * - Ask the server to use the playout delay header extension.
    */
-  forcePlayoutDelay?: { min: number, max: number } | boolean
+  forcePlayoutDelay?: { min: number; max: number } | boolean
+  /**
+   * - Ask the server to use the playout delay header extension.
+   */
   vad?: boolean
+  /**
+   * - Codec for View stream.
+   */
+  codec?: string
 }
 
 export type ViewProjectSourceMapping = {

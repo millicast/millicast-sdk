@@ -4,15 +4,15 @@ const logger = Logger.get('TransformWorker')
 logger.setLevel(Logger.DEBUG)
 
 const DROPPED_SOURCE_TIMEOUT = 2000
-const metadata = []
+const metadata: any[] = []
 let codec = ''
-let payloadTypeCodec = {}
+let payloadTypeCodec: any = {}
 // When simulcast is enabled, each resolution (height and width) frame has a different syncronization source (ssrc).
 // This object keeps track of the last timestamp each ssrc frame came in, so if that resolution stoped from been sent, after a timeout, it will be not taken into account for sending metadata.
-const synchronizationSources = {}
-let synchronizationSourcesWithMetadata = []
+const synchronizationSources: any = {}
+let synchronizationSourcesWithMetadata: any[] = []
 
-function createReceiverTransform(mid) {
+function createReceiverTransform(mid: any) {
   return new TransformStream({
     start() {
       // This function is intentionally left empty
@@ -22,7 +22,7 @@ function createReceiverTransform(mid) {
     },
     async transform(encodedFrame, controller) {
       // eslint-disable-next-line no-undef
-      if (encodedFrame instanceof RTCEncodedVideoFrame) {
+      if ((encodedFrame instanceof RTCEncodedVideoFrame) as unknown) {
         const frameCodec =
           payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
         if (frameCodec === 'H264') {
@@ -50,7 +50,7 @@ function clearMetadata() {
   }
 }
 
-function refreshSynchronizationSources(newSyncSource) {
+function refreshSynchronizationSources(newSyncSource: any) {
   const now = new Date().getTime()
   synchronizationSources[newSyncSource] = now
 
@@ -58,7 +58,7 @@ function refreshSynchronizationSources(newSyncSource) {
     (source) => now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT
   )
 
-  sourcesToDelete.forEach((source) => {
+  sourcesToDelete.forEach((source: any) => {
     delete synchronizationSources[source]
     delete synchronizationSourcesWithMetadata[source]
   })
@@ -73,7 +73,7 @@ function createSenderTransform() {
     flush() {
       // This function is intentionally left empty
     },
-    async transform(encodedFrame, controller) {
+    async transform(encodedFrame: any, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
@@ -104,13 +104,13 @@ function createSenderTransform() {
   })
 }
 
-function setupPipe({ readable, writable }, transform) {
+function setupPipe({ readable, writable }: any, transform: any) {
   readable.pipeThrough(transform).pipeTo(writable)
 }
 
 // eslint-disable-next-line no-undef
-addEventListener('rtctransform', (event) => {
-  let transform
+addEventListener('rtctransform', (event: any) => {
+  let transform: any
   if (event.transformer.options.name === 'senderTransform') {
     codec = event.transformer.options.codec
     transform = createSenderTransform()

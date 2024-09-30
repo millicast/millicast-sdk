@@ -13,7 +13,7 @@ const feature = loadFeature('../features/LoggerDiagnose.feature', { loadRelative
 
 jest.mock('../../src/Signaling')
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn(),
