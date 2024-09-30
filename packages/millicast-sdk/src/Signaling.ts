@@ -241,8 +241,8 @@ export default class Signaling extends EventEmitter {
       if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
+      await this.connect()
       if (this.transactionManager) {
-        await this.connect()
         logger.info('Sending view command')
         const result = (await this.transactionManager.cmd('view', data)) as ViewResponse
 
@@ -337,8 +337,8 @@ export default class Signaling extends EventEmitter {
       if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
+      await this.connect()
       if (this.transactionManager) {
-        await this.connect()
         logger.info('Sending publish command')
         const result: any = await this.transactionManager.cmd('publish', data)
 
