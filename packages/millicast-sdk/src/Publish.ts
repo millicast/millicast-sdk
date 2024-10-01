@@ -266,14 +266,15 @@ export default class Publish extends BaseWebRTC {
 
       const senders = this.getRTCPeerConnection()?.getSenders()
 
-      senders?.forEach((sender) => {
+      senders?.forEach((sender: RTCRtpSender) => {
         if (supportsRTCRtpScriptTransform && this.worker) {
           sender.transform = new RTCRtpScriptTransform(this.worker, {
             name: 'senderTransform',
             codec: this.options.codec,
           })
         } else if (supportsInsertableStreams) {
-          const { readable, writable } = (sender as any).createEncodedStreams()
+          // @ts-expect-error supportsInserableStream checks if createEncodedStreams is defined
+          const { readable, writable } = sender.createEncodedStreams()
           this.worker?.postMessage(
             {
               action: 'insertable-streams-sender',
