@@ -1,4 +1,3 @@
-import { VideoCodec } from '../utils/Codecs'
 import { PublishServerEvent } from './BaseWebRTC.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 

@@ -402,7 +402,8 @@ export default class View extends BaseWebRTC {
             mid: trackEvent.transceiver?.mid,
           })
         } else if (supportsInsertableStreams) {
-          const { readable, writable } = (trackEvent.receiver as any).createEncodedStreams()
+          // @ts-expect-error supportsInserableStream checks if createEncodedStreams is defined
+          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
           this.worker?.postMessage(
             {
               action: 'insertable-streams-receiver',

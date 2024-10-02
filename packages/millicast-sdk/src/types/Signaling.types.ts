@@ -1,4 +1,3 @@
-import { VideoCodec } from '../utils/Codecs'
 import { PublishServerEvent, ViewServerEvent } from './BaseWebRTC.types'
 import { LayerInfo } from './View.types'
 

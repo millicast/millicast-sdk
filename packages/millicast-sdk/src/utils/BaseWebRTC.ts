@@ -169,17 +169,18 @@ export default class BaseWebRTC extends EventEmitter {
         this.firstReconnection = true
         this.isReconnecting = false
       }
-    } catch (error: any) {
+    } catch (error) {
       this.isReconnecting = false
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
       logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
-      setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
+      setTimeout(() => this.reconnect({ error: error as Error }), this.reconnectionInterval)
     }
   }
 
   async replaceConnection() {
     /* tslint:disable:no-empty */
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async connect(_options: unknown): Promise<void> {
     /* tslint:disable:no-empty */
   }

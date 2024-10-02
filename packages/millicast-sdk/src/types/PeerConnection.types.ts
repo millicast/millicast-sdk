@@ -1,5 +1,3 @@
-import { VideoCodec } from '../utils/Codecs'
-
 export interface PeerConnectionConfig extends RTCConfiguration {
   /**
    * - whether stats collection should be auto initialized. Defaults to `true`
