@@ -5,13 +5,7 @@ import SdpParser from './utils/SdpParser'
 import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
-import {
-  PublishCmd,
-  PublishResponse,
-  SignalingPublishOptions,
-  ViewCmd,
-  ViewResponse,
-} from './types/Signaling.types'
+import { PublishCmd, SignalingPublishOptions, ViewCmd, ViewResponse } from './types/Signaling.types'
 import { ICodecs } from './types/PeerConnection.types'
 import { ViewConnectOptions } from './types/View.types'
 
@@ -340,7 +334,12 @@ export default class Signaling extends EventEmitter {
       await this.connect()
       if (this.transactionManager) {
         logger.info('Sending publish command')
-        const result: any = await this.transactionManager.cmd('publish', data)
+        const result = (await this.transactionManager.cmd('publish', data)) as {
+          sdp: string
+          publisherId: string
+          clusterId: string
+          feedId: string
+        }
 
         if (optionsParsed.codec === VideoCodec.AV1) {
           // If browser supports AV1X, we change from AV1 to AV1X
