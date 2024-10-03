@@ -13,7 +13,8 @@ import {
   rtcDrmOnTrack,
   rtcDrmEnvironments,
   rtcDrmFeedFrame,
-} from './drm/rtc-drm-transform.js'
+  DrmConfig,
+} from './drm/rtc-drm-transform.min.js'
 import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import SdpParser from './utils/SdpParser'
 import { TokenGeneratorCallback } from './types/Director.types'
@@ -80,7 +81,7 @@ export default class View extends BaseWebRTC {
   // Follows the media id values of each transceiver's track from the 'track' events.
   private tracksMidValues: { [key: string]: MediaStreamTrack } = {}
   // mapping media ID of RTCRtcTransceiver to DRM Options
-  private drmOptionsMap: Map<string, any> | null = null
+  private drmOptionsMap: Map<string, DrmConfig> | null = null
   private streamName = ''
   private DRMProfile: DRMProfile | null = null
   private worker: Worker | null = null
@@ -376,22 +377,33 @@ export default class View extends BaseWebRTC {
       this.tracksMidValues[trackEvent.transceiver?.mid as string] = trackEvent.track
       if (this.isDRMOn) {
         const mediaId = trackEvent.transceiver.mid
-        const drmOptions = this.getDRMConfiguration(mediaId as string)
-        try {
-          rtcDrmOnTrack(trackEvent, drmOptions)
-        } catch (error) {
-          logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
-          this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
-        }
-        if (!this.worker) {
-          this.worker = new TransformWorker()
-        }
-        this.worker.addEventListener('message', (message) => {
-          if (message.data.event === 'complete') {
-            // feed the frame to DRM processing worker
-            rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+        if (mediaId) {
+          const drmOptions = this.getDRMConfiguration(mediaId)
+          if (drmOptions) {
+            try {
+              rtcDrmOnTrack(trackEvent, drmOptions)
+            } catch (error) {
+              logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
+              this.emit(
+                'error',
+                new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error)
+              )
+            }
+            if (!this.worker) {
+              this.worker = new TransformWorker()
+            }
+            this.worker.addEventListener('message', (message) => {
+              if (message.data.event === 'complete') {
+                // feed the frame to DRM processing worker
+                rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+              }
+            })
+          } else {
+            logger.warn('drmConfig not defined in track event')
           }
-        })
+        } else {
+          logger.warn('mediaId not defined in track event')
+        }
       }
       if (this.options?.metadata) {
         if (supportsRTCRtpScriptTransform && this.worker) {
@@ -467,13 +479,14 @@ export default class View extends BaseWebRTC {
   }
 
   getDRMConfiguration(mediaId: string) {
-    return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
+    return this.drmOptionsMap?.get(mediaId)
   }
 
-  async onRtcDrmFetch(url: string, opts: any) {
-    if (!opts.headers) {
-      opts.headers = new Headers()
-    }
+  async onRtcDrmFetch(url: string, opts: RequestInit) {
+    opts.headers = (opts.headers as Headers) || new Headers()
+    // if (!opts.headers) {
+    //   opts.headers = new Headers()
+    // }
     // our server doesn't support x-dt-custom-data
     if (opts.headers.get('x-dt-custom-data')) {
       opts.headers.delete('x-dt-custom-data')
@@ -515,11 +528,11 @@ export default class View extends BaseWebRTC {
       // map transceiver's mediaId to its DRM options
       this.drmOptionsMap = new Map()
     }
-    const drmOptions: any = {
+    const drmOptions: DrmConfig = {
       merchant: 'dolby',
       sessionId: '',
       // TODO: change to Product when backend is ready
-      environment: (rtcDrmEnvironments as any).Staging,
+      environment: rtcDrmEnvironments.Staging,
       customTransform: this.options?.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
@@ -552,9 +565,15 @@ export default class View extends BaseWebRTC {
       if (options.audioMid) {
         this.drmOptionsMap.set(options.audioMid, drmOptions)
       }
-      drmOptions.videoElement.addEventListener('rtcdrmerror', (event: any) => {
-        logger.error('DRM error: ', event.detail.message, 'in video element:', drmOptions.videoElement.id)
-        this.emit('error', new Error(event.detail.message))
+      drmOptions.videoElement.addEventListener('rtcdrmerror', (event: unknown) => {
+        const rtcDrmErrorEvent = event as { detail: { message: string } }
+        logger.error(
+          'DRM error: ',
+          rtcDrmErrorEvent.detail.message,
+          'in video element:',
+          drmOptions.videoElement.id
+        )
+        this.emit('error', new Error(rtcDrmErrorEvent.detail.message))
       })
     } catch (error) {
       logger.error('Failed to configure DRM with options:', options, 'error is:', error)
@@ -585,10 +604,10 @@ export default class View extends BaseWebRTC {
   exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string) {
     const targetDRMOptions = this.getDRMConfiguration(targetMediaId)
     const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId)
-    if (targetDRMOptions === null) {
+    if (targetDRMOptions === null || !sourceDRMOptions?.video) {
       throw new Error('No DRM configuration found for ' + targetMediaId)
     }
-    if (sourceDRMOptions === null) {
+    if (sourceDRMOptions === null || !targetDRMOptions?.video) {
       throw new Error('No DRM configuration found for ' + sourceMediaId)
     }
     swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')

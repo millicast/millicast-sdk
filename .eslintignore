@@ -10,4 +10,4 @@ packages/millicast-viewer-demo
 packages/millicast-chromecast-receiver
 packages/millicast-multiview-demo
 /**/src/*.worker.js
-/**/rtc-drm-transform.js
+/**/rtc-drm-transform.min.js
