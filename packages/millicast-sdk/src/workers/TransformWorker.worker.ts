@@ -3,8 +3,14 @@ import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../ut
 const logger = Logger.get('TransformWorker')
 logger.setLevel(Logger.DEBUG)
 
+export interface RawMetadata {
+  uuid: string
+  timecode?: number
+  payload: { [key: string]: any }
+}
+
 const DROPPED_SOURCE_TIMEOUT = 2000
-const metadata: any[] = []
+const metadata: RawMetadata[] = []
 let codec = ''
 let payloadTypeCodec: any = {}
 // When simulcast is enabled, each resolution (height and width) frame has a different syncronization source (ssrc).
@@ -73,7 +79,7 @@ function createSenderTransform() {
     flush() {
       // This function is intentionally left empty
     },
-    async transform(encodedFrame: any, controller) {
+    async transform(encodedFrame: RTCEncodedVideoFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
