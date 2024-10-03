@@ -1,4 +1,5 @@
 import { Media, ViewServerEvent } from './BaseWebRTC.types'
+import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
 export type ViewConnectOptions = {
@@ -65,7 +66,7 @@ export type ViewConnectOptions = {
   /**
    * - Codec for View stream.
    */
-  codec?: string
+  codec?: VideoCodec
 }
 
 export type ViewProjectSourceMapping = {

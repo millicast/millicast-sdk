@@ -1,4 +1,5 @@
 import { PublishServerEvent } from './BaseWebRTC.types'
+import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
 export type PublishConnectOptions = {
@@ -50,7 +51,7 @@ export type PublishConnectOptions = {
   /**
    * - Codec for publish stream.
    */
-  codec?: string
+  codec?: VideoCodec
   /**
    * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
    */

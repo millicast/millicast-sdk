@@ -5,7 +5,7 @@ import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { DOLBY_SDK_TIMESTAMP_UUID, VideoCodec } from './utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
 import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
@@ -15,6 +15,7 @@ import { TokenGeneratorCallback } from './types/Director.types'
 import { DecodedJWT, ReconnectData } from './types/BaseWebRTC.types'
 import { SEIUserUnregisteredData } from './types/View.types'
 import { SignalingPublishOptions } from './types/Signaling.types'
+import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('Publish')
 

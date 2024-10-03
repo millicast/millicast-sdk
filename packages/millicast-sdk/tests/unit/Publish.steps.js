@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import Publish from '../../src/Publish'
 import PeerConnection from '../../src/PeerConnection'
 import Signaling from '../../src/Signaling'
-import { VideoCodec } from '../../src/utils/Codecs'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
@@ -285,7 +284,7 @@ defineFeature(feature, (test) => {
     })
 
     when('I broadcast with unsupported codec', async () => {
-      expectedError = expect(() => publisher.connect({ mediaStream, record: true, codec: VideoCodec.H265 }))
+      expectedError = expect(() => publisher.connect({ mediaStream, record: true, codec: 'h265' }))
     })
 
     then('throws an error', async () => {
@@ -310,7 +309,7 @@ defineFeature(feature, (test) => {
     })
 
     when('I broadcast a stream with H265 codec', async () => {
-      await publisher.connect({ mediaStream, codec: VideoCodec.H265 })
+      await publisher.connect({ mediaStream, codec: 'h265' })
     })
 
     then('peer connection state is connected', async () => {
