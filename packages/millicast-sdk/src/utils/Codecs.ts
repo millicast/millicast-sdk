@@ -3,7 +3,8 @@
 import { PictureParameterSet, SequenceParameterSet, VUIParameters } from '../types/Codecs.types'
 import BitStreamReader from './BitStreamReader'
 import { VideoCodec } from '../types/Codecs.types'
-import { RawMetadata } from '../workers/TransformWorker.worker'
+import { SEIUserUnregisteredData } from '../types/View.types'
+import { TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 
 const NALUType = {
   SLICE_NON_IDR: 1,
@@ -598,7 +599,7 @@ function parseUUID(uuid: string): number[] {
   return bytes.map((byte: string) => parseInt(byte, 16))
 }
 
-function createSEIMessageContent(uuid: string, payload: { [key: string]: any }, timecode: number) {
+function createSEIMessageContent(uuid: string, payload: SEIUserUnregisteredData, timecode: number) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
   const timecodeArray = numberToByteArray(timecode)
   const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
@@ -658,7 +659,7 @@ function numberToByteArray(num: number) {
   return new Uint8Array(array)
 }
 
-function createSEINalu({ uuid, payload, timecode = Date.now() }: RawMetadata) {
+function createSEINalu({ uuid, payload, timecode = Date.now() }: TransformWorkerSeiMetadata) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
   const content = createSEIMessageContent(uuid, payload, timecode)
@@ -676,7 +677,10 @@ function createSEINalu({ uuid, payload, timecode = Date.now() }: RawMetadata) {
   return naluWithSEI
 }
 
-export function addH26xSEI({ uuid, payload, timecode }: RawMetadata, encodedFrame: RTCEncodedVideoFrame) {
+export function addH26xSEI(
+  { uuid, payload, timecode }: TransformWorkerSeiMetadata,
+  encodedFrame: RTCEncodedVideoFrame
+) {
   if (uuid === '' || !payload) {
     throw new Error('uuid and payload cannot be empty')
   }
