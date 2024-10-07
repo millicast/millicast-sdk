@@ -1,5 +1,5 @@
-import { VideoCodec } from '../utils/Codecs'
 import { Media, ViewServerEvent } from './BaseWebRTC.types'
+import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
 export type ViewConnectOptions = {
@@ -66,7 +66,7 @@ export type ViewConnectOptions = {
   /**
    * - Codec for View stream.
    */
-  codec?: string
+  codec?: VideoCodec
 }
 
 export type ViewProjectSourceMapping = {
@@ -132,6 +132,23 @@ export type DRMOptions = {
 
   /** The audio media ID of RTCRtpTransceiver */
   audioMid?: string
+
+  /** PlayReady License URL */
+  prLicenseUrl?: string
+
+  /** Widevine License URL */
+  wvLicenseUrl?: string
+
+  /** FairPlay License URL */
+  fpsLicenseUrl?: string
+
+  /** FairPlay Certificate URL */
+  fpsCertificateUrl?: string
+
+  merchant?: string
+  sessionId?: string
+  environment?: string
+  customTransform?: boolean
 }
 
 /**

@@ -1,9 +1,10 @@
 // Insertable streams for `MediaStreamTrack` is supported.
-export const supportsInsertableStreams =
+export const supportsInsertableStreams: boolean =
   window.RTCRtpSender &&
-  'createEncodedStreams' in RTCRtpSender.prototype &&
+  !!window.RTCRtpSender.prototype.createEncodedStreams &&
+  typeof window.RTCRtpSender.prototype.createEncodedStreams === 'function' &&
   window.RTCRtpReceiver &&
-  'createEncodedStreams' in RTCRtpReceiver.prototype
+  !!window.RTCRtpReceiver.prototype.createEncodedStreams
 
 // WebRTC RTP Script Transform is supported
 export const supportsRTCRtpScriptTransform = 'RTCRtpScriptTransform' in window

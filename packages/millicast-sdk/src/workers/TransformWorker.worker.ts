@@ -1,18 +1,20 @@
 import Logger from 'js-logger'
 import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
+import { VideoCodec } from '../types/Codecs.types'
+import { TransformEvent, TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 const logger = Logger.get('TransformWorker')
 logger.setLevel(Logger.DEBUG)
 
 const DROPPED_SOURCE_TIMEOUT = 2000
-const metadata: any[] = []
+const metadata: TransformWorkerSeiMetadata[] = []
 let codec = ''
-let payloadTypeCodec: any = {}
+let payloadTypeCodec: { [key: number]: string } = {}
 // When simulcast is enabled, each resolution (height and width) frame has a different syncronization source (ssrc).
 // This object keeps track of the last timestamp each ssrc frame came in, so if that resolution stoped from been sent, after a timeout, it will be not taken into account for sending metadata.
-const synchronizationSources: any = {}
-let synchronizationSourcesWithMetadata: any[] = []
+const synchronizationSources: { [key: string]: number } = {}
+let synchronizationSourcesWithMetadata: number[] = []
 
-function createReceiverTransform(mid: any) {
+function createReceiverTransform(mid: string) {
   return new TransformStream({
     start() {
       // This function is intentionally left empty
@@ -20,14 +22,18 @@ function createReceiverTransform(mid: any) {
     flush() {
       // This function is intentionally left empty
     },
-    async transform(encodedFrame, controller) {
+    async transform(encodedFrame: RTCEncodedVideoFrame, controller) {
       // eslint-disable-next-line no-undef
-      if ((encodedFrame instanceof RTCEncodedVideoFrame) as unknown) {
-        const frameCodec =
-          payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
+      if (encodedFrame instanceof RTCEncodedVideoFrame) {
+        const payloadType = encodedFrame.getMetadata().payloadType
+        const frameCodec = payloadType ? payloadTypeCodec[payloadType] : codec
         if (frameCodec === 'H264') {
-          const metadata = extractH26xMetadata(encodedFrame, frameCodec)
-          if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
+          const metadata = extractH26xMetadata(encodedFrame, frameCodec as VideoCodec)
+          if (
+            metadata.timecode ||
+            metadata.unregistered ||
+            (metadata.seiPicTimingTimeCodeArray && metadata.seiPicTimingTimeCodeArray?.length > 0)
+          ) {
             self.postMessage({ event: 'metadata', mid, metadata })
           }
         }
@@ -50,7 +56,7 @@ function clearMetadata() {
   }
 }
 
-function refreshSynchronizationSources(newSyncSource: any) {
+function refreshSynchronizationSources(newSyncSource: number) {
   const now = new Date().getTime()
   synchronizationSources[newSyncSource] = now
 
@@ -58,14 +64,14 @@ function refreshSynchronizationSources(newSyncSource: any) {
     (source) => now - synchronizationSources[source] > DROPPED_SOURCE_TIMEOUT
   )
 
-  sourcesToDelete.forEach((source: any) => {
+  sourcesToDelete.forEach((source: string) => {
     delete synchronizationSources[source]
-    delete synchronizationSourcesWithMetadata[source]
+    delete synchronizationSourcesWithMetadata[parseInt(source)]
   })
   clearMetadata()
 }
 
-function createSenderTransform() {
+function createSenderTransform(): TransformStream {
   return new TransformStream({
     start() {
       // This function is intentionally left empty
@@ -73,11 +79,11 @@ function createSenderTransform() {
     flush() {
       // This function is intentionally left empty
     },
-    async transform(encodedFrame: any, controller) {
+    async transform(encodedFrame: RTCEncodedVideoFrame, controller) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
-        const newSyncSource = frameMetadata.synchronizationSource
+        const newSyncSource = frameMetadata.synchronizationSource as number
 
         refreshSynchronizationSources(newSyncSource)
 
@@ -104,24 +110,28 @@ function createSenderTransform() {
   })
 }
 
-function setupPipe({ readable, writable }: any, transform: any) {
+function setupPipe(
+  { readable, writable }: { readable: ReadableStream; writable: WritableStream },
+  transform: TransformStream
+) {
   readable.pipeThrough(transform).pipeTo(writable)
 }
 
 // eslint-disable-next-line no-undef
-addEventListener('rtctransform', (event: any) => {
-  let transform: any
-  if (event.transformer.options.name === 'senderTransform') {
-    codec = event.transformer.options.codec
+addEventListener('rtctransform', (event: unknown) => {
+  const transformEvent = event as TransformEvent
+  let transform: TransformStream
+  if (transformEvent.transformer.options.name === 'senderTransform') {
+    codec = transformEvent.transformer.options.codec
     transform = createSenderTransform()
-  } else if (event.transformer.options.name === 'receiverTransform') {
-    payloadTypeCodec = event.transformer.options.payloadTypeCodec || {}
-    codec = event.transformer.options.codec || ''
-    transform = createReceiverTransform(event.transformer.options.mid)
+  } else if (transformEvent.transformer.options.name === 'receiverTransform') {
+    payloadTypeCodec = transformEvent.transformer.options.payloadTypeCodec || {}
+    codec = transformEvent.transformer.options.codec || ''
+    transform = createReceiverTransform(transformEvent.transformer.options.mid)
   } else {
     return
   }
-  setupPipe(event.transformer, transform)
+  setupPipe(transformEvent.transformer, transform)
 })
 
 addEventListener('message', (event) => {

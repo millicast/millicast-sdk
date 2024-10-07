@@ -2,18 +2,12 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
-import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
-import {
-  PublishCmd,
-  PublishResponse,
-  SignalingPublishOptions,
-  ViewCmd,
-  ViewResponse,
-} from './types/Signaling.types'
+import { PublishCmd, SignalingPublishOptions, ViewCmd, ViewResponse } from './types/Signaling.types'
 import { ICodecs } from './types/PeerConnection.types'
 import { ViewConnectOptions } from './types/View.types'
+import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('Signaling')
 
@@ -290,7 +284,7 @@ export default class Signaling extends EventEmitter {
       PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: ICodecs) => cdc.codec) ?? []
 
     const videoCodecs = Object.values(VideoCodec)
-    if (videoCodecs.indexOf(optionsParsed.codec as string) === -1) {
+    if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
       logger.error(`Invalid codec ${optionsParsed.codec}. Possible values are: `, videoCodecs)
       throw new Error(`Invalid codec ${optionsParsed.codec}. Possible values are: ${videoCodecs}`)
     }
@@ -340,7 +334,12 @@ export default class Signaling extends EventEmitter {
       await this.connect()
       if (this.transactionManager) {
         logger.info('Sending publish command')
-        const result: any = await this.transactionManager.cmd('publish', data)
+        const result = (await this.transactionManager.cmd('publish', data)) as {
+          sdp: string
+          publisherId: string
+          clusterId: string
+          feedId: string
+        }
 
         if (optionsParsed.codec === VideoCodec.AV1) {
           // If browser supports AV1X, we change from AV1 to AV1X
@@ -408,7 +407,7 @@ const getPublishOptions = (
   if (Object.keys(parsedOptions).length === 0) {
     const defaultCodec = VideoCodec.H264
     parsedOptions = {
-      codec: (options as string) ?? defaultCodec,
+      codec: (options as VideoCodec) ?? defaultCodec,
       record: legacyRecord,
       sourceId: legacySourceId,
     }

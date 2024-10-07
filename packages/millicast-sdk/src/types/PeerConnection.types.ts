@@ -1,4 +1,4 @@
-import { VideoCodec } from '../utils/Codecs'
+import { VideoCodec } from './Codecs.types'
 
 export interface PeerConnectionConfig extends RTCConfiguration {
   /**
@@ -20,7 +20,7 @@ export interface SdpOptions {
   stereo?: boolean
   dtx?: boolean
   mediaStream?: MediaStream | Array<MediaStreamTrack>
-  codec?: string
+  codec?: VideoCodec
   simulcast?: boolean
   scalabilityMode?: string | null
   absCaptureTime?: boolean
@@ -32,7 +32,7 @@ export interface SdpOptions {
 }
 
 export interface ICodecs {
-  codec?: string
+  codec?: VideoCodec
   mimeType: string
   scalabilityModes?: Array<string>
   channels?: number

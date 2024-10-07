@@ -20,7 +20,7 @@ jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   }))
 )
 
-jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
+jest.mock('../../src/drm/rtc-drm-transform.min.js', () => ({
   rtcDrmConfigure: jest.fn(),
   rtcDrmOnTrack: jest.fn(),
   rtcDrmEnvironments: jest.fn(),

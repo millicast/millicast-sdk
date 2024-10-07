@@ -2,35 +2,9 @@
 /* eslint-disable camelcase */
 import { PictureParameterSet, SequenceParameterSet, VUIParameters } from '../types/Codecs.types'
 import BitStreamReader from './BitStreamReader'
-/**
- * Enum of Millicast supported Video codecs
- * @readonly
- * @enum {String}
- * @property {String} VP8
- * @property {String} VP9
- * @property {String} H264
- * @property {String} AV1
- * @property {String} H265 - Only available in Safari
- */
-export const VideoCodec = {
-  VP8: 'vp8',
-  VP9: 'vp9',
-  H264: 'h264',
-  AV1: 'av1',
-  H265: 'h265',
-}
-
-/**
- * Enum of Millicast supported Audio codecs
- * @readonly
- * @enum {String}
- * @property {String} OPUS
- * @property {String} MULTIOPUS
- */
-export const AudioCodec = {
-  OPUS: 'opus',
-  MULTIOPUS: 'multiopus',
-}
+import { VideoCodec } from '../types/Codecs.types'
+import { SEIUserUnregisteredData } from '../types/View.types'
+import { TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 
 const NALUType = {
   SLICE_NON_IDR: 1,
@@ -64,12 +38,27 @@ export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 // When the SDK inserts its own timecode into the unregistered block, it uses this identifier
 export const DOLBY_SDK_TIMESTAMP_UUID = 'd40e38ea-d419-4c62-94ed-20ac37b4e4fa'
 
+export interface SeiMetadata {
+  seiPicTimingTimeCodeArray?: SeiPicTimingTimeCode[]
+  uuid?: Uint8Array
+  unregistered?: Uint8Array
+  timecode?: Uint8Array | number
+}
+
+interface SeiPicTimingTimeCode {
+  n_frames: number
+  seconds_value: number
+  minutes_value: number
+  hours_value: number
+  time_offset: number
+}
+
 class SPSState {
   private sps: Map<number, SequenceParameterSet>
   private pps: Map<number, PictureParameterSet>
-  codec: string
+  codec: VideoCodec
   activeSPS: SequenceParameterSet | null
-  constructor(codec = 'H264') {
+  constructor(codec = VideoCodec.H264) {
     this.sps = new Map()
     this.pps = new Map()
     this.activeSPS = null
@@ -77,7 +66,7 @@ class SPSState {
   }
 
   collectPPS(rbsp: Uint8Array) {
-    if (this.codec === 'H264') {
+    if (this.codec === VideoCodec.H264) {
       this.collectH264PPS(rbsp)
     } else {
       this.collectH265PPS(rbsp)
@@ -85,7 +74,7 @@ class SPSState {
   }
 
   collectSPS(rbsp: Uint8Array) {
-    if (this.codec === 'H264') {
+    if (this.codec === VideoCodec.H264) {
       this.collectH264SPS(rbsp)
     } else {
       this.collectH265SPS(rbsp)
@@ -276,7 +265,7 @@ class SPSState {
 
 const spsState = new SPSState()
 
-function findStartCodeIndex(frameBuffer: any, offset: any) {
+function findStartCodeIndex(frameBuffer: Uint8Array, offset: number) {
   while (offset < frameBuffer.byteLength - 4) {
     if (
       frameBuffer[offset] === 0x00 &&
@@ -316,9 +305,9 @@ function removePreventionBytes(ebsp: Uint8Array) {
   return output
 }
 
-function getNalus(frameBuffer: any, codec: any) {
+function getNalus(frameBuffer: Uint8Array, codec: VideoCodec) {
   let offset = 0
-  const headerSize = codec === 'H264' ? 1 : 2
+  const headerSize = codec === VideoCodec.H264 ? 1 : 2
   const nalus = []
   while (offset < frameBuffer.byteLength - 4) {
     const startCodeIndex = findStartCodeIndex(frameBuffer, offset)
@@ -344,13 +333,13 @@ function getNalus(frameBuffer: any, codec: any) {
   return nalus
 }
 
-function getSeiNalus(frameBuffer: any, codec: any) {
+function getSeiNalus(frameBuffer: Uint8Array, codec: VideoCodec) {
   let shouldSearchActiveSPS = true
   return getNalus(frameBuffer, codec).filter((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-    const headerLength = codec === 'H264' ? 1 : 2
+    const headerLength = codec === VideoCodec.H264 ? 1 : 2
     const header = nalu[startCodeLength]
-    const naluType = codec === 'H264' ? header & 0x1f : (header >> 1) & 0x3f
+    const naluType = codec === VideoCodec.H264 ? header & 0x1f : (header >> 1) & 0x3f
     if (shouldSearchActiveSPS) {
       switch (naluType) {
         case NALUType.PPS_H264:
@@ -412,7 +401,7 @@ function resolveUnregisteredMessageType(uuid: Uint8Array) {
   return UNREGISTERED_MESSAGE_TYPE.OTHER
 }
 
-function getSeiUserUnregisteredData(metadata: any, payloadContent: Uint8Array) {
+function getSeiUserUnregisteredData(metadata: SeiMetadata, payloadContent: Uint8Array) {
   let idx = 0
   metadata.uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
@@ -454,7 +443,7 @@ function convertSEITimestamp(data: Uint8Array) {
   return dateEncoded
 }
 
-function getSeiPicTimingTimecode(metadata: any, payloadContent: Uint8Array) {
+function getSeiPicTimingTimecode(metadata: SeiMetadata, payloadContent: Uint8Array) {
   if (!spsState.activeSPS) {
     console.warn('Cannot find the active SPS')
     return
@@ -485,11 +474,17 @@ function getSeiPicTimingTimecode(metadata: any, payloadContent: Uint8Array) {
     throw new Error('Invalid pic_struct')
   }
   const numClockTS = picStructNumClockTS[pic_struct]
-  const timecodes = []
+  const timecodes: SeiPicTimingTimeCode[] = []
   for (let i = 0; i < numClockTS; i++) {
     const clock_timestamp_flag = reader.readBits(1)
     if (clock_timestamp_flag) {
-      const timecode: any = {}
+      const timecode: SeiPicTimingTimeCode = {
+        n_frames: 0,
+        seconds_value: 0,
+        minutes_value: 0,
+        hours_value: 0,
+        time_offset: 0,
+      }
       reader.skip(2) // ct_type
       reader.skip(1) // nuit_field_based_flag
       reader.skip(5) // counting_type
@@ -564,15 +559,15 @@ function getSeiPicTimingTimecode(metadata: any, payloadContent: Uint8Array) {
  * @param { 'H264' | 'H265' } codec
  * @returns { FrameMetaData }
  */
-export function extractH26xMetadata(encodedFrame: RTCEncodedVideoFrame, codec: string): any {
-  if (codec !== 'H264' && codec !== 'H265') {
+export function extractH26xMetadata(encodedFrame: RTCEncodedVideoFrame, codec: VideoCodec) {
+  if (codec !== VideoCodec.H264 && codec !== VideoCodec.H265) {
     throw new Error(`Unsupported codec ${codec}`)
   }
-  const metadata = {}
-  spsState.codec = codec
+  const metadata: SeiMetadata = { seiPicTimingTimeCodeArray: [] }
+  spsState.codec = codec as VideoCodec
   getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-    const headerLength = codec === 'H264' ? 1 : 2
+    const headerLength = codec === VideoCodec.H264 ? 1 : 2
     const rbsp = removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
     const payload = extractSEIPayload(rbsp)
     switch (payload.type) {
@@ -589,19 +584,22 @@ export function extractH26xMetadata(encodedFrame: RTCEncodedVideoFrame, codec: s
   return metadata
 }
 
-function isValidUUID(uuid: any) {
+function isValidUUID(uuid: string) {
   const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
   return uuidRegEx.test(uuid)
 }
 
-function parseUUID(uuid: any) {
-  return uuid
-    .replace(/-/g, '')
-    .match(/.{1,2}/g)
-    .map((byte: any) => parseInt(byte, 16))
+function parseUUID(uuid: string): number[] {
+  const bytes = uuid.replace(/-/g, '').match(/.{1,2}/g)
+
+  if (!bytes) {
+    throw new Error('Invalid UUID format')
+  }
+
+  return bytes.map((byte: string) => parseInt(byte, 16))
 }
 
-function createSEIMessageContent(uuid: any, payload: any, timecode: any) {
+function createSEIMessageContent(uuid: string, payload: SEIUserUnregisteredData, timecode: number) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
   const timecodeArray = numberToByteArray(timecode)
   const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
@@ -613,7 +611,7 @@ function createSEIMessageContent(uuid: any, payload: any, timecode: any) {
   return content
 }
 
-function createSEITypeAndSize(content: any) {
+function createSEITypeAndSize(content: Uint8Array) {
   const payloadSize = []
   const ffBytes = Math.floor(content.byteLength / 255)
   const lastPayloadTypeByte = content.byteLength % 255
@@ -625,7 +623,7 @@ function createSEITypeAndSize(content: any) {
   return new Uint8Array([0x05, ...payloadSize])
 }
 
-function createSEIMessageContentWithPrevensionBytes(content: any) {
+function createSEIMessageContentWithPrevensionBytes(content: Uint8Array) {
   const preventionByteArray = []
 
   for (let i = 0; i < content.byteLength; i++) {
@@ -661,7 +659,7 @@ function numberToByteArray(num: number) {
   return new Uint8Array(array)
 }
 
-function createSEINalu({ uuid, payload, timecode }: any) {
+function createSEINalu({ uuid, payload, timecode = Date.now() }: TransformWorkerSeiMetadata) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
   const content = createSEIMessageContent(uuid, payload, timecode)
@@ -679,15 +677,18 @@ function createSEINalu({ uuid, payload, timecode }: any) {
   return naluWithSEI
 }
 
-export function addH26xSEI({ uuid, payload, timecode }: any, encodedFrame: RTCEncodedVideoFrame) {
-  if (uuid === '' || payload === '') {
+export function addH26xSEI(
+  { uuid, payload, timecode }: TransformWorkerSeiMetadata,
+  encodedFrame: RTCEncodedVideoFrame
+) {
+  if (uuid === '' || !payload) {
     throw new Error('uuid and payload cannot be empty')
   }
-  if (!isValidUUID(uuid)) {
+  if (uuid && typeof uuid === 'string' && !isValidUUID(uuid)) {
     console.warn('Invalid UUID. Using default UUID.')
     uuid = DOLBY_SDK_TIMESTAMP_UUID
-    timecode = Date.now()
   }
+
   // Case of NALU H264 - User Unregistered Data
   const naluWithSEI = createSEINalu({ uuid, payload, timecode })
 

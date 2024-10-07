@@ -4,8 +4,8 @@ import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnection
 import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
-import { VideoCodec, AudioCodec } from './utils/Codecs'
 import { SdpOptions, MillicastCapability, ICodecs, PeerConnectionConfig } from './types/PeerConnection.types'
+import { AudioCodec, VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('PeerConnection')
 
