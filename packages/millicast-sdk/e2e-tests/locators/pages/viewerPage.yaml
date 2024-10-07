@@ -1,0 +1,6 @@
+# COMPONENTS:
+# - "side-bar"
+# - "pim-header-menu"
+on load validation: "logo:displayed"
+
+logo: '//*[@id="coLogo"]'

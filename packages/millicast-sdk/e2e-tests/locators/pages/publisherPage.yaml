@@ -1,0 +1,7 @@
+# COMPONENTS:
+# - "side-bar"
+# - "pim-header-menu"
+on load validation: "publish button:displayed|enabled"
+
+publish button: '//*[@id="publishBtn"]'
+ready badge: '//*[@id="readyBadge"]'
