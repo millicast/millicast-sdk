@@ -484,9 +484,9 @@ export default class View extends BaseWebRTC {
 
   async onRtcDrmFetch(url: string, opts: RequestInit) {
     opts.headers = (opts.headers as Headers) || new Headers()
-    // if (!opts.headers) {
-    //   opts.headers = new Headers()
-    // }
+    if (!opts.headers) {
+      opts.headers = new Headers()
+    }
     // our server doesn't support x-dt-custom-data
     if (opts.headers.get('x-dt-custom-data')) {
       opts.headers.delete('x-dt-custom-data')

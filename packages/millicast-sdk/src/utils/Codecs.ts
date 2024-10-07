@@ -39,7 +39,7 @@ export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 export const DOLBY_SDK_TIMESTAMP_UUID = 'd40e38ea-d419-4c62-94ed-20ac37b4e4fa'
 
 export interface SeiMetadata {
-  seiPicTimingTimeCodeArray: SeiPicTimingTimeCode[]
+  seiPicTimingTimeCodeArray?: SeiPicTimingTimeCode[]
   uuid?: Uint8Array
   unregistered?: Uint8Array
   timecode?: Uint8Array | number

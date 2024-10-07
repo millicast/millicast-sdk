@@ -29,7 +29,11 @@ function createReceiverTransform(mid: string) {
         const frameCodec = payloadType ? payloadTypeCodec[payloadType] : codec
         if (frameCodec === 'H264') {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec as VideoCodec)
-          if (metadata.timecode || metadata.unregistered || metadata.seiPicTimingTimeCodeArray?.length > 0) {
+          if (
+            metadata.timecode ||
+            metadata.unregistered ||
+            (metadata.seiPicTimingTimeCodeArray && metadata.seiPicTimingTimeCodeArray?.length > 0)
+          ) {
             self.postMessage({ event: 'metadata', mid, metadata })
           }
         }
