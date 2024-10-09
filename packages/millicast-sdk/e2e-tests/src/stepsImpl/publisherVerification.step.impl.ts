@@ -1,23 +1,29 @@
-// import assert from "assert";
-import { ScenarioWorld , runStep } from "cucumber-playwright-framework";
+import { ScenarioWorld } from "cucumber-playwright-framework";
+import { verifyDiagnoseConnected } from "./utils"
 import { expect } from '@playwright/test';
 
-export async function verifyPubIsActive(
+
+export async function verifyPublisherIsActive(
   scenarioWorld: ScenarioWorld,
 ) {
   const page = scenarioWorld.page;
   const result = await page.evaluate("window.millicastPublish.isActive()");
+  console.log('verifyPubIsActive() = '+result);
   return result
 };
 
-export function verifyPubState(
+export function verifyPublisherState(
   scenarioWorld: ScenarioWorld,
 ) {
   expect.poll( () => {
-    const result = verifyPubIsActive(scenarioWorld);
-    return result;
+  return verifyPublisherIsActive(scenarioWorld);
   }, {
-    // Poll for 10 seconds; defaults to 5 seconds. Pass 0 to disable timeout.
-    timeout: 10000,
+  timeout: 5000,
   }).toBe(true);
+  
+  expect.poll( () => {
+  return verifyDiagnoseConnected(scenarioWorld);
+  }, {
+    timeout: 5000
+  }).toBe('connected');
 }

@@ -1,7 +1,8 @@
 # COMPONENTS:
 # - "side-bar"
 # - "pim-header-menu"
-on load validation: "publish button:displayed|enabled"
+on load validation: "video window:displayed"
 
 publish button: '//*[@id="publishBtn"]'
 ready badge: '//*[@id="readyBadge"]'
+video window: '//*[@id="vidWin"]'

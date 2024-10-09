@@ -1,12 +1,12 @@
 import { Then} from "@cucumber/cucumber";
 import { ScenarioWorld } from "cucumber-playwright-framework";
 import {
-  verifyViewerState,
-} from "../stepsImpl/viewerVerification.step.impl";
+  viewerConnect,
+} from "../stepsImpl/viewerConnect.step.impl";
 
 Then(
-    "viewer1 verify if connected",
+    "the viewer1 connects to stream",
     function (this: ScenarioWorld) {
-      verifyViewerState(this);
+      viewerConnect(this);
     }
   );

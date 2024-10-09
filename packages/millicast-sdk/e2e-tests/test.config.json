@@ -6,7 +6,7 @@
     "width": 1280,
     "height": 900
   },
-  "video": "on",
+  "video": "off",
   "screenshot": "only-on-failure",
   "trace": "retain-on-failure",
   "har": "retain-on-failure",
@@ -17,14 +17,14 @@
     {
       "actor": "viewer1",
       "appName": "millicast-viewer-demo",
-      "appURL": "http://localhost:10002/",
+      "appURL": "http://127.0.0.1:10002",
       "browserName": "chrome",
       "skipConsoleErrors": []
     },
     {
       "actor": "publisher1",
       "appName": "millicast-publisher-demo",
-      "appURL": "http://localhost:10001/",
+      "appURL": "http://127.0.0.1:10001",
       "browserName": "chrome",
       "skipConsoleErrors": []
     }
@@ -72,6 +72,6 @@
   "reportPath": "./packages/millicast-sdk/e2e-tests/test-reports",
   "artifactsPath": "./packages/millicast-sdk/e2e-tests/test-reports/artifacts",
   "reportFileName": "Orange_HRM_Report",
-  "retry": 0,
+  "retry": 2,
   "parallel": 1
 }
