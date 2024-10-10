@@ -19,10 +19,7 @@
     }
   },
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
@@ -33,51 +30,31 @@
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"
     ],
-    "sharedGlobals": [
-      "{workspaceRoot}/.github/workflows/ci.yml"
-    ]
+    "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
   "targetDefaults": {
     "@nx/vite:build": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     },
     "test": {
-      "dependsOn": [
-        "^test"
-      ],
-      "inputs": [
-        "{projectRoot}/**/*",
-        "!{projectRoot}/**/*.md"
-      ],
+      "dependsOn": ["^test"],
+      "inputs": ["{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
       "cache": true
     },
     "prepare": {
-      "dependsOn": [
-        "^prepare"
-      ],
+      "dependsOn": ["^prepare"],
       "cache": true
     },
     "preview": {
-      "dependsOn": [
-        "^preview"
-      ]
+      "dependsOn": ["^preview"]
     },
     "build:watch": {
-      "dependsOn": [
-        "^build:watch"
-      ]
+      "dependsOn": ["^build:watch"]
     },
     "build": {
-      "outputs": [
-        "{projectRoot}//**/dist/*"
-      ],
+      "outputs": ["{projectRoot}//**/dist/*"],
       "cache": true,
       "dependsOn": []
     },
