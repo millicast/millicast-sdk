@@ -7,11 +7,11 @@ export async function verifyViewerIsActive(
 ) {
   const page = scenarioWorld.page;
   const result = await page.evaluate("window.millicastView.isActive()");
-  console.log('verifyViewerIsActive() = '+result);
+  console.log('ViewerIsActive() = '+result);
   return result
 };
 
-export function verifyViewerState(
+export function verifyViewerIsLive(
   scenarioWorld: ScenarioWorld,
 ) {
   expect.poll( () => {
@@ -25,4 +25,20 @@ export function verifyViewerState(
     }, {
       timeout: 5000
     }).toBe('connected');
+}
+
+export function verifyViewerIsNotLive(
+  scenarioWorld: ScenarioWorld,
+) {
+  expect.poll( () => {
+  return verifyViewerIsActive(scenarioWorld);
+  }, {
+    timeout: 5000,
+  }).toBe(false);
+
+  expect.poll( () => {
+    return verifyDiagnoseConnected(scenarioWorld);
+    }, {
+      timeout: 5000
+    }).toBe('closed');
 }

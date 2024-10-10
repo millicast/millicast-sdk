@@ -8,11 +8,11 @@ export async function verifyPublisherIsActive(
 ) {
   const page = scenarioWorld.page;
   const result = await page.evaluate("window.millicastPublish.isActive()");
-  console.log('verifyPubIsActive() = '+result);
+  console.log('PublisherIsActive() = '+result);
   return result
 };
 
-export function verifyPublisherState(
+export function verifyPublisherIsLive(
   scenarioWorld: ScenarioWorld,
 ) {
   expect.poll( () => {
@@ -26,4 +26,20 @@ export function verifyPublisherState(
   }, {
     timeout: 5000
   }).toBe('connected');
+}
+
+export function verifyPublisherIsNotLive(
+  scenarioWorld: ScenarioWorld,
+) {
+  expect.poll( () => {
+  return verifyPublisherIsActive(scenarioWorld);
+  }, {
+  timeout: 5000,
+  }).toBe(false);
+  
+  expect.poll( () => {
+  return verifyDiagnoseConnected(scenarioWorld);
+  }, {
+    timeout: 5000
+  }).toBe('closed');
 }

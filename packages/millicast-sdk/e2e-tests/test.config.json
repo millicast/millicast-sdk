@@ -71,7 +71,7 @@
   "logLevel": "error",
   "reportPath": "./packages/millicast-sdk/e2e-tests/test-reports",
   "artifactsPath": "./packages/millicast-sdk/e2e-tests/test-reports/artifacts",
-  "reportFileName": "Orange_HRM_Report",
+  "reportFileName": "Playwright_e2e_tests_Report",
   "retry": 2,
   "parallel": 1
 }
