@@ -28,11 +28,19 @@ let apiEndpoint = defaultApiEndpoint
  */
 
 /**
+ * @typedef {Object} DRMObject
+ * @property {String} fairPlayCertUrl - URL of the FairPlay certificate server.
+ * @property {String} fairPlayUrl - URL of the FairPlay license server.
+ * @property {String} widevineUrl - URL of the Widevine license server.
+ */
+
+/**
  * @typedef {Object} MillicastDirectorResponse
  * @global
  * @property {Array<String>} urls - WebSocket available URLs.
  * @property {String} jwt - Access token for signaling initialization.
  * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
+ * @property {DRMObject} [drmObject] - DRM proxy server information.
  */
 
 /**
@@ -189,8 +197,7 @@ const Director = {
   getSubscriber: async (
     options: DirectorSubscriberOptions,
     streamAccountId: string | null = null,
-    subscriberToken: string | null = null,
-    isDRMEnabled = false
+    subscriberToken: string | null = null
   ): Promise<MillicastDirectorResponse> => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
@@ -201,7 +208,6 @@ const Director = {
     const payload = {
       streamAccountId: optionsParsed.streamAccountId,
       streamName: optionsParsed.streamName,
-      isDrm: isDRMEnabled,
     }
     let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
@@ -217,7 +223,7 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
-      if (subscriberToken) data.data.subscriberToken = subscriberToken
+      if (optionsParsed.subscriberToken) data.data.subscriberToken = optionsParsed.subscriberToken
       return data.data
     } catch (e) {
       logger.error('Error while getting subscriber connection path. ', e)

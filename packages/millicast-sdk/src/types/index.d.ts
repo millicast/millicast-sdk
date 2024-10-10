@@ -115,13 +115,13 @@
 //      */
 //     connection: string
 //     /**
-//      *
+//      * Id of the stream
 //      */
-//     streamViewId
+//     streamViewId: string
 //     /**
 //      * A collection of log events reocrded until the diagnose method  was called
 //      */
-//     history: Array<string>
+//     history: Array<String>
 //     /**
 //      * represents a collection of the webRTC stats collected before the diagnose call.
 //      */
@@ -899,7 +899,7 @@
 //      * import Publish from '@millicast/sdk'
 //      *
 //      * //Initialize and connect your Publisher
-//      * const millicastPublish = new Publish(tokenGenerator)
+//      * const millicastPublish = new Publish(streamName, tokenGenerator)
 //      * await millicastPublish.connect(options)
 //      *
 //      * //Initialize get stats
@@ -913,7 +913,7 @@
 //      * import View from '@millicast/sdk'
 //      *
 //      * //Initialize and connect your Viewer
-//      * const millicastView = new View(tokenGenerator)
+//      * const millicastView = new View(streamName, tokenGenerator)
 //      * await millicastView.connect()
 //      *
 //      * //Initialize get stats
@@ -1000,7 +1000,7 @@
 //      * const tokenGenerator = () => Director.getPublisher({token, streamName})
 //      *
 //      * //Create a new instance
-//      * const millicastPublish = new Publish(tokenGenerator)
+//      * const millicastPublish = new Publish(streamName, tokenGenerator)
 //      *
 //      * //Get MediaStream
 //      * const mediaStream = getYourMediaStreamImplementation()
@@ -1034,7 +1034,7 @@
 //      * const tokenGenerator = () => Director.getSubscriber({streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'})
 //      *
 //      * //Create a new instance
-//      * const millicastView = new View(tokenGenerator)
+//      * const millicastView = new View(streamName, tokenGenerator)
 //      *
 //      * //Set track event handler to receive streams from Publisher.
 //      * millicastView.on('track', (event) => {
@@ -1051,10 +1051,35 @@
 //     static getSubscriber(
 //       options: DirectorSubscriberOptions | string,
 //       streamAccountId?: string,
-//       subscriberToken?: string,
-//       isDRMEnabled?: boolean
+//       subscriberToken?: string
 //     ): Promise<MillicastDirectorResponse>
 //   }
+
+//   /**
+//    * DRM options in Director API response
+//    */
+//   export type DRMObject = {
+//     /**
+//      * PlayReady license server URL.
+//      */
+//     playReadyUrl?: string
+
+//     /**
+//      * widevine license server URL.
+//      */
+//     widevineUrl?: string
+
+//     /**
+//      * fairPlay license server URL.
+//      */
+//     fairPlayUrl?: string
+
+//     /**
+//      * fairPlay certificate server URL.
+//      */
+//     fairPlayCertUrl?: string
+//   }
+
 //   export type MillicastDirectorResponse = {
 //     /**
 //      * - WebSocket available URLs.
@@ -1068,7 +1093,13 @@
 //      * - Object which represents a list of Ice servers.
 //      */
 //     iceServers: Array<RTCIceServer>
+
+//     /**
+//      * DRM options
+//      */
+//     drmObject?: DRMObject
 //   }
+
 //   export type DirectorPublisherOptions = {
 //     /**
 //      * - Millicast Publishing Token.
@@ -1280,23 +1311,7 @@
 //     layer?: LayerInfo
 //   }
 
-//   /**
-//    * DRM profile from director API which includes the URLs of license servers
-//    */
-//   export interface DRMProfile {
-//     playReadyUrl?: string
-//     widevineUrl?: string
-//     fairPlayUrl?: string
-//   }
-
-//   export type DirectorResponse = {
-//     urls: string[]
-//     jwt: string
-//     iceServers: RTCIceServer[]
-//     drmObject?: DRMProfile
-//   }
-
-//   export type TokenGeneratorCallback = () => Promise<DirectorResponse>
+//   export type TokenGeneratorCallback = () => Promise<MillicastDirectorResponse>
 //   class BaseWebRTC extends events.EventEmitter {
 //     constructor(
 //       streamName: string,
@@ -1373,7 +1388,7 @@
 //      *
 //      * //Create a new instance
 //      * const streamName = "My Millicast Stream Name"
-//      * const millicastPublish = new Publish(tokenGenerator)
+//      * const millicastPublish = new Publish(streamName, tokenGenerator)
 //      *
 //      * //Get MediaStream
 //      * const mediaStream = getYourMediaStream()
@@ -1438,9 +1453,15 @@
 //     /** The audio encryption parameters */
 //     audioEncryptionParams?: EncryptionParameters
 
-//     /** The audio media ID of RTCRtpTransceiver */
-//     audioMid?: string
-//   }
+//    /** The audio media ID of RTCRtpTransceiver */
+//    audioMid?: string
+
+//    /** The average target latency, it can be set to 0,
+//     * enabling zero-buffering mode (which is not recommended as it affects video playback smoothness).
+//     * The default value is 100 ms, except when PlayReady or Widevine L1 on Windows are used - those
+//     * require at least 600 ms buffer for SW-secure decryption/playback and 1200 ms for HW-secure one */
+//    mediaBufferMs?: number
+//  }
 
 //   /**
 //    * @class View
@@ -1550,26 +1571,26 @@
 //      */
 //     unproject(mediaIds: Array<string>): Promise<void>
 
-//     /**
-//      * Configure DRM protected stream.
-//      * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
-//      */
-//     configureDRM(options: DRMOptions)
-
-//     /**
-//      * Remove DRM configuration for a mediaId
-//      */
-//     removeDRMConfiguration(mediaId: string)
+//    /**
+//     * Configure DRM protected stream.
+//     * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+//     */
+//    configureDRM(options: DRMOptions): void
+//
+//    /**
+//     * Remove DRM configuration for a mediaId
+//     */
+//    removeDRMConfiguration(mediaId: string): void
 
 //     /**
 //      * Check if there are any DRM protected Track
 //      */
 //     get isDRMOn(): boolean
 
-//     /** Exchange the DRM configuration between two transceivers
-//      *  Make sure both of the transceivers have been used for DRM protected streams
-//      */
-//     exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string)
+//    /** Exchange the DRM configuration between two transceivers
+//     *  Make sure both of the transceivers have been used for DRM protected streams
+//     */
+//    exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string): void
 
 //     replaceConnection(): Promise<void>
 //     webRTCPeer?: PeerConnection

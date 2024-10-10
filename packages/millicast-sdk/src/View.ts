@@ -72,7 +72,7 @@ const defaultConnectOptions: ViewConnectOptions = {
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
+ * @param {HTMLMediaElement} [mediaElement=null] - Deprecated: Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
@@ -86,6 +86,8 @@ export default class View extends BaseWebRTC {
   private DRMProfile: DRMProfile | null = null
   private worker: Worker | null = null
   private subscriberToken: string | null = null
+  private isMainStreamActive = false
+  private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
   protected override options: ViewConnectOptions | null = null
@@ -97,9 +99,9 @@ export default class View extends BaseWebRTC {
     super(tokenGenerator, logger, autoReconnect)
 
     if (mediaElement) {
-      this.on(webRTCEvents.track, (e) => {
-        mediaElement.srcObject = e.streams[0]
-      })
+      logger.warn(
+        'The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.'
+      )
     }
   }
 
@@ -141,25 +143,6 @@ export default class View extends BaseWebRTC {
    * @example
    * import View from '@millicast/sdk'
    *
-   * // Create media element
-   * const videoElement = document.createElement("video")
-   *
-   * //Define callback for generate new token
-   * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
-   *
-   * //Create a new instance
-   * // Stream name is not necessary in the constructor anymore, could be null | undefined
-   * const millicastView = new View(tokenGenerator, videoElement)
-   *
-   * //Start connection to broadcast
-   * try {
-   *  await millicastView.connect()
-   * } catch (e) {
-   *  console.log('Connection failed, handle error', e)
-   * }
-   * @example
-   * import View from '@millicast/sdk'
-   *
    * //Define callback for generate new token
    * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
    *
@@ -190,6 +173,7 @@ export default class View extends BaseWebRTC {
       peerConfig: { ...defaultConnectOptions.peerConfig, ...options.peerConfig },
       setSDPToPeer: false,
     }
+    this.eventQueue.length = 0
     await this.initConnection({ migrate: false })
   }
 
@@ -272,6 +256,7 @@ export default class View extends BaseWebRTC {
     this.worker = null
     this.payloadTypeCodec = {}
     this.tracksMidValues = {}
+    this.eventQueue.length = 0
   }
 
   async initConnection(data: { migrate: boolean }) {
@@ -330,7 +315,11 @@ export default class View extends BaseWebRTC {
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
-    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents))
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(
+      webRTCPeerInstance,
+      this,
+      Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
+    )
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [
       signalingEvents.broadcastEvent,
     ])
@@ -374,59 +363,27 @@ export default class View extends BaseWebRTC {
     }
 
     webRTCPeerInstance.on('track', (trackEvent: RTCTrackEvent) => {
-      this.tracksMidValues[trackEvent.transceiver?.mid as string] = trackEvent.track
-      if (this.isDRMOn) {
-        const mediaId = trackEvent.transceiver.mid
-        if (mediaId) {
-          const drmOptions = this.getDRMConfiguration(mediaId)
-          if (drmOptions) {
-            try {
-              rtcDrmOnTrack(trackEvent, drmOptions)
-            } catch (error) {
-              logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
-              this.emit(
-                'error',
-                new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error)
-              )
-            }
-            if (!this.worker) {
-              this.worker = new TransformWorker()
-            }
-            this.worker.addEventListener('message', (message) => {
-              if (message.data.event === 'complete') {
-                // feed the frame to DRM processing worker
-                rtcDrmFeedFrame(message.data.frame, null, drmOptions)
-              }
-            })
-          } else {
-            logger.warn('drmConfig not defined in track event')
-          }
-        } else {
-          logger.warn('mediaId not defined in track event')
-        }
+      if (!this.isMainStreamActive) {
+        this.eventQueue.push(trackEvent)
+        return
       }
-      if (this.options?.metadata) {
-        if (supportsRTCRtpScriptTransform && this.worker) {
-          trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
-            name: 'receiverTransform',
-            payloadTypeCodec: { ...this.payloadTypeCodec },
-            codec: this.options.metadata && 'h264',
-            mid: trackEvent.transceiver?.mid,
-          })
-        } else if (supportsInsertableStreams) {
-          // @ts-expect-error supportsInserableStream checks if createEncodedStreams is defined
-          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-          this.worker?.postMessage(
-            {
-              action: 'insertable-streams-receiver',
-              payloadTypeCodec: { ...this.payloadTypeCodec },
-              codec: this.options.metadata && 'h264',
-              mid: trackEvent.transceiver?.mid,
-              readable,
-              writable,
-            },
-            [readable, writable]
-          )
+      this.onTrackEvent(trackEvent)
+    })
+
+    signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
+      if (event.data.sourceId === null) {
+        switch (event.name) {
+          case 'active':
+            this.isMainStreamActive = true
+            while (this.eventQueue.length > 0) {
+              this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent)
+            }
+            break
+          case 'inactive':
+            this.isMainStreamActive = false
+            break
+          default:
+            break
         }
       }
     })
@@ -478,8 +435,67 @@ export default class View extends BaseWebRTC {
     }
   }
 
+  onTrackEvent(trackEvent: RTCTrackEvent) {
+    this.tracksMidValues[trackEvent.transceiver?.mid as string] = trackEvent.track
+    if (this.isDRMOn) {
+      const mediaId = trackEvent.transceiver.mid
+      if (mediaId) {
+        const drmOptions = this.getDRMConfiguration(mediaId)
+        if (drmOptions) {
+          try {
+            rtcDrmOnTrack(trackEvent, drmOptions)
+          } catch (error) {
+            logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
+            this.emit(
+              'error',
+              new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error)
+            )
+          }
+          if (!this.worker) {
+            this.worker = new TransformWorker()
+          }
+          this.worker.addEventListener('message', (message) => {
+            if (message.data.event === 'complete') {
+              // feed the frame to DRM processing worker
+              rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+            }
+          })
+        } else {
+          logger.warn('drmConfig not defined in track event')
+        }
+      } else {
+        logger.warn('mediaId not defined in track event')
+      }
+    }
+    if (this.options?.metadata) {
+      if (supportsRTCRtpScriptTransform && this.worker) {
+        trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
+          name: 'receiverTransform',
+          payloadTypeCodec: { ...this.payloadTypeCodec },
+          codec: this.options.metadata && 'h264',
+          mid: trackEvent.transceiver?.mid,
+        })
+      } else if (supportsInsertableStreams) {
+        // @ts-expect-error supportsInserableStream checks if createEncodedStreams is defined
+        const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+        this.worker?.postMessage(
+          {
+            action: 'insertable-streams-receiver',
+            payloadTypeCodec: { ...this.payloadTypeCodec },
+            codec: this.options.metadata && 'h264',
+            mid: trackEvent.transceiver?.mid,
+            readable,
+            writable,
+          },
+          [readable, writable]
+        )
+      }
+    }
+    this.emit(webRTCEvents.track, trackEvent)
+  }
+
   getDRMConfiguration(mediaId: string) {
-    return this.drmOptionsMap?.get(mediaId)
+    return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
   }
 
   async onRtcDrmFetch(url: string, opts: RequestInit) {
@@ -513,6 +529,7 @@ export default class View extends BaseWebRTC {
    * @property {HTMLAudioElement} audioElement - the audio HTML audioElement
    * @property {EncryptionParameters} [audioEncryptionParams] - the audio encryption parameters
    * @property {String} [audioMid] - the audio media ID of RTCRtpTransceiver
+   * @property {Number} [mediaBufferMs] - average target latency in milliseconds
    */
 
   /**
@@ -530,9 +547,7 @@ export default class View extends BaseWebRTC {
     }
     const drmOptions: DrmConfig = {
       merchant: 'dolby',
-      sessionId: '',
-      // TODO: change to Product when backend is ready
-      environment: rtcDrmEnvironments.Staging,
+      environment: rtcDrmEnvironments.Production,
       customTransform: this.options?.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
@@ -544,6 +559,9 @@ export default class View extends BaseWebRTC {
       },
       audio: { codec: 'opus', encryption: 'clear' },
       onFetch: this.onRtcDrmFetch.bind(this),
+    }
+    if (options.mediaBufferMs) {
+      drmOptions.mediaBufferMs = options.mediaBufferMs
     }
     if (this.DRMProfile) {
       if (this.DRMProfile.playReadyUrl) {

@@ -133,6 +133,14 @@ export type DRMOptions = {
   /** The audio media ID of RTCRtpTransceiver */
   audioMid?: string
 
+  /**
+   * The average target latency, it can be set to 0,
+   * enabling zero-buffering mode (which is not recommended as it affects video playback smoothness).
+   * The default value is 100 ms, except when PlayReady or Widevine L1 on Windows are used - those
+   * require at least 600 ms buffer for SW-secure decryption/playback and 1200 ms for HW-secure one
+   */
+  mediaBufferMs?: number
+
   /** PlayReady License URL */
   prLicenseUrl?: string
 
