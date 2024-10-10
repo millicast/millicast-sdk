@@ -1,4 +1,4 @@
-export function hexToUint8Array(hexString) {
+export function hexToUint8Array(hexString: string): Uint8Array {
   if (!hexString) {
     return new Uint8Array()
   }

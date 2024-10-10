@@ -1,8 +1,13 @@
 import EventEmitter from 'events'
 import PeerConnection, { webRTCEvents } from '../PeerConnection'
-import { signalingEvents } from '../Signaling'
+import Signaling, { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
-let logger
+import { TokenGeneratorCallback } from '../types/Director.types'
+import { ILogger } from 'js-logger'
+import { ReconnectData } from '../types/BaseWebRTC.types'
+import { PublishConnectOptions } from '../types/Publish.types'
+import { ViewConnectOptions } from '../types/View.types'
+let logger: ILogger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
 
@@ -28,13 +33,23 @@ const baseInterval = 1000
  * @classdesc Base class for common actions about peer connection and reconnect mechanism for Publishers and Viewer instances.
  *
  * @constructor
- * @param {String} streamName - Deprecated: Millicast existing stream name. Use tokenGenerator instead.
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
  * @param {Object} loggerInstance - Logger instance from the extended classes.
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
 export default class BaseWebRTC extends EventEmitter {
-  constructor(streamName, tokenGenerator, loggerInstance, autoReconnect) {
+  protected webRTCPeer: PeerConnection
+  protected signaling: Signaling | null
+  protected autoReconnect: boolean
+  private reconnectionInterval: number
+  private alreadyDisconnected: boolean
+  private firstReconnection: boolean
+  protected stopReconnection: boolean
+  private isReconnecting: boolean
+  protected tokenGenerator: TokenGeneratorCallback
+  protected options: ViewConnectOptions | PublishConnectOptions | null
+
+  constructor(tokenGenerator: TokenGeneratorCallback, loggerInstance: ILogger, autoReconnect: boolean) {
     super()
     logger = loggerInstance
     if (!tokenGenerator) {
@@ -57,7 +72,7 @@ export default class BaseWebRTC extends EventEmitter {
    * Get current RTC peer connection.
    * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
    */
-  getRTCPeerConnection() {
+  getRTCPeerConnection(): RTCPeerConnection | null {
     return this.webRTCPeer ? this.webRTCPeer.getRTCPeer() : null
   }
 
@@ -77,7 +92,7 @@ export default class BaseWebRTC extends EventEmitter {
    * Get if the current connection is active.
    * @returns {Boolean} - True if connected, false if not.
    */
-  isActive() {
+  isActive(): boolean {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
@@ -87,9 +102,9 @@ export default class BaseWebRTC extends EventEmitter {
    * Sets reconnection if autoReconnect is enabled.
    */
   setReconnect() {
-    this.signaling.on('migrate', () => this.replaceConnection())
+    this.signaling?.on('migrate', () => this.replaceConnection())
     if (this.autoReconnect) {
-      this.signaling.on(signalingEvents.connectionError, () => {
+      this.signaling?.on(signalingEvents.connectionError, () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
           this.firstReconnection = false
           this.reconnect({ error: new Error('Signaling error: wsConnectionError') })
@@ -99,7 +114,7 @@ export default class BaseWebRTC extends EventEmitter {
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
         Diagnostics.setConnectionState(state)
         if (state === 'connected') {
-          Diagnostics.setConnectionTime(new Date())
+          Diagnostics.setConnectionTime(new Date().getTime())
         }
         if (
           (state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) &&
@@ -126,10 +141,10 @@ export default class BaseWebRTC extends EventEmitter {
   /**
    * Reconnects to last broadcast.
    * @fires BaseWebRTC#reconnect
-   * @param {Object} [data] - This object contains the error property. It may be expanded to contain more information in the future.
+   * @param {ReconnectData} [data] - This object contains the error property. It may be expanded to contain more information in the future.
    * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
    */
-  async reconnect(data) {
+  async reconnect(data?: ReconnectData) {
     try {
       logger.info('Attempting to reconnect...')
       if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
@@ -158,11 +173,19 @@ export default class BaseWebRTC extends EventEmitter {
       this.isReconnecting = false
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
       logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
-      setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
+      setTimeout(() => this.reconnect({ error: error as Error }), this.reconnectionInterval)
     }
+  }
+
+  async replaceConnection() {
+    /* tslint:disable:no-empty */
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async connect(_options: unknown): Promise<void> {
+    /* tslint:disable:no-empty */
   }
 }
 
-const nextReconnectInterval = (interval) => {
+const nextReconnectInterval = (interval: number) => {
   return interval < maxReconnectionInterval ? interval * 2 : interval
 }

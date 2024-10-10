@@ -1,11 +1,17 @@
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
+import {
+  DirectorPublisherOptions,
+  DirectorResponse,
+  DirectorSubscriberOptions,
+  MillicastDirectorResponse,
+} from './types/Director.types'
 
 const logger = Logger.get('Director')
-const streamTypes = {
-  WEBRTC: 'WebRtc',
-  RTMP: 'Rtmp',
+enum StreamTypes {
+  WEBRTC = 'WebRtc',
+  RTMP = 'Rtmp',
 }
 
 let liveWebsocketDomain = ''
@@ -61,7 +67,7 @@ const Director = {
    * @param {String} url - New Director API endpoint
    * @returns {void}
    */
-  setEndpoint: (url) => {
+  setEndpoint: (url: string): void => {
     apiEndpoint = url.replace(/\/$/, '')
   },
 
@@ -71,7 +77,7 @@ const Director = {
    * @description Get current Director API endpoint where requests will be sent. Default endpoint is 'https://director.millicast.com'.
    * @returns {String} API base url
    */
-  getEndpoint: () => {
+  getEndpoint: (): string => {
     return apiEndpoint
   },
 
@@ -83,7 +89,7 @@ const Director = {
    * @param {String} domain - New Websocket Live domain
    * @returns {void}
    */
-  setLiveDomain: (domain) => {
+  setLiveDomain: (domain: string): void => {
     liveWebsocketDomain = domain.replace(/\/$/, '')
   },
 
@@ -94,7 +100,7 @@ const Director = {
    * By default is empty which corresponds to not parse the Director response.
    * @returns {String} Websocket Live domain
    */
-  getLiveDomain: () => {
+  getLiveDomain: (): string => {
     return liveWebsocketDomain
   },
 
@@ -114,7 +120,7 @@ const Director = {
    * const tokenGenerator = () => Director.getPublisher({token, streamName})
    *
    * //Create a new instance
-   * const millicastPublish = new Publish(streamName, tokenGenerator)
+   * const millicastPublish = new Publish(tokenGenerator)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStreamImplementation()
@@ -127,7 +133,11 @@ const Director = {
    * //Start broadcast
    * await millicastPublish.connect(broadcastOptions)
    */
-  getPublisher: async (options, streamName = null, streamType = streamTypes.WEBRTC) => {
+  getPublisher: async (
+    options: DirectorPublisherOptions,
+    streamName: string | null = null,
+    streamType: StreamTypes = StreamTypes.WEBRTC
+  ): Promise<MillicastDirectorResponse> => {
     const optionsParsed = getPublisherOptions(options, streamName, streamType)
     logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
     const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
@@ -169,7 +179,7 @@ const Director = {
    * const tokenGenerator = () => Director.getSubscriber({streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'})
    *
    * //Create a new instance
-   * const millicastView = new View(streamName, tokenGenerator)
+   * const millicastView = new View(tokenGenerator)
    *
    * //Set track event handler to receive streams from Publisher.
    * millicastView.on('track', (event) => {
@@ -184,15 +194,22 @@ const Director = {
    * await millicastView.connect(options)
    */
 
-  getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
+  getSubscriber: async (
+    options: DirectorSubscriberOptions,
+    streamAccountId: string | null = null,
+    subscriberToken: string | null = null
+  ): Promise<MillicastDirectorResponse> => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(
       `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
     )
 
-    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
-    let headers = { 'Content-Type': 'application/json' }
+    const payload = {
+      streamAccountId: optionsParsed.streamAccountId,
+      streamName: optionsParsed.streamName,
+    }
+    let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
@@ -215,35 +232,43 @@ const Director = {
   },
 }
 
-const getPublisherOptions = (options, legacyStreamName, legacyStreamType) => {
-  let parsedOptions = typeof options === 'object' ? options : {}
+const getPublisherOptions = (
+  options: DirectorPublisherOptions,
+  legacyStreamName: string | null,
+  legacyStreamType: string | null
+): DirectorPublisherOptions => {
+  let parsedOptions = typeof options === 'object' ? options : ({} as DirectorPublisherOptions)
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       token: options,
       streamName: legacyStreamName,
       streamType: legacyStreamType,
-    }
+    } as unknown as DirectorPublisherOptions
   }
   return parsedOptions
 }
 
-const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberToken) => {
-  let parsedOptions = typeof options === 'object' ? options : {}
+const getSubscriberOptions = (
+  options: DirectorSubscriberOptions,
+  legacyStreamAccountId: string | null,
+  legacySubscriberToken: string | null
+): DirectorSubscriberOptions => {
+  let parsedOptions = typeof options === 'object' ? options : ({} as DirectorSubscriberOptions)
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       streamName: options,
       streamAccountId: legacyStreamAccountId,
       subscriberToken: legacySubscriberToken,
-    }
+    } as unknown as DirectorSubscriberOptions
   }
   return parsedOptions
 }
 
-const parseIncomingDirectorResponse = (directorResponse) => {
+const parseIncomingDirectorResponse = (directorResponse: { data: DirectorResponse }) => {
   if (Director.getLiveDomain()) {
     const domainRegex = /\/\/(.*?)\//
     const urlsParsed = directorResponse.data.urls.map((url) => {
-      const matched = domainRegex.exec(url)
+      const matched = domainRegex.exec(url) as RegExpExecArray
       return url.replace(matched[1], Director.getLiveDomain())
     })
     directorResponse.data.urls = urlsParsed

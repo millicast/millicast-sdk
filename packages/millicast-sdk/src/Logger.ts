@@ -1,6 +1,7 @@
-import jsLogger from 'js-logger'
+import jsLogger, { ILogLevel, ILogHandler, ILogger } from 'js-logger'
 import { version } from '../package.json'
 import Diagnostics from './utils/Diagnostics'
+import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/stats.types'
 
 /**
  * @module Logger
@@ -35,21 +36,32 @@ import Diagnostics from './utils/Diagnostics'
  * // Timer name: 35282.997802734375 ms
  */
 
+export type LogLevel = {
+  /**
+   * - The numerical representation of the level.
+   */
+  value: number
+  /**
+   * - Human readable name of the log level.
+   */
+  name: string
+}
+
 jsLogger.useDefaults({ defaultLevel: jsLogger.TRACE })
 
 const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR']
 
-const formatter = (messages, context) => {
+const formatter: ILogHandler = (messages, context) => {
   messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} - ${context.level.name} -`)
 }
-const enabledFor = (level, loggerName) => {
+const enabledFor = (level: ILogLevel, loggerName: string) => {
   if (loggerName) {
     return level.value >= namedLoggerLevels[loggerName].value
   }
   return level.value >= loggerLevel.value
 }
 
-const historyHandler = (messages, context) => {
+const historyHandler: ILogHandler = (messages, context) => {
   messages = Array.prototype.slice.call(messages)
   messages = messages.map((m) => (typeof m === 'object' ? JSON.stringify(m) : m))
   formatter(messages, context)
@@ -67,7 +79,7 @@ const historyHandler = (messages, context) => {
 const consoleHandler = jsLogger.createDefaultHandler({ formatter })
 jsLogger.setHandler((messages, context) => {
   historyHandler(messages, context)
-  if (enabledFor(context.level, context.name)) {
+  if (enabledFor(context.level, context.name || '')) {
     consoleHandler(messages, context)
   }
 
@@ -80,10 +92,12 @@ jsLogger.setHandler((messages, context) => {
 
 const DEFAULT_LOG_HISTORY_SIZE = 10000
 let maxLogHistorySize = DEFAULT_LOG_HISTORY_SIZE
-let history = []
+let history: string[] = []
 let loggerLevel = jsLogger.OFF
-const namedLoggerLevels = {}
-const customHandlers = []
+const namedLoggerLevels: {
+  [key: string]: LogLevel
+} = {}
+const customHandlers: { handler: ILogHandler; level: LogLevel }[] = []
 
 /**
  * @typedef {Object} LogLevel
@@ -100,8 +114,19 @@ const customHandlers = []
 /** @constant {LogLevel} ERROR - Logger.ERROR */
 /** @constant {LogLevel} OFF   - Logger.OFF */
 
+// TS compiler error complaining about not having CreateDefaultHandlerOptions type and it is not exported by
+// jsLogger so it is copied here so that we can type Logger
+interface CreateDefaultHandlerOptions {
+  formatter?: ILogHandler
+}
+
+const createDefaultHandler = jsLogger.createDefaultHandler as (
+  options?: CreateDefaultHandlerOptions
+) => ILogHandler
+
 const Logger = {
   ...jsLogger,
+  createDefaultHandler,
   enabledFor,
   /**
    * @function
@@ -134,7 +159,7 @@ const Logger = {
    * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
    * @example Logger.setHistoryMaxSize(100)
    */
-  setHistoryMaxSize: (maxSize) => {
+  setHistoryMaxSize: (maxSize: number) => {
     maxLogHistorySize = maxSize
   },
 
@@ -150,7 +175,7 @@ const Logger = {
    * // Module Level
    * Logger.get('Publish').setLevel(Logger.DEBUG)
    */
-  setLevel: (level) => {
+  setLevel: (level: LogLevel) => {
     loggerLevel = level
     for (const key in namedLoggerLevels) {
       namedLoggerLevels[key] = level
@@ -197,7 +222,7 @@ const Logger = {
    * myLogger.getLevel()
    * // {value: 3, name: 'INFO'}
    */
-  get: (name) => {
+  get: (name: string): ILogger => {
     if (!namedLoggerLevels[name]) {
       namedLoggerLevels[name] = loggerLevel
     }
@@ -239,7 +264,7 @@ const Logger = {
    *
    * Logger.setHandler(myHandler, Logger.INFO)
    */
-  setHandler: (handler, level) => {
+  setHandler: (handler: ILogHandler, level: LogLevel) => {
     customHandlers.push({ handler, level })
   },
   /**
@@ -268,7 +293,12 @@ const Logger = {
    *
    * // Output: Diagnostics object with specified configuration
    */
-  diagnose: (config = {}) => {
+  diagnose: (config: DiagnosticsOptions = {
+    statsCount: 60,
+    historySize: 1000,
+    minLogLevel: 'TRACE',
+    statsFormat: 'JSON',
+  }): DiagnosticsObject | CMCDDiagnostics => {
     let finalConfig
     const defaultConfig = {
       statsCount: 60,
@@ -285,7 +315,7 @@ const Logger = {
     }
     const { statsCount, historySize, minLogLevel, statsFormat } = finalConfig
     const result = Diagnostics.get(statsCount, statsFormat)
-    const history = Logger.getHistory()
+    const history = Logger.getHistory() as string[]
 
     if (!Number.isInteger(historySize) || historySize <= 0) {
       throw new Error('Invalid Argument Exception : historySize must be a positive integer.')

@@ -1,4 +1,13 @@
 import { version } from '../../package.json'
+import {
+  ConnectionStats,
+  DiagnosticsObject,
+  CMCDDiagnostics,
+  InboundStats,
+  CMCDStats,
+  OutboundVideoStats,
+  OutboundAudioStats,
+} from '../types/stats.types'
 
 const MAX_STATS_HISTORY_SIZE = 60
 
@@ -11,25 +20,25 @@ let _feedId = ''
 let _connection = ''
 let _cluster = ''
 let _connectionTime = 0
-const _stats = []
+const _stats: ConnectionStats[] = []
 
-function transformWebRTCStatsToCMCD(diagnostics) {
+function transformWebRTCStatsToCMCD(diagnostics: DiagnosticsObject): CMCDDiagnostics {
   // Helper function to map individual stat objects to CMCD-like structure
-  function mapStats(type, stat) {
+  function mapStats(type: 'video' | 'audio', stat: Partial<InboundStats & (OutboundAudioStats | OutboundVideoStats)>): CMCDStats {
     return {
-      ts: Math.round(stat.timestamp) || '', // Timestamp to the nearest millisecond
+      ts: stat.timestamp ? Math.round(stat.timestamp) : '', // Timestamp to the nearest millisecond
       ot: type === 'audio' ? 'a' : 'v', // 'a' for audio, 'v' for video
       bl: stat.jitterBufferDelay || 0, // Buffer length from jitterBufferDelay, default to 0 if not available
       br: Math.round(stat.bitrateBitsPerSecond || 0), // Bitrate, rounded to nearest integer, default to 0 if not available
       pld: stat.packetsLostDeltaPerSecond || 0, // Packets lost delta per second, default to 0 if not available
       j: stat.jitter || 0, // Jitter, default to 0 if not available
       mtp: stat.packetRate || 0, // Measured throughput, approximated by packet rate, default to 0 if not available
-      mid: stat.mid || '', // Media ID or track identifier, default to empty string if not available
+      mid: stat.mid ? stat.mid : '', // Media ID or track identifier, default to empty string if not available
       mimeType: stat.mimeType || '', // MIME type of the media stream, default to empty string if not available
     }
   }
 
-  diagnostics.stats = diagnostics.stats.reduce((acc, stat) => {
+  const stats: CMCDStats[] = diagnostics.stats.reduce((acc: CMCDStats[], stat) => {
     const audioStats =
       stat.audio.inbounds.length !== 0
         ? stat.audio.inbounds.map((statAudio) => mapStats('audio', statAudio))
@@ -42,43 +51,43 @@ function transformWebRTCStatsToCMCD(diagnostics) {
     return acc.concat([...audioStats, ...videoStats])
   }, [])
 
-  return diagnostics
+  return { ...diagnostics, stats: stats }
 }
 
 const Diagnostics = {
-  initAccountId: (accountId) => {
+  initAccountId: (accountId: string) => {
     _accountId = _accountId === '' ? accountId : _accountId
   },
-  initStreamName: (streamName) => {
+  initStreamName: (streamName: string) => {
     _streamName = _streamName === '' ? streamName : _streamName
   },
-  initSubscriberId: (subscriberId) => {
+  initSubscriberId: (subscriberId: string) => {
     _subscriberId = _subscriberId === '' ? subscriberId : _subscriberId
   },
-  initStreamViewId: (streamViewId) => {
+  initStreamViewId: (streamViewId: string) => {
     _streamViewId = _streamViewId === '' ? streamViewId : _streamViewId
   },
-  initFeedId: (feedId) => {
+  initFeedId: (feedId: string) => {
     _feedId = _feedId === '' ? feedId : _feedId
   },
-  setConnectionTime: (connectionTime) => {
+  setConnectionTime: (connectionTime: number) => {
     _connectionTime = _connectionTime === 0 ? connectionTime : _connectionTime
   },
-  setConnectionState: (connectionState) => {
+  setConnectionState: (connectionState: string) => {
     _connection = connectionState
   },
-  setClusterId: (clusterId) => {
+  setClusterId: (clusterId: string) => {
     _cluster = _cluster === '' ? clusterId : _cluster
   },
 
-  addStats: (stats) => {
+  addStats: (stats: ConnectionStats) => {
     if (_stats.length === MAX_STATS_HISTORY_SIZE) {
       _stats.shift()
     }
     _stats.push(stats)
   },
 
-  get: (statsCount = MAX_STATS_HISTORY_SIZE, statsFormat = 'JSON') => {
+  get: (statsCount = MAX_STATS_HISTORY_SIZE, statsFormat = 'JSON'): DiagnosticsObject | CMCDDiagnostics => {
     let configuredStatsCount
     if (!Number.isInteger(statsCount) || statsCount > MAX_STATS_HISTORY_SIZE || statsCount <= 0) {
       configuredStatsCount = MAX_STATS_HISTORY_SIZE
@@ -86,7 +95,7 @@ const Diagnostics = {
       configuredStatsCount = statsCount
     }
 
-    const diagnostics = {
+    const diagnostics: DiagnosticsObject = {
       client: '@millicast/millicast-sdk',
       version,
       timestamp: new Date().toISOString(),

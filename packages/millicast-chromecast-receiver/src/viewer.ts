@@ -20,7 +20,7 @@ const removeStream = () => {
 
 const subscribe = async (streamName, streamAccountId) => {
   const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
-  const millicastView = new View(streamName, tokenGenerator)
+  const millicastView = new View(tokenGenerator)
   millicastView.on('broadcastEvent', (event) => {
     const layers = event.data.layers !== null ? event.data.layers : {}
     if (event.name === 'layers' && Object.keys(layers).length <= 0) {

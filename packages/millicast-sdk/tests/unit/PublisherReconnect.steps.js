@@ -40,7 +40,7 @@ jest.mock('../../src/Signaling', () => {
   }
 })
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn(),
@@ -61,11 +61,10 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
-
     when('peer has an error', () => {
       publisher.webRTCPeer.emit(webRTCEvents.connectionStateChange, 'failed')
     })
@@ -79,7 +78,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -97,7 +96,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -119,7 +118,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(() => {
         publisher.firstReconnection = false
         publisher.alreadyDisconnected = true
@@ -142,7 +141,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection disabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, false)
+      publisher = new Publish(mockTokenGenerator, false)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -160,7 +159,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       jest.spyOn(publisher, 'reconnect').mockImplementation(jest.fn)
       await publisher.connect({ mediaStream })
     })
@@ -183,7 +182,7 @@ defineFeature(feature, (test) => {
     const errorMessage = 'Error has ocurred'
 
     given('an instance of Publish with reconnection enabled and peer with error', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       publisher.on('reconnect', reconnectHandler)
       await publisher.connect({ mediaStream })
       publisher.webRTCPeer.peer.connectionState = 'failed'
@@ -225,7 +224,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       await publisher.connect({ mediaStream })
     })
 
@@ -243,7 +242,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish with reconnection enabled', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator, true)
+      publisher = new Publish(mockTokenGenerator, true)
       await publisher.connect({ mediaStream })
     })
 

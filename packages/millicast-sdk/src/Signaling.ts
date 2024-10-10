@@ -2,9 +2,12 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
-import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
+import { PublishCmd, SignalingPublishOptions, ViewCmd, ViewResponse } from './types/Signaling.types'
+import { ICodecs } from './types/PeerConnection.types'
+import { ViewConnectOptions } from './types/View.types'
+import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('Signaling')
 
@@ -53,8 +56,15 @@ export const signalingEvents = {
  */
 
 export default class Signaling extends EventEmitter {
+  public streamName: string | null
+  public wsUrl: string
+  public webSocket: WebSocket | null = null
+  public transactionManager: TransactionManager | null = null
+  public serverId: string | null = null
+  public clusterId: string | null = null
+  public streamViewId: string | null = null
   constructor(
-    options = {
+    options: { streamName: string | null; url: string } = {
       streamName: null,
       url: 'ws://localhost:8080/',
     }
@@ -62,11 +72,6 @@ export default class Signaling extends EventEmitter {
     super()
     this.streamName = options.streamName
     this.wsUrl = options.url
-    this.webSocket = null
-    this.transactionManager = null
-    this.serverId = null
-    this.clusterId = null
-    this.streamViewId = null
   }
 
   /**
@@ -78,7 +83,7 @@ export default class Signaling extends EventEmitter {
    * @fires Signaling#wsConnectionClose
    * @fires Signaling#broadcastEvent
    */
-  async connect() {
+  async connect(): Promise<WebSocket> {
     logger.info('Connecting to Signaling Server')
     if (this.transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
       logger.info('Connected to server: ', this.webSocket.url)
@@ -106,58 +111,63 @@ export default class Signaling extends EventEmitter {
       this.transactionManager = new TransactionManager(this.webSocket)
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
-        this.transactionManager.on('event', (evt) => {
-          /**
-           * Passthrough of available Millicast broadcast events.
-           *
-           * Active - Fires when the live stream is, or has started broadcasting.
-           *
-           * Inactive - Fires when the stream has stopped broadcasting, but is still available.
-           *
-           * Stopped - Fires when the stream has stopped for a given reason.
-           *
-           * Vad - Fires when using multiplexed tracks for audio.
-           *
-           * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
-           *
-           * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
-           *
-           * Viewercount - Fires when the viewer count changes.
-           *
-           * Updated - when an active stream's tracks are updated
-           *
-           * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
-           *
-           * @event Signaling#broadcastEvent
-           * @type {Object}
-           * @property {String} type - In this case the type of this message is "event".
-           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
-           * @property {Object} data - Custom event data.
-           */
-          this.emit(signalingEvents.broadcastEvent, evt)
-        })
-        logger.info('Connected to server: ', this.webSocket.url)
-        logger.debug('WebSocket value: ', {
-          url: this.webSocket.url,
-          protocol: this.webSocket.protocol,
-          readyState: this.webSocket.readyState,
-          binaryType: this.webSocket.binaryType,
-          extensions: this.webSocket.extensions,
-        })
-        this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
-        resolve(this.webSocket)
+        this.transactionManager &&
+          this.transactionManager.on('event', (evt: TransactionManager.Event) => {
+            /**
+             * Passthrough of available Millicast broadcast events.
+             *
+             * Active - Fires when the live stream is, or has started broadcasting.
+             *
+             * Inactive - Fires when the stream has stopped broadcasting, but is still available.
+             *
+             * Stopped - Fires when the stream has stopped for a given reason.
+             *
+             * Vad - Fires when using multiplexed tracks for audio.
+             *
+             * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
+             *
+             * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
+             *
+             * Viewercount - Fires when the viewer count changes.
+             *
+             * Updated - when an active stream's tracks are updated
+             *
+             * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
+             *
+             * @event Signaling#broadcastEvent
+             * @type {Object}
+             * @property {String} type - In this case the type of this message is "event".
+             * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
+             * @property {Object} data - Custom event data.
+             */
+            this.emit(signalingEvents.broadcastEvent, evt)
+          })
+        if (this.webSocket) {
+          logger.info('Connected to server: ', this.webSocket.url)
+          logger.debug('WebSocket value: ', {
+            url: this.webSocket.url,
+            protocol: this.webSocket.protocol,
+            readyState: this.webSocket.readyState,
+            binaryType: this.webSocket.binaryType,
+            extensions: this.webSocket.extensions,
+          })
+          this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
+          resolve(this.webSocket)
+        }
       }
       this.webSocket.onerror = () => {
-        logger.error('WebSocket not connected: ', this.webSocket.url)
-        /**
-         * WebSocket connection failed with signaling server.
-         * Returns url of WebSocket
-         *
-         * @event Signaling#wsConnectionError
-         * @type {String}
-         */
-        this.emit(signalingEvents.connectionError, this.webSocket.url)
-        reject(this.webSocket.url)
+        if (this.webSocket) {
+          logger.error('WebSocket not connected: ', this.webSocket.url)
+          /**
+           * WebSocket connection failed with signaling server.
+           * Returns url of WebSocket
+           *
+           * @event Signaling#wsConnectionError
+           * @type {String}
+           */
+          this.emit(signalingEvents.connectionError, this.webSocket.url)
+          reject(this.webSocket.url)
+        }
       }
       this.webSocket.onclose = () => {
         this.webSocket = null
@@ -189,7 +199,12 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe(sdp, options, pinnedSourceId = null, excludedSourceIds = null) {
+  async subscribe(
+    sdp = '',
+    options: ViewConnectOptions | boolean,
+    pinnedSourceId = null,
+    excludedSourceIds = null
+  ): Promise<string> {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
     const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
@@ -197,9 +212,8 @@ export default class Signaling extends EventEmitter {
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = {
+    const data: ViewCmd = {
       sdp,
-      streamId: this.streamName,
       pinnedSourceId: optionsParsed.pinnedSourceId,
       excludedSourceIds: optionsParsed.excludedSourceIds,
     }
@@ -211,7 +225,7 @@ export default class Signaling extends EventEmitter {
       data.events = optionsParsed.events
     }
     if (optionsParsed.forcePlayoutDelay) {
-      data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay
+      data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay as { min: number; max: number }
     }
     if (optionsParsed.layer) {
       data.layer = optionsParsed.layer
@@ -222,28 +236,32 @@ export default class Signaling extends EventEmitter {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
       await this.connect()
-      logger.info('Sending view command')
-      const result = await this.transactionManager.cmd('view', data)
+      if (this.transactionManager) {
+        logger.info('Sending view command')
+        const result = (await this.transactionManager.cmd('view', data)) as ViewResponse
 
-      // Check if browser supports AV1X
-      const AV1X = RTCRtpReceiver.getCapabilities?.('video')?.codecs?.find?.(
-        (codec) => codec.mimeType === 'video/AV1X'
-      )
-      // Signaling server returns 'AV1'. If browser supports AV1X, we change it to AV1X
-      result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
+        // Check if browser supports AV1X
+        const AV1X = RTCRtpReceiver.getCapabilities?.('video')?.codecs?.find?.(
+          (codec) => codec.mimeType === 'video/AV1X'
+        )
+        // Signaling server returns 'AV1'. If browser supports AV1X, we change it to AV1X
+        result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
 
-      logger.info('Command sent, subscriberId: ', result.subscriberId)
-      logger.debug('Command result: ', result)
-      this.serverId = result.subscriberId
-      this.clusterId = result.clusterId
-      this.streamViewId = result.streamViewId
+        logger.info('Command sent, subscriberId: ', result.subscriberId)
+        logger.debug('Command result: ', result)
+        this.serverId = result.subscriberId
+        this.clusterId = result.clusterId
+        this.streamViewId = result.streamViewId
 
-      // Save for diagnostics
-      Diagnostics.initStreamName(this.streamName)
-      Diagnostics.initSubscriberId(this.serverId)
-      Diagnostics.initStreamViewId(result.streamViewId)
-      Diagnostics.setClusterId(this.clusterId)
-      return result.sdp
+        // Save for diagnostics
+        Diagnostics.initStreamName(this.streamName || '')
+        Diagnostics.initSubscriberId(this.serverId || '')
+        Diagnostics.initStreamViewId(result.streamViewId)
+        Diagnostics.setClusterId(this.clusterId || '')
+        return result.sdp
+      } else {
+        return ''
+      }
     } catch (e) {
       logger.error('Error sending view command, error: ', e)
       throw e
@@ -257,13 +275,13 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish(sdp, options, record = null, sourceId = null) {
+  async publish(sdp = '', options: SignalingPublishOptions, record = null, sourceId = null) {
     const optionsParsed = getPublishOptions(options, record, sourceId)
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
     const supportedVideoCodecs =
-      PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc) => cdc.codec) ?? []
+      PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: ICodecs) => cdc.codec) ?? []
 
     const videoCodecs = Object.values(VideoCodec)
     if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
@@ -283,8 +301,7 @@ export default class Signaling extends EventEmitter {
       sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
     }
 
-    const data = {
-      name: this.streamName,
+    const data: PublishCmd = {
       sdp,
       codec: optionsParsed.codec,
       sourceId: optionsParsed.sourceId,
@@ -315,28 +332,37 @@ export default class Signaling extends EventEmitter {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
       await this.connect()
-      logger.info('Sending publish command')
-      const result = await this.transactionManager.cmd('publish', data)
+      if (this.transactionManager) {
+        logger.info('Sending publish command')
+        const result = (await this.transactionManager.cmd('publish', data)) as {
+          sdp: string
+          publisherId: string
+          clusterId: string
+          feedId: string
+        }
 
-      if (optionsParsed.codec === VideoCodec.AV1) {
-        // If browser supports AV1X, we change from AV1 to AV1X
-        const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(
-          (codec) => codec.mimeType === 'video/AV1X'
-        )
-        result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
+        if (optionsParsed.codec === VideoCodec.AV1) {
+          // If browser supports AV1X, we change from AV1 to AV1X
+          const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(
+            (codec) => codec.mimeType === 'video/AV1X'
+          )
+          result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
+        }
+
+        logger.info('Command sent, publisherId: ', result.publisherId)
+        logger.debug('Command result: ', result)
+        this.serverId = result.publisherId
+        this.clusterId = result.clusterId
+
+        // Save for diagnostics
+        Diagnostics.initStreamName(this.streamName || '')
+        Diagnostics.initSubscriberId(this.serverId || '')
+        Diagnostics.initFeedId(result.feedId)
+        Diagnostics.setClusterId(this.clusterId || '')
+        return result.sdp
+      } else {
+        return ''
       }
-
-      logger.info('Command sent, publisherId: ', result.publisherId)
-      logger.debug('Command result: ', result)
-      this.serverId = result.publisherId
-      this.clusterId = result.clusterId
-
-      // Save for diagnostics
-      Diagnostics.initStreamName(this.streamName)
-      Diagnostics.initSubscriberId(this.serverId)
-      Diagnostics.initFeedId(result.feedId)
-      Diagnostics.setClusterId(this.clusterId)
-      return result.sdp
     } catch (e) {
       logger.error('Error sending publish command, error: ', e)
       throw e
@@ -349,18 +375,22 @@ export default class Signaling extends EventEmitter {
    * @param {Object} [data] - Command parameters.
    * @return {Promise<Object>} Promise object which represents the command response.
    */
-  async cmd(cmd, data) {
+  async cmd(cmd: string, data?: object): Promise<object> {
     logger.info(`Sending cmd: ${cmd}`)
 
-    return this.transactionManager.cmd(cmd, data)
+    return this.transactionManager?.cmd(cmd, data) as object
   }
 }
 
-const getSubscribeOptions = (options, legacyPinnedSourceId, legacyExcludedSourceIds) => {
-  let parsedOptions = typeof options === 'object' ? options : {}
+const getSubscribeOptions = (
+  options: ViewConnectOptions | boolean,
+  legacyPinnedSourceId: string | null,
+  legacyExcludedSourceIds: string[] | null
+): ViewConnectOptions => {
+  let parsedOptions = typeof options === 'object' ? options : ({} as ViewConnectOptions)
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
-      vad: options,
+      vad: options as boolean,
       pinnedSourceId: legacyPinnedSourceId,
       excludedSourceIds: legacyExcludedSourceIds,
     }
@@ -368,12 +398,16 @@ const getSubscribeOptions = (options, legacyPinnedSourceId, legacyExcludedSource
   return parsedOptions
 }
 
-const getPublishOptions = (options, legacyRecord, legacySourceId) => {
-  let parsedOptions = typeof options === 'object' ? options : {}
+const getPublishOptions = (
+  options: SignalingPublishOptions | string,
+  legacyRecord: boolean | null,
+  legacySourceId: string | null
+): SignalingPublishOptions => {
+  let parsedOptions = typeof options === 'object' ? options : ({} as SignalingPublishOptions)
   if (Object.keys(parsedOptions).length === 0) {
     const defaultCodec = VideoCodec.H264
     parsedOptions = {
-      codec: options ?? defaultCodec,
+      codec: (options as VideoCodec) ?? defaultCodec,
       record: legacyRecord,
       sourceId: legacySourceId,
     }

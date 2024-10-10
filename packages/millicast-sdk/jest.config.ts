@@ -5,7 +5,6 @@ export default {
   testEnvironment: 'jsdom',
   clearMocks: true,
   transform: {
-    '\\.[jt]sx?$': 'babel-jest',
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleNameMapper: {

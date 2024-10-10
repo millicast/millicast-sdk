@@ -8,14 +8,14 @@ const feature = loadFeature('../features/View.feature', { loadRelativePath: true
 
 jest.mock('../../src/Signaling')
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn(),
   }))
 )
 
-jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
+jest.mock('../../src/drm/rtc-drm-transform.min.js', () => ({
   rtcDrmConfigure: jest.fn(),
   rtcDrmOnTrack: jest.fn(),
   rtcDrmEnvironments: jest.fn(),
@@ -40,7 +40,7 @@ defineFeature(feature, (test) => {
     given('no token generator', () => null)
 
     when('I instance a View', async () => {
-      expectError = expect(() => new View('streamName'))
+      expectError = expect(() => new View())
     })
 
     then('throws an error', async () => {
@@ -53,7 +53,7 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of View', async () => {
-      viewer = new View('streamName', mockTokenGenerator)
+      viewer = new View(mockTokenGenerator)
     })
 
     when('I subscribe to a stream with a connection path', async () => {
@@ -73,7 +73,7 @@ defineFeature(feature, (test) => {
 
     when('I instance a View with a token generator without connection path', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      viewer = new View('streamName', mockErrorTokenGenerator)
+      viewer = new View(mockErrorTokenGenerator)
 
       expectError = expect(() => viewer.connect())
     })
@@ -89,7 +89,7 @@ defineFeature(feature, (test) => {
     let expectError
 
     given('an instance of View already connected', async () => {
-      viewer = new View('streamName', mockTokenGenerator)
+      viewer = new View(mockTokenGenerator)
       await viewer.connect()
     })
 
@@ -104,7 +104,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Stop subscription', ({ given, when, then }) => {
-    const viewer = new View('streamName', mockTokenGenerator)
+    const viewer = new View(mockTokenGenerator)
     let signaling
 
     given('I am subscribed to a stream', async () => {
@@ -124,7 +124,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Stop inactive subscription', ({ given, when, then }) => {
-    const viewer = new View('streamName', mockTokenGenerator)
+    const viewer = new View(mockTokenGenerator)
 
     given('I am not connected to a stream', () => null)
 
@@ -139,7 +139,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Check status of active subscription', ({ given, when, then }) => {
-    const viewer = new View('streamName', mockTokenGenerator)
+    const viewer = new View(mockTokenGenerator)
     let result
 
     given('I am subscribed to a stream', async () => {
@@ -156,7 +156,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Check status of inactive subscription', ({ given, when, then }) => {
-    const viewer = new View('streamName', mockTokenGenerator)
+    const viewer = new View(mockTokenGenerator)
     let result
 
     given('I am not subscribed to a stream', () => null)
@@ -178,7 +178,7 @@ defineFeature(feature, (test) => {
       const errorTokenGenerator = jest.fn(() => {
         throw new Error('Error getting token')
       })
-      viewer = new View('streamName', errorTokenGenerator)
+      viewer = new View(errorTokenGenerator)
     })
 
     when('I subscribe to a stream', async () => {
