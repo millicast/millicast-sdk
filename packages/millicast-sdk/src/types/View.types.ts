@@ -179,3 +179,77 @@ export interface MetadataObject {
   unregistered: SEIUserUnregisteredData
   timecode: Date
 }
+
+/**
+ * Broadcast event
+ */
+export type BroadcastEventName = ViewServerEvent
+
+export interface BroadcastEvent {
+  name: BroadcastEventName
+}
+
+/**
+ * Active Event
+ */
+export type TrackInfo = {
+  trackId: string
+  media: Media
+}
+
+export type ActiveEventPayload = {
+  streamId: string
+  sourceId: string | null
+  tracks: TrackInfo[]
+  encryption?: EncryptionParameters
+}
+
+export interface ActiveEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'active'>
+  data: ActiveEventPayload
+}
+
+
+/**
+ * Inactive Event
+ */
+export type InactiveEventPayload = {
+  streamId: string
+  sourceId: string | null
+}
+
+export interface InactiveEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'inactive'>
+  data: InactiveEventPayload
+}
+
+
+/**
+ * ViewerCount Event
+ */
+export type ViewerCountEventPayload = {
+  viewerCount: number
+}
+
+export interface ViewerCountEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'viewercount'>
+  data: ViewerCountEventPayload
+}
+
+/**
+ * Metadata Event
+ */
+export interface MetadataEvent extends MetadataObject {
+  // TODO: seiPicTimingTimeCodeArray
+}
+
+/**
+ * Events declaration of Viewers that user could listen to
+ */
+export interface ViewerEvents {
+  'broadcastEvent'?: BroadcastEvent
+  'track'?: RTCTrackEvent
+  'metadata'?: MetadataEvent
+  // TODO: elaborate error type
+  'error'?: Error
+}
