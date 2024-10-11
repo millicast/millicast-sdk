@@ -1,4 +1,5 @@
 import { View, Director, Logger } from "@nx-millicast/millicast-sdk";
+import { ActiveEvent, DRMOptions } from "packages/millicast-sdk/src/types/View.types";
 
 window.Logger = Logger
 
@@ -54,35 +55,33 @@ const disableFull =
   disableControls;
 
 let playing = false;
-let fullBtn = document.querySelector("#fullBtn");
-let video = document.querySelector("video");
+let fullBtn = document.querySelector("#fullBtn") as HTMLButtonElement;
+let video = document.querySelector("video") as HTMLVideoElement;
 
 // MillicastView object
 let millicastView = null
 
 const newViewer = () => {
-  const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken, enableDRM);
+  const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken);
   const millicastView = new View(tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
     if (event.name === "active") {
-      const encryption = event.data.encryption
+      const _event = event as ActiveEvent
+      const encryption = _event.data.encryption
       if (encryption && enableDRM) {
-        const drmOptions = {
+        const drmOptions: DRMOptions = {
           videoElement: document.querySelector("video"),
           audioElement: document.querySelector("audio"),
           videoEncryptionParams: encryption,
           videoMid: '0',
         };
-        const audioTrackInfo = event.data.tracks.find((track) => track.type === 'audio')
+        const audioTrackInfo = _event.data.tracks.find((track) => track.media === 'audio')
         if (audioTrackInfo) {
-          drmOptions.audioMid = audioTrackInfo.mediaId;
+          drmOptions.audioMid = audioTrackInfo.trackId;
         }
         millicastView.configureDRM(drmOptions);
       }
-    }
-    let layers = event.data["layers"] !== null ? event.data["layers"] : {};
-    if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
   });
   millicastView.on("track", (event) => {
@@ -95,9 +94,6 @@ const newViewer = () => {
     } 
     if (metadata.timecode) {
       console.log('received timecode messsage', metadata.timecode)
-    }
-    if (metadata.seiPicTimingTimeCodeArray) {
-      console.log('received PIC timing message', metadata.seiPicTimingTimeCodeArray)
     }
   })
 
@@ -159,7 +155,7 @@ const addStream = (stream) => {
     //If we already had a a stream
     if (video.srcObject) {
       //Create temporal video element and switch streams when we have valid data
-      const tmp = video.cloneNode(true);
+      const tmp = video.cloneNode(true) as HTMLVideoElement;
       //Override the muted attribute with current muted state
       tmp.muted = video.muted;
       //Set same volume
@@ -167,10 +163,10 @@ const addStream = (stream) => {
       //Set new stream
       tmp.srcObject = stream;
       //Replicate playback state
-      if (video.playing) {
+      if (video.playbackRate) {
         try { tmp.play(); } catch (e) {}
       } else if (video.paused) {
-        try{ tmp.paused(); } catch (e) {}
+        try{ tmp.pause(); } catch (e) {}
       }
       //Replace the video when media has started playing
       tmp.addEventListener('loadedmetadata', (event) => {
