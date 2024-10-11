@@ -1,4 +1,0 @@
-{
-  "millicast-publisher-demo-publisher1": {},
-  "millicast-viewer-demo-viewer1": {}
-}
