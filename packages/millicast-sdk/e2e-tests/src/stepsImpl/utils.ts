@@ -8,3 +8,4 @@ export async function verifyDiagnoseConnected(
   console.log('diagnose().connection = '+result);
   return result
 };
+

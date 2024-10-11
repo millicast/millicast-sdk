@@ -11,34 +11,34 @@ export async function verifyViewerIsActive(
   return result
 };
 
-export function verifyViewerIsLive(
+export async function verifyViewerIsLive(
   scenarioWorld: ScenarioWorld,
 ) {
-  expect.poll( () => {
-  return verifyViewerIsActive(scenarioWorld);
+  await expect.poll( async () => {
+  return await verifyViewerIsActive(scenarioWorld);
   }, {
-    timeout: 5000,
+    timeout: 10000,
   }).toBe(true);
 
-  expect.poll( () => {
-    return verifyDiagnoseConnected(scenarioWorld);
+  await expect.poll( async () => {
+    return await verifyDiagnoseConnected(scenarioWorld);
     }, {
-      timeout: 5000
+      timeout: 10000
     }).toBe('connected');
 }
 
-export function verifyViewerIsNotLive(
+export async function verifyViewerIsNotLive(
   scenarioWorld: ScenarioWorld,
 ) {
-  expect.poll( () => {
+  await expect.poll( async () => {
   return verifyViewerIsActive(scenarioWorld);
   }, {
-    timeout: 5000,
+    timeout: 10000,
   }).toBe(false);
 
-  expect.poll( () => {
+  await expect.poll( async () => {
     return verifyDiagnoseConnected(scenarioWorld);
     }, {
-      timeout: 5000
+      timeout: 10000
     }).toBe('closed');
 }

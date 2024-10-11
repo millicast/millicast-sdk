@@ -6,15 +6,15 @@ import {
 } from "../stepsImpl/viewerVerification.step.impl";
 
 Then(
-    "viewer1 verify if connected",
-    function (this: ScenarioWorld) {
-      verifyViewerIsLive(this);
+    "the viewer1 verify if connected",
+    async function (this: ScenarioWorld) {
+      await verifyViewerIsLive(this);
     }
   );
 
 Then(
-  "viewer1 verify if not connected",
-  function (this: ScenarioWorld) {
-    verifyViewerIsNotLive(this);
+  "the viewer1 verify if not connected",
+  async function (this: ScenarioWorld) {
+    await verifyViewerIsNotLive(this);
   }
 );

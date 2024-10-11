@@ -2,7 +2,6 @@ import { ScenarioWorld } from "cucumber-playwright-framework";
 import { verifyDiagnoseConnected } from "./utils"
 import { expect } from '@playwright/test';
 
-
 export async function verifyPublisherIsActive(
   scenarioWorld: ScenarioWorld,
 ) {
@@ -12,34 +11,34 @@ export async function verifyPublisherIsActive(
   return result
 };
 
-export function verifyPublisherIsLive(
+export async function verifyPublisherIsLive(
   scenarioWorld: ScenarioWorld,
 ) {
-  expect.poll( () => {
-  return verifyPublisherIsActive(scenarioWorld);
+  await expect.poll( async () => {
+  return await verifyPublisherIsActive(scenarioWorld);
   }, {
-  timeout: 5000,
+    timeout: 10000,
   }).toBe(true);
   
-  expect.poll( () => {
-  return verifyDiagnoseConnected(scenarioWorld);
-  }, {
-    timeout: 5000
-  }).toBe('connected');
+  await expect.poll( async () => {
+    return await verifyDiagnoseConnected(scenarioWorld);
+    }, {
+      timeout: 10000
+    }).toBe('connected');
 }
 
-export function verifyPublisherIsNotLive(
+export async function verifyPublisherIsNotLive(
   scenarioWorld: ScenarioWorld,
 ) {
-  expect.poll( () => {
-  return verifyPublisherIsActive(scenarioWorld);
+  await expect.poll( async () => {
+  return await verifyPublisherIsActive(scenarioWorld);
   }, {
-  timeout: 5000,
+  timeout: 10000,
   }).toBe(false);
   
-  expect.poll( () => {
-  return verifyDiagnoseConnected(scenarioWorld);
+  await expect.poll( async () => {
+  return await verifyDiagnoseConnected(scenarioWorld);
   }, {
-    timeout: 5000
+    timeout: 10000
   }).toBe('closed');
 }

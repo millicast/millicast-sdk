@@ -8,22 +8,22 @@ import {
 
 Then(
     "the viewer1 connects to stream",
-    function (this: ScenarioWorld) {
-      viewerConnect(this);
+    async function (this: ScenarioWorld) {
+      await viewerConnect(this);
     }
   );
 
 Then(
   "the viewer1 stops connection",
-  function (this: ScenarioWorld) {
-    viewerStop(this);
+  async function (this: ScenarioWorld) {
+    await viewerStop(this);
   }
 );
 
 // Doesn't work, steps in runStep aren't called !
 Given(
   "the viewer1 is connected and stream is live",
-  function (this: ScenarioWorld) {
-    viewerConnectAndVerifyStream(this);
+  async function (this: ScenarioWorld) {
+    await viewerConnectAndVerifyStream(this);
   }
 );

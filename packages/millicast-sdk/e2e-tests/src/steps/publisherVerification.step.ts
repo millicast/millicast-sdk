@@ -6,15 +6,15 @@ import {
 } from "../stepsImpl/publisherVerification.step.impl";
 
 Then(
-    "publisher1 verify if connected",
-    function (this: ScenarioWorld) {
-      verifyPublisherIsLive(this);
+    "the publisher1 verify if connected",
+    async function (this: ScenarioWorld) {
+      await verifyPublisherIsLive(this);
     }
   );
 
 Then(
-  "publisher1 verify if not connected",
-  function (this: ScenarioWorld) {
-    verifyPublisherIsNotLive(this);
+  "the publisher1 verify if not connected",
+  async function (this: ScenarioWorld) {
+    await verifyPublisherIsNotLive(this);
   }
 );

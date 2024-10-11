@@ -9,22 +9,21 @@ import {
 
 Then(
     "the publisher1 connects to stream with codec {string}",
-    function (this: ScenarioWorld, codec) {
-      publisherConnect(this, codec);
+    async function (this: ScenarioWorld, codec) {
+      await publisherConnect(this, codec);
     }
   );
   
 Then(
   "the publisher1 stops connection",
-  function (this: ScenarioWorld) {
-    publisherStop(this);
+  async function (this: ScenarioWorld) {
+    await publisherStop(this);
   }
 );
 
-// Doesn't work, steps in runStep aren't called !
 Given(
   "the publisher1 is connected and stream is live",
-  function (this: ScenarioWorld) {
-    publisherConnectAndVerifyStream(this);
+  async function (this: ScenarioWorld) {
+    await publisherConnectAndVerifyStream(this);
   }
 );
