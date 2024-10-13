@@ -1,4 +1,4 @@
-import { ScenarioWorld, logger, runSteps, runStep } from "cucumber-playwright-framework";
+import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
 import { expect } from '@playwright/test';
 
 
@@ -8,8 +8,13 @@ export async function publisherConnect(
   codec: string,
 ) {
   logger.debug(`publisherConnect function was called`);
-  var camDeviceLocator = await scenarioWorld.page.getByRole('button', { name: 'fake_device_0' });
-  await expect(camDeviceLocator).toBeVisible();
+  
+  var page = scenarioWorld.page
+  var camDevice = await page.getByRole('button', { name: 'fake_device_0' });
+  var micDevice = await page.getByRole('button', { name: 'Fake Default Audio Input '});
+  await expect(camDevice).toBeVisible();
+  await expect(micDevice).toBeVisible();
+  
   await runStep(`the host executes the "window.millicastPublish.connect({codec:${codec}})" JavaScript function on the page`, scenarioWorld);
 }
 

@@ -11,6 +11,8 @@ Feature: Connect Feature
     And the publisher1 verify if connected
     When the viewer1 switch to the "millicast-viewer-demo" app
     Then the viewer1 verify if connected
+    And the viewer1 verify media tracks enabled
+
 
     Examples:
       | codec  |
@@ -26,6 +28,7 @@ Feature: Connect Feature
     And the publisher1 verify if connected
     And the viewer1 is on the "viewerPage" page of the "millicast-viewer-demo" app
     Then the viewer1 verify if connected
+    And the viewer1 verify media tracks enabled
 
     Examples:
       | codec  |
@@ -35,7 +38,7 @@ Feature: Connect Feature
       | 'vp9'  |
 
 
-  # Doesn't work, custom steps are not found in runStep()
+  # # Doesn't work, custom steps are not found in runStep()
   # Scenario: Viewer Reconnects During The Stream
   #   Given the publisher1 is connected and stream is live
   #   Given the viewer1 is connected and stream is live
@@ -51,6 +54,8 @@ Feature: Connect Feature
     And the viewer1 verify if not connected
     Then the viewer1 connects to stream
     Then the viewer1 verify if connected
+    And the viewer1 verify media tracks enabled
+
 
 
   Scenario: Publisher Reconnects During The Stream
@@ -66,7 +71,7 @@ Feature: Connect Feature
     And the publisher1 verify if connected
     When the viewer1 switch to the "millicast-viewer-demo" app
     Then the viewer1 verify if connected
-
+    And the viewer1 verify media tracks enabled
 
 
 # # Scenario: Publisher Connects with videoOnly

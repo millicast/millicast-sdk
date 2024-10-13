@@ -1,8 +1,7 @@
 import { ScenarioWorld } from "cucumber-playwright-framework";
-import { verifyDiagnoseConnected } from "./utils"
-import { expect } from '@playwright/test';
+import { getDiagnoseConnection, waitForFunctionResult } from "./utils"
 
-export async function verifyViewerIsActive(
+export async function getViewerIsActive(
   scenarioWorld: ScenarioWorld,
 ) {
   const page = scenarioWorld.page;
@@ -14,31 +13,13 @@ export async function verifyViewerIsActive(
 export async function verifyViewerIsLive(
   scenarioWorld: ScenarioWorld,
 ) {
-  await expect.poll( async () => {
-  return await verifyViewerIsActive(scenarioWorld);
-  }, {
-    timeout: 10000,
-  }).toBe(true);
-
-  await expect.poll( async () => {
-    return await verifyDiagnoseConnected(scenarioWorld);
-    }, {
-      timeout: 10000
-    }).toBe('connected');
+  await waitForFunctionResult(scenarioWorld, getViewerIsActive, true, 10000)
+  await waitForFunctionResult(scenarioWorld, getDiagnoseConnection, 'connected', 10000)
 }
 
 export async function verifyViewerIsNotLive(
   scenarioWorld: ScenarioWorld,
 ) {
-  await expect.poll( async () => {
-  return verifyViewerIsActive(scenarioWorld);
-  }, {
-    timeout: 10000,
-  }).toBe(false);
-
-  await expect.poll( async () => {
-    return verifyDiagnoseConnected(scenarioWorld);
-    }, {
-      timeout: 10000
-    }).toBe('closed');
+  await waitForFunctionResult(scenarioWorld, getViewerIsActive, false, 10000)
+  await waitForFunctionResult(scenarioWorld, getDiagnoseConnection, 'closed', 10000)
 }
