@@ -3,19 +3,20 @@ import { expect } from '@playwright/test';
 
 
 
-export async function publisherConnect(
+export async function publisherConnectWithOptions(
   scenarioWorld: ScenarioWorld,
-  codec: string,
+  options: any,
 ) {
-  logger.debug(`publisherConnect function was called`);
+  logger.debug(`publisherConnectWithOptions function was called`);
   
   var page = scenarioWorld.page
   var camDevice = await page.getByRole('button', { name: 'fake_device_0' });
   var micDevice = await page.getByRole('button', { name: 'Fake Default Audio Input '});
-  await expect(camDevice).toBeVisible();
-  await expect(micDevice).toBeVisible();
+  await expect(camDevice).toBeVisible({timeout:10000});
+  await expect(micDevice).toBeVisible({timeout:10000});
   
-  await runStep(`the host executes the "window.millicastPublish.connect({codec:${codec}})" JavaScript function on the page`, scenarioWorld);
+  var optionsStr = JSON.stringify(options)
+  await page.evaluate(`window.millicastPublish.connect(${optionsStr})`)
 }
 
 export async function publisherStop(

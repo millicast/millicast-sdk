@@ -1,4 +1,4 @@
-import { ScenarioWorld, runStep } from "cucumber-playwright-framework";
+import { ScenarioWorld } from "cucumber-playwright-framework";
 import { expect } from '@playwright/test';
 
 
@@ -9,35 +9,37 @@ export async function waitForFunctionResult(
   timeout: number,
 ) {
   await expect.poll( async () => {
-  return await funcToCall(scenarioWorld);
-  }, {
+      return await funcToCall(scenarioWorld);
+    }, {
     timeout: timeout,
   }).toBe(expectedResult);
 }
 
-export async function waitForCondition(
-  actualValue: string|Object,
-  expectedResult: string|boolean,
+export async function waitForPropertyValue(
+  scenarioWorld: ScenarioWorld,
+  funcReturningObj: Function,
+  propName: string,
+  expectedValue: string|number|boolean,
   timeout: number,
 ) {
   await expect.poll( async () => {
-  return actualValue;
-  }, {
+      return await funcReturningObj(scenarioWorld);
+    }, {
     timeout: timeout,
-  }).toBe(expectedResult);
+  }).toHaveProperty(`${propName}`, expectedValue);
 }
 
-export async function getDiagnoseConnection(
+export async function getDiagnose(
   scenarioWorld: ScenarioWorld,
 ) {
   const page = scenarioWorld.page;
-  const result = await page.evaluate("window.Logger.diagnose().connection");
-  console.log('diagnose().connection = '+result);
-  return result
+  const diagnose = {
+    connection: await page.evaluate('window.Logger.diagnose().connection'),
+  };
+  return diagnose;
 };
 
-// todo: make it getMediaStream and return mediaStream dict
-export async function verifyMediaStreamActive(
+export async function getMediaStream(
   scenarioWorld: ScenarioWorld,
 ) {
   const page = scenarioWorld.page;
@@ -45,11 +47,10 @@ export async function verifyMediaStreamActive(
     active: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.active'),
     id: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.id')
   };
-  expect(mediaStream.active).toBe(true);
+  return mediaStream;
 };
 
-// todo: make it getVideoTrack and return videoTrack dict
-export async function verifyVideoTrackLive(
+export async function getVideoTrack(
   scenarioWorld: ScenarioWorld,
 ) {
   const page = scenarioWorld.page;
@@ -57,12 +58,10 @@ export async function verifyVideoTrackLive(
     kind: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.getVideoTracks()[0].kind'),
     readyState: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.getVideoTracks()[0].readyState')
   };
-  expect(videoTrack.kind).toBe('video');
-  expect(videoTrack.readyState).toBe('live');
+  return videoTrack;
 };
 
-// todo: make it getAudioTrack return audioTrack dict
-export async function verifyAudioTrackLive(
+export async function getAudioTrack(
   scenarioWorld: ScenarioWorld,
 ) {
   const page = scenarioWorld.page;
@@ -70,16 +69,15 @@ export async function verifyAudioTrackLive(
     kind: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.getAudioTracks()[0].kind'),
     readyState: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.getAudioTracks()[0].readyState')
   };
-  expect(audioTrack.kind).toBe('audio');
-  expect(audioTrack.readyState).toBe('live');
+return audioTrack;
 };
 
 export async function verifyMediaTracksEnabled(
   scenarioWorld: ScenarioWorld,
 ) {
-  // todo: make it wait for condition instead of seconds
-  await runStep('the host waits for "3" seconds', scenarioWorld);
-  await verifyMediaStreamActive(scenarioWorld);
-  await verifyVideoTrackLive(scenarioWorld);
-  await verifyAudioTrackLive(scenarioWorld);
+  await waitForPropertyValue(scenarioWorld, getMediaStream, 'active', true, 5000)
+  await waitForPropertyValue(scenarioWorld, getVideoTrack, 'kind', 'video', 5000)
+  await waitForPropertyValue(scenarioWorld, getVideoTrack, 'readyState', 'live', 5000)
+  await waitForPropertyValue(scenarioWorld, getAudioTrack, 'kind', 'audio', 5000)
+  await waitForPropertyValue(scenarioWorld, getAudioTrack, 'readyState', 'live', 5000)
 }

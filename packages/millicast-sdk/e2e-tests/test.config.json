@@ -72,7 +72,7 @@
   "reportPath": "./packages/millicast-sdk/e2e-tests/test-reports",
   "artifactsPath": "./packages/millicast-sdk/e2e-tests/test-reports/artifacts",
   "reportFileName": "Playwright_e2e_tests_Report",
-  "retry": 1,
+  "retry": 0,
   "retainLogsForRetry": true,
   "parallel": 1
 }

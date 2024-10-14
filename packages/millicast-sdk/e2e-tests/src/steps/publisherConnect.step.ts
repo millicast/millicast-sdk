@@ -1,19 +1,19 @@
 import { Given, Then } from "@cucumber/cucumber";
 import { ScenarioWorld } from "cucumber-playwright-framework";
 import { 
-  publisherConnect, 
   publisherStop, 
-  publisherConnectAndVerifyStream 
+  publisherConnectAndVerifyStream,
+  publisherConnectWithOptions
 } from "../stepsImpl/publisherConnect.step.impl";
 
 
-Then(
-    "the publisher1 connects to stream with codec {string}",
-    async function (this: ScenarioWorld, codec) {
-      await publisherConnect(this, codec);
-    }
-  );
-  
+Given('the publisher1 connects to stream with options', 
+  async function (this:ScenarioWorld, dataTable) {
+  const options = dataTable.rowsHash();
+  console.log(options)
+  await publisherConnectWithOptions(this, options);
+});
+
 Then(
   "the publisher1 stops connection",
   async function (this: ScenarioWorld) {
