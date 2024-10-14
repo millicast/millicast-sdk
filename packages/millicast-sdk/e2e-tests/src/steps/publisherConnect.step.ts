@@ -10,7 +10,6 @@ import {
 Given('the publisher1 connects to stream with options', 
   async function (this:ScenarioWorld, dataTable) {
   const options = dataTable.rowsHash();
-  console.log(options)
   await publisherConnectWithOptions(this, options);
 });
 

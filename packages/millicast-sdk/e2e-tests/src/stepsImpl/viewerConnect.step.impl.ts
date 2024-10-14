@@ -1,5 +1,6 @@
 import { ScenarioWorld, logger, runSteps } from "cucumber-playwright-framework";
 
+
 export async function viewerConnect(
   scenarioWorld: ScenarioWorld,
 ) {
@@ -27,3 +28,26 @@ export async function viewerConnectAndVerifyStream(
     scenarioWorld
   )
 };
+
+export async function viewerConnectWithOptions(
+  scenarioWorld: ScenarioWorld,
+  options: any,
+) {
+  logger.debug(`viewerConnectWithOptions function was called`);
+  console.log(options)
+  var page = scenarioWorld.page
+  
+  const optionsDict: Record<string,any> = {}
+  //convert strings into boolean if true/false encountered
+  Object.entries(options).forEach(([key, value]) => {
+    if(value ==='true'|| value ==='false'){
+      const myBool: boolean = (value === 'true');
+      optionsDict[key] = myBool;
+    } else{
+      optionsDict[key] = value;
+    }
+  })
+
+  var optionsStr = JSON.stringify(optionsDict)
+  await page.evaluate(`window.millicastView.connect(${optionsStr})`)
+}

@@ -4,6 +4,7 @@ import {
   viewerConnect,
   viewerStop,
   viewerConnectAndVerifyStream,
+  viewerConnectWithOptions
 } from "../stepsImpl/viewerConnect.step.impl";
 
 Then(
@@ -27,3 +28,9 @@ Given(
     await viewerConnectAndVerifyStream(this);
   }
 );
+
+Given('the viewer1 connects to stream with options', 
+  async function (this:ScenarioWorld, dataTable) {
+  const options = dataTable.rowsHash();
+  await viewerConnectWithOptions(this, options);
+});

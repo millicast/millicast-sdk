@@ -2,7 +2,6 @@ import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
 import { expect } from '@playwright/test';
 
 
-
 export async function publisherConnectWithOptions(
   scenarioWorld: ScenarioWorld,
   options: any,
@@ -15,7 +14,18 @@ export async function publisherConnectWithOptions(
   await expect(camDevice).toBeVisible({timeout:10000});
   await expect(micDevice).toBeVisible({timeout:10000});
   
-  var optionsStr = JSON.stringify(options)
+  const optionsDict: Record<string,any> = {}
+  //convert strings into boolean if true/false encountered
+  Object.entries(options).forEach(([key, value]) => {
+    if(value ==='true'|| value ==='false'){
+      const myBool: boolean = (value === 'true');
+      optionsDict[key] = myBool;
+    } else{
+      optionsDict[key] = value;
+    }
+  })
+
+  var optionsStr = JSON.stringify(optionsDict)
   await page.evaluate(`window.millicastPublish.connect(${optionsStr})`)
 }
 

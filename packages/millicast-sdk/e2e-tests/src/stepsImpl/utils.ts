@@ -5,7 +5,7 @@ import { expect } from '@playwright/test';
 export async function waitForFunctionResult(
   scenarioWorld: ScenarioWorld,
   funcToCall: Function,
-  expectedResult: string|boolean,
+  expectedResult: string|boolean|undefined,
   timeout: number,
 ) {
   await expect.poll( async () => {
@@ -45,7 +45,8 @@ export async function getMediaStream(
   const page = scenarioWorld.page;
   const mediaStream = {
     active: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.active'),
-    id: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.id')
+    id: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.id'),
+    mediaTracks: await page.evaluate('document.getElementsByTagName("video")[0].srcObject.getTracks()')
   };
   return mediaStream;
 };
@@ -75,9 +76,29 @@ return audioTrack;
 export async function verifyMediaTracksEnabled(
   scenarioWorld: ScenarioWorld,
 ) {
-  await waitForPropertyValue(scenarioWorld, getMediaStream, 'active', true, 5000)
-  await waitForPropertyValue(scenarioWorld, getVideoTrack, 'kind', 'video', 5000)
-  await waitForPropertyValue(scenarioWorld, getVideoTrack, 'readyState', 'live', 5000)
-  await waitForPropertyValue(scenarioWorld, getAudioTrack, 'kind', 'audio', 5000)
-  await waitForPropertyValue(scenarioWorld, getAudioTrack, 'readyState', 'live', 5000)
+  await waitForPropertyValue(scenarioWorld, getMediaStream, 'active', true, 5000);
+  await waitForPropertyValue(scenarioWorld, getVideoTrack, 'kind', 'video', 5000);
+  await waitForPropertyValue(scenarioWorld, getVideoTrack, 'readyState', 'live', 5000);
+  await waitForPropertyValue(scenarioWorld, getAudioTrack, 'kind', 'audio', 5000);
+  await waitForPropertyValue(scenarioWorld, getAudioTrack, 'readyState', 'live', 5000);
+}
+
+// for now there is a different behaviour if media disabled by viewer or by publisher
+export async function verifyViewerMediaTracksDisabled(
+  scenarioWorld: ScenarioWorld, videoDisabled: string, audioDisabled: string
+) {
+
+  await waitForPropertyValue(scenarioWorld, getMediaStream, 'active', true, 5000);
+  if(videoDisabled === 'true' || audioDisabled === 'true'){
+    var mediaTracksTotal = (await getMediaStream(scenarioWorld))["mediaTracks"];
+    expect(mediaTracksTotal.length).toBe(1);
+  }
+  if(videoDisabled === 'false') {
+    await waitForPropertyValue(scenarioWorld, getVideoTrack, 'kind', 'video', 5000);
+    await waitForPropertyValue(scenarioWorld, getVideoTrack, 'readyState', 'live', 5000);
+  }
+  if(audioDisabled === 'false') {
+    await waitForPropertyValue(scenarioWorld, getAudioTrack, 'kind', 'audio', 5000);
+    await waitForPropertyValue(scenarioWorld, getAudioTrack, 'readyState', 'live', 5000);
+  }
 }
