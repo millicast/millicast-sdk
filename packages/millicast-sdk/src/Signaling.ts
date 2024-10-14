@@ -199,15 +199,10 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe(
-    sdp = '',
-    options: ViewConnectOptions | boolean,
-    pinnedSourceId = null,
-    excludedSourceIds = null
-  ): Promise<string> {
+  async subscribe(sdp = '', options: ViewConnectOptions | boolean): Promise<string> {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
-    const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
+    const optionsParsed = getSubscribeOptions(options)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
@@ -275,8 +270,8 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish(sdp = '', options: SignalingPublishOptions, record = null, sourceId = null) {
-    const optionsParsed = getPublishOptions(options, record, sourceId)
+  async publish(sdp = '', options: SignalingPublishOptions) {
+    const optionsParsed = getPublishOptions(options)
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
@@ -382,34 +377,22 @@ export default class Signaling extends EventEmitter {
   }
 }
 
-const getSubscribeOptions = (
-  options: ViewConnectOptions | boolean,
-  legacyPinnedSourceId: string | null,
-  legacyExcludedSourceIds: string[] | null
-): ViewConnectOptions => {
+const getSubscribeOptions = (options: ViewConnectOptions | boolean): ViewConnectOptions => {
   let parsedOptions = typeof options === 'object' ? options : ({} as ViewConnectOptions)
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       vad: options as boolean,
-      pinnedSourceId: legacyPinnedSourceId,
-      excludedSourceIds: legacyExcludedSourceIds,
     }
   }
   return parsedOptions
 }
 
-const getPublishOptions = (
-  options: SignalingPublishOptions | string,
-  legacyRecord: boolean | null,
-  legacySourceId: string | null
-): SignalingPublishOptions => {
+const getPublishOptions = (options: SignalingPublishOptions | string): SignalingPublishOptions => {
   let parsedOptions = typeof options === 'object' ? options : ({} as SignalingPublishOptions)
   if (Object.keys(parsedOptions).length === 0) {
     const defaultCodec = VideoCodec.H264
     parsedOptions = {
       codec: (options as VideoCodec) ?? defaultCodec,
-      record: legacyRecord,
-      sourceId: legacySourceId,
     }
   }
   return parsedOptions
