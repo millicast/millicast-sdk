@@ -9,8 +9,8 @@
     "realtime",
     "streaming"
   ],
-  "main": "./index.js",
-  "module": "./index.mjs",
+  "main": "./millicast.mjs",
+  "module": "./millicast.mjs",
   "typings": "./index.d.ts",
   "files": [
     "dist",
