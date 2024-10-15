@@ -70,8 +70,6 @@ export function validatePublishConnectOptions(obj: any): {
   if (obj.disableAudio && !isBoolean(obj.disableAudio)) {
     errorMessages.push(`Invalid disableAudio: ${obj.disableAudio}`)
   }
-  console.log('!!! videocodec: ', obj.codec)
-  console.log('!!!! isSupporedVideoCodec: ', isSupporedVideoCodec(obj.codec))
   if (obj.codec !== undefined && !isSupporedVideoCodec(obj.codec)) {
     errorMessages.push(`Invalid codec: ${obj.codec}`)
   }
