@@ -26,13 +26,13 @@ const isSupporedVideoCodec = (value: unknown): value is VideoCodec =>
 
 export function validatePublishConnectOptions(obj: any): {
   error?: ValidationError
-  obj: PublishConnectOptions
+  value: PublishConnectOptions
 } {
   const errorMessages: string[] = []
   let error: ValidationError | undefined
 
-  if (!obj) {
-    return { error: new ValidationError([`Publish Connection Options is not defined: ${obj}`]), obj }
+  if (!isObject(obj)) {
+    return { error: new ValidationError([`Publish Connection Options must be an object`]), value: obj }
   }
 
   if (obj.sourceId && !isString(obj.sourceId)) {
@@ -51,9 +51,11 @@ export function validatePublishConnectOptions(obj: any): {
   if (obj.dependencyDescriptor && !isBoolean(obj.dependencyDescriptor)) {
     errorMessages.push(`Invalid dependencyDescriptor: ${obj.dependencyDescriptor}`)
   }
-  if (!obj.mediaStream) {
-    errorMessages.push(`MediaStream required`)
-  } else if (isObject(obj.mediaStream) || (isArray(obj.mediaStream) && obj.mediaStream.every(isObject))) {
+  if (
+    obj.mediaStream !== undefined &&
+    !isObject(obj.mediaStream) &&
+    !(isArray(obj.mediaStream) && obj.mediaStream.every(isObject))
+  ) {
     errorMessages.push(`Invalid mediaStream: ${obj.mediaStream}`)
   }
   if (obj.bandwidth && !isNumber(obj.bandwidth)) {
@@ -68,7 +70,9 @@ export function validatePublishConnectOptions(obj: any): {
   if (obj.disableAudio && !isBoolean(obj.disableAudio)) {
     errorMessages.push(`Invalid disableAudio: ${obj.disableAudio}`)
   }
-  if (obj.codec && isSupporedVideoCodec(obj.codec)) {
+  console.log('!!! videocodec: ', obj.codec)
+  console.log('!!!! isSupporedVideoCodec: ', isSupporedVideoCodec(obj.codec))
+  if (obj.codec !== undefined && !isSupporedVideoCodec(obj.codec)) {
     errorMessages.push(`Invalid codec: ${obj.codec}`)
   }
   if (obj.simulcast && !isBoolean(obj.simulcast)) {
@@ -86,7 +90,7 @@ export function validatePublishConnectOptions(obj: any): {
   if (
     obj.events &&
     (!isArray(obj.events) ||
-      obj.events.every(
+      !obj.events.every(
         (event: unknown) => isString(event) && ['active', 'inactive', 'viewercount'].includes(event)
       ))
   ) {
@@ -99,5 +103,5 @@ export function validatePublishConnectOptions(obj: any): {
   if (errorMessages.length) {
     error = new ValidationError(errorMessages)
   }
-  return { error: error, obj }
+  return { error: error, value: obj }
 }
