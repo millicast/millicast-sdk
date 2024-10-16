@@ -121,8 +121,17 @@
     "defaultBase": "main"
   },
   "release": {
+    "projects": ["@millicast/sdk"],
     "version": {
       "conventionalCommits": true
+    },
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": true
+    },
+    "git": {
+      "commit": false,
+      "tag": false
     },
     "conventionalCommits": {}
   }
