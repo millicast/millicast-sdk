@@ -19,7 +19,7 @@ npm ci
 
 ### Pull request - Conventional Commits
 
-As to improve release processes and automation with [`nx release`](), we need to improve how the commits to main branch are written. Thereforer we are implementing the use of the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for **Pull Request titles**. Refer to the docs if necessary, but below there is a small introduction of this standard.
+As to improve release processes and automation with [`nx release`](https://nx.dev/recipes/nx-release/get-started-with-nx-release), we need to improve how the commits to main branch are written. Thereforer we are implementing the use of the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for **Pull Request titles**. Refer to the docs if necessary, but below there is a small introduction of this standard.
 
 #### Title structure
 
@@ -51,10 +51,6 @@ When a **BREAKING CHANGE** is done, it can be written as that in the description
   style - Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 - `test` - Adding missing tests or correcting existing tests and also changes for our test app
 - `perf` - A code change that improves performance
-
-### Changesets
-
-Whenever you are working on a new feature, fix or change, make sure you create a **changeset** with a description of the change. Follow [this](.changeset/README.md#Changes-per-feature) guide for further understanding.
 
 ### Building packages
 
