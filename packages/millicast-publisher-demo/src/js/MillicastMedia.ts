@@ -1,20 +1,25 @@
-"use strict";
+'use strict'
+
+import { MediaDevicesInfo, MillicastMediaOptinos } from '../types/MillicastMedia.types'
 
 /**
  * @class MillicastMedia
  * @classdesc It's in charge of the devices, their respective streams, and the states of those streams.
- * @param {Object} options
- * @param {mediaStream} options.MediaStream - the mediaStream of the selected devices.
- * @param {Object} options.constraints - the selected options of the selected devices (audio and video controls).
+ * @param {MillicastMediaOptinos} options
+ * @param {MediaStream} options.MediaStream - the mediaStream of the selected devices.
+ * @param {MediaStreamConstraints} options.constraints - the selected options of the selected devices (audio and video controls).
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
  * @example const millicastMedia = new MillicastMedia();
  * @constructor
  */
 
 export default class MillicastMedia {
-  constructor(options) {
+  constraints: MediaStreamConstraints
+  mediaStream: MediaStream
+  devices: MediaDevicesInfo
+  constructor(options: MillicastMediaOptinos) {
     //constructor syntactic sugar
-    this.mediaStream = null;
+    this.mediaStream = null
 
     this.constraints = {
       audio: {
@@ -26,10 +31,9 @@ export default class MillicastMedia {
         height: { ideal: 720 },
         frameRate: { ideal: 24 },
       },
-    };
+    }
     /*Apply Options*/
-    if (options && !!options.constraints)
-      Object.assign(this.constraints, options.constraints);
+    if (options && !!options.constraints) Object.assign(this.constraints, options.constraints)
   }
 
   /**
@@ -39,21 +43,21 @@ export default class MillicastMedia {
    */
 
   get getDevices() {
-    return this.getMediaDevices();
+    return this.getMediaDevices()
   }
 
   getInput(kind) {
-    let input = null;
-    if (!kind) return input;
+    let input = null
+    if (!kind) return input
     if (this.mediaStream) {
       for (let track of this.mediaStream.getTracks()) {
         if (track.kind === kind) {
-          input = track;
-          break;
+          input = track
+          break
         }
       }
     }
-    return input;
+    return input
   }
 
   /**
@@ -63,7 +67,7 @@ export default class MillicastMedia {
    */
 
   get videoInput() {
-    return this.getInput("video");
+    return this.getInput('video')
   }
 
   /**
@@ -73,7 +77,7 @@ export default class MillicastMedia {
    */
 
   get audioInput() {
-    return this.getInput("audio");
+    return this.getInput('audio')
   }
 
   /**
@@ -85,38 +89,32 @@ export default class MillicastMedia {
   async getMedia() {
     //gets user cam and mic
     try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia(
-        this.constraints
-      );
-      return this.mediaStream;
+      this.mediaStream = await navigator.mediaDevices.getUserMedia(this.constraints)
+      return this.mediaStream
     } catch (error) {
-      console.error("Could not get Media: ", error, this.constraints);
-      throw error;
+      console.error('Could not get Media: ', error, this.constraints)
+      throw error
     }
   }
 
   async getMediaDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
-      throw new Error(
-        "Could not get list of media devices!  This might not be supported by this browser."
-      );
+      throw new Error('Could not get list of media devices!  This might not be supported by this browser.')
 
     try {
-      const items = { audioinput: [], videoinput: [], audiooutput: [] };
-      const mediaDevices = await navigator.mediaDevices.enumerateDevices();
-      for (const device of mediaDevices)
-        this.addMediaDevicesToList(items, device);
-      this.devices = items;
+      const items: MediaDevicesInfo = { audioinput: [], videoinput: [], audiooutput: [] }
+      const mediaDevices = await navigator.mediaDevices.enumerateDevices()
+      for (const device of mediaDevices) this.addMediaDevicesToList(items, device)
+      this.devices = items
     } catch (error) {
-      console.error("Could not get Media: ", error);
-      this.devices = [];
+      console.error('Could not get Media: ', error)
+      this.devices = null
     }
-    return this.devices;
+    return this.devices
   }
 
   addMediaDevicesToList(items, device) {
-    if (device.deviceId !== "default" && items[device.kind])
-      items[device.kind].push(device);
+    if (device.deviceId !== 'default' && items[device.kind]) items[device.kind].push(device)
   }
 
   /**
@@ -126,7 +124,7 @@ export default class MillicastMedia {
    */
 
   async changeVideo(id) {
-    return await this.changeSource(id, "video");
+    return await this.changeSource(id, 'video')
   }
 
   /**
@@ -136,19 +134,19 @@ export default class MillicastMedia {
    */
 
   async changeAudio(id) {
-    return await this.changeSource(id, "audio");
+    return await this.changeSource(id, 'audio')
   }
 
   async changeSource(id, sourceType) {
-    if (!id) throw new Error("Required id");
+    if (!id) throw new Error('Required id')
 
     this.constraints[sourceType] = {
       ...this.constraints[sourceType],
       deviceId: {
         exact: id,
       },
-    };
-    return await this.getMedia();
+    }
+    return await this.getMedia()
   }
 
   /**
@@ -157,14 +155,14 @@ export default class MillicastMedia {
    */
 
   muteVideo(boolean = true) {
-    let changed = false;
+    let changed = false
     if (this.mediaStream) {
-      this.mediaStream.getVideoTracks()[0].enabled = !boolean;
-      changed = true;
+      this.mediaStream.getVideoTracks()[0].enabled = !boolean
+      changed = true
     } else {
-      console.error("There is no media stream object.");
+      console.error('There is no media stream object.')
     }
-    return changed;
+    return changed
   }
 
   /**
@@ -173,13 +171,13 @@ export default class MillicastMedia {
    */
 
   muteAudio(boolean = true) {
-    let changed = false;
+    let changed = false
     if (this.mediaStream) {
-      this.mediaStream.getAudioTracks()[0].enabled = !boolean;
-      changed = true;
+      this.mediaStream.getAudioTracks()[0].enabled = !boolean
+      changed = true
     } else {
-      console.error("There is no media stream object.");
+      console.error('There is no media stream object.')
     }
-    return changed;
+    return changed
   }
 }
