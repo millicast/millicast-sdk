@@ -72,7 +72,6 @@ const defaultConnectOptions: ViewConnectOptions = {
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {HTMLMediaElement} [mediaElement=null] - Deprecated: Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
@@ -91,18 +90,8 @@ export default class View extends BaseWebRTC {
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
   protected override options: ViewConnectOptions | null = null
-  constructor(
-    tokenGenerator: TokenGeneratorCallback,
-    mediaElement: HTMLVideoElement | null = null,
-    autoReconnect = true
-  ) {
+  constructor(tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
     super(tokenGenerator, logger, autoReconnect)
-
-    if (mediaElement) {
-      logger.warn(
-        'The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.'
-      )
-    }
   }
 
   /**

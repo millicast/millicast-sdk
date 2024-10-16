@@ -1365,7 +1365,6 @@
 //    *
 //    * - A connection path that you can get from {@link Director} module or from your own implementation.
 //    * @constructor
-//    * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
 //    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
 //    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
 //    */
@@ -1473,7 +1472,6 @@
 //    *
 //    * - A connection path that you can get from {@link Director} module or from your own implementation.
 //    * @constructor
-//    * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
 //    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
 //    * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
 //    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
@@ -1482,7 +1480,6 @@
 //     constructor(
 //       streamName: string,
 //       tokenGenerator: TokenGeneratorCallback,
-//       mediaElement?: HTMLVideoElement,
 //       autoReconnect?: boolean
 //     )
 //     /**
