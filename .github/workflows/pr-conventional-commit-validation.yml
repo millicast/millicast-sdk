@@ -10,6 +10,7 @@ jobs:
   validate-pr-title:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: PR Conventional Commit Validation
         uses: ./.github/actions/PRConventionalCommits-1.3.0
         with:
