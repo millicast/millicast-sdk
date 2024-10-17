@@ -1,0 +1,17 @@
+name: PR Conventional Commit Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - v1-migration
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR Conventional Commit Validation
+        uses: ./.github/actions/PRConventionalCommits-1.3.0
+        with:
+          task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","build"]'
+          custom_labels: '{"feat": "feature", "fix": "fix", "docs": "documentation", "test": "test", "ci": "CI/CD", "refactor": "refactor", "perf": "performance", "chore": "chore", "build": "build"}'
