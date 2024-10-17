@@ -112,6 +112,7 @@ defineFeature(feature, (test) => {
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       viewer.webRTCPeer.initStats()
       const stats = await viewer.webRTCPeer.peer.getStats()
+      viewer.webRTCPeer.peerConnectionStats.parseStats(stats)
       Diagnostics.addStats(stats)
     })
 
