@@ -117,7 +117,8 @@ const Director = {
    * //Define getPublisher as callback for Publish
    * const streamName = "My Millicast Stream Name"
    * const token = "My Millicast publishing token"
-   * const tokenGenerator = () => Director.getPublisher({token, streamName})
+   * const options: DirectorPublisherOptions = { token, streamName }
+   * const tokenGenerator = () => Director.getPublisher(options)
    *
    * //Create a new instance
    * const millicastPublish = new Publish(tokenGenerator)
@@ -133,14 +134,14 @@ const Director = {
    * //Start broadcast
    * await millicastPublish.connect(broadcastOptions)
    */
-  getPublisher: async (
-    options: DirectorPublisherOptions,
-    streamName: string | null = null,
-    streamType: StreamTypes = StreamTypes.WEBRTC
-  ): Promise<MillicastDirectorResponse> => {
-    const optionsParsed = getPublisherOptions(options, streamName, streamType)
+  getPublisher: async (options: DirectorPublisherOptions): Promise<MillicastDirectorResponse> => {
+    options.streamType = options.streamType || StreamTypes.WEBRTC
+    const optionsParsed = getPublisherOptions(options)
     logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
-    const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
+    const payload = {
+      streamName: optionsParsed.streamName,
+      streamType: optionsParsed.streamType,
+    }
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
     const url = `${Director.getEndpoint()}/api/director/publish`
     try {
@@ -174,9 +175,11 @@ const Director = {
    * //Define getSubscriber as callback for Subscribe
    * const streamName = "My Millicast Stream Name"
    * const accountId = "Millicast Publisher account Id"
-   * const tokenGenerator = () => Director.getSubscriber({streamName, accountId})
+   * const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+   * const tokenGenerator = () => Director.getSubscriber(options)
    * //... or for an secure stream
-   * const tokenGenerator = () => Director.getSubscriber({streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'})
+   * const options: DirectorSubscriberOptions = { {streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'} }
+   * const tokenGenerator = () => Director.getSubscriber(options)
    *
    * //Create a new instance
    * const millicastView = new View(tokenGenerator)
@@ -194,12 +197,8 @@ const Director = {
    * await millicastView.connect(options)
    */
 
-  getSubscriber: async (
-    options: DirectorSubscriberOptions,
-    streamAccountId: string | null = null,
-    subscriberToken: string | null = null
-  ): Promise<MillicastDirectorResponse> => {
-    const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
+  getSubscriber: async (options: DirectorSubscriberOptions): Promise<MillicastDirectorResponse> => {
+    const optionsParsed = getSubscriberOptions(options)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(
       `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
@@ -209,6 +208,7 @@ const Director = {
       streamAccountId: optionsParsed.streamAccountId,
       streamName: optionsParsed.streamName,
     }
+    const subscriberToken = optionsParsed.subscriberToken
     let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' }
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
@@ -232,33 +232,21 @@ const Director = {
   },
 }
 
-const getPublisherOptions = (
-  options: DirectorPublisherOptions,
-  legacyStreamName: string | null,
-  legacyStreamType: string | null
-): DirectorPublisherOptions => {
+const getPublisherOptions = (options: DirectorPublisherOptions): DirectorPublisherOptions => {
   let parsedOptions = typeof options === 'object' ? options : ({} as DirectorPublisherOptions)
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       token: options,
-      streamName: legacyStreamName,
-      streamType: legacyStreamType,
     } as unknown as DirectorPublisherOptions
   }
   return parsedOptions
 }
 
-const getSubscriberOptions = (
-  options: DirectorSubscriberOptions,
-  legacyStreamAccountId: string | null,
-  legacySubscriberToken: string | null
-): DirectorSubscriberOptions => {
+const getSubscriberOptions = (options: DirectorSubscriberOptions): DirectorSubscriberOptions => {
   let parsedOptions = typeof options === 'object' ? options : ({} as DirectorSubscriberOptions)
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       streamName: options,
-      streamAccountId: legacyStreamAccountId,
-      subscriberToken: legacySubscriberToken,
     } as unknown as DirectorSubscriberOptions
   }
   return parsedOptions

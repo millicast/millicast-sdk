@@ -38,7 +38,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getSubscriber(streamName, accountId)
+      const options = { streamName, streamAccountId: accountId }
+      response = await Director.getSubscriber(options)
     })
 
     then('I get the subscriber connection path', async () => {
@@ -66,7 +67,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getSubscriber(streamName, null, token)
+      const options = { streamName, streamAccountId: null, subscriberToken: token }
+      response = await Director.getSubscriber(options)
     })
 
     then('I get the subscriber connection path', async () => {
@@ -102,7 +104,8 @@ defineFeature(feature, (test) => {
     when('I request a connection path to Director API', async () => {
       mockFetchRejectValue(mockedResponse)
       try {
-        responseError = await Director.getSubscriber(streamName, accountId)
+        const options = { streamName, streamAccountId: accountId }
+        responseError = await Director.getSubscriber(options)
       } catch (error) {
         responseError = error
       }
@@ -134,7 +137,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getSubscriber(streamName, accountId)
+      const options = { streamName, streamAccountId: accountId }
+      response = await Director.getSubscriber(options)
     })
 
     then('I get the subscriber connection path', async () => {
@@ -170,7 +174,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API using options object', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getSubscriber({ streamName, streamAccountId: accountId })
+      const options = { streamName, streamAccountId: accountId }
+      response = await Director.getSubscriber(options)
     })
 
     then('I get the subscriber connection path', async () => {
@@ -203,7 +208,8 @@ defineFeature(feature, (test) => {
     when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
       Director.setLiveDomain('test.com')
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getSubscriber(streamName, accountId)
+      const options = { streamName, streamAccountId: accountId }
+      response = await Director.getSubscriber(options)
     })
 
     then('I get the subscriber connection path', async () => {

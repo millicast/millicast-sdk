@@ -541,7 +541,6 @@
 //      * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
 //      * @returns {ConnectionStats} RTCPeerConnection stats parsed.
 //      */
-//     parseStats(rawStats: RTCStatsReport): ConnectionStats
 //     /**
 //      * Stops the monitoring of RTCPeerConnection statistics.
 //      */
@@ -1029,9 +1028,11 @@
 //      * //Define getSubscriber as callback for Subscribe
 //      * const streamName = "My Millicast Stream Name"
 //      * const accountId = "Millicast Publisher account Id"
-//      * const tokenGenerator = () => Director.getSubscriber({streamName, accountId})
+//      * const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+//      * const tokenGenerator = () => Director.getSubscriber(options)
 //      * //... or for an secure stream
-//      * const tokenGenerator = () => Director.getSubscriber({streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'})
+//      * const options: DirectorSubscriberOptions = {streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'}
+//      * const tokenGenerator = () => Director.getSubscriber(options)
 //      *
 //      * //Create a new instance
 //      * const millicastView = new View(streamName, tokenGenerator)
@@ -1050,8 +1051,7 @@
 //      */
 //     static getSubscriber(
 //       options: DirectorSubscriberOptions | string,
-//       streamAccountId?: string,
-//       subscriberToken?: string
+//       isDRMEnabled?: boolean
 //     ): Promise<MillicastDirectorResponse>
 //   }
 
@@ -1365,7 +1365,6 @@
 //    *
 //    * - A connection path that you can get from {@link Director} module or from your own implementation.
 //    * @constructor
-//    * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
 //    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
 //    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
 //    */
@@ -1473,7 +1472,6 @@
 //    *
 //    * - A connection path that you can get from {@link Director} module or from your own implementation.
 //    * @constructor
-//    * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
 //    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
 //    * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
 //    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
@@ -1482,7 +1480,6 @@
 //     constructor(
 //       streamName: string,
 //       tokenGenerator: TokenGeneratorCallback,
-//       mediaElement?: HTMLVideoElement,
 //       autoReconnect?: boolean
 //     )
 //     /**
