@@ -136,13 +136,12 @@ const Director = {
    */
   getPublisher: async (options: DirectorPublisherOptions): Promise<MillicastDirectorResponse> => {
     options.streamType = options.streamType || StreamTypes.WEBRTC
-    const optionsParsed = getPublisherOptions(options)
-    logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
+    logger.info('Getting publisher connection path for stream name: ', options.streamName)
     const payload = {
-      streamName: optionsParsed.streamName,
-      streamType: optionsParsed.streamType,
+      streamName: options.streamName,
+      streamType: options.streamType,
     }
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${options.token}` }
     const url = `${Director.getEndpoint()}/api/director/publish`
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
@@ -210,8 +209,8 @@ const Director = {
     }
     const subscriberToken = optionsParsed.subscriberToken
     let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' }
-    if (optionsParsed.subscriberToken) {
-      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+    if (subscriberToken) {
+      headers = { ...headers, Authorization: `Bearer ${subscriberToken}` }
     }
     const url = `${Director.getEndpoint()}/api/director/subscribe`
     try {
@@ -230,16 +229,6 @@ const Director = {
       throw e
     }
   },
-}
-
-const getPublisherOptions = (options: DirectorPublisherOptions): DirectorPublisherOptions => {
-  let parsedOptions = typeof options === 'object' ? options : ({} as DirectorPublisherOptions)
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      token: options,
-    } as unknown as DirectorPublisherOptions
-  }
-  return parsedOptions
 }
 
 const getSubscriberOptions = (options: DirectorSubscriberOptions): DirectorSubscriberOptions => {
