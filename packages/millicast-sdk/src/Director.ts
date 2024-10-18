@@ -197,17 +197,16 @@ const Director = {
    */
 
   getSubscriber: async (options: DirectorSubscriberOptions): Promise<MillicastDirectorResponse> => {
-    const optionsParsed = getSubscriberOptions(options)
-    Diagnostics.initAccountId(optionsParsed.streamAccountId)
+    Diagnostics.initAccountId(options.streamAccountId)
     logger.info(
-      `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
+      `Getting subscriber connection data for stream name: ${options.streamName} and account id: ${options.streamAccountId}`
     )
 
     const payload = {
-      streamAccountId: optionsParsed.streamAccountId,
-      streamName: optionsParsed.streamName,
+      streamAccountId: options.streamAccountId,
+      streamName: options.streamName,
     }
-    const subscriberToken = optionsParsed.subscriberToken
+    const subscriberToken = options.subscriberToken
     let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' }
     if (subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${subscriberToken}` }
@@ -222,23 +221,13 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
-      if (optionsParsed.subscriberToken) data.data.subscriberToken = optionsParsed.subscriberToken
+      if (options.subscriberToken) data.data.subscriberToken = options.subscriberToken
       return data.data
     } catch (e) {
       logger.error('Error while getting subscriber connection path. ', e)
       throw e
     }
   },
-}
-
-const getSubscriberOptions = (options: DirectorSubscriberOptions): DirectorSubscriberOptions => {
-  let parsedOptions = typeof options === 'object' ? options : ({} as DirectorSubscriberOptions)
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      streamName: options,
-    } as unknown as DirectorSubscriberOptions
-  }
-  return parsedOptions
 }
 
 const parseIncomingDirectorResponse = (directorResponse: { data: DirectorResponse }) => {
