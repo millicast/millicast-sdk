@@ -4,9 +4,14 @@ import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
-import { PublishCmd, SignalingPublishOptions, ViewCmd, ViewResponse } from './types/Signaling.types'
+import {
+  PublishCmd,
+  SignalingPublishOptions,
+  SignalingSubscribeOptions,
+  ViewCmd,
+  ViewResponse,
+} from './types/Signaling.types'
 import { ICodecs } from './types/PeerConnection.types'
-import { ViewConnectOptions } from './types/View.types'
 import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('Signaling')
@@ -199,7 +204,7 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe(sdp = '', options: ViewConnectOptions | boolean): Promise<string> {
+  async subscribe(sdp = '', options: SignalingSubscribeOptions): Promise<string> {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
@@ -219,7 +224,7 @@ export default class Signaling extends EventEmitter {
       data.events = options.events
     }
     if (options.forcePlayoutDelay) {
-      data.forcePlayoutDelay = options.forcePlayoutDelay as { min: number; max: number }
+      data.forcePlayoutDelay = options.forcePlayoutDelay
     }
     if (options.layer) {
       data.layer = options.layer
@@ -311,14 +316,14 @@ export default class Signaling extends EventEmitter {
       }
     }
 
-    if (optionsParsed.record !== null) {
-      data.record = optionsParsed.record
+    if (options.record !== null) {
+      data.record = options.record
     }
-    if (Array.isArray(optionsParsed.events)) {
-      data.events = optionsParsed.events
+    if (Array.isArray(options.events)) {
+      data.events = options.events
     }
     try {
-      if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
+      if (options.disableVideo && options.disableAudio) {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
       await this.connect()
@@ -331,7 +336,7 @@ export default class Signaling extends EventEmitter {
           feedId: string
         }
 
-        if (optionsParsed.codec === VideoCodec.AV1) {
+        if (options.codec === VideoCodec.AV1) {
           // If browser supports AV1X, we change from AV1 to AV1X
           const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(
             (codec) => codec.mimeType === 'video/AV1X'

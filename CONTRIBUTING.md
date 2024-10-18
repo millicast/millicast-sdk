@@ -205,6 +205,7 @@ classDiagram
   }
   class Director {
     <<Singleton>>
+    const optionsPublish: DirectorPublisherOptions = { token, streamName }
     +getPublisher(publishToken, streamName, streamType?)
     const options: DirectorSubscriberOptions = { streamName, streamAccountId, subscriberToken? }
     +getSubscriber(options)
