@@ -202,32 +202,31 @@ export default class Signaling extends EventEmitter {
   async subscribe(sdp = '', options: ViewConnectOptions | boolean): Promise<string> {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
-    const optionsParsed = getSubscribeOptions(options)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
     const data: ViewCmd = {
       sdp,
-      pinnedSourceId: optionsParsed.pinnedSourceId,
-      excludedSourceIds: optionsParsed.excludedSourceIds,
+      pinnedSourceId: options.pinnedSourceId,
+      excludedSourceIds: options.excludedSourceIds,
     }
 
-    if (optionsParsed.vad) {
+    if (options.vad) {
       data.vad = true
     }
-    if (Array.isArray(optionsParsed.events)) {
-      data.events = optionsParsed.events
+    if (Array.isArray(options.events)) {
+      data.events = options.events
     }
-    if (optionsParsed.forcePlayoutDelay) {
-      data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay as { min: number; max: number }
+    if (options.forcePlayoutDelay) {
+      data.forcePlayoutDelay = options.forcePlayoutDelay as { min: number; max: number }
     }
-    if (optionsParsed.layer) {
-      data.layer = optionsParsed.layer
+    if (options.layer) {
+      data.layer = options.layer
     }
 
     try {
-      if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
+      if (options.disableVideo && options.disableAudio) {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
       await this.connect()
@@ -271,44 +270,40 @@ export default class Signaling extends EventEmitter {
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
   async publish(sdp = '', options: SignalingPublishOptions) {
-    const optionsParsed = getPublishOptions(options)
-
-    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
+    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${options.codec}`)
     logger.debug('Publishing local description: ', sdp)
     const supportedVideoCodecs =
       PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: ICodecs) => cdc.codec) ?? []
 
     const videoCodecs = Object.values(VideoCodec)
-    if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
-      logger.error(`Invalid codec ${optionsParsed.codec}. Possible values are: `, videoCodecs)
-      throw new Error(`Invalid codec ${optionsParsed.codec}. Possible values are: ${videoCodecs}`)
+    if (videoCodecs.indexOf(options.codec) === -1) {
+      logger.error(`Invalid codec ${options.codec}. Possible values are: `, videoCodecs)
+      throw new Error(`Invalid codec ${options.codec}. Possible values are: ${videoCodecs}`)
     }
 
-    if (supportedVideoCodecs.length > 0 && supportedVideoCodecs.indexOf(optionsParsed.codec) === -1) {
-      logger.error(`Unsupported codec ${optionsParsed.codec}. Possible values are: `, supportedVideoCodecs)
-      throw new Error(
-        `Unsupported codec ${optionsParsed.codec}. Possible values are: ${supportedVideoCodecs}`
-      )
+    if (supportedVideoCodecs.length > 0 && supportedVideoCodecs.indexOf(options.codec) === -1) {
+      logger.error(`Unsupported codec ${options.codec}. Possible values are: `, supportedVideoCodecs)
+      throw new Error(`Unsupported codec ${options.codec}. Possible values are: ${supportedVideoCodecs}`)
     }
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
-    if (optionsParsed.codec === VideoCodec.AV1) {
+    if (options.codec === VideoCodec.AV1) {
       sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
     }
 
     const data: PublishCmd = {
       sdp,
-      codec: optionsParsed.codec,
-      sourceId: optionsParsed.sourceId,
+      codec: options.codec,
+      sourceId: options.sourceId,
     }
 
-    if (optionsParsed.priority) {
+    if (options.priority) {
       if (
-        Number.isInteger(optionsParsed.priority) &&
-        optionsParsed.priority >= -2147483648 &&
-        optionsParsed.priority <= 2147483647
+        Number.isInteger(options.priority) &&
+        options.priority >= -2147483648 &&
+        options.priority <= 2147483647
       ) {
-        data.priority = optionsParsed.priority
+        data.priority = options.priority
       } else {
         throw new Error(
           'Invalid value for priority option. It should be a decimal integer between the range [-2^31, +2^31 - 1]'
@@ -375,25 +370,4 @@ export default class Signaling extends EventEmitter {
 
     return this.transactionManager?.cmd(cmd, data) as object
   }
-}
-
-const getSubscribeOptions = (options: ViewConnectOptions | boolean): ViewConnectOptions => {
-  let parsedOptions = typeof options === 'object' ? options : ({} as ViewConnectOptions)
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      vad: options as boolean,
-    }
-  }
-  return parsedOptions
-}
-
-const getPublishOptions = (options: SignalingPublishOptions | string): SignalingPublishOptions => {
-  let parsedOptions = typeof options === 'object' ? options : ({} as SignalingPublishOptions)
-  if (Object.keys(parsedOptions).length === 0) {
-    const defaultCodec = VideoCodec.H264
-    parsedOptions = {
-      codec: (options as VideoCodec) ?? defaultCodec,
-    }
-  }
-  return parsedOptions
 }
