@@ -1,3 +1,0 @@
-username: "input[name=username]"
-password: "input[name=password]"
-login button: "button.orangehrm-login-button"

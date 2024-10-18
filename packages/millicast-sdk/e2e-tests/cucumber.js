@@ -1,7 +1,8 @@
 const configReader = require('cucumber-playwright-framework/lib/readers/testConfigReader')
 const fs = require('fs-extra')
+const path = require('path')
 
-const testConfigFile = `${__dirname}/test.config.json`
+const testConfigFile = path.join(__dirname, 'test.config.json')
 process.env.TEST_CONFIG = testConfigFile
 process.env.SUITE_START_TIME = `${new Date().toISOString()}`
 const colorsEnabled = false
@@ -17,9 +18,7 @@ if (!colorsEnabled) {
 const common = [
   './packages/millicast-sdk/e2e-tests/features/**/*.feature',
   '--require-module ts-node/register',
-  '--require ./packages/millicast-sdk/e2e-tests/src/hooks/cleanup.ts',
   '--require ./packages/millicast-sdk/e2e-tests/src/hooks/hooks.ts',
-  '--require ./packages/millicast-sdk/e2e-tests/src/hooks/setup.ts',
   '--require ./packages/millicast-sdk/e2e-tests/src/steps/**/*.ts',
   `-f json:${testConfig.reportPath}/${testConfig.reportFileName}.json`,
   `-f html:${testConfig.reportPath}/${testConfig.reportFileName}.html`,

@@ -1,53 +1,65 @@
-import { ScenarioWorld, logger, runSteps } from "cucumber-playwright-framework";
-
+import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
+import { verifyViewerIsLive } from "./viewerVerification.step.impl";
+import { DataTable } from "@cucumber/cucumber";
+import { parseData } from "../support-utils/utils";
+import { openViewerApp } from "./appLaunch.step.impl";
 
 export async function viewerConnect(
   scenarioWorld: ScenarioWorld,
+  actor: string,
 ) {
   logger.debug(`viewerConnect function was called`);
-  await scenarioWorld.page.evaluate(`window.millicastView.connect()`)
-};
 
-export async function viewerStop(
-  scenarioWorld: ScenarioWorld,
-) {
+  const jsCall = `window.millicastView.connect()`;
+  await runStep(
+    [
+      `the ${actor} switch to the "Viewer" app`,
+      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
+    ],
+    scenarioWorld,
+  );
+}
+
+export async function viewerStop(scenarioWorld: ScenarioWorld, actor: string) {
   logger.debug(`viewerStop function was called`);
-  await scenarioWorld.page.evaluate(`window.millicastView.stop()`)
-};
 
-// Doesn't work, steps in runStep aren't called !
+  const jsCall = `window.millicastView.stop()`;
+  await runStep(
+    [
+      `the ${actor} switch to the "Viewer" app`,
+      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
+    ],
+    scenarioWorld,
+  );
+}
+
 export async function viewerConnectAndVerifyStream(
   scenarioWorld: ScenarioWorld,
+  actor: string,
 ) {
   logger.debug(`viewerConnectAndVerifyStream function was called`);
-  await runSteps(
-    [
-      `the viewer1 is on the "viewerPage" page of the "millicast-viewer-demo" app`,
-      `viewer1 verify if connected`,
-    ],
-    scenarioWorld
-  )
-};
+
+  await openViewerApp(scenarioWorld, actor);
+  await viewerConnect(scenarioWorld, actor);
+  await verifyViewerIsLive(scenarioWorld, actor);
+}
 
 export async function viewerConnectWithOptions(
   scenarioWorld: ScenarioWorld,
-  options: any,
+  actor: string,
+  dataTable: DataTable,
 ) {
   logger.debug(`viewerConnectWithOptions function was called`);
-  console.log(options)
-  var page = scenarioWorld.page
-  
-  const optionsDict: Record<string,any> = {}
-  //convert strings into boolean if true/false encountered
-  Object.entries(options).forEach(([key, value]) => {
-    if(value ==='true'|| value ==='false'){
-      const myBool: boolean = (value === 'true');
-      optionsDict[key] = myBool;
-    } else{
-      optionsDict[key] = value;
-    }
-  })
 
-  var optionsStr = JSON.stringify(optionsDict)
-  await page.evaluate(`window.millicastView.connect(${optionsStr})`)
+  const options = dataTable.rowsHash();
+  const optionsStr = JSON.stringify(parseData(options));
+  const jsCall = `window.millicastView.connect(${optionsStr.replaceAll('"', "'")})`;
+
+  await runStep(
+    [
+      `the ${actor} switch to the "Viewer" app`,
+      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
+    ],
+    scenarioWorld,
+  );
 }

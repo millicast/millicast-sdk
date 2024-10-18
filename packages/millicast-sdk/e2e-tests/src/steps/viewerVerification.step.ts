@@ -1,35 +1,38 @@
-import { Then} from "@cucumber/cucumber";
+import { DataTable, Then } from "@cucumber/cucumber";
 import { ScenarioWorld } from "cucumber-playwright-framework";
 import {
   verifyViewerIsLive,
   verifyViewerIsNotLive,
 } from "../stepsImpl/viewerVerification.step.impl";
-import { verifyMediaTracksEnabled, verifyViewerMediaTracksDisabled } from "../stepsImpl/utils"
+import {
+  verifyMediaTracksEnabled,
+  verifyViewerMediaTracksDisabled,
+} from "../support-utils/utils";
 
 Then(
-    "the viewer1 verify if connected",
-    async function (this: ScenarioWorld) {
-      await verifyViewerIsLive(this);
-    }
-  );
-
-Then(
-  "the viewer1 verify if not connected",
-  async function (this: ScenarioWorld) {
-    await verifyViewerIsNotLive(this);
-  }
+  /^the "([^"]*)" connected stream should be LIVE$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await verifyViewerIsLive(this, actor);
+  },
 );
 
 Then(
-  "the viewer1 verify media tracks enabled",
-  async function (this: ScenarioWorld) {
-    await verifyMediaTracksEnabled(this);
-  } 
+  /^the "([^"]*)" connected stream should be NOT LIVE$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await verifyViewerIsNotLive(this, actor);
+  },
 );
 
 Then(
-  "the viewer1 verify video disabled {string} and audio disabled {string}",
-  async function (this: ScenarioWorld, videoDisabled: string, audioDisabled: string) {
-    await verifyViewerMediaTracksDisabled(this, videoDisabled, audioDisabled)
-  } 
+  /^the "([^"]*)" should be able to view media tracks for the connected stream$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await verifyMediaTracksEnabled(this, actor);
+  },
+);
+
+Then(
+  /^the "([^"]*)" should be able to view below AV state for the connected stream$/,
+  async function (this: ScenarioWorld, actor: string, dataTable: DataTable) {
+    await verifyViewerMediaTracksDisabled(this, actor, dataTable);
+  },
 );

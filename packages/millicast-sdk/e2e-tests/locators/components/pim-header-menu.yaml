@@ -1,9 +1,0 @@
-pim header: ".oxd-topbar-body-nav"
-
-employee list:
-  - "$ref: pim header"
-  - '//a[text()="Employee List"]'
-
-add employee:
-  - "$ref: pim header"
-  - '//a[text()="Add Employee"]'

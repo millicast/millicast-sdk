@@ -5,17 +5,16 @@ import {
   verifyPublisherIsNotLive,
 } from "../stepsImpl/publisherVerification.step.impl";
 
+Then(
+  /^the "([^"]*)" stream should be LIVE$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await verifyPublisherIsLive(this, actor);
+  },
+);
 
 Then(
-    "the publisher1 verify if connected",
-    async function (this: ScenarioWorld) {
-      await verifyPublisherIsLive(this);
-    }
-  );
-
-Then(
-  "the publisher1 verify if not connected",
-  async function (this: ScenarioWorld) {
-    await verifyPublisherIsNotLive(this);
-  }
+  /^the "([^"]*)" stream should be NOT LIVE$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await verifyPublisherIsNotLive(this, actor);
+  },
 );

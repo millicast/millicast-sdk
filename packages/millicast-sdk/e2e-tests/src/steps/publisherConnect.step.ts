@@ -1,28 +1,28 @@
-import { Given, Then } from "@cucumber/cucumber";
+import { DataTable, Given, Then } from "@cucumber/cucumber";
 import { ScenarioWorld } from "cucumber-playwright-framework";
-import { 
-  publisherStop, 
+import {
+  publisherStop,
   publisherConnectAndVerifyStream,
-  publisherConnectWithOptions
+  publisherConnectWithOptions,
 } from "../stepsImpl/publisherConnect.step.impl";
 
-
-Given('the publisher1 connects to stream with options', 
-  async function (this:ScenarioWorld, dataTable) {
-  const options = dataTable.rowsHash();
-  await publisherConnectWithOptions(this, options);
-});
+Given(
+  /^the "([^"]*)" starts the stream with the specified options$/,
+  async function (this: ScenarioWorld, actor: string, dataTable: DataTable) {
+    await publisherConnectWithOptions(this, actor, dataTable);
+  },
+);
 
 Then(
-  "the publisher1 stops connection",
-  async function (this: ScenarioWorld) {
-    await publisherStop(this);
-  }
+  /^the "([^"]*)" stops the published stream$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await publisherStop(this, actor);
+  },
 );
 
 Given(
-  "the publisher1 is connected and stream is live",
-  async function (this: ScenarioWorld) {
-    await publisherConnectAndVerifyStream(this);
-  }
+  /^the "([^"]*)" starts the stream and should be LIVE$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await publisherConnectAndVerifyStream(this, actor);
+  },
 );

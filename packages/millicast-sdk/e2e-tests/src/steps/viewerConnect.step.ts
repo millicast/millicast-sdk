@@ -1,36 +1,36 @@
-import { Given, Then } from "@cucumber/cucumber";
+import { DataTable, Given, Then } from "@cucumber/cucumber";
 import { ScenarioWorld } from "cucumber-playwright-framework";
 import {
   viewerConnect,
   viewerStop,
   viewerConnectAndVerifyStream,
-  viewerConnectWithOptions
+  viewerConnectWithOptions,
 } from "../stepsImpl/viewerConnect.step.impl";
 
 Then(
-    "the viewer1 connects to stream",
-    async function (this: ScenarioWorld) {
-      await viewerConnect(this);
-    }
-  );
+  /^the "([^"]*)" connects to the published stream$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await viewerConnect(this, actor);
+  },
+);
 
 Then(
-  "the viewer1 stops connection",
-  async function (this: ScenarioWorld) {
-    await viewerStop(this);
-  }
+  /^the "([^"]*)" disconnects from the published stream$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await viewerStop(this, actor);
+  },
 );
 
-// Doesn't work, steps in runStep aren't called !
 Given(
-  "the viewer1 is connected and stream is live",
-  async function (this: ScenarioWorld) {
-    await viewerConnectAndVerifyStream(this);
-  }
+  /^the "([^"]*)" connects to the published stream and should be LIVE$/,
+  async function (this: ScenarioWorld, actor: string) {
+    await viewerConnectAndVerifyStream(this, actor);
+  },
 );
 
-Given('the viewer1 connects to stream with options', 
-  async function (this:ScenarioWorld, dataTable) {
-  const options = dataTable.rowsHash();
-  await viewerConnectWithOptions(this, options);
-});
+Given(
+  /^the "([^"]*)" connects to the published stream with the specified options$/,
+  async function (this: ScenarioWorld, actor: string, dataTable: DataTable) {
+    await viewerConnectWithOptions(this, actor, dataTable);
+  },
+);

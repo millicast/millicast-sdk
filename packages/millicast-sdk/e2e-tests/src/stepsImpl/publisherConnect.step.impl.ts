@@ -1,53 +1,58 @@
 import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
-import { expect } from '@playwright/test';
-
+import { DataTable } from "@cucumber/cucumber";
+import { verifyPublisherIsLive } from "./publisherVerification.step.impl";
+import { parseData } from "../support-utils/utils";
+import { openPublisherApp } from "./appLaunch.step.impl";
 
 export async function publisherConnectWithOptions(
   scenarioWorld: ScenarioWorld,
-  options: any,
+  actor: string,
+  dataTable: DataTable,
 ) {
   logger.debug(`publisherConnectWithOptions function was called`);
-  
-  var page = scenarioWorld.page
-  var camDevice = await page.getByRole('button', { name: 'fake_device_0' });
-  var micDevice = await page.getByRole('button', { name: 'Fake Default Audio Input '});
-  await expect(camDevice).toBeVisible({timeout:10000});
-  await expect(micDevice).toBeVisible({timeout:10000});
-  
-  const optionsDict: Record<string,any> = {}
-  //convert strings into boolean if true/false encountered
-  Object.entries(options).forEach(([key, value]) => {
-    if(value ==='true'|| value ==='false'){
-      const myBool: boolean = (value === 'true');
-      optionsDict[key] = myBool;
-    } else{
-      optionsDict[key] = value;
-    }
-  })
 
-  var optionsStr = JSON.stringify(optionsDict)
-  await page.evaluate(`window.millicastPublish.connect(${optionsStr})`)
+  const options = dataTable.rowsHash();
+  const optionsStr = JSON.stringify(parseData(options));
+  const jsCall = `window.millicastPublish.connect(${optionsStr.replaceAll('"', "'")})`;
+
+  await runStep(
+    [
+      `the ${actor} switch to the "Publisher" app`,
+      `the ${actor} waits for "cam device" text to be "fake_device_0"`,
+      `the ${actor} waits for "miclist button" text to be "Fake Default Audio Input "`,
+      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
+    ],
+    scenarioWorld,
+  );
 }
 
 export async function publisherStop(
   scenarioWorld: ScenarioWorld,
+  actor: string,
 ) {
   logger.debug(`publisherStop function was called`);
-  await runStep(`the host executes the "window.millicastPublish.stop()" JavaScript function on the page`, scenarioWorld)
-};
 
-//doesn't work - custom steps are not found
+  const jsCall = "window.millicastPublish.stop()";
+  await runStep(
+    [
+      `the ${actor} switch to the "Publisher" app`,
+      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
+    ],
+    scenarioWorld,
+  );
+}
+
 export async function publisherConnectAndVerifyStream(
   scenarioWorld: ScenarioWorld,
+  actor: string,
 ) {
   logger.debug(`publisherConnectAndVerifyStream function was called`);
 
-  await runStep(
-    [
-      `the publisher1 is on the "publisherPage" page of the "millicast-publisher-demo" app`,
-      `the publisher1 connects to stream with codec "h264"`,
-      `publisher1 verify if connected`,
-    ],
-    scenarioWorld
-  )
-};
+  await openPublisherApp(scenarioWorld, actor);
+  await publisherConnectWithOptions(
+    scenarioWorld,
+    actor,
+    new DataTable([["codec", "h264"]]),
+  );
+  await verifyPublisherIsLive(scenarioWorld, actor);
+}

@@ -1,0 +1,9 @@
+on load validation: "video window:displayed"
+
+publish button: '#publishBtn'
+ready badge: '#readyBadge'
+video window: '#vidWin'
+camlist button: '#camListBtn'
+cam device: '#camListBtn p'
+miclist button: '#micListBtn'
+mic device: '#camListBtn p'
