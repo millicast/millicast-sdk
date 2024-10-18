@@ -6,8 +6,8 @@
       const startPublisher = async (publishToken, streamName, options) => {
         const millicast = window.millicast
         millicast.Logger.setLevel(millicast.Logger.DEBUG)
-        const options = { token: publishToken, streamName }
-        const tokenGenerator = () => millicast.Director.getPublisher(options)
+        const publishOptions = { ...options, token: publishToken, streamName }
+        const tokenGenerator = () => millicast.Director.getPublisher(publishOptions)
         const publish = new millicast.Publish(tokenGenerator)
         const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
         document.getElementById('my-video').srcObject = mediaStream
