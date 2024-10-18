@@ -3,7 +3,8 @@ const accountId = window.accountId
 const streamName = window.streamName
 const token = window.token
 
-const tokenGenerator = () => millicast.Director.getPublisher({ token, streamName })
+const options = { token, streamName }
+const tokenGenerator = () => millicast.Director.getPublisher(options)
 
 class MillicastPublishTest {
   constructor() {

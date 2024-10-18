@@ -117,7 +117,8 @@ const Director = {
    * //Define getPublisher as callback for Publish
    * const streamName = "My Millicast Stream Name"
    * const token = "My Millicast publishing token"
-   * const tokenGenerator = () => Director.getPublisher({token, streamName})
+   * const options: DirectorPublisherOptions = { token, streamName }
+   * const tokenGenerator = () => Director.getPublisher(options)
    *
    * //Create a new instance
    * const millicastPublish = new Publish(tokenGenerator)
@@ -133,15 +134,14 @@ const Director = {
    * //Start broadcast
    * await millicastPublish.connect(broadcastOptions)
    */
-  getPublisher: async (
-    options: DirectorPublisherOptions,
-    streamName: string | null = null,
-    streamType: StreamTypes = StreamTypes.WEBRTC
-  ): Promise<MillicastDirectorResponse> => {
-    const optionsParsed = getPublisherOptions(options, streamName, streamType)
-    logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
-    const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
+  getPublisher: async (options: DirectorPublisherOptions): Promise<MillicastDirectorResponse> => {
+    options.streamType = options.streamType || StreamTypes.WEBRTC
+    logger.info('Getting publisher connection path for stream name: ', options.streamName)
+    const payload = {
+      streamName: options.streamName,
+      streamType: options.streamType,
+    }
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${options.token}` }
     const url = `${Director.getEndpoint()}/api/director/publish`
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
@@ -174,9 +174,11 @@ const Director = {
    * //Define getSubscriber as callback for Subscribe
    * const streamName = "My Millicast Stream Name"
    * const accountId = "Millicast Publisher account Id"
-   * const tokenGenerator = () => Director.getSubscriber({streamName, accountId})
+   * const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+   * const tokenGenerator = () => Director.getSubscriber(options)
    * //... or for an secure stream
-   * const tokenGenerator = () => Director.getSubscriber({streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'})
+   * const options: DirectorSubscriberOptions = { {streamName, accountId, subscriberToken: '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744'} }
+   * const tokenGenerator = () => Director.getSubscriber(options)
    *
    * //Create a new instance
    * const millicastView = new View(tokenGenerator)
@@ -194,24 +196,20 @@ const Director = {
    * await millicastView.connect(options)
    */
 
-  getSubscriber: async (
-    options: DirectorSubscriberOptions,
-    streamAccountId: string | null = null,
-    subscriberToken: string | null = null
-  ): Promise<MillicastDirectorResponse> => {
-    const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
-    Diagnostics.initAccountId(optionsParsed.streamAccountId)
+  getSubscriber: async (options: DirectorSubscriberOptions): Promise<MillicastDirectorResponse> => {
+    Diagnostics.initAccountId(options.streamAccountId)
     logger.info(
-      `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
+      `Getting subscriber connection data for stream name: ${options.streamName} and account id: ${options.streamAccountId}`
     )
 
     const payload = {
-      streamAccountId: optionsParsed.streamAccountId,
-      streamName: optionsParsed.streamName,
+      streamAccountId: options.streamAccountId,
+      streamName: options.streamName,
     }
+    const subscriberToken = options.subscriberToken
     let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' }
-    if (optionsParsed.subscriberToken) {
-      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+    if (subscriberToken) {
+      headers = { ...headers, Authorization: `Bearer ${subscriberToken}` }
     }
     const url = `${Director.getEndpoint()}/api/director/subscribe`
     try {
@@ -223,45 +221,13 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
-      if (optionsParsed.subscriberToken) data.data.subscriberToken = optionsParsed.subscriberToken
+      if (options.subscriberToken) data.data.subscriberToken = options.subscriberToken
       return data.data
     } catch (e) {
       logger.error('Error while getting subscriber connection path. ', e)
       throw e
     }
   },
-}
-
-const getPublisherOptions = (
-  options: DirectorPublisherOptions,
-  legacyStreamName: string | null,
-  legacyStreamType: string | null
-): DirectorPublisherOptions => {
-  let parsedOptions = typeof options === 'object' ? options : ({} as DirectorPublisherOptions)
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      token: options,
-      streamName: legacyStreamName,
-      streamType: legacyStreamType,
-    } as unknown as DirectorPublisherOptions
-  }
-  return parsedOptions
-}
-
-const getSubscriberOptions = (
-  options: DirectorSubscriberOptions,
-  legacyStreamAccountId: string | null,
-  legacySubscriberToken: string | null
-): DirectorSubscriberOptions => {
-  let parsedOptions = typeof options === 'object' ? options : ({} as DirectorSubscriberOptions)
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      streamName: options,
-      streamAccountId: legacyStreamAccountId,
-      subscriberToken: legacySubscriberToken,
-    } as unknown as DirectorSubscriberOptions
-  }
-  return parsedOptions
 }
 
 const parseIncomingDirectorResponse = (directorResponse: { data: DirectorResponse }) => {

@@ -72,7 +72,6 @@ const defaultConnectOptions: ViewConnectOptions = {
  * - A connection path that you can get from {@link Director} module or from your own implementation.
  * @constructor
  * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {HTMLMediaElement} [mediaElement=null] - Deprecated: Target HTML media element to mount stream.
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class View extends BaseWebRTC {
@@ -91,18 +90,8 @@ export default class View extends BaseWebRTC {
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
   protected override options: ViewConnectOptions | null = null
-  constructor(
-    tokenGenerator: TokenGeneratorCallback,
-    mediaElement: HTMLVideoElement | null = null,
-    autoReconnect = true
-  ) {
+  constructor(tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
     super(tokenGenerator, logger, autoReconnect)
-
-    if (mediaElement) {
-      logger.warn(
-        'The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.'
-      )
-    }
   }
 
   /**
@@ -131,7 +120,7 @@ export default class View extends BaseWebRTC {
    * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
    * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
    * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {Object} [options.forcePlayoutDelay = false]- Ask the server to use the playout delay header extension.
+   * @param {Object} [options.forcePlayoutDelay]        - Ask the server to use the playout delay header extension.
    * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
    * @param {Number} [options.forcePlayoutDelay.max]    - Set maximum playout delay value.
    * @param {Boolean} [options.enableDRM]               - Enable DRM, default is false.

@@ -1,4 +1,5 @@
 import { View, Director, Logger } from '@nx-millicast/millicast-sdk'
+import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
 
 window.Logger = Logger
 
@@ -19,7 +20,8 @@ const removeStream = () => {
 }
 
 const subscribe = async (streamName, streamAccountId) => {
-  const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
+  const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+  const tokenGenerator = () => Director.getSubscriber(options)
   const millicastView = new View(tokenGenerator)
   millicastView.on('broadcastEvent', (event) => {
     const layers = event.data.layers !== null ? event.data.layers : {}
@@ -60,18 +62,17 @@ player.setMediaElement(document.querySelector('#player'))
 /**
  * Intercept the LOAD request to be able to read in a contentId and get data.
  */
-player.setMessageInterceptor(
-  cast.framework.messages.MessageType.LOAD, loadRequestData => {
-    const media = loadRequestData.media
-    const { streamName, streamAccountId } = media.customData
+player.setMessageInterceptor(cast.framework.messages.MessageType.LOAD, (loadRequestData) => {
+  const media = loadRequestData.media
+  const { streamName, streamAccountId } = media.customData
 
-    subscribe(streamName, streamAccountId)
+  subscribe(streamName, streamAccountId)
 
-    loadRequestData.media.contentUrl = 'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4'
-    loadRequestData.media.contentType = 'video/mp4'
+  loadRequestData.media.contentUrl =
+    'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4'
+  loadRequestData.media.contentType = 'video/mp4'
 
-    return loadRequestData
-  }
-)
+  return loadRequestData
+})
 
 context.start()
