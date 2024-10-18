@@ -313,10 +313,8 @@ export default class View extends BaseWebRTC {
             }
             this.emit(signalingEvents.broadcastEvent, event)
             this.isMainStreamActive = true
-            if (event.name === 'active') {
-              while (this.eventQueue.length > 0) {
-                this.onTrackEvent(this.eventQueue.shift())
-              }
+            while (this.eventQueue.length > 0) {
+              this.onTrackEvent(this.eventQueue.shift())
             }
             return
           case 'inactive':
