@@ -246,10 +246,6 @@ export default class View extends BaseWebRTC {
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
-    if (subscriberData.drmObject) {
-      // cache the DRM license server URLs
-      this.DRMProfile = subscriberData.drmObject
-    }
     if (subscriberData.subscriberToken) {
       this.subscriberToken = subscriberData.subscriberToken
     }
@@ -258,10 +254,8 @@ export default class View extends BaseWebRTC {
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
-    this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track))
-    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -306,21 +300,30 @@ export default class View extends BaseWebRTC {
       this.onTrackEvent(trackEvent)
     })
 
-    signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
+    signalingInstance.on(signalingEvents.broadcastEvent, async (event) => {
       if (event.data.sourceId === null) {
         switch (event.name) {
           case 'active':
+            if (this.DRMProfile == null) {
+              const subscriberData = await this.tokenGenerator()
+              if (subscriberData.drmObject) {
+                // cache the DRM license server URLs
+                this.DRMProfile = subscriberData.drmObject
+              }
+            }
+            this.emit(signalingEvents.broadcastEvent, event)
             this.isMainStreamActive = true
             while (this.eventQueue.length > 0) {
               this.onTrackEvent(this.eventQueue.shift())
             }
-            break
+            return
           case 'inactive':
             this.isMainStreamActive = false
             break
           default:
             break
         }
+        this.emit(signalingEvents.broadcastEvent, event)
       }
     })
 
