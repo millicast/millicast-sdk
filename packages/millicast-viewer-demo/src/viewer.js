@@ -86,7 +86,7 @@ const newViewer = () => {
     }
   });
   millicastView.on("track", (event) => {
-    if (!millicastView.isDRMOn) addStream(event.streams[0]);
+    if (!enableDRM) addStream(event.streams[0]);
   });
 
   millicastView.on('metadata', (metadata) => {
