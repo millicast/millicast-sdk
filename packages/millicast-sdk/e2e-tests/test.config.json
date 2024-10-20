@@ -1,0 +1,81 @@
+{
+  "browserName": "chrome",
+  "headless": true,
+  "timeout": 90000,
+  "viewport": {
+    "width": 1480,
+    "height": 1280
+  },
+  "video": "retain-on-failure",
+  "screenshot": "only-on-failure",
+  "trace": "retain-on-failure",
+  "har": "retain-on-failure",
+  "consoleLogValidation": true,
+  "testdata": {
+  },
+  "apps": [
+    {
+      "actor": "publisher1",
+      "appName": "Publisher",
+      "appURL": "http://localhost:10001",
+      "browserName": "chrome",
+      "skipConsoleErrors": []
+    },
+    {
+      "actor": "viewer1",
+      "appName": "Viewer",
+      "appURL": "http://localhost:10002",
+      "browserName": "chrome",
+      "skipConsoleErrors": []
+    }
+  ],
+  "launchOptions": {
+    "chromium": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--use-fake-device-for-media-stream",
+        "--use-fake-ui-for-media-stream",
+        "--autoplay-policy=no-user-gesture-required",
+        "--no-proxy-server"
+      ]
+    },
+    "chrome": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--use-fake-device-for-media-stream",
+        "--use-fake-ui-for-media-stream",
+        "--autoplay-policy=no-user-gesture-required",
+        "--disable-frame-rate-limit",
+        "--disable-gpu-vsync",
+        "--max-gum-fps='9999'",
+        "--no-proxy-server"
+      ]
+    },
+    "edge": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--use-fake-device-for-media-stream",
+        "--use-fake-ui-for-media-stream",
+        "--autoplay-policy=no-user-gesture-required",
+        "--no-proxy-server"
+      ]
+    },
+    "firefox": {
+      "firefoxUserPrefs": {
+        "media.navigator.streams.fake": true,
+        "media.navigator.permission.disabled": true
+      }
+    }
+  },
+  "selectorPath": "./packages/millicast-sdk/e2e-tests/locators",
+  "logLevel": "error",
+  "reportPath": "./packages/millicast-sdk/e2e-tests/test-reports",
+  "artifactsPath": "./packages/millicast-sdk/e2e-tests/test-reports/artifacts",
+  "reportFileName": "Playwright_e2e_tests_Report",
+  "retry": 0,
+  "retainLogsForRetry": true,
+  "parallel": 1
+}
