@@ -13,9 +13,9 @@ Feature: Connect Feature
       { 
         "version": "0.3.0-RC-10",
         "subscriberId[?]match": "^[0-9a-f]{32}$",
-        "connectionDurationMs[?]match": "^\d+$",
-        "feedId[?]defined": ""
-        "stats[?]defined": []
+        "connectionDurationMs[?]match": "^\\d+$",
+        "feedId[?]defined": "",
+        "stats[?]defined": [],
         "history[?]defined": []
       }
     """
