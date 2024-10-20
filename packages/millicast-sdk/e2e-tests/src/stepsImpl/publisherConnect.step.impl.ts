@@ -10,20 +10,15 @@ export async function publisherConnectWithOptions(
   dataTable: DataTable,
 ) {
   logger.debug(`publisherConnectWithOptions function was called`);
-
   const options = dataTable.rowsHash();
   const optionsStr = JSON.stringify(parseData(options));
-  const jsCall = `window.millicastPublish.connect(${optionsStr.replaceAll('"', "'")})`;
 
-  await runStep(
-    [
+  await runStep([
       `the ${actor} switch to the "Publisher" app`,
       `the ${actor} waits for "cam device" text to be "fake_device_0"`,
       `the ${actor} waits for "miclist button" text to be "Fake Default Audio Input "`,
-      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
-    ],
-    scenarioWorld,
-  );
+      `the ${actor} executes the "window.millicastPublish.connect(${optionsStr})" JavaScript function on the page`,
+    ], scenarioWorld);
 }
 
 export async function publisherStop(
@@ -32,14 +27,10 @@ export async function publisherStop(
 ) {
   logger.debug(`publisherStop function was called`);
 
-  const jsCall = "window.millicastPublish.stop()";
-  await runStep(
-    [
+  await runStep([
       `the ${actor} switch to the "Publisher" app`,
-      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
-    ],
-    scenarioWorld,
-  );
+      `the ${actor} executes the "window.millicastPublish.stop()" JavaScript function on the page`,
+    ],scenarioWorld);
 }
 
 export async function publisherConnectAndVerifyStream(

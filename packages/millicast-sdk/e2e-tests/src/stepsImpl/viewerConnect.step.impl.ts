@@ -10,27 +10,19 @@ export async function viewerConnect(
 ) {
   logger.debug(`viewerConnect function was called`);
 
-  const jsCall = `window.millicastView.connect()`;
-  await runStep(
-    [
+  await runStep([
       `the ${actor} switch to the "Viewer" app`,
-      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
-    ],
-    scenarioWorld,
-  );
+      `the ${actor} executes the "window.millicastView.connect()" JavaScript function on the page`,
+    ], scenarioWorld);
 }
 
 export async function viewerStop(scenarioWorld: ScenarioWorld, actor: string) {
   logger.debug(`viewerStop function was called`);
 
-  const jsCall = `window.millicastView.stop()`;
-  await runStep(
-    [
+  await runStep([
       `the ${actor} switch to the "Viewer" app`,
-      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
-    ],
-    scenarioWorld,
-  );
+      `the ${actor} executes the "window.millicastView.stop()" JavaScript function on the page`,
+    ],scenarioWorld);
 }
 
 export async function viewerConnectAndVerifyStream(
@@ -53,12 +45,11 @@ export async function viewerConnectWithOptions(
 
   const options = dataTable.rowsHash();
   const optionsStr = JSON.stringify(parseData(options));
-  const jsCall = `window.millicastView.connect(${optionsStr.replaceAll('"', "'")})`;
 
   await runStep(
     [
       `the ${actor} switch to the "Viewer" app`,
-      `the ${actor} executes the "${jsCall}" JavaScript function on the page`,
+      `the ${actor} executes the "window.millicastView.connect(${optionsStr})" JavaScript function on the page`,
     ],
     scenarioWorld,
   );

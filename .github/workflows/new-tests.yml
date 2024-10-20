@@ -1,0 +1,50 @@
+name: New Test Suite
+
+on:
+  pull_request:
+
+jobs:
+  new-e2e-tests:
+    runs-on: ['ubuntu-latest']
+    container: 871317567657.dkr.ecr.us-west-2.amazonaws.com/qa-rts-test-runner:3f685209-dashboard-unittests
+    env:
+      E2E_DIR: ./packages/millicast-sdk/e2e-tests
+      E2E_TEST_CONFIG: ./packages/millicast-sdk/e2e-tests/test.config.json
+
+      ACCOUNT_ID: ${{vars.PUBLISHER_ACC_ID}}
+      MILLICAST_STREAM_NAME: ${{vars.PUBLISHER_STREAM_NAME}}
+      PUBLISH_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
+      MILLICAST_DIRECTOR_ENDPOINT: ${{vars.PUBLISHER_DIRECTOR_EP}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-install
+      - name: Suite Setup
+        run: |
+          #git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          apt-get --only-upgrade install google-chrome-stable
+          npm install playwright
+          npm run prepare
+          npm run build
+          npm run demo-app:setup
+      - name: Execute Test Suite
+        run: |
+          # Disable artifact collection
+          jq '.video = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+          jq '.trace = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+          jq '.har = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+          jq '.retry = "1"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+          jq '.parallel = "1"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+
+          npm run test-websdk -- tags "not @skip and not @ignore"
+      - name: Suite Teardown
+        if: always()
+        run: |
+          npm run demo-app:teardown
+          npm run test:report
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-artifacts
+          path: ${E2E_DIR}/test-reports/
+          retention-days: 2

@@ -3,11 +3,10 @@ import { ScenarioWorld } from "cucumber-playwright-framework";
 import {
   verifyViewerIsLive,
   verifyViewerIsNotLive,
-} from "../stepsImpl/viewerVerification.step.impl";
-import {
   verifyMediaTracksEnabled,
-  verifyViewerMediaTracksDisabled,
-} from "../support-utils/utils";
+  verifyViewerMediaTracksDisabled
+} from "../stepsImpl/viewerVerification.step.impl";
+
 
 Then(
   /^the "([^"]*)" connected stream should be LIVE$/,
