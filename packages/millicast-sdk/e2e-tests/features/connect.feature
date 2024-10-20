@@ -1,4 +1,4 @@
-@only
+
 Feature: Connect Feature
 
   Scenario: Viewer Connects To Stream Before Publisher with <codec> codec
@@ -11,12 +11,12 @@ Feature: Connect Feature
     And the "Logger.diagnose()" JavaScript function json result should be
     """
       { 
-        "client": "@millicast/millicast-sdk",
-        "version": "0.3.0-RC-8",
-        "clusterId": "syd-1",
-        "accountId": "MG2zym",
+        "version": "0.3.0-RC-10",
         "subscriberId[?]match": "^[0-9a-f]{32}$",
+        "connectionDurationMs[?]match": "^\d+$",
+        "feedId[?]defined": ""
         "stats[?]defined": []
+        "history[?]defined": []
       }
     """
     And the "viewer1" connected stream should be LIVE
@@ -118,7 +118,6 @@ Feature: Connect Feature
       | true         | false        |
       | false        | true         |
 
-  # Doesn't work, custom steps are not found in runStep()
   Scenario: Viewer Reconnects During The Stream
     Given the "publisher1" starts the stream and should be LIVE
     Given the "viewer1" connects to the published stream and should be LIVE
