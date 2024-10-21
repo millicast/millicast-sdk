@@ -197,18 +197,6 @@ export default class PeerConnectionStats extends EventEmitter {
   }
 
   /**
-   * Parse incoming RTCPeerConnection stats.
-   * @deprecated since version 0.1.45 - will be removed in future releases.
-   * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
-   * @returns {null} Method deprecated and no longer returns meaningful data.
-   */
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  parseStats(rawStats: RTCStatsReport) {
-    logger.warn('The parseStats method is deprecated and will be removed in future releases.')
-    return null
-  }
-
-  /**
    * Stops the monitoring of RTCPeerConnection statistics.
    */
   stop() {
