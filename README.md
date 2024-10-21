@@ -113,7 +113,10 @@ In vanilla JavaScript:
       const yourStreamAccountId = '...'
 
       // Define callback for generate new token
-      const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+      const options: DirectorSubscriberOptions = {
+        streamName: yourStreamName,
+        streamAccountId: yourStreamAccountId,
+      }
       const tokenGenerator = () => millicast.Director.getSubscriber(options)
 
       // Create a new instance
