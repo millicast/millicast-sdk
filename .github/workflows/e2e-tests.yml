@@ -44,5 +44,5 @@ jobs:
         if: always()
         with:
           name: test-artifacts
-          path: ${E2E_DIR}/test-reports/
+          path: ./packages/millicast-sdk/e2e-tests/test-reports/
           retention-days: 2
