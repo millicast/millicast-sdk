@@ -5,13 +5,12 @@ on:
 
 jobs:
   new-e2e-tests:
-    runs-on: ['ubuntu-latest']
-    container: 871317567657.dkr.ecr.us-west-2.amazonaws.com/qa-rts-test-runner:3f685209-dashboard-unittests
+    runs-on: ubuntu-latest
     env:
       E2E_DIR: ./packages/millicast-sdk/e2e-tests
       E2E_TEST_CONFIG: ./packages/millicast-sdk/e2e-tests/test.config.json
 
-      ACCOUNT_ID: ${{vars.PUBLISHER_ACC_ID}}
+      ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
       MILLICAST_STREAM_NAME: ${{vars.PUBLISHER_STREAM_NAME}}
       PUBLISH_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
       MILLICAST_DIRECTOR_ENDPOINT: ${{vars.PUBLISHER_DIRECTOR_EP}}
@@ -20,7 +19,6 @@ jobs:
       - uses: ./.github/actions/setup-install
       - name: Suite Setup
         run: |
-          #git config --global --add safe.directory ${GITHUB_WORKSPACE}
           apt-get --only-upgrade install google-chrome-stable
           npm install playwright
           npm run prepare
@@ -32,8 +30,7 @@ jobs:
           jq '.video = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
           jq '.trace = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
           jq '.har = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
-          jq '.retry = "1"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
-          jq '.parallel = "1"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+
           npm run test-websdk -- tags "not @skip and not @ignore"
       - name: Suite Teardown
         if: always()
