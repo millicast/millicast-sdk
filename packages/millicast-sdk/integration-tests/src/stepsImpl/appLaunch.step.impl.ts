@@ -13,6 +13,9 @@ export async function openViewerApp(
     ],
     scenarioWorld,
   );
+  
+  const jsFile = 'packages/millicast-sdk/integration-tests/src/support-utils/TestUtil.js'
+  await runStep(`the ${actor} adds the "${jsFile}" JavaScript file to the page`, scenarioWorld)
 }
 
 export async function openPublisherApp(
@@ -28,4 +31,7 @@ export async function openPublisherApp(
     ],
     scenarioWorld,
   );
+  
+  const jsFile = 'packages/millicast-sdk/integration-tests/src/support-utils/TestUtil.js'
+  await runStep(`the ${actor} adds the "${jsFile}" JavaScript file to the page`, scenarioWorld)
 }

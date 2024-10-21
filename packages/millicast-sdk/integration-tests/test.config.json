@@ -1,6 +1,6 @@
 {
   "browserName": "chrome",
-  "headless": false,
+  "headless": true,
   "timeout": 90000,
   "viewport": {
     "width": 1480,
