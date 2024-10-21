@@ -10,9 +10,9 @@ jobs:
       E2E_DIR: ./packages/millicast-sdk/e2e-tests
       E2E_TEST_CONFIG: ./packages/millicast-sdk/e2e-tests/test.config.json
 
-      ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
+      MILLICAST_ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
       MILLICAST_STREAM_NAME: ${{vars.PUBLISHER_STREAM_NAME}}
-      PUBLISH_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
+      MILLICAST_PUBLISH_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
       MILLICAST_DIRECTOR_ENDPOINT: ${{vars.PUBLISHER_DIRECTOR_EP}}
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,6 @@ jobs:
           sudo apt-get install -y moreutils
           sudo apt-get --only-upgrade install google-chrome-stable
           npm install playwright
-          # npm run prepare
           npm run build
           npm run demo-app:setup
       - name: Execute Test Suite
@@ -31,8 +30,7 @@ jobs:
           # Disable artifact collection
           jq '.video = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
           jq '.trace = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
-          # jq '.har = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
-          jq '.retry = "0"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+          jq '.har = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
 
           npm run test-websdk -- tags "not @skip and not @ignore"
       - name: Suite Teardown
@@ -40,10 +38,6 @@ jobs:
         run: |
           npm run demo-app:teardown
           npm run test:report
-          echo ${MILLICAST_STREAM_NAME} >> ./packages/millicast-sdk/e2e-tests/test-reports/data.txt
-          echo ${MILLICAST_DIRECTOR_ENDPOINT} >> ./packages/millicast-sdk/e2e-tests/test-reports/data.txt
-          echo ${ACCOUNT_ID} >> ./packages/millicast-sdk/e2e-tests/test-reports/data.txt
-          echo ${PUBLISH_TOKEN} >> ./packages/millicast-sdk/e2e-tests/test-reports/data.txt
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         if: always()
