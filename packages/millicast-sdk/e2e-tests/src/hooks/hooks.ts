@@ -1,1 +1,1 @@
-import "cucumber-playwright-framework/lib/hooks";
+import 'cucumber-playwright-framework/lib/hooks'

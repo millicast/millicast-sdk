@@ -5,6 +5,7 @@ import {
   verifyPublisherIsNotLive,
 } from "../stepsImpl/publisherVerification.step.impl";
 
+
 Then(
   /^the "([^"]*)" stream should be LIVE$/,
   async function (this: ScenarioWorld, actor: string) {

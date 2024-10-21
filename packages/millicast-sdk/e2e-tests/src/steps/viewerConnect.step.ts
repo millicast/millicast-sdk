@@ -7,6 +7,7 @@ import {
   viewerConnectWithOptions,
 } from "../stepsImpl/viewerConnect.step.impl";
 
+
 Then(
   /^the "([^"]*)" connects to the published stream$/,
   async function (this: ScenarioWorld, actor: string) {

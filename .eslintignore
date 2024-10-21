@@ -9,5 +9,6 @@ packages/millicast-publisher-demo
 packages/millicast-viewer-demo
 packages/millicast-chromecast-receiver
 packages/millicast-multiview-demo
+packages/millicast-sdk/e2e-tests
 /**/src/*.worker.js
 /**/rtc-drm-transform.js
