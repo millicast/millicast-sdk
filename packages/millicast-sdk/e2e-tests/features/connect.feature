@@ -80,7 +80,7 @@ Feature: Connect Feature
     And the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view media tracks for the connected stream
 
-  Scenario: EXPECTED FAIL - Publisher Connects With disableVideo: <disableVideo>, disableAudio: <disableAudio>
+  Scenario: EXPECTED FAIL - Publisher Connects With disableVideo as <disableVideo> and disableAudio as <disableAudio>
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | disableVideo | <disableVideo> |
@@ -97,7 +97,7 @@ Feature: Connect Feature
       | true         | false        |
       | false        | true         |
 
-  Scenario: Viewer Connects With disableVideo: <disableVideo>, disableAudio: <disableAudio>
+  Scenario: Viewer Connects With disableVideo as <disableVideo> and disableAudio as <disableAudio>
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | codec | h264 |
