@@ -1,9 +1,10 @@
 export type MillicastMediaOptinos = {
   constraints: MediaStreamConstraints
+  streamName: String
 }
 
 export type MediaDevicesInfo = {
-  audioinput: any
-  videoinput: any
-  audiooutput: any
+  audioinput: InputDeviceInfo[]
+  videoinput: InputDeviceInfo[]
+  audiooutput: InputDeviceInfo[]
 }
