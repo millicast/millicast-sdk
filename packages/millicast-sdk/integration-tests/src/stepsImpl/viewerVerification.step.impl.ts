@@ -47,30 +47,29 @@ export async function verifyViewerMediaTracksDisabled(
   dataTable: DataTable,
 ) {
   const options = dataTable.rowsHash();
-  const videoDisabled = options.videoDisabled;
-  const audioDisabled = options.audioDisabled;
+  const disableVideo = options.disableVideo;
+  const disableAudio = options.disableAudio;
 
   await runStep([
     `the ${actor} switch to the "Viewer" app`,
     `the "document.getElementsByTagName("video")[0].srcObject.active" JavaScript function result should be true`
   ], scenarioWorld);
 
-
-  if (videoDisabled === "true" || audioDisabled === "true") {
+  if (disableVideo === "true" || disableAudio === "true") {
     await runStep(`the "document.getElementsByTagName("video")[0].srcObject.getTracks().length" JavaScript function result should be 1`, scenarioWorld);
   }
 
-  if (videoDisabled === "false") {
+  if (disableVideo === "false") {
     await runSteps([
       `the "document.getElementsByTagName("video")[0].srcObject.getVideoTracks()[0].kind" JavaScript function result should be "video"`,
       `the "document.getElementsByTagName("video")[0].srcObject.getVideoTracks()[0].readyState" JavaScript function result should be "live"`,
     ], scenarioWorld);
   }
   
-  if (audioDisabled === "false") {
+  if (disableAudio === "false") {
     await runSteps([
       `the "document.getElementsByTagName("video")[0].srcObject.getAudioTracks()[0].kind" JavaScript function result should be "audio"`,
-      `the "document.getElementsByTagName("video")[0].srcObject.getVideoTracks()[0].readyState" JavaScript function result should be "live"`,
+      `the "document.getElementsByTagName("video")[0].srcObject.getAudioTracks()[0].readyState" JavaScript function result should be "live"`,
     ], scenarioWorld);  
   }
 }
