@@ -204,7 +204,7 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.subscribe(sdp)
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async subscribe(sdp = '', options: SignalingSubscribeOptions): Promise<string> {
+  async subscribe(sdp = '', options: SignalingSubscribeOptions = {}): Promise<string> {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
 
@@ -213,8 +213,14 @@ export default class Signaling extends EventEmitter {
 
     const data: ViewCmd = {
       sdp,
-      pinnedSourceId: options.pinnedSourceId,
-      excludedSourceIds: options.excludedSourceIds,
+    }
+
+    if (options.pinnedSourceId) {
+      data.pinnedSourceId = options.pinnedSourceId
+    }
+
+    if (options.excludedSourceIds) {
+      data.excludedSourceIds = options.excludedSourceIds
     }
 
     if (options.vad) {
@@ -274,7 +280,7 @@ export default class Signaling extends EventEmitter {
    * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
    * @return {Promise<String>} Promise object which represents the SDP command response.
    */
-  async publish(sdp = '', options: SignalingPublishOptions) {
+  async publish(sdp = '', options: SignalingPublishOptions = { codec: VideoCodec.H264 }) {
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${options.codec}`)
     logger.debug('Publishing local description: ', sdp)
     const supportedVideoCodecs =
