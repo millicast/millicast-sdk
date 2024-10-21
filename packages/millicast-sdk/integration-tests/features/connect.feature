@@ -9,8 +9,8 @@ Feature: Connect Feature
     Then the "publisher1" stream should be LIVE
     And the "Logger.diagnose().subscriberId" JavaScript function result should match "^[0-9a-f]{32}$"
     And the "Logger.diagnose()" JavaScript function json result should be
-    """
-      { 
+      """
+      {
         "version": "0.3.0-RC-10",
         "subscriberId[?]match": "^[0-9a-f]{32}$",
         "connectionDurationMs[?]match": "^\\d+$",
@@ -18,7 +18,7 @@ Feature: Connect Feature
         "stats[?]defined": [],
         "history[?]defined": []
       }
-    """
+      """
     And the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view media tracks for the connected stream
 
@@ -34,7 +34,7 @@ Feature: Connect Feature
     When the "publisher1" starts the stream with the specified options
       | codec | <codec> |
     Then the "publisher1" stream should be LIVE
-    
+
     When the "viewer1" opens "Viewer" app
     Then the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view media tracks for the connected stream
@@ -54,7 +54,7 @@ Feature: Connect Feature
 
     When the "viewer1" opens "Viewer" app
     Then the "viewer1" connected stream should be LIVE
-    
+
     When the "viewer1" disconnects from the published stream
     Then the "viewer1" connected stream should be NOT LIVE
 
@@ -89,7 +89,7 @@ Feature: Connect Feature
     Then the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view below AV state for the connected stream
       | disableVideo | <disableVideo> |
-      | disableAudio | <disableAudio> |    
+      | disableAudio | <disableAudio> |
 
     Examples:
       | disableVideo | disableAudio |
@@ -110,7 +110,7 @@ Feature: Connect Feature
     Then the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view below AV state for the connected stream
       | disableVideo | <disableVideo> |
-      | disableAudio | <disableAudio> |   
+      | disableAudio | <disableAudio> |
 
     Examples:
       | disableVideo | disableAudio |

@@ -16,10 +16,10 @@ if (!colorsEnabled) {
 }
 
 const common = [
-  './packages/millicast-sdk/e2e-tests/features/**/*.feature',
+  './packages/millicast-sdk/integration-tests/features/**/*.feature',
   '--require-module ts-node/register',
-  '--require ./packages/millicast-sdk/e2e-tests/src/hooks/hooks.ts',
-  '--require ./packages/millicast-sdk/e2e-tests/src/steps/**/*.ts',
+  '--require ./packages/millicast-sdk/integration-tests/src/hooks/hooks.ts',
+  '--require ./packages/millicast-sdk/integration-tests/src/steps/**/*.ts',
   `-f json:${testConfig.reportPath}/${testConfig.reportFileName}.json`,
   `-f html:${testConfig.reportPath}/${testConfig.reportFileName}.html`,
   `-f junit:${testConfig.reportPath}/${testConfig.reportFileName}.junit`,

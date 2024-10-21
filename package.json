@@ -31,10 +31,10 @@
     "start-docs": "lerna run start-docs --stream",
     "publish": "lerna publish from-git",
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "demo-app:setup": "./packages/millicast-sdk/e2e-tests/pm2-scripts/start.sh ./packages/millicast-sdk/e2e-tests/pm2-config/demo-app.config.json",
-    "demo-app:teardown": "./packages/millicast-sdk/e2e-tests/pm2-scripts/teardown.sh ./packages/millicast-sdk/e2e-tests/pm2-config/demo-app.config.json",
-    "test-websdk": "cucumber-js --config ./packages/millicast-sdk/e2e-tests/cucumber.js",
-    "test:report": "ts-node ./packages/millicast-sdk/e2e-tests/src/reporter/reporter.ts"
+    "demo-app:setup": "./packages/millicast-sdk/integration-tests/pm2-scripts/start.sh ./packages/millicast-sdk/integration-tests/pm2-config/demo-app.config.json",
+    "demo-app:teardown": "./packages/millicast-sdk/integration-tests/pm2-scripts/teardown.sh ./packages/millicast-sdk/integration-tests/pm2-config/demo-app.config.json",
+    "test-websdk": "cucumber-js --config ./packages/millicast-sdk/integration-tests/cucumber.js",
+    "test:report": "ts-node ./packages/millicast-sdk/integration-tests/src/reporter/reporter.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

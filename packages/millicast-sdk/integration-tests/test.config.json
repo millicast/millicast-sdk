@@ -1,6 +1,6 @@
 {
   "browserName": "chrome",
-  "headless": true,
+  "headless": false,
   "timeout": 90000,
   "viewport": {
     "width": 1480,
@@ -70,11 +70,11 @@
       }
     }
   },
-  "selectorPath": "./packages/millicast-sdk/e2e-tests/locators",
+  "selectorPath": "./packages/millicast-sdk/integration-tests/locators",
   "logLevel": "error",
-  "reportPath": "./packages/millicast-sdk/e2e-tests/test-reports",
-  "artifactsPath": "./packages/millicast-sdk/e2e-tests/test-reports/artifacts",
-  "reportFileName": "Playwright_e2e_tests_Report",
+  "reportPath": "./packages/millicast-sdk/integration-tests/test-reports",
+  "artifactsPath": "./packages/millicast-sdk/integration-tests/test-reports/artifacts",
+  "reportFileName": "Playwright_integration_tests_Report",
   "retry": 1,
   "retainLogsForRetry": true,
   "parallel": 1

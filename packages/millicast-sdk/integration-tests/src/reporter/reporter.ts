@@ -3,7 +3,7 @@ import { TestConfigReader } from "cucumber-playwright-framework/lib/readers/test
 import { TestConfig } from "cucumber-playwright-framework/lib/types/types";
 import { cleanupEmptyFolders } from "cucumber-playwright-framework/lib/utils/helper";
 
-const testConfigFile = `${process.cwd()}/packages/millicast-sdk/e2e-tests/test.config.json`;
+const testConfigFile = `${process.cwd()}/packages/millicast-sdk/integration-tests/test.config.json`;
 const testConfig = TestConfigReader.getConfig(testConfigFile);
 const getBrowserName = (testConfig: TestConfig) => {
   return testConfig.apps

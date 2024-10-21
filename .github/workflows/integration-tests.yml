@@ -4,11 +4,11 @@ on:
   pull_request:
 
 jobs:
-  new-e2e-tests:
+  new-integration-tests:
     runs-on: ubuntu-latest
     env:
-      E2E_DIR: ./packages/millicast-sdk/e2e-tests
-      E2E_TEST_CONFIG: ./packages/millicast-sdk/e2e-tests/test.config.json
+      INTEGRATION_DIR: ./packages/millicast-sdk/integration-tests
+      INTEGRATION_TEST_CONFIG: ./packages/millicast-sdk/integration-tests/test.config.json
 
       MILLICAST_ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
       MILLICAST_STREAM_NAME: ${{vars.PUBLISHER_STREAM_NAME}}
@@ -28,9 +28,9 @@ jobs:
       - name: Execute Test Suite
         run: |
           # Disable artifact collection
-          jq '.video = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
-          jq '.trace = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
-          jq '.har = "off"' ${E2E_TEST_CONFIG} | sponge ${E2E_TEST_CONFIG}
+          jq '.video = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+          jq '.trace = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+          jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
 
           npm run test-websdk -- tags "not @skip and not @ignore"
       - name: Suite Teardown
@@ -43,5 +43,5 @@ jobs:
         if: always()
         with:
           name: test-artifacts
-          path: ./packages/millicast-sdk/e2e-tests/test-reports/
+          path: ./packages/millicast-sdk/integration-tests/test-reports/
           retention-days: 2

@@ -9,7 +9,7 @@
     "strict": true,
     "skipLibCheck": false,
   },
-  "include": ["./src/**/*.ts", "e2e-tests/**/*.ts"],
+  "include": ["./src/**/*.ts", "integration-tests/**/*.ts"],
   "exclude": ["./node_modules/**/*"],
   "ts-node": {
     "compilerOptions": {
