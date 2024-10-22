@@ -34,14 +34,16 @@ export default class MillicastPublishUserMedia extends Publish {
   get activeAudio() {
     return this.mediaManager.audioInput
   }
-  options: PublishConnectOptions = {
-    bandwidth: 0,
-    disableVideo: false,
-    disableAudio: false,
-    sourceId: '',
-    mediaStream: undefined,
-  }
-  async connect(options) {
+
+  async connect(
+    options: PublishConnectOptions = {
+      bandwidth: 0,
+      disableVideo: false,
+      disableAudio: false,
+      sourceId: null,
+      mediaStream: null,
+    }
+  ) {
     await super.connect({
       ...options,
       mediaStream: this.mediaManager.mediaStream,

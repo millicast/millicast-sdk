@@ -1,11 +1,11 @@
 'use strict'
 
-import { MediaDevicesInfo, MillicastMediaOptinos } from '../types/MillicastMedia.types'
+import { MediaDevicesInfo, MillicastMediaOptions } from '../types/MillicastMedia.types'
 
 /**
  * @class MillicastMedia
  * @classdesc It's in charge of the devices, their respective streams, and the states of those streams.
- * @param {MillicastMediaOptinos} options
+ * @param {MillicastMediaOptions} options
  * @param {MediaStream} options.MediaStream - the mediaStream of the selected devices.
  * @param {MediaStreamConstraints} options.constraints - the selected options of the selected devices (audio and video controls).
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints constraints}
@@ -17,7 +17,7 @@ export default class MillicastMedia {
   constraints: MediaStreamConstraints
   mediaStream: MediaStream
   devices: MediaDevicesInfo
-  constructor(options: MillicastMediaOptinos) {
+  constructor(options: MillicastMediaOptions) {
     //constructor syntactic sugar
     this.mediaStream = null
 
