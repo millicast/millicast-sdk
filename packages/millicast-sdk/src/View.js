@@ -323,8 +323,8 @@ export default class View extends BaseWebRTC {
           default:
             break
         }
-        this.emit(signalingEvents.broadcastEvent, event)
       }
+      this.emit(signalingEvents.broadcastEvent, event)
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
