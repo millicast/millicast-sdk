@@ -254,10 +254,8 @@ export default class View extends BaseWebRTC {
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
-    this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track))
-    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -313,20 +311,19 @@ export default class View extends BaseWebRTC {
                 this.DRMProfile = subscriberData.drmObject
               }
             }
-            this.emit(signalingEvents.broadcastEvent, event)
             this.isMainStreamActive = true
             while (this.eventQueue.length > 0) {
               this.onTrackEvent(this.eventQueue.shift())
             }
-            return
+            break
           case 'inactive':
             this.isMainStreamActive = false
             break
           default:
             break
         }
-        this.emit(signalingEvents.broadcastEvent, event)
       }
+      this.emit(signalingEvents.broadcastEvent, event)
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
