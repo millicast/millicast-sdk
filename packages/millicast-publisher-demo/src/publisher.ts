@@ -1,4 +1,7 @@
-import { MillicastDirectorResponse } from 'packages/millicast-sdk/src/types/Director.types'
+import {
+  DirectorPublisherOptions,
+  MillicastDirectorResponse,
+} from 'packages/millicast-sdk/src/types/Director.types'
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
 import { Director, Logger } from '@nx-millicast/millicast-sdk'
 
@@ -140,8 +143,8 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   }
 
   /////////////////////////
-  const tokenGenerator: Promise<MillicastDirectorResponse> = () =>
-    Director.getPublisher(publishToken, streamName)
+  const options: DirectorPublisherOptions = { token: publishToken, streamName }
+  const tokenGenerator: () => Promise<MillicastDirectorResponse> = () => Director.getPublisher(options)
   const millicastPublishUserMedia = (window.millicastPublish = await MillicastPublishUserMedia.build(
     { streamName },
     tokenGenerator,

@@ -19,15 +19,15 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
 - [SDK developer information](#sdk-developer-information)
 - [License](#license)
 
-
 ## Installation
+
 You can use the CDN version of the SDK adding this tag to your document's `<head>`. Then `millicast` global variable will be available to use it.
+
 ```html
-<script src='https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js"></script>
 ```
 
 Or if you are building an application with Node.js, you can install the SDK package to your dependencies.
-
 
 ```sh
 npm i --save @millicast/sdk
@@ -56,14 +56,13 @@ In vanilla JavaScript:
 
   <body>
     <script type="module">
-      const yourPublishingToken = "..."
-      const yourStreamName = "..."
+      const yourPublishingToken = '...'
+      const yourStreamName = '...'
 
       // Define callback for generate new tokens
-      const tokenGenerator = () => millicast.Director.getPublisher({
-        token: yourPublishingToken,
-        streamName: yourStreamName
-      })
+      const tokenGenerator = () =>
+        const options : DirectorPublisherOptions = {token: yourPublishingToken, streamName: yourStreamName}
+        millicast.Director.getPublisher(options)
 
       // Create a new instance
       const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
@@ -73,7 +72,7 @@ In vanilla JavaScript:
 
       // Publishing options
       const broadcastOptions = {
-        mediaStream
+        mediaStream,
       }
 
       // Start broadcast
@@ -86,7 +85,6 @@ In vanilla JavaScript:
   </body>
 </html>
 ```
-
 
 ### Viewer app
 
@@ -111,14 +109,15 @@ In vanilla JavaScript:
       const video = document.getElementById('my-video')
 
       // Set the credentials for the streaming
-      const yourStreamName = "..."
-      const yourStreamAccountId = "..."
+      const yourStreamName = '...'
+      const yourStreamAccountId = '...'
 
       // Define callback for generate new token
-      const tokenGenerator = () => millicast.Director.getSubscriber({
+      const options: DirectorSubscriberOptions = {
         streamName: yourStreamName,
-        streamAccountId: yourStreamAccountId
-      })
+        streamAccountId: yourStreamAccountId,
+      }
+      const tokenGenerator = () => millicast.Director.getSubscriber(options)
 
       // Create a new instance
       const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
@@ -138,30 +137,33 @@ In vanilla JavaScript:
 
 The [Documentation](https://docs.dolby.io/streaming-apis/docs/introduction-to-streaming-apis) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.dolby.io/streaming-apis/docs/getting-started) guide as a quick start.
 
-The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development. 
+The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development.
 
 ### Samples
 
 There are several packages that implement a publisher and viewer. These samples can be run and inspected for examples of how to implement various features.
 
-* [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
-* [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
-* [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
-* [millicast-multiview-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-multiview-demo#readme)
+- [millicast-publisher-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-publisher-demo#readme)
+- [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
+- [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
+- [millicast-multiview-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-multiview-demo#readme)
 
 ## JS Frameworks
 
-This section is intended to explain how properly integrate this SDK with different JS frameworks, with links to official guides that will contain a more step by step oriented explanation on how to do it. 
+This section is intended to explain how properly integrate this SDK with different JS frameworks, with links to official guides that will contain a more step by step oriented explanation on how to do it.
 
 Right now, we only have a React Native guide.
 
 ### React Native
-This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose. 
+
+This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose.
 
 Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.dolby.io/streaming-apis/docs/rn)!
 
 ## SDK developer information
+
 To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/CONTRIBUTING.md)
 
 ## License
+
 Please refer to [LICENSE](https://github.com/millicast/millicast-sdk/blob/main/LICENSE) file.

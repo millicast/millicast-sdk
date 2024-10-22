@@ -75,6 +75,7 @@ npm run start
 > Please note that before you run `npm run start`, you need to have built the solution first using `npm run build`
 
 This command opens the following demo apps in your browser:
+
 - millicast-publisher-demo
 - millicast-viewer-demo
 - millicast-sdk
@@ -82,7 +83,9 @@ This command opens the following demo apps in your browser:
 It keeps watching for changes in these packages. You only need to refresh both pages if you modify the code.
 
 ### Running tests
+
 If you want to run all tests, run:
+
 ```sh
 npm run test
 ```
@@ -90,38 +93,46 @@ npm run test
 > Note: There are some requirements to take into account before running E2E tests. Make sure to take a look at [those](#e2e-testing).
 
 #### Unit testing
-If you want to run only unit tests, navigate to the `millicast-sdk` package. 
+
+If you want to run only unit tests, navigate to the `millicast-sdk` package.
+
 ```sh
 cd packages/millicast-sdk
 npm run test-unit
 ```
 
 #### E2E testing
+
 The first step before running E2E tests is setting some environment variables and adjusting the director URL desired.
 
 1. You have to set three variables in the environment based on the token environment you are.
-  * In **MacOS/Linux**:
-  ```sh
-  export PUBLISH_TOKEN=<your_publish_token>
-  export ACCOUNT_ID=<your_account_id>
-  export STREAM_NAME=<your_stream_name>
-  ```
 
-  * In **Windows (Powershell)**:
-  ```sh
-  $env:PUBLISH_TOKEN="<your_publish_token>"
-  $env:ACCOUNT_ID="<your_account_id>"
-  $env:STREAM_NAME="<your_stream_name>"
-  ```
+- In **MacOS/Linux**:
 
-  * In **Windows (CMD)**:
-  ```sh
-  set PUBLISH_TOKEN=<your_publish_token>
-  set ACCOUNT_ID=<your_account_id>
-  set STREAM_NAME=<your_stream_name>
-  ```
+```sh
+export PUBLISH_TOKEN=<your_publish_token>
+export ACCOUNT_ID=<your_account_id>
+export STREAM_NAME=<your_stream_name>
+```
+
+- In **Windows (Powershell)**:
+
+```sh
+$env:PUBLISH_TOKEN="<your_publish_token>"
+$env:ACCOUNT_ID="<your_account_id>"
+$env:STREAM_NAME="<your_stream_name>"
+```
+
+- In **Windows (CMD)**:
+
+```sh
+set PUBLISH_TOKEN=<your_publish_token>
+set ACCOUNT_ID=<your_account_id>
+set STREAM_NAME=<your_stream_name>
+```
 
 If you only want to run E2E tests, in the command line run:
+
 ```sh
 npm run test-e2e
 ```
@@ -194,8 +205,10 @@ classDiagram
   }
   class Director {
     <<Singleton>>
-    +getPublisher(publishToken, streamName, streamType?)
-    +getSubscriber(streamName, streamAccountId, subscribeToken?)
+    const optionsPublish: DirectorPublisherOptions = { token, streamName, streamType? }
+    +getPublisher(optionsPublish)
+    const optionsSubscribe: DirectorSubscriberOptions = { streamName, streamAccountId, subscriberToken? }
+    +getSubscriber(optionsSubscribe)
   }
   class SdpParser {
     <<Singleton>>

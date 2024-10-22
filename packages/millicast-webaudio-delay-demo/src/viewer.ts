@@ -1,5 +1,6 @@
 import { View, Director, Logger } from '@nx-millicast/millicast-sdk'
 import CircularSlider from '@maslick/radiaslider/src/slider-circular'
+import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
 console.log(CircularSlider)
 
 window.Logger = Logger
@@ -30,7 +31,13 @@ document.body.onclick = async () => {
   document.getElementById('slider').removeChild(document.getElementById('play'))
   document.getElementById('myCanvas').style.display = 'inherit'
 
-  const slider = new CircularSlider({ canvasId: 'myCanvas', continuousMode: true, x0: 150, y0: 150, readOnly: false })
+  const slider = new CircularSlider({
+    canvasId: 'myCanvas',
+    continuousMode: true,
+    x0: 150,
+    y0: 150,
+    readOnly: false,
+  })
   slider.addSlider({
     id: 1,
     radius: 80,
@@ -39,27 +46,31 @@ document.body.onclick = async () => {
     step: 5,
     color: '#104b63',
     changed: function (v) {
-      if (!delayNode) { return false }
-      const delay = MaxDelay * v.deg / 360
+      if (!delayNode) {
+        return false
+      }
+      const delay = (MaxDelay * v.deg) / 360
       // Set it
       delayNode.delayTime.value = delay
       // UPdate delay
       document.getElementById('value').innerHTML = 'Delay: ' + delay.toFixed(3) + 's'
-    }
+    },
   })
 
   // Create audio context
   const audioContext = new window.AudioContext({ sampleRate: 48000 })
-
-  const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
+  const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+  const tokenGenerator = () => Director.getSubscriber(options)
   window.millicastView = millicastView = new View(tokenGenerator, null, true)
   millicastView.on('track', ({ track }) => {
     // Ignore non audio tracks
-    if (track.kind !== 'audio') { return }
+    if (track.kind !== 'audio') {
+      return
+    }
     // Create delay node
     delayNode = audioContext.createDelay(MaxDelay)
     // Create stream from track
-    const stream = window.stream = new MediaStream([track])
+    const stream = (window.stream = new MediaStream([track]))
 
     // Chrome needs a dummy audio element to start pumping audio in the webaudio media soruce
     const audio = document.createElement('audio')
@@ -71,9 +82,7 @@ document.body.onclick = async () => {
     const source = audioContext.createMediaStreamSource(stream)
 
     // Creat primary graph, connect webrtc with the delay node and play it in the default destination
-    source
-      .connect(delayNode)
-      .connect(audioContext.destination)
+    source.connect(delayNode).connect(audioContext.destination)
     // UPdate delay
     document.getElementById('value').innerHTML = 'Delay: 0s'
     // Enable pointer events
