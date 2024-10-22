@@ -196,7 +196,9 @@ export default class Signaling extends EventEmitter {
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds }
+    // default events
+    const events = ['active', 'inative', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
+    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
 
     if (optionsParsed.vad) { data.vad = true }
     if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
