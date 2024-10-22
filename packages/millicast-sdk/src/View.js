@@ -311,11 +311,12 @@ export default class View extends BaseWebRTC {
                 this.DRMProfile = subscriberData.drmObject
               }
             }
+            this.emit(signalingEvents.broadcastEvent, event)
             this.isMainStreamActive = true
             while (this.eventQueue.length > 0) {
               this.onTrackEvent(this.eventQueue.shift())
             }
-            break
+            return
           case 'inactive':
             this.isMainStreamActive = false
             break
