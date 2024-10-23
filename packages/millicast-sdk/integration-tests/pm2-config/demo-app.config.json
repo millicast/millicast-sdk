@@ -1,0 +1,33 @@
+{
+  "apps": [
+    {
+      "name": "publisher",
+      "cwd": "./packages/millicast-publisher-demo",
+      "script": "nx",
+      "args": "serve",
+      "data": {
+        "logs": {
+          "SUCCESS_MSG": "Local",
+          "FAILURE_MSG": "error|failed|ERROR|ERR|Error"
+        },
+        "url_grep_cmd": "grep 'Local' | awk 'NR==1{print $NF}' | sed 's:/*$::' | xargs",
+        "url_env": "PUBLISHER_APP_URL"
+      }
+    },
+
+    {
+      "name": "viewer",
+      "cwd": "./packages/millicast-viewer-demo",
+      "script": "nx",
+      "args": "serve",
+      "data": {
+        "logs": {
+          "SUCCESS_MSG": "Local",
+          "FAILURE_MSG": "error|failed|ERROR|ERR|Error"
+        },
+        "url_grep_cmd": "grep 'Local' | awk 'NR==1{print $NF}' | sed 's:/*$::' | xargs",
+        "url_env": "VIEWER_APP_URL"
+      }
+    }
+  ]
+}
