@@ -236,8 +236,10 @@ classDiagram
   }
   class Director {
     <<Singleton>>
-    +getPublisher(publishToken, streamName, streamType?)
-    +getSubscriber(streamName, streamAccountId, subscribeToken?)
+    const optionsPublish: DirectorPublisherOptions = { token, streamName, streamType? }
+    +getPublisher(optionsPublish)
+    const optionsSubscribe: DirectorSubscriberOptions = { streamName, streamAccountId, subscriberToken? }
+    +getSubscriber(optionsSubscribe)
   }
   class SdpParser {
     <<Singleton>>
