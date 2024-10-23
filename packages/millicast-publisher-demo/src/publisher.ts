@@ -1,4 +1,7 @@
-import { DirectorPublisherOptions } from 'packages/millicast-sdk/src/types/Director.types'
+import {
+  DirectorPublisherOptions,
+  MillicastDirectorResponse,
+} from 'packages/millicast-sdk/src/types/Director.types'
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
 import { Director, Logger } from '@nx-millicast/millicast-sdk'
 
@@ -10,28 +13,28 @@ if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
 }
 
-const streamName =
+const streamName: string =
   import.meta.env.VITE_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
-const accountId = import.meta.env.VITE_ACCOUNT_ID
-const publishToken = import.meta.env.VITE_PUBLISH_TOKEN
-const disableVideo = false
-const disableAudio = false
-const disableStereo = false
-const disableOrientation = true
-let isBroadcasting = false
-let isVideoMuted = false
-let isAudioMuted = false
+const accountId: string | undefined = import.meta.env.VITE_ACCOUNT_ID
+const publishToken: string | undefined = import.meta.env.VITE_PUBLISH_TOKEN
+const disableVideo: boolean = false
+const disableAudio: boolean = false
+const disableStereo: boolean = false
+const disableOrientation: boolean = true
+let isBroadcasting: boolean = false
+let isVideoMuted: boolean = false
+let isAudioMuted: boolean = false
 
 document.addEventListener('DOMContentLoaded', async (event) => {
   $('.privy-popup-container, .privy-popup-content-wrap').click((e) => {
     return false
   })
 
-  const videoWin = document.querySelector('video')
+  const videoWin = document.querySelector('video') as HTMLVideoElement
 
   //check if mobile user.
-  let isMobile = (window.mobilecheck = (function () {
-    let check = false
+  let isMobile: boolean = (window.mobilecheck = (function () {
+    let check: boolean = false
     ;(function (a) {
       if (
         /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
@@ -52,38 +55,38 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   }
   //GUI ELEMENTS Refs
   //video overlay
-  let viewUrlEl = document.getElementById('viewerURL')
-  let readyFlag = document.getElementById('readyBadge')
-  let onAirFlag = document.getElementById('liveBadge')
-  let userCount = document.getElementById('userCount')
+  const viewUrlEl = document.getElementById('viewerURL') as HTMLElement | null
+  const readyFlag = document.getElementById('readyBadge') as HTMLElement | null
+  const onAirFlag = document.getElementById('liveBadge') as HTMLElement | null
+  const userCount = document.getElementById('userCount') as HTMLElement | null
 
   //publish button
-  let pubBtn = document.getElementById('publishBtn')
+  let pubBtn = document.getElementById('publishBtn') as HTMLElement | null
   //Cam elements
-  let camsList = document.getElementById('camList'),
-    camMuteBtn = document.getElementById('camMuteBtn')
+  let camsList = document.getElementById('camList') as HTMLElement | null,
+    camMuteBtn = document.getElementById('camMuteBtn') as HTMLElement | null
   //Mic elements
-  let micsList = document.getElementById('micList'),
-    micMuteBtn = document.getElementById('micMuteBtn')
+  let micsList = document.getElementById('micList') as HTMLElement | null,
+    micMuteBtn = document.getElementById('micMuteBtn') as HTMLElement | null
   //Share Copy element
-  let cpy = document.getElementById('copyBtn')
-  let ctrl = document.getElementById('ctrlUI')
-  let view = document.getElementById('shareView')
+  let cpy = document.getElementById('copyBtn') as HTMLElement | null
+  let ctrl = document.getElementById('ctrlUI') as HTMLElement | null
+  let view = document.getElementById('shareView') as HTMLElement | null
   //Signup element
-  let signup = document.getElementById('signUpBtn')
+  let signup = document.getElementById('signUpBtn') as HTMLElement | null
   //Bandwidth Video element
-  let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item')
+  let elementList = document.querySelectorAll('#bandwidthMenu>.dropdown-item') as NodeListOf<HTMLElement>
 
   // Publish & share sections
-  let publishSection = document.getElementById('publishSection'),
-    shareSection = document.getElementById('shareSection')
+  let publishSection = document.getElementById('publishSection') as HTMLElement | null,
+    shareSection = document.getElementById('shareSection') as HTMLElement | null
   //demo timer
-  let tm
-  let tmInt = 300000 //300000 - 5min
+  let tm: number
+  let tmInt: number = 300000 //300000 - 5min
 
   //////
 
-  function setUserCount() {
+  function setUserCount(): void {
     // Add listener of broacastEvent to get UserCount
     console.log(millicastPublishUserMedia._events, 'publisher user media')
     millicastPublishUserMedia.on('broadcastEvent', (event) => {
@@ -96,10 +99,10 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   }
   //////
 
-  function handleOrientation() {
-    let el = document.querySelector('.turnDeviceNotification')
-    let elW = document.querySelector('.turnDeviceNotification.notification-margin-top')
-    let thx = document.getElementById('thanks')
+  function handleOrientation(): void {
+    let el = document.querySelector('.turnDeviceNotification') as HTMLElement | null
+    let elW = document.querySelector('.turnDeviceNotification.notification-margin-top') as HTMLElement | null
+    let thx = document.getElementById('thanks') as HTMLElement | null
 
     if (window.orientation === undefined || !thx.classList.contains('d-none')) {
       return
@@ -122,8 +125,8 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
   }
 
-  let previousOrientation = window.orientation
-  let checkOrientation = function () {
+  let previousOrientation: number = window.orientation
+  let checkOrientation = function (): void {
     //console.log('checkOrientation', window.orientation, window.orientation !== previousOrientation);
     if (window.orientation !== previousOrientation) {
       previousOrientation = window.orientation
@@ -141,16 +144,16 @@ document.addEventListener('DOMContentLoaded', async (event) => {
 
   /////////////////////////
   const options: DirectorPublisherOptions = { token: publishToken, streamName }
-  const tokenGenerator = () => Director.getPublisher(options)
+  const tokenGenerator: () => Promise<MillicastDirectorResponse> = () => Director.getPublisher(options)
   const millicastPublishUserMedia = (window.millicastPublish = await MillicastPublishUserMedia.build(
     { streamName },
     tokenGenerator,
     true
   ))
-  let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton')
-  let bandwidth = 0
-  const events = ['viewercount']
-  let counter = 0
+  let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton') as HTMLElement | null
+  let bandwidth: number = 0
+  const events: string[] = ['viewercount']
+  let counter: number = 0
 
   const onVideoFrameReceived = (now, _) => {
     const date = new Date(0)
@@ -166,13 +169,13 @@ document.addEventListener('DOMContentLoaded', async (event) => {
       const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
       })
-      const priority = parseInt(params.priority)
-      const sourceId = params.sourceId
-      const codec = params.codec ?? 'h264'
-      const metadata = params.metadata === 'true'
-      const simulcast = params.simulcast === 'true'
-      const disableVideo = params.disableVideo === 'true'
-      const disableAudio = params.disableAudio === 'true'
+      const priority: number = parseInt(params.priority)
+      const sourceId: string = params.sourceId
+      const codec: string = params.codec ?? 'h264'
+      const metadata: boolean = params.metadata === 'true'
+      const simulcast: boolean = params.simulcast === 'true'
+      const disableVideo: boolean = params.disableVideo === 'true'
+      const disableAudio: boolean = params.disableAudio === 'true'
       const connectOptions = {
         bandwidth,
         codec,
@@ -207,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
   }
 
-  const onSetVideoBandwidth = async (evt) => {
+  const onSetVideoBandwidth = async (evt): Promise<void> => {
     selectedBandwidthBtn.disabled = true
     bandwidth = evt.target.dataset.rate
     selectedBandwidthBtn.innerHTML = bandwidth === 0 ? 'Maximum Bitrate' : `${bandwidth} kbps`
@@ -227,13 +230,13 @@ document.addEventListener('DOMContentLoaded', async (event) => {
 
   /////////////////////////
 
-  function onSetSessionDescriptionError(error) {
+  function onSetSessionDescriptionError(error): void {
     isBroadcasting = false
     console.log('Failed to set session description: ' + error.toString())
   }
 
   /* UI */
-  async function initUI() {
+  async function initUI(): Promise<void> {
     if (disableVideo === true) {
       selectedBandwidthBtn.classList.add('d-none')
     }
@@ -339,7 +342,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     })
   }
 
-  function displayDevices(data) {
+  function displayDevices(data): void {
     let mics = data.audioinput
     while (micsList.firstChild) {
       micsList.removeChild(micsList.firstChild)
@@ -373,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     displayActiveDevice()
   }
 
-  function displayActiveDevice(type) {
+  function displayActiveDevice(type): void {
     if (type === 'mic' || !type) {
       micListBtn.innerHTML =
         '<p>' + cleanLabel(millicastPublishUserMedia.activeAudio.label) + '</p><span class="boxCover"></span>'
@@ -384,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
   }
 
-  function broadcastHandler(b) {
+  function broadcastHandler(b): void {
     if (isBroadcasting) {
       showViewerUrl()
       onAirFlag.classList.remove('hidden')
@@ -408,14 +411,14 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
   }
 
-  function showViewerUrl() {
+  function showViewerUrl(): void {
     publishSection.classList.add('d-none')
     let href = location.href.split('?')[0]
     if (href.indexOf('htm') > -1) {
       href = href.substring(0, href.lastIndexOf('/') + 1)
     }
 
-    let viewerUrl = `https://viewer.millicast.com/?streamId=${accountId}/${streamName}`
+    let viewerUrl: string = `https://viewer.millicast.com/?streamId=${accountId}/${streamName}`
 
     if (disableVideo === true) {
       viewerUrl = `${viewerUrl}&disableVideo=${disableVideo}`
@@ -451,7 +454,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     return s
   }
 
-  function doCopy() {
+  function doCopy(): boolean {
     //add to clean text.
     let view = document.getElementById('viewerURL')
     let path = (view.textContent || view.innerText).trim()
