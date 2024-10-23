@@ -61,7 +61,7 @@ document.body.onclick = async () => {
   const audioContext = new window.AudioContext({ sampleRate: 48000 })
   const options: DirectorSubscriberOptions = { streamName, streamAccountId }
   const tokenGenerator = () => Director.getSubscriber(options)
-  window.millicastView = millicastView = new View(tokenGenerator, null, true)
+  window.millicastView = millicastView = new View(tokenGenerator, true)
   millicastView.on('track', ({ track }) => {
     // Ignore non audio tracks
     if (track.kind !== 'audio') {
