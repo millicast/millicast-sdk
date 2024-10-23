@@ -342,16 +342,12 @@ export default class View extends BaseWebRTC {
     await webRTCPeerInstance.createRTCPeer(this.options?.peerConfig)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
-    this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(
       webRTCPeerInstance,
       this,
       Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
     )
-    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [
-      signalingEvents.broadcastEvent,
-    ])
 
     if (this.options?.metadata) {
       if (!this.worker) {
@@ -401,11 +397,12 @@ export default class View extends BaseWebRTC {
       if (event.data.sourceId === null) {
         switch (event.name) {
           case 'active':
+            this.emit('broadcastEvent', event)
             this.isMainStreamActive = true
             while (this.eventQueue.length > 0) {
               this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent)
             }
-            break
+            return
           case 'inactive':
             this.isMainStreamActive = false
             break
@@ -413,6 +410,7 @@ export default class View extends BaseWebRTC {
             break
         }
       }
+      this.emit('broadcastEvent', event)
     })
 
     const options = { ...(this.options as ViewConnectOptions), stereo: true }

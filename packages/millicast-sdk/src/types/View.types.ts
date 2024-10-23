@@ -192,12 +192,12 @@ export interface BroadcastEvent {
 /**
  * Active Event
  */
-export type TrackInfo = {
+export interface TrackInfo {
   trackId: string
   media: Media
 }
 
-export type ActiveEventPayload = {
+export interface ActiveEventPayload {
   streamId: string
   sourceId: string | null
   tracks: TrackInfo[]
@@ -213,7 +213,7 @@ export interface ActiveEvent extends BroadcastEvent {
 /**
  * Inactive Event
  */
-export type InactiveEventPayload = {
+export interface InactiveEventPayload {
   streamId: string
   sourceId: string | null
 }
@@ -227,7 +227,7 @@ export interface InactiveEvent extends BroadcastEvent {
 /**
  * ViewerCount Event
  */
-export type ViewerCountEventPayload = {
+export interface ViewerCountEventPayload {
   viewerCount: number
 }
 
@@ -236,12 +236,51 @@ export interface ViewerCountEvent extends BroadcastEvent {
   data: ViewerCountEventPayload
 }
 
+
+/**
+ * Layers Event
+ */
+export interface LayersEventPayload {
+  medias: LayersMediaCollection
+}
+
+export interface LayersMediaCollection {
+  [key: string]: LayerMedia
+}
+
+export interface LayerMedia {
+  active: Array<LayerMediaInfo>
+  inactive: Array<LayerMediaInfo>
+  layers: Array<Layer>
+}
+
+export interface LayerMediaInfo {
+  id: string
+  simulcastIdx: number
+  totalBytes: number
+  numPackets: number
+  bitrate: number
+  totalBitrate: number
+  width: number
+  height: number
+  layers: Array<Layer>
+}
+
+export interface Layer extends Omit<LayerMediaInfo, 'id' | 'layers'> {
+  encodingId: string
+  spatialLayerId: number
+  temporalLayerId: number
+}
+
+export interface LayersEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'layers'>
+  data: LayersEventPayload
+}
+
 /**
  * Metadata Event
  */
-export interface MetadataEvent extends MetadataObject {
-  // TODO: seiPicTimingTimeCodeArray
-}
+export type MetadataEvent = MetadataObject
 
 /**
  * Events declaration of Viewers that user could listen to
