@@ -1,5 +1,6 @@
-import { View, Director, Logger } from '@nx-millicast/millicast-sdk'
-import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
+import { View, Director, Logger } from "@nx-millicast/millicast-sdk";
+import { DirectorSubscriberOptions } from "packages/millicast-sdk/src/types/Director.types";
+import { ActiveEvent, DRMOptions } from "packages/millicast-sdk/src/types/View.types";
 
 window.Logger = Logger
 
@@ -45,42 +46,40 @@ const disableFull =
   (href.searchParams.get('disableFull') === 'true' && href.searchParams.get('disableFull') !== null) ||
   disableControls
 
-let playing = false
-let fullBtn = document.querySelector('#fullBtn')
-let video = document.querySelector('video')
+let playing = false;
+let fullBtn = document.querySelector("#fullBtn") as HTMLButtonElement;
+let video = document.querySelector("video") as HTMLVideoElement;
 
 // MillicastView object
 let millicastView = null
 
 const newViewer = () => {
   const options: DirectorSubscriberOptions = { streamName, streamAccountId: accountId, subscriberToken }
-  const tokenGenerator = () => Director.getSubscriber(options, enableDRM)
+  const tokenGenerator = () => Director.getSubscriber(options);
   const millicastView = new View(tokenGenerator, autoReconnect)
-  millicastView.on('broadcastEvent', (event) => {
-    if (!autoReconnect) return
-    if (event.name === 'active') {
-      const encryption = event.data.encryption
+  millicastView.on("broadcastEvent", (event) => {
+    if (!autoReconnect) return;
+    if (event.name === "active") {
+      const _event = event as ActiveEvent
+      const encryption = _event.data.encryption
       if (encryption && enableDRM) {
-        const drmOptions = {
-          videoElement: document.querySelector('video'),
-          audioElement: document.querySelector('audio'),
+        const drmOptions: DRMOptions = {
+          videoElement: document.querySelector("video"),
+          audioElement: document.querySelector("audio"),
           videoEncryptionParams: encryption,
           videoMid: '0',
-        }
-        const audioTrackInfo = event.data.tracks.find((track) => track.type === 'audio')
+        };
+        const audioTrackInfo = _event.data.tracks.find((track) => track.media === 'audio')
         if (audioTrackInfo) {
-          drmOptions.audioMid = audioTrackInfo.mediaId
+          drmOptions.audioMid = audioTrackInfo.trackId;
         }
         millicastView.configureDRM(drmOptions)
       }
     }
-    let layers = event.data['layers'] !== null ? event.data['layers'] : {}
-    if (event.name === 'layers' && Object.keys(layers).length <= 0) {
-    }
-  })
-  millicastView.on('track', (event) => {
-    if (!millicastView.isDRMOn) addStream(event.streams[0])
-  })
+  });
+  millicastView.on("track", (event) => {
+    if (!millicastView.isDRMOn) addStream(event.streams[0]);
+  });
 
   millicastView.on('metadata', (metadata) => {
     if (metadata.unregistered) {
@@ -88,9 +87,6 @@ const newViewer = () => {
     }
     if (metadata.timecode) {
       console.log('received timecode messsage', metadata.timecode)
-    }
-    if (metadata.seiPicTimingTimeCodeArray) {
-      console.log('received PIC timing message', metadata.seiPicTimingTimeCodeArray)
     }
   })
 
@@ -151,7 +147,7 @@ const addStream = (stream) => {
     //If we already had a a stream
     if (video.srcObject) {
       //Create temporal video element and switch streams when we have valid data
-      const tmp = video.cloneNode(true)
+      const tmp = video.cloneNode(true) as HTMLVideoElement;
       //Override the muted attribute with current muted state
       tmp.muted = video.muted
       //Set same volume
@@ -159,14 +155,10 @@ const addStream = (stream) => {
       //Set new stream
       tmp.srcObject = stream
       //Replicate playback state
-      if (video.playing) {
-        try {
-          tmp.play()
-        } catch (e) {}
+      if (video.playbackRate) {
+        try { tmp.play(); } catch (e) {}
       } else if (video.paused) {
-        try {
-          tmp.paused()
-        } catch (e) {}
+        try{ tmp.pause(); } catch (e) {}
       }
       //Replace the video when media has started playing
       tmp.addEventListener('loadedmetadata', (event) => {
