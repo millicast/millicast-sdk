@@ -58,7 +58,7 @@ export type ViewConnectOptions = {
   /**
    * - Ask the server to use the playout delay header extension.
    */
-  forcePlayoutDelay?: { min: number; max: number } | boolean
+  forcePlayoutDelay?: { min: number; max: number }
   /**
    * - Ask the server to use the playout delay header extension.
    */

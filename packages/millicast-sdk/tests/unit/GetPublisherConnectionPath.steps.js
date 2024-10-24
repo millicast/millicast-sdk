@@ -34,7 +34,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getPublisher(token, streamName)
+      const options = { token, streamName }
+      response = await Director.getPublisher(options)
     })
 
     then('I get the publish connection path', async () => {
@@ -65,7 +66,8 @@ defineFeature(feature, (test) => {
     when('I request a connection path to Director API', async () => {
       mockFetchRejectValue(mockedResponse)
       try {
-        responseError = await Director.getPublisher(token, streamName)
+        const options = { token, streamName }
+        responseError = await Director.getPublisher(options)
       } catch (error) {
         responseError = error
       }
@@ -99,7 +101,8 @@ defineFeature(feature, (test) => {
     when('I request a connection path to Director API', async () => {
       mockFetchRejectValue(mockedResponse)
       try {
-        responseError = await Director.getPublisher(token, streamName)
+        const options = { token, streamName }
+        responseError = await Director.getPublisher(options)
       } catch (error) {
         responseError = error
       }
@@ -136,7 +139,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getPublisher(token, streamName)
+      const options = { token, streamName }
+      response = await Director.getPublisher(options)
     })
 
     then('I get the publish connection path', async () => {
@@ -169,7 +173,8 @@ defineFeature(feature, (test) => {
 
     when('I request a connection path to Director API using options object', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getPublisher({ token, streamName })
+      const options = { token, streamName }
+      response = await Director.getPublisher(options)
     })
 
     then('I get the publish connection path', async () => {
@@ -203,7 +208,8 @@ defineFeature(feature, (test) => {
     when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
       Director.setLiveDomain('test.com')
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      response = await Director.getPublisher(token, streamName)
+      const options = { token, streamName }
+      response = await Director.getPublisher(options)
     })
 
     then('I get the publish connection path', async () => {

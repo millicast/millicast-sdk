@@ -113,7 +113,7 @@ defineFeature(feature, (test) => {
         streamName,
         url: publishWebSocketLocation,
       })
-      response = await signaling.publish(localSdp, 'h264', true)
+      response = await signaling.publish(localSdp, { codec: 'h264', record: true })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -145,7 +145,7 @@ defineFeature(feature, (test) => {
     })
 
     when('I offer my local spd with h264 codec', async () => {
-      response = await signaling.publish(localSdp, 'h264')
+      response = await signaling.publish(localSdp, { codec: 'h264' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -169,7 +169,7 @@ defineFeature(feature, (test) => {
         url: publishWebSocketLocation,
       })
       try {
-        await signaling.publish(null, 'h264')
+        await signaling.publish(null, { codec: 'h264' })
       } catch (error) {
         response = error
       }
@@ -197,7 +197,7 @@ defineFeature(feature, (test) => {
 
     when('I offer a null sdp', async () => {
       try {
-        await signaling.publish(null, 'h264')
+        await signaling.publish(null, { codec: 'h264' })
       } catch (error) {
         response = error
       }
@@ -226,7 +226,7 @@ defineFeature(feature, (test) => {
 
     when('I offer my local spd and an unexistent stream name', async () => {
       const signaling = new Signaling()
-      response = await signaling.publish(localSdp, 'h264')
+      response = await signaling.publish(localSdp, { codec: 'h264' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -254,7 +254,7 @@ defineFeature(feature, (test) => {
     when('I offer a sdp without stream', async () => {
       try {
         const signaling = new Signaling()
-        response = await signaling.publish(localSdp, 'h264')
+        response = await signaling.publish(localSdp, { codec: 'h264' })
       } catch (error) {
         response = error
       }
@@ -280,7 +280,7 @@ defineFeature(feature, (test) => {
         url: publishWebSocketLocation,
       })
       try {
-        await signaling.publish(localSdp, 'myCodec264')
+        await signaling.publish(localSdp, { codec: 'myCodec264' })
       } catch (error) {
         response = error
       }
@@ -312,7 +312,7 @@ defineFeature(feature, (test) => {
         streamName,
         url: publishWebSocketLocation,
       })
-      response = await signaling.publish(localSdp, 'vp8')
+      response = await signaling.publish(localSdp, { codec: 'vp8' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -342,7 +342,7 @@ defineFeature(feature, (test) => {
         streamName,
         url: publishWebSocketLocation,
       })
-      response = await signaling.publish(localSdp, 'vp9')
+      response = await signaling.publish(localSdp, { codec: 'vp9' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -376,7 +376,7 @@ defineFeature(feature, (test) => {
         streamName,
         url: publishWebSocketLocation,
       })
-      response = await signaling.publish(localSdp, 'av1')
+      response = await signaling.publish(localSdp, { codec: 'av1' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -413,7 +413,7 @@ defineFeature(feature, (test) => {
         streamName,
         url: publishWebSocketLocation,
       })
-      response = await signaling.publish(localSdp, 'av1')
+      response = await signaling.publish(localSdp, { codec: 'av1' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
@@ -448,7 +448,7 @@ defineFeature(feature, (test) => {
         streamName,
         url: publishWebSocketLocation,
       })
-      response = await signaling.publish(localSdp, 'av1')
+      response = await signaling.publish(localSdp, { codec: 'av1' })
     })
 
     then('returns a filtered sdp to offer to remote peer', async () => {
