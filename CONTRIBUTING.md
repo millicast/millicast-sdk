@@ -17,9 +17,40 @@ Asumming that you have Node 12.10.x or newer and `npm` installed, install the re
 npm ci
 ```
 
-### Changesets
+### Pull request - Conventional Commits
 
-Whenever you are working on a new feature, fix or change, make sure you create a **changeset** with a description of the change. Follow [this](.changeset/README.md#Changes-per-feature) guide for further understanding.
+As to improve release processes and automation with [`nx release`](https://nx.dev/recipes/nx-release/get-started-with-nx-release), we need to improve how the commits to main branch are written. Thereforer we are implementing the use of the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for **Pull Request titles**. Refer to the docs if necessary, but below there is a small introduction of this standard.
+
+#### Title structure
+
+The title should be written with the following format:
+
+```
+<type>([optional scope]): <description>
+```
+
+where `<type>` refers to the change made, can be selected from the existing [types](#type), then `([optional scope])` states if there was a specific part or package of the project that was changed and `<description>` adds information about the change itself.
+
+#### Example
+
+```
+feat: H264/avc user unregistered data SEI parsing
+```
+
+#### Type
+
+When a **BREAKING CHANGE** is done, it can be written as that in the description or an exclamation mark (**!**) can be added between the type or scope and the semi-colon. This will imply a major version change.
+
+- `build` - Changes that affect the build system or external dependencies (dependencies update)
+- `ci` - Changes to our CI configuration files and scripts (basically directory .github/workflows)
+- `docs` - Documentation only changes
+- `feat` - A new feature
+- `fix` - A bug fix
+- `chore` - Changes which does not touch the code. It will not generate release notes changes
+- `refactor` - A code change that contains refactor
+  style - Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `test` - Adding missing tests or correcting existing tests and also changes for our test app
+- `perf` - A code change that improves performance
 
 ### Building packages
 
