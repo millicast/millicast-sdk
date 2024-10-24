@@ -14,11 +14,11 @@ Feature: Connect Feature
         "version": "1.0.0",
         "subscriberId[?]match": "^[0-9a-f]{32}$",
         "connectionDurationMs[?]match": "^\\d+$",
+        "feedId[?]defined": "",
         "stats[?]defined": [],
         "history[?]defined": []
       }
       """
-    And the "viewer1" connects to the published stream
     And the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view media tracks for the connected stream
 
