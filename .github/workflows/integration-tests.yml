@@ -10,10 +10,9 @@ jobs:
       INTEGRATION_DIR: ./packages/millicast-sdk/integration-tests
       INTEGRATION_TEST_CONFIG: ./packages/millicast-sdk/integration-tests/test.config.json
 
-      MILLICAST_ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
-      MILLICAST_STREAM_NAME: ${{vars.PUBLISHER_STREAM_NAME}}
-      MILLICAST_PUBLISH_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
-      MILLICAST_DIRECTOR_ENDPOINT: ${{vars.PUBLISHER_DIRECTOR_EP}}
+      VITE_ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
+      VITE_DIRECTOR_ENDPOINT: ${{vars.PUBLISHER_DIRECTOR_EP}}
+      BEARER_TOKEN: ${{secrets.PUBLISHER_BEARER_TOKEN}}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-install
@@ -23,6 +22,28 @@ jobs:
           sudo apt-get install -y moreutils
           sudo apt-get --only-upgrade install google-chrome-stable
           npm install playwright
+
+          cat << 'EOF' > create_publish_token.sh
+          #!/bin/bash
+          RANDOM_STR=$(openssl rand -hex 3)
+          TOKEN_LABEL=token_$RANDOM_STR
+          STREAM_NAME=stream_$RANDOM_STR
+          API_URL=$1
+          BEARER=$2
+
+          curl --request POST --url $API_URL/api/publish_token \
+               --header 'accept: application/json' \
+               --header 'authorization: Bearer '$BEARER \
+               --header 'content-type: application/json' \
+               -s \
+               --data '{"streams": [{"streamName": "'$STREAM_NAME'"}],"label": "'$TOKEN_LABEL'"}'
+          EOF
+
+          chmod +x create_publish_token.sh
+          RESPONSE=$(./create_publish_token.sh ${VITE_DIRECTOR_ENDPOINT} ${BEARER_TOKEN})
+          VITE_PUBLISH_TOKEN=$(echo $RESPONSE | jq -r '.data.token')
+          VITE_STREAM_NAME=$(echo $RESPONSE | jq -r '.data.streams[0].streamName')
+
           npm run build
           npm run demo-app:setup
       - name: Execute Test Suite
