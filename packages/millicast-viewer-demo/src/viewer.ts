@@ -55,7 +55,7 @@ let millicastView = null
 const newViewer = () => {
   const options: DirectorSubscriberOptions = { streamName, streamAccountId: accountId, subscriberToken }
   const tokenGenerator = () => Director.getSubscriber(options, enableDRM)
-  const millicastView = new View(tokenGenerator, null, autoReconnect)
+  const millicastView = new View(tokenGenerator, autoReconnect)
   millicastView.on('broadcastEvent', (event) => {
     if (!autoReconnect) return
     if (event.name === 'active') {
