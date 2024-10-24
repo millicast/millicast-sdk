@@ -301,28 +301,25 @@ export default class View extends BaseWebRTC {
     })
 
     signalingInstance.on(signalingEvents.broadcastEvent, async (event) => {
-      if (event.data.sourceId === null) {
-        switch (event.name) {
-          case 'active':
-            if (this.DRMProfile == null) {
-              const subscriberData = await this.tokenGenerator()
-              if (subscriberData.drmObject) {
-                // cache the DRM license server URLs
-                this.DRMProfile = subscriberData.drmObject
-              }
-            }
-            this.emit(signalingEvents.broadcastEvent, event)
-            this.isMainStreamActive = true
-            while (this.eventQueue.length > 0) {
-              this.onTrackEvent(this.eventQueue.shift())
-            }
-            return
-          case 'inactive':
-            this.isMainStreamActive = false
-            break
-          default:
-            break
+      if (!this.isMainStreamActive && event.name === 'active') {
+        // handle 'active' event for main stream
+        this.mainSourceId = event.data.sourceId
+        if (!this.DRMProfile && event.data.encryption) {
+          const subscriberData = await this.tokenGenerator()
+          if (subscriberData.drmObject) {
+            // cache the DRM license server URLs
+            this.DRMProfile = subscriberData.drmObject
+          }
         }
+        this.emit(signalingEvents.broadcastEvent, event)
+        this.isMainStreamActive = true
+        while (this.eventQueue.length > 0) {
+          this.onTrackEvent(this.eventQueue.shift())
+        }
+        return
+      }
+      if (event.name === 'inactive' && this.isMainStreamActive && this.mainSourceId === event.data.sourceId) {
+        this.isMainStreamActive = false
       }
       this.emit(signalingEvents.broadcastEvent, event)
     })

@@ -197,7 +197,7 @@ export default class Signaling extends EventEmitter {
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
     // default events
-    const events = ['active', 'inative', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
+    const events = ['active', 'inactive', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
     const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
 
     if (optionsParsed.vad) { data.vad = true }
