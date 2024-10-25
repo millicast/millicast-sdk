@@ -1,7 +1,7 @@
 
 Feature: Connect Feature
 
-  Scenario: Viewer Connects To Stream Before Publisher with <codec> codec
+  Scenario: Viewer connects to stream before Publisher with <codec> codec
     Given the "viewer1" opens "Viewer" app
     And the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
@@ -29,7 +29,7 @@ Feature: Connect Feature
       | vp8   |
       | vp9   |
 
-  Scenario: Publisher Connects To Stream Before Viewer with <codec> codec
+  Scenario: Publisher connects to stream before Viewer with <codec> codec
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | codec | <codec> |
@@ -46,7 +46,7 @@ Feature: Connect Feature
       | vp8   |
       | vp9   |
 
-  Scenario: Viewer Reconnects During The Stream
+  Scenario: Viewer reconnects during the stream
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | codec | h264 |
@@ -62,7 +62,7 @@ Feature: Connect Feature
     Then the "viewer1" connected stream should be LIVE
     Then the "viewer1" should be able to view media tracks for the connected stream
 
-  Scenario: Publisher Reconnects During The Stream
+  Scenario: Publisher reconnects during the stream
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | codec | h264 |
@@ -80,7 +80,7 @@ Feature: Connect Feature
     And the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view media tracks for the connected stream
 
-  Scenario: Publisher Connects With disableVideo as <disableVideo> and disableAudio as <disableAudio> - Expected Fail: DIOS-7279
+  Scenario: Publisher connects with disableVideo as <disableVideo> and disableAudio as <disableAudio> - Expected Fail: DIOS-7279
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | disableVideo | <disableVideo> |
@@ -96,6 +96,13 @@ Feature: Connect Feature
       | false        | false        |
       | true         | false        |
       | false        | true         |
+  @only
+  Scenario: Publisher tries to connect with disableVideo as true and disableAudio as true
+    Given the "publisher1" opens "Publisher" app
+    When the "publisher1" starts the stream with the specified options and expect to fail
+      | disableVideo | true |
+      | disableAudio | true |
+
 
   Scenario: Viewer Connects With disableVideo as <disableVideo> and disableAudio as <disableAudio>
     Given the "publisher1" opens "Publisher" app
