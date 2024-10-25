@@ -96,13 +96,12 @@ Feature: Connect Feature
       | false        | false        |
       | true         | false        |
       | false        | true         |
-  @only
+
   Scenario: Publisher tries to connect with disableVideo as true and disableAudio as true
     Given the "publisher1" opens "Publisher" app
-    When the "publisher1" starts the stream with the specified options and expect to fail
+    When the "publisher1" starts the stream with the specified options and expect to fail with error "Not attempting to connect as video and audio are disabled"
       | disableVideo | true |
       | disableAudio | true |
-
 
   Scenario: Viewer Connects With disableVideo as <disableVideo> and disableAudio as <disableAudio>
     Given the "publisher1" opens "Publisher" app

@@ -25,6 +25,7 @@ export async function publisherConnectWithOptions(
 export async function publisherConnectWithOptionsExpectFail(
   scenarioWorld: ScenarioWorld,
   actor: string,
+  message: string,
   dataTable: DataTable,
 ) {
   logger.debug(`publisherConnectWithOptions function was called`);
@@ -39,9 +40,7 @@ export async function publisherConnectWithOptionsExpectFail(
       `the ${actor} executes the "window.millicastPublish.connect(${optionsStr})" JavaScript function on the page`,
     ], scenarioWorld);
   } catch (e) {
-    if(
-      options.disableVideo === 'true' && options.disableAudio === 'true'
-    ){expect((e as Error).message).toContain("Not attempting to connect as video and audio are disabled")}
+    expect((e as Error).message).toContain(message)
 }}
 
 export async function publisherStop(

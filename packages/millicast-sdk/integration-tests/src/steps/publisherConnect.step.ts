@@ -16,9 +16,9 @@ Given(
 );
 
 Given(
-  /^the "([^"]*)" starts the stream with the specified options and expect to fail$/,
-  async function (this: ScenarioWorld, actor: string, dataTable: DataTable) {
-    await publisherConnectWithOptionsExpectFail(this, actor, dataTable);
+  /^the "([^"]*)" starts the stream with the specified options and expect to fail with error "([^"]*)"$/,
+  async function (this: ScenarioWorld, actor: string, message: string, dataTable: DataTable) {
+    await publisherConnectWithOptionsExpectFail(this, actor, message, dataTable);
   },
 );
 
