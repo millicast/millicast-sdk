@@ -4,15 +4,16 @@ on:
   pull_request:
 
 jobs:
-  new-integration-tests:
+  new-integration-tests-STG:
     runs-on: ubuntu-latest
     env:
       INTEGRATION_DIR: ./packages/millicast-sdk/integration-tests
       INTEGRATION_TEST_CONFIG: ./packages/millicast-sdk/integration-tests/test.config.json
 
-      VITE_ACCOUNT_ID: ${{secrets.PUBLISHER_ACCOUNT_ID}}
-      VITE_DIRECTOR_ENDPOINT: ${{vars.PUBLISHER_DIRECTOR_EP}}
-      BEARER_TOKEN: ${{secrets.PUBLISHER_BEARER_TOKEN}}
+      VITE_ACCOUNT_ID: ${{secrets.STG_MILLICAST_ACCOUNT_ID}}
+      VITE_DIRECTOR_ENDPOINT: ${{vars.STG_MILLICAST_DIRECTOR_EP}}
+      MILLICAST_API_ENDPOINT: ${{vars.STG_MILLICAST_API_EP}}
+      MILLICAST_API_SECRET: ${{secrets.STG_MILLICAST_API_SECRET}}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-install
@@ -23,26 +24,10 @@ jobs:
           sudo apt-get --only-upgrade install google-chrome-stable
           npm install playwright
 
-          cat << 'EOF' > create_publish_token.sh
-          #!/bin/bash
-          RANDOM_STR=$(openssl rand -hex 3)
-          TOKEN_LABEL=token_$RANDOM_STR
-          STREAM_NAME=stream_$RANDOM_STR
-          API_URL=$1
-          BEARER=$2
-
-          curl --request POST --url $API_URL/api/publish_token \
-               --header 'accept: application/json' \
-               --header 'authorization: Bearer '$BEARER \
-               --header 'content-type: application/json' \
-               -s \
-               --data '{"streams": [{"streamName": "'$STREAM_NAME'"}],"label": "'$TOKEN_LABEL'"}'
-          EOF
-
-          chmod +x create_publish_token.sh
-          RESPONSE=$(./create_publish_token.sh ${VITE_DIRECTOR_ENDPOINT} ${BEARER_TOKEN})
-          VITE_PUBLISH_TOKEN=$(echo $RESPONSE | jq -r '.data.token')
-          VITE_STREAM_NAME=$(echo $RESPONSE | jq -r '.data.streams[0].streamName')
+          NEW_TOKEN=$(./../../packages/millicast-sdk/integration-tests/ci/createToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET})
+          VITE_PUBLISH_TOKEN=$(echo $NEW_TOKEN | jq -r '.data.token')
+          VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
+          NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
 
           npm run build
           npm run demo-app:setup
@@ -59,6 +44,7 @@ jobs:
         run: |
           npm run demo-app:teardown
           npm run test:report
+          ./../../packages/millicast-sdk/integration-tests/ci/deleteToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET} ${NEW_TOKEN_ID}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         if: always()
