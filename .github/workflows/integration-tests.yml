@@ -2,18 +2,31 @@ name: New Test Suite
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   new-integration-tests-STG:
     runs-on: ubuntu-latest
+    environment: ${{ matrix.qa_env_mode }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        qa_env_mode: [qa_dev, qa_staging]
+        include:
+          - qa_env_mode: qa_dev
+            environment: dev
+          - qa_env_mode: qa_staging
+            environment: staging
+
     env:
       INTEGRATION_DIR: ./packages/millicast-sdk/integration-tests
       INTEGRATION_TEST_CONFIG: ./packages/millicast-sdk/integration-tests/test.config.json
 
-      VITE_ACCOUNT_ID: ${{secrets.STG_MILLICAST_ACCOUNT_ID}}
-      VITE_DIRECTOR_ENDPOINT: ${{vars.STG_MILLICAST_DIRECTOR_EP}}
-      MILLICAST_API_ENDPOINT: ${{vars.STG_MILLICAST_API_EP}}
-      MILLICAST_API_SECRET: ${{secrets.STG_MILLICAST_API_SECRET}}
+      VITE_ACCOUNT_ID: ${{secrets.MILLICAST_ACCOUNT_ID}}
+      VITE_DIRECTOR_ENDPOINT: ${{vars.MILLICAST_DIRECTOR_EP}}
+      MILLICAST_API_ENDPOINT: ${{vars.MILLICAST_API_EP}}
+      MILLICAST_API_SECRET: ${{secrets.MILLICAST_API_SECRET}}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-install
