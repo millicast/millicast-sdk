@@ -1,5 +1,18 @@
 # @millicast/sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- 43582cf: Added DRM support
+
+### Patch Changes
+
+- 1e19119: Fixed the excessive waiting time to resume the video playback when stream beomes active from inactive
+- 2a57672: Fix security vulnerabilities
+- 9d54c92: fixed bug: no video when the main source id is not null
+- cff3555: Avoid connecting when A+V are disabled
+
 ## 0.2.1
 
 ### Patch Changes

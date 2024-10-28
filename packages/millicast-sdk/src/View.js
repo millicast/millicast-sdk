@@ -246,10 +246,6 @@ export default class View extends BaseWebRTC {
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
-    if (subscriberData.drmObject) {
-      // cache the DRM license server URLs
-      this.DRMProfile = subscriberData.drmObject
-    }
     if (subscriberData.subscriberToken) {
       this.subscriberToken = subscriberData.subscriberToken
     }
@@ -258,10 +254,8 @@ export default class View extends BaseWebRTC {
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
-    this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track))
-    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [signalingEvents.broadcastEvent])
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -306,22 +300,28 @@ export default class View extends BaseWebRTC {
       this.onTrackEvent(trackEvent)
     })
 
-    signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
-      if (event.data.sourceId === null) {
-        switch (event.name) {
-          case 'active':
-            this.isMainStreamActive = true
-            while (this.eventQueue.length > 0) {
-              this.onTrackEvent(this.eventQueue.shift())
-            }
-            break
-          case 'inactive':
-            this.isMainStreamActive = false
-            break
-          default:
-            break
+    signalingInstance.on(signalingEvents.broadcastEvent, async (event) => {
+      if (!this.isMainStreamActive && event.name === 'active') {
+        // handle 'active' event for main stream
+        this.mainSourceId = event.data.sourceId
+        if (!this.DRMProfile && event.data.encryption) {
+          const subscriberData = await this.tokenGenerator()
+          if (subscriberData.drmObject) {
+            // cache the DRM license server URLs
+            this.DRMProfile = subscriberData.drmObject
+          }
         }
+        this.emit(signalingEvents.broadcastEvent, event)
+        this.isMainStreamActive = true
+        while (this.eventQueue.length > 0) {
+          this.onTrackEvent(this.eventQueue.shift())
+        }
+        return
       }
+      if (event.name === 'inactive' && this.isMainStreamActive && this.mainSourceId === event.data.sourceId) {
+        this.isMainStreamActive = false
+      }
+      this.emit(signalingEvents.broadcastEvent, event)
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })

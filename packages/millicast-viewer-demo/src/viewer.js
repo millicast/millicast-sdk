@@ -81,12 +81,9 @@ const newViewer = () => {
         millicastView.configureDRM(drmOptions);
       }
     }
-    let layers = event.data["layers"] !== null ? event.data["layers"] : {};
-    if (event.name === "layers" && Object.keys(layers).length <= 0) {
-    }
   });
   millicastView.on("track", (event) => {
-    if (!millicastView.isDRMOn) addStream(event.streams[0]);
+    if (!enableDRM) addStream(event.streams[0]);
   });
 
   millicastView.on('metadata', (metadata) => {
