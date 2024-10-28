@@ -6,7 +6,7 @@ STREAM_NAME=stream_$RANDOM_STR
 API_URL=$1
 BEARER=$2
 
-curl --request POST --url $API_URL/publish_token \
+curl -v --request POST --url $API_URL/publish_token \
      --header 'accept: application/json' \
      --header 'authorization: Bearer '$BEARER \
      --header 'content-type: application/json' \

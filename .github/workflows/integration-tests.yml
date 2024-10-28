@@ -37,9 +37,9 @@ jobs:
           sudo apt-get --only-upgrade install google-chrome-stable
           npm install playwright
           echo "check endpoint variable:"
-          echo ${MILLICAST_API_ENDPOINT}
+          echo $MILLICAST_API_ENDPOINT
 
-          NEW_TOKEN=$(./packages/millicast-sdk/integration-tests/ci/createToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET})
+          NEW_TOKEN=$(./packages/millicast-sdk/integration-tests/ci/createToken.sh $MILLICAST_API_ENDPOINT $MILLICAST_API_SECRET)
           VITE_PUBLISH_TOKEN=$(echo $NEW_TOKEN | jq -r '.data.token')
           VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
           NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
