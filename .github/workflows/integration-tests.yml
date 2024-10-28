@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  new-integration-tests-STG:
+  new-integration-tests:
     runs-on: ubuntu-latest
     environment: ${{ matrix.qa_env_mode }}
     strategy:
