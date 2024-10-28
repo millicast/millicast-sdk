@@ -37,7 +37,7 @@ jobs:
           sudo apt-get --only-upgrade install google-chrome-stable
           npm install playwright
 
-          NEW_TOKEN=$(./../../packages/millicast-sdk/integration-tests/ci/createToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET})
+          NEW_TOKEN=$(./packages/millicast-sdk/integration-tests/ci/createToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET})
           VITE_PUBLISH_TOKEN=$(echo $NEW_TOKEN | jq -r '.data.token')
           VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
           NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
@@ -57,7 +57,7 @@ jobs:
         run: |
           npm run demo-app:teardown
           npm run test:report
-          ./../../packages/millicast-sdk/integration-tests/ci/deleteToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET} ${NEW_TOKEN_ID}
+          ./packages/millicast-sdk/integration-tests/ci/deleteToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET} ${NEW_TOKEN_ID}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         if: always()
