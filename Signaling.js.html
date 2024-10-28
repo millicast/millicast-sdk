@@ -198,7 +198,9 @@ export default class Signaling extends EventEmitter {
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds }
+    // default events
+    const events = ['active', 'inactive', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
+    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
 
     if (optionsParsed.vad) { data.vad = true }
     if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
@@ -206,6 +208,9 @@ export default class Signaling extends EventEmitter {
     if (optionsParsed.layer) { data.layer = optionsParsed.layer }
 
     try {
+      if (optionsParsed.disableVideo &amp;&amp; optionsParsed.disableAudio) {
+        throw new Error('Not attempting to connect as video and audio are disabled')
+      }
       await this.connect()
       logger.info('Sending view command')
       const result = await this.transactionManager.cmd('view', data)
@@ -289,6 +294,9 @@ export default class Signaling extends EventEmitter {
       data.events = optionsParsed.events
     }
     try {
+      if (optionsParsed.disableVideo &amp;&amp; optionsParsed.disableAudio) {
+        throw new Error('Not attempting to connect as video and audio are disabled')
+      }
       await this.connect()
       logger.info('Sending publish command')
       const result = await this.transactionManager.cmd('publish', data)
