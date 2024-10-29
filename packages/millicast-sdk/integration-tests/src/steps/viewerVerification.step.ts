@@ -4,7 +4,8 @@ import {
   verifyViewerIsLive,
   verifyViewerIsNotLive,
   verifyMediaTracksEnabled,
-  verifyViewerMediaTracksDisabled
+  verifyViewerMediaTracksDisabled,
+  verifyViwerVideoResolution
 } from "../stepsImpl/viewerVerification.step.impl";
 
 
@@ -33,5 +34,12 @@ Then(
   /^the "([^"]*)" should be able to view below AV state for the connected stream$/,
   async function (this: ScenarioWorld, actor: string, dataTable: DataTable) {
     await verifyViewerMediaTracksDisabled(this, actor, dataTable);
+  },
+);
+
+Then(
+  /^the "([^"]*)" should receive video with resolution "([^"]*)"x"([^"]*)"$/,
+  async function (this: ScenarioWorld, actor: string, width: string, height: string) {
+    await verifyViwerVideoResolution(this, actor, width, height);
   },
 );

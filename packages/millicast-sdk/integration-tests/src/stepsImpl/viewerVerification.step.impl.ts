@@ -85,7 +85,7 @@ async function verifyAudioPresent(scenarioWorld: ScenarioWorld, actor: string, p
   }
   const isAudioPresent = await retryUntilTrue(verifyMethod)
   if (!isAudioPresent) {
-    throw Error(`Stream does not has a audio - for ${playerId} playerID and isAudioPresent is ${isAudioPresent}`)
+    throw Error(`Stream does not have an audio - for ${playerId} playerID and isAudioPresent is ${isAudioPresent}`)
   }
 }
 
@@ -98,7 +98,7 @@ async function verifyAudioNotPresent(scenarioWorld: ScenarioWorld, actor: string
   }
   const isAudioPresent = await retryUntilFalse(verifyMethod)
   if (isAudioPresent) {
-    throw Error(`Stream has a audio - for ${playerId} playerID and isAudioPresent is ${isAudioPresent}`)
+    throw Error(`Stream has an audio - for ${playerId} playerID and isAudioPresent is ${isAudioPresent}`)
   }
 }
 
@@ -166,4 +166,20 @@ export async function verifyViewerMediaTracksDisabled(
     ], scenarioWorld);
     await verifyAudioPresent(scenarioWorld, actor, playerId)
   }
+}
+
+export async function verifyViwerVideoResolution(
+  scenarioWorld: ScenarioWorld,
+  actor: string,
+  width: string,
+  height: string,
+) {
+  const videoElement = 'document.getElementsByTagName("video")[0]';
+  const playerId = await scenarioWorld.page.evaluate(`${videoElement}.id`);
+
+  await runStep([
+    `the ${actor} switch to the "Viewer" app`,
+    `the "TestUtil.getResolution('${playerId}')[0]" JavaScript function result should be ${height}`,
+    `the "TestUtil.getResolution('${playerId}')[1]" JavaScript function result should be ${width}`,
+  ], scenarioWorld);
 }
