@@ -54,6 +54,7 @@ jobs:
           echo $MILLICAST_API_ENDPOINT
           echo $VITE_DIRECTOR_ENDPOINT
           echo $VITE_PUBLISH_TOKEN
+          echo $VITE_ACCOUNT_ID
           echo $VITE_STREAM_NAME
           echo $NEW_TOKEN_ID
 
@@ -72,7 +73,7 @@ jobs:
         run: |
           npm run demo-app:teardown
           npm run test:report
-          ./packages/millicast-sdk/integration-tests/ci/deleteToken.sh ${MILLICAST_API_ENDPOINT} ${MILLICAST_API_SECRET} ${NEW_TOKEN_ID}
+          ./packages/millicast-sdk/integration-tests/ci/deleteToken.sh $MILLICAST_API_ENDPOINT $MILLICAST_API_SECRET $NEW_TOKEN_ID
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         if: always()
