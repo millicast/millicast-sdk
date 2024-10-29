@@ -1444,7 +1444,7 @@ declare module '@millicast/sdk' {
    * @constructor
    * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
-   * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
+   * @param {HTMLMediaElement} [mediaElement=null] - Deprecated. Please see our docs on how to use this going forward. 
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
    */
   export class View extends BaseWebRTC {
