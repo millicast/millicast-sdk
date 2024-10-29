@@ -1,5 +1,11 @@
 # @millicast/sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- e84dc75: Fixed build issue with Vite
+
 ## 0.3.0
 
 ### Minor Changes
