@@ -80,7 +80,7 @@ Feature: Connect Feature
     And the "viewer1" connected stream should be LIVE
     And the "viewer1" should be able to view media tracks for the connected stream
 
-  Scenario: Publisher connects with disableVideo as <disableVideo> and disableAudio as <disableAudio> - Expected Fail DIOS-7279
+  Scenario: Publisher connects with disableVideo as <disableVideo> and disableAudio as <disableAudio> - Expected Fail
     Given the "publisher1" opens "Publisher" app
     When the "publisher1" starts the stream with the specified options
       | disableVideo | <disableVideo> |
