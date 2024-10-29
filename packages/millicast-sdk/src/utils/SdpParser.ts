@@ -41,95 +41,6 @@ const headerExtensionIdUppperRange = Array.from(
 const SdpParser = {
   /**
    * @function
-   * @name setSimulcast
-   * @description Parse SDP for support simulcast.
-   * **Only available in Chromium based browsers.**
-   * @param {String} sdp - Current SDP.
-   * @param {String} codec - Codec.
-   * @returns {String} SDP parsed with simulcast support.
-   * @example SdpParser.setSimulcast(sdp, 'h264')
-   */
-  setSimulcast(sdp = '', codec = '') : string {
-    logger.info('Setting simulcast. Codec: ', codec)
-    const browserData = new UserAgent()
-    if (!browserData.isChromium()) {
-      logger.warn(
-        'Your browser does not appear to support Simulcast. For a better experience, use a Chromium based browser.'
-      )
-      return sdp
-    }
-    if (codec !== 'h264' && codec !== 'vp8') {
-      logger.warn(
-        `Your selected codec ${codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`
-      )
-      return sdp
-    }
-    // Check if there is video available to set simulcast
-    if (!/m=video/.test(sdp)) {
-      logger.warn('There is no available video for simulcast to be enabled.')
-      return sdp
-    }
-
-    try {
-      const reg1 = new RegExp('m=video.*?a=ssrc:(\\d*) cname:(.+?)\\r\\n', 's')
-      const reg2 = new RegExp('m=video.*?a=ssrc:(\\d*) msid:(.+?)\\r\\n', 's')
-      // Get ssrc and cname and msid
-      const res1 = reg1.exec(sdp) ?? []
-      const ssrc = res1[1]
-      const cname = res1[2]
-      const res2 = reg2.exec(sdp) ?? []
-      const msid = res2[2]
-      // Add simulcasts ssrcs
-      const num = 2
-      const ssrcs = [ssrc]
-      for (let i = 0; i < num; ++i) {
-        // Create new ssrcs
-        const ssrc = 100 + i * 2
-        const rtx = ssrc + 1
-        // Add to ssrc list
-        ssrcs.push(ssrc.toString())
-        // Add sdp stuff
-        sdp +=
-          'a=ssrc-group:FID ' +
-          ssrc +
-          ' ' +
-          rtx.toString() +
-          '\r\n' +
-          'a=ssrc:' +
-          ssrc.toString() +
-          ' cname:' +
-          cname +
-          '\r\n' +
-          'a=ssrc:' +
-          ssrc.toString() +
-          ' msid:' +
-          msid +
-          '\r\n' +
-          'a=ssrc:' +
-          rtx.toString() +
-          ' cname:' +
-          cname +
-          '\r\n' +
-          'a=ssrc:' +
-          rtx.toString() +
-          ' msid:' +
-          msid +
-          '\r\n'
-      }
-      // Add SIM group
-      sdp += 'a=ssrc-group:SIM ' + ssrcs.join(' ') + '\r\n'
-
-      logger.info('Simulcast setted')
-      logger.debug('Simulcast SDP: ', sdp)
-      return sdp
-    } catch (e) {
-      logger.error('Error setting SDP for simulcast: ', e)
-      throw e
-    }
-  },
-
-  /**
-   * @function
    * @name setStereo
    * @description Parse SDP for support stereo.
    * @param {String} sdp - Current SDP.
@@ -441,7 +352,7 @@ const SdpParser = {
 
 // Checks if mediaStream has more than 2 audio channels.
 const hasAudioMultichannel = (mediaStream: MediaStream) => {
-  return mediaStream.getAudioTracks().some((value) => value.getSettings().channelCount as number > 2)
+  return mediaStream.getAudioTracks().some((value) => (value.getSettings().channelCount as number) > 2)
 }
 
 export default SdpParser
