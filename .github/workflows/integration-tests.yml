@@ -38,9 +38,9 @@ jobs:
           npm install playwright
 
           NEW_TOKEN=$(./packages/millicast-sdk/integration-tests/ci/createToken.sh $MILLICAST_API_ENDPOINT $MILLICAST_API_SECRET)
-          VITE_PUBLISH_TOKEN=$(echo $NEW_TOKEN | jq -r '.data.token')
-          VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
-          NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
+          export VITE_PUBLISH_TOKEN=$(echo $NEW_TOKEN | jq -r '.data.token')
+          export VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
+          export NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
 
           echo "check endpoint variable:"
           echo $MILLICAST_API_ENDPOINT
@@ -50,7 +50,6 @@ jobs:
           echo $VITE_STREAM_NAME
           echo $NEW_TOKEN_ID
           echo "check env variables"
-          printenv
 
           npm run build
           npm run demo-app:setup
@@ -59,7 +58,7 @@ jobs:
           # Disable artifact collection
           jq '.video = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
           jq '.trace = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
-          jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+          # jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
 
           npm run test-websdk -- tags "not @skip and not @ignore"
       - name: Suite Teardown
