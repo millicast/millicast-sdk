@@ -42,15 +42,6 @@ jobs:
           export VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
           export NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
 
-          echo "check endpoint variable:"
-          echo $MILLICAST_API_ENDPOINT
-          echo $VITE_DIRECTOR_ENDPOINT
-          echo $VITE_PUBLISH_TOKEN
-          echo $VITE_ACCOUNT_ID
-          echo $VITE_STREAM_NAME
-          echo $NEW_TOKEN_ID
-          echo "check env variables"
-
           npm run build
           npm run demo-app:setup
       - name: Execute Test Suite
@@ -58,7 +49,7 @@ jobs:
           # Disable artifact collection
           jq '.video = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
           jq '.trace = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
-          # jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+          jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
 
           npm run test-websdk -- tags "not @skip and not @ignore"
       - name: Suite Teardown
