@@ -57,6 +57,8 @@ jobs:
           echo $VITE_ACCOUNT_ID
           echo $VITE_STREAM_NAME
           echo $NEW_TOKEN_ID
+          echo "check env variables"
+          printenv
 
           npm run build
           npm run demo-app:setup
