@@ -468,7 +468,7 @@ export default class View extends BaseWebRTC {
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
-      video: { codec: 'h264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
+      video: { codec: 'H264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
       audio: { codec: 'opus', encryption: 'clear' },
       onFetch: this.onRtcDrmFetch.bind(this)
     }
