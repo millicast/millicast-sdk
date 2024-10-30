@@ -59,6 +59,8 @@ let video = document.querySelector("video");
 
 // MillicastView object
 let millicastView = null
+let hasVideo =  false
+let hasAudio = false
 
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken, enableDRM);
@@ -80,10 +82,15 @@ const newViewer = () => {
         }
         millicastView.configureDRM(drmOptions);
       }
+      hasVideo = event.data.tracks.some(track => track.media === 'video')
+      hasAudio = event.data.tracks.some(track => track.media === 'audio')
     }
   });
   millicastView.on("track", (event) => {
-    if (!enableDRM) addStream(event.streams[0]);
+    if (!enableDRM) {
+      if(hasVideo && event.track.kind === 'video' || hasAudio && !hasVideo && event.track.kind === 'audio')
+        addStream(event.streams[0])
+    }
   });
 
   millicastView.on('metadata', (metadata) => {
@@ -135,7 +142,7 @@ const addStream = (stream) => {
   playing = true;
   const audio = document.querySelector("audio");
 
-  if (disableVideo) {
+  if (disableVideo || !hasVideo) {
     if (audio) audio.srcObject = stream;
     if (video) video.parentNode.removeChild(video);
     togglePlay();
