@@ -25,6 +25,7 @@ import {
   DRMOptions,
   MetadataObject,
   SEIUserUnregisteredData,
+  ViewerEvents,
 } from './types/View.types.js'
 import { DRMProfile } from './types/Director.types'
 import { DecodedJWT, Media } from './types/BaseWebRTC.types'
@@ -89,9 +90,37 @@ export default class View extends BaseWebRTC {
   private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
+  private events: { [K in keyof ViewerEvents]: Array<(payload: ViewerEvents[K]) => void> } = {}
   protected override options: ViewConnectOptions | null = null
   constructor(tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
     super(tokenGenerator, logger, autoReconnect)
+  }
+
+  override on<K extends keyof ViewerEvents>(eventName: K, listener: (payload: ViewerEvents[K]) => void): this {
+    if (!this.events[eventName]) {
+      this.events[eventName] = []
+    }
+    this.events[eventName].push(listener)
+    return this
+  }
+
+  override off<K extends keyof ViewerEvents>(eventName: K, listener: (payload: ViewerEvents[K]) => void): this {
+    const listeners = this.events[eventName]
+    if (listeners) {
+      const idx = listeners.indexOf(listener)
+      if (idx >= 0) {
+        listeners.splice(idx, 1)
+      }
+    }
+    return this
+  }
+
+  override emit<K extends keyof ViewerEvents>(eventName: K, payload: ViewerEvents[K]): boolean {
+      if (this.events[eventName]) {
+        this.events[eventName].forEach((listener) => listener(payload))
+        return true
+      }
+      return false
   }
 
   /**
@@ -302,16 +331,12 @@ export default class View extends BaseWebRTC {
     await webRTCPeerInstance.createRTCPeer(this.options?.peerConfig)
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
-    this.stopReemitingSignalingInstanceEvents?.()
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(
       webRTCPeerInstance,
       this,
       Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
     )
-    this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [
-      signalingEvents.broadcastEvent,
-    ])
 
     if (this.options?.metadata) {
       if (!this.worker) {
@@ -345,8 +370,6 @@ export default class View extends BaseWebRTC {
             }
           }
           this.emit('metadata', metadata)
-          // FIXME : Remove in v0.3.0
-          this.emit('onMetadata', metadata)
         }
       }
     }
@@ -363,11 +386,12 @@ export default class View extends BaseWebRTC {
       if (event.data.sourceId === null) {
         switch (event.name) {
           case 'active':
+            this.emit('broadcastEvent', event)
             this.isMainStreamActive = true
             while (this.eventQueue.length > 0) {
               this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent)
             }
-            break
+            return
           case 'inactive':
             this.isMainStreamActive = false
             break
@@ -375,6 +399,7 @@ export default class View extends BaseWebRTC {
             break
         }
       }
+      this.emit('broadcastEvent', event)
     })
 
     const options = { ...(this.options as ViewConnectOptions), stereo: true }
@@ -480,7 +505,7 @@ export default class View extends BaseWebRTC {
         )
       }
     }
-    this.emit(webRTCEvents.track, trackEvent)
+    this.emit('track', trackEvent)
   }
 
   getDRMConfiguration(mediaId: string) {
