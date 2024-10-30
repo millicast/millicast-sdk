@@ -59,6 +59,9 @@ export default class View extends BaseWebRTC {
     this.eventQueue = []
     this.isMainStreamActive = false
     if (mediaElement) {
+      this.on(webRTCEvents.track, e => {
+        mediaElement.srcObject = e.streams[0]
+      })
       logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.')
     }
   }
