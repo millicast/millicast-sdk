@@ -1,5 +1,11 @@
 # @millicast/sdk
 
+## 0.3.3
+
+### Patch Changes
+
+- Aligning types for sourceId property within project method and global types .d.ts file
+
 ## 0.3.2
 
 ### Patch Changes
