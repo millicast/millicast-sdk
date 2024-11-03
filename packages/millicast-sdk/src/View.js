@@ -158,7 +158,7 @@ export default class View extends BaseWebRTC {
 
   /**
    * Start projecting source in selected media ids.
-   * @param {String} sourceId                          - Selected source id.
+   * @param {String | null} sourceId                   - Selected source id.
    * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
    * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
    * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.

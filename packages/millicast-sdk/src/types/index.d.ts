@@ -532,7 +532,7 @@ declare module '@millicast/sdk' {
     previousStats: ConnectionStats;
     /**
      * Initialize the statistics monitoring of the RTCPeerConnection.
-     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.  
+     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.
      */
     init(statsIntervalMs: number): void;
     /**
@@ -558,7 +558,7 @@ declare module '@millicast/sdk' {
 
   export type MediaStreamSource = {
     readonly streamId: string;
-    sourceId: string;
+    sourceId: string | null;
     readonly tracks: MediaTrackInfo[];
   }
 
