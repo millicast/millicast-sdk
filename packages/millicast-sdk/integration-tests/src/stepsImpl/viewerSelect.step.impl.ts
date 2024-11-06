@@ -1,6 +1,5 @@
 import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
 
-
 export async function viewerSelectLayer(
   scenarioWorld: ScenarioWorld,
   actor: string,

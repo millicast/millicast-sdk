@@ -6,6 +6,7 @@ docs
 docs-translations
 .env
 puppeteerrc.cjs
+packages/millicast-sdk/integration-tests/test-reports
 test-environment.js
 **/.DS_Store
 **/src/TransformWorker.worker.ts

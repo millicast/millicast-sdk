@@ -1,8 +1,7 @@
 import { When } from "@cucumber/cucumber";
 import { ScenarioWorld } from "cucumber-playwright-framework";
-import {
-  viewerSelectLayer,
-} from "../stepsImpl/viewerSelect.step.impl";
+import { viewerSelectLayer } from "../stepsImpl/viewerSelect.step.impl";
+// import { getLayersFromEvent } from "../support-utils/events";
 
 When(
   /^the "([^"]*)" selects simulcast layer with encodingId "([^"]*)"$/,

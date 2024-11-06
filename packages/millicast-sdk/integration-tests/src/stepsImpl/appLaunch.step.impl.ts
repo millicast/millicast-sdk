@@ -1,4 +1,7 @@
 import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
+import { verifyViewerIsLive, verifyViewerIsNotLive } from "./viewerVerification.step.impl";
+import { viewerStop } from "./viewerConnect.step.impl";
+import { collectWsEvents } from "../support-utils/events";
 
 export async function openViewerApp(
   scenarioWorld: ScenarioWorld,
@@ -15,7 +18,9 @@ export async function openViewerApp(
   );
   
   const jsFile = 'packages/millicast-sdk/integration-tests/src/support-utils/TestUtil.js'
-  await runStep(`the ${actor} adds the "${jsFile}" JavaScript file to the page`, scenarioWorld)
+  await runStep(`the ${actor} adds the "${jsFile}" JavaScript file to the page`, scenarioWorld);
+
+  collectWsEvents(scenarioWorld, actor)
 }
 
 export async function openPublisherApp(
@@ -33,5 +38,17 @@ export async function openPublisherApp(
   );
   
   const jsFile = 'packages/millicast-sdk/integration-tests/src/support-utils/TestUtil.js'
-  await runStep(`the ${actor} adds the "${jsFile}" JavaScript file to the page`, scenarioWorld)
+  await runStep(`the ${actor} adds the "${jsFile}" JavaScript file to the page`, scenarioWorld);
+}
+
+export async function openViewerAppAndDisconnect(
+  scenarioWorld: ScenarioWorld,
+  actor: string,
+) {
+  logger.debug(`Open the Viewer App and disconnect Viewer`);
+
+  await openViewerApp(scenarioWorld, actor)
+  await verifyViewerIsLive(scenarioWorld, actor);
+  await viewerStop(scenarioWorld, actor);
+  await verifyViewerIsNotLive(scenarioWorld, actor);
 }

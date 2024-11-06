@@ -1,6 +1,7 @@
 import { DataTable } from "@cucumber/cucumber";
 import { runStep, runSteps, ScenarioWorld } from "cucumber-playwright-framework";
 import { retryUntilFalse, retryUntilTrue } from "../support-utils/generic";
+import { getLayersFromEvent } from "../support-utils/events";
 
 export async function verifyViewerIsLive(
   scenarioWorld: ScenarioWorld,
@@ -168,14 +169,24 @@ export async function verifyViewerMediaTracksDisabled(
   }
 }
 
-export async function verifyViwerVideoResolution(
+export async function verifyViwerVideoResolutionForLayer(
   scenarioWorld: ScenarioWorld,
   actor: string,
-  width: string,
-  height: string,
+  encodingId: string,
 ) {
   const videoElement = 'document.getElementsByTagName("video")[0]';
   const playerId = await scenarioWorld.page.evaluate(`${videoElement}.id`);
+  const layers = await getLayersFromEvent(scenarioWorld, actor)
+  let height = ''
+  let width = ''
+  
+  //read resolution values from layer
+  for (const layer of layers){
+    if(layer["encodingId"] === encodingId){
+      height = layer["height"]
+      width = layer["width"]
+    }
+  }
 
   await runStep([
     `the ${actor} switch to the "Viewer" app`,

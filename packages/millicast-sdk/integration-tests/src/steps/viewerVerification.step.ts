@@ -5,7 +5,7 @@ import {
   verifyViewerIsNotLive,
   verifyMediaTracksEnabled,
   verifyViewerMediaTracksDisabled,
-  verifyViwerVideoResolution
+  verifyViwerVideoResolutionForLayer,
 } from "../stepsImpl/viewerVerification.step.impl";
 
 
@@ -38,8 +38,8 @@ Then(
 );
 
 Then(
-  /^the "([^"]*)" should receive video with resolution "([^"]*)"x"([^"]*)"$/,
-  async function (this: ScenarioWorld, actor: string, width: string, height: string) {
-    await verifyViwerVideoResolution(this, actor, width, height);
+  /^the "([^"]*)" verifies video resolution for layer "([^"]*)"$/,
+  async function (this: ScenarioWorld, actor: string, encodingId: string) {
+    await verifyViwerVideoResolutionForLayer(this, actor, encodingId);
   },
 );
