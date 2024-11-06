@@ -12,3 +12,5 @@ test-environment.js
 **/src/TransformWorker.worker.ts
 vite.config.*.timestamp-*
 .nx/
+.publisher.test.env
+.viewer.test.env
