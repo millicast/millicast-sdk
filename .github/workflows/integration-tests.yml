@@ -51,7 +51,7 @@ jobs:
           jq '.trace = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
           jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
 
-          npm run test-websdk -- tags "not @skip and not @ignore"
+          npm run test-websdk -- -p only
       - name: Suite Teardown
         if: always()
         run: |
