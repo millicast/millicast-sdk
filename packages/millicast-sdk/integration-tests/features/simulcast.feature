@@ -1,6 +1,6 @@
 
 Feature: Simulcast Feature
-    @only
+
     Scenario: Publisher connects with simulcast and viewer subscribes to layers event
         Given the "publisher1" opens "Publisher" app
         When the "publisher1" starts the stream with the specified options
