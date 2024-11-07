@@ -11,6 +11,7 @@ export async function viewerSelectLayer(
   await getListOfActorsEvents(scenarioWorld,actor)
   await waitForEventLayers(scenarioWorld,actor)
 
+  console.log(await getListOfActorsEvents(scenarioWorld,actor))
   await runStep([
       `the ${actor} switch to the "Viewer" app`,
       `the ${actor} executes the "window.millicastView.select({encodingId:"${encodingId}"})" JavaScript function on the page`,
