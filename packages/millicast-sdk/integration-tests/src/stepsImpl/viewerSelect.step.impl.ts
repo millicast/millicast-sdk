@@ -1,4 +1,5 @@
 import { ScenarioWorld, logger, runStep } from "cucumber-playwright-framework";
+import { getListOfActorsEvents, waitForEventLayers } from "../support-utils/events";
 
 export async function viewerSelectLayer(
   scenarioWorld: ScenarioWorld,
@@ -6,6 +7,9 @@ export async function viewerSelectLayer(
   encodingId: string,
 ) {
   logger.debug(`viewerSelectLayer function was called`);
+
+  await getListOfActorsEvents(scenarioWorld,actor)
+  await waitForEventLayers(scenarioWorld,actor)
 
   await runStep([
       `the ${actor} switch to the "Viewer" app`,

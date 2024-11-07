@@ -187,9 +187,10 @@ export async function verifyViwerVideoResolutionForLayer(
       width = layer["width"]
     }
   }
-
+  if (!height || !width) {throw Error(`Resolution values are missing for layer with encodingId ${encodingId}`)}
   await runStep([
     `the ${actor} switch to the "Viewer" app`,
+    `the ${actor} waits for "5" seconds`,
     `the "TestUtil.getResolution('${playerId}')[0]" JavaScript function result should be ${height}`,
     `the "TestUtil.getResolution('${playerId}')[1]" JavaScript function result should be ${width}`,
   ], scenarioWorld);

@@ -1,7 +1,7 @@
 
 Feature: Simulcast Feature
 
-    Scenario: Publisher connects with simulcast and viewer subscribes to layers event
+    Scenario: Publisher connects with simulcast and viewer select layers
         Given the "publisher1" opens "Publisher" app
         When the "publisher1" starts the stream with the specified options
             | codec     | h264 |
