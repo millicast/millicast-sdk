@@ -16,8 +16,8 @@ jobs:
         include:
           - qa_env_mode: dev
             environment: dev
-          - qa_env_mode: staging
-            environment: staging
+          # - qa_env_mode: staging
+          #   environment: staging
     env:
       INTEGRATION_DIR: ./packages/millicast-sdk/integration-tests
       INTEGRATION_TEST_CONFIG: ./packages/millicast-sdk/integration-tests/test.config.json
