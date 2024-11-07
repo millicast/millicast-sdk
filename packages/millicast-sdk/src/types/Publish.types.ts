@@ -27,7 +27,7 @@ export interface PublishConnectOptions {
    * - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    */
-  mediaStream: MediaStream | Array<MediaStreamTrack | null> | null
+  mediaStream: MediaStream | Array<MediaStreamTrack> | null
   /**
    * - Broadcast bandwidth. 0 for unlimited.
    */

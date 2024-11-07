@@ -336,8 +336,13 @@ export default class PeerConnection extends EventEmitter {
    * Get sender tracks
    * @returns {Array<MediaStreamTrack>} An array with all tracks in sender peer.
    */
-  getTracks(): (MediaStreamTrack | null)[] {
-    return this.peer?.getSenders().map((sender: RTCRtpSender) => sender.track) || []
+  getTracks(): MediaStreamTrack[] {
+    return (
+      this.peer
+        ?.getSenders()
+        .map((sender: RTCRtpSender) => sender.track)
+        .filter((track) => track !== null) || []
+    )
   }
 
   /**
