@@ -30,8 +30,10 @@ export async function waitForEventLayers(scenarioWorld: ScenarioWorld, actor: st
       if(myEvent["name"] === "layers" && myEvent["data"]["medias"]["0"]["layers"].length === 3) {
         eventPresent = true
         console.log("3 Layers Found")
+        console.log("Layers content: "+myEvent["data"]["medias"]["0"]["layers"])
       }
-    } return(eventPresent) as boolean
+    } 
+    return(eventPresent) as boolean
   }
   await retryUntilTrue(verifyMethod, 20)
 }
