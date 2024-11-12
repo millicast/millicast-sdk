@@ -1,11 +1,11 @@
 
 Feature: Simulcast Feature
 
-    Scenario: Publisher connects with simulcast and viewer select layers
+    Scenario: Publisher connects with codec: <codec>, simulcast: true and viewer select layers
         Given the "publisher1" opens "Publisher" app
         When the "publisher1" starts the stream with the specified options
-            | codec     | h264 |
-            | simulcast | true |
+            | codec     | <codec> |
+            | simulcast | true    |
         And the "publisher1" stream should be LIVE
 
         When the "viewer1" opens "Viewer" app and is ready to be connected
@@ -21,3 +21,8 @@ Feature: Simulcast Feature
 
         When the "viewer1" selects simulcast layer with encodingId "q"
         Then the "viewer1" verifies video resolution for layer "q"
+
+        Examples:
+            | codec |
+            | h264  |
+            | vp8   |
