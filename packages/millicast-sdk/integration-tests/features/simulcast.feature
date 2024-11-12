@@ -1,7 +1,7 @@
 
 Feature: Simulcast Feature
 
-    Scenario: Publisher connects with codec: <codec>, simulcast: true and viewer select layers
+    Scenario: Publisher connects with codec <codec>, simulcast true and viewer select layers
         Given the "publisher1" opens "Publisher" app
         When the "publisher1" starts the stream with the specified options
             | codec     | <codec> |
