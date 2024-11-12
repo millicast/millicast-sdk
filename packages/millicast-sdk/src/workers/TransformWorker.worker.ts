@@ -26,8 +26,8 @@ function createReceiverTransform(mid: string) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const payloadType = encodedFrame.getMetadata().payloadType
-        const frameCodec = payloadType ? payloadTypeCodec[payloadType] : codec
-        if (frameCodec === 'H264') {
+        const frameCodec = payloadType ? payloadTypeCodec[payloadType].toLowerCase() : codec
+        if (frameCodec === VideoCodec.H264) {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec as VideoCodec)
           if (
             metadata.timecode ||
@@ -96,6 +96,7 @@ function createSenderTransform(): TransformStream {
             if (metadata[0].uuid === DOLBY_SDK_TIMESTAMP_UUID) {
               metadata[0].timecode = Date.now()
             }
+            console.log('Metadata:', metadata[0])
             addH26xSEI(metadata[0], encodedFrame)
             synchronizationSourcesWithMetadata.push(newSyncSource)
           } catch (error) {

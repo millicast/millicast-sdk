@@ -29,6 +29,7 @@ import {
 } from './types/View.types.js'
 import { DRMProfile } from './types/Director.types'
 import { DecodedJWT, Media } from './types/BaseWebRTC.types'
+import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('View')
 logger.setLevel(Logger.DEBUG)
@@ -486,7 +487,7 @@ export default class View extends BaseWebRTC {
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
           name: 'receiverTransform',
           payloadTypeCodec: { ...this.payloadTypeCodec },
-          codec: this.options.metadata && 'h264',
+          codec: this.options.metadata && VideoCodec.H264,
           mid: trackEvent.transceiver?.mid,
         })
       } else if (supportsInsertableStreams) {
@@ -496,7 +497,7 @@ export default class View extends BaseWebRTC {
           {
             action: 'insertable-streams-receiver',
             payloadTypeCodec: { ...this.payloadTypeCodec },
-            codec: this.options.metadata && 'h264',
+            codec: this.options.metadata && VideoCodec.H264,
             mid: trackEvent.transceiver?.mid,
             readable,
             writable,
