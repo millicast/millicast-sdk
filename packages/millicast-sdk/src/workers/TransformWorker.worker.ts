@@ -96,7 +96,6 @@ function createSenderTransform(): TransformStream {
             if (metadata[0].uuid === DOLBY_SDK_TIMESTAMP_UUID) {
               metadata[0].timecode = Date.now()
             }
-            console.log('Metadata:', metadata[0])
             addH26xSEI(metadata[0], encodedFrame)
             synchronizationSourcesWithMetadata.push(newSyncSource)
           } catch (error) {
