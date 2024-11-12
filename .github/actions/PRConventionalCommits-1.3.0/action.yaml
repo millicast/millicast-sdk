@@ -1,0 +1,27 @@
+name: 'Conventional Commit In Pull Requests'
+description: 'Check that the PR title contains a valid task type and (optionally) a task number, and label the PR based on the task type'
+inputs:
+
+  task_types:
+    description: 'An array of task types. Example: ["feat","fix","docs","test","ci","refactor","perf","chore","revert"]'
+    required: true
+  ticket_key_regex:
+    description: 'Regular expression to match issue number in PR title, by default does not validate. Example ^PROJECT-\d{2,5}$'
+    required: false
+  add_label:
+    description: 'Whether to add labels'
+    required: false
+    default: 'true'
+  token:
+    description: 'GitHub token for applying labels.'
+    required: false
+    default: ${{ github.token }}
+  custom_labels:
+    description: 'A JSON string mapping task types to custom label names. Example: {"feat": "feature", "fix": "fix", "docs": "documentation", "test": "test", "ci": "CI/CD", "refactor": "refactor", "perf": "performance", "chore": "chore", "revert": "revert", "wip": "WIP"}'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: "git-pull-request"
+  color: "blue"

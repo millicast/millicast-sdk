@@ -58,7 +58,7 @@ export type ViewConnectOptions = {
   /**
    * - Ask the server to use the playout delay header extension.
    */
-  forcePlayoutDelay?: { min: number; max: number } | boolean
+  forcePlayoutDelay?: { min: number; max: number }
   /**
    * - Ask the server to use the playout delay header extension.
    */
@@ -178,4 +178,117 @@ export interface MetadataObject {
   uuid: string
   unregistered: SEIUserUnregisteredData
   timecode: Date
+}
+
+/**
+ * Broadcast event
+ */
+export type BroadcastEventName = ViewServerEvent
+
+export interface BroadcastEvent {
+  name: BroadcastEventName
+}
+
+/**
+ * Active Event
+ */
+export interface TrackInfo {
+  trackId: string
+  media: Media
+}
+
+export interface ActiveEventPayload {
+  streamId: string
+  sourceId: string | null
+  tracks: TrackInfo[]
+  encryption?: EncryptionParameters
+}
+
+export interface ActiveEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'active'>
+  data: ActiveEventPayload
+}
+
+
+/**
+ * Inactive Event
+ */
+export interface InactiveEventPayload {
+  streamId: string
+  sourceId: string | null
+}
+
+export interface InactiveEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'inactive'>
+  data: InactiveEventPayload
+}
+
+
+/**
+ * ViewerCount Event
+ */
+export interface ViewerCountEventPayload {
+  viewerCount: number
+}
+
+export interface ViewerCountEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'viewercount'>
+  data: ViewerCountEventPayload
+}
+
+
+/**
+ * Layers Event
+ */
+export interface LayersEventPayload {
+  medias: LayersMediaCollection
+}
+
+export interface LayersMediaCollection {
+  [key: string]: LayerMedia
+}
+
+export interface LayerMedia {
+  active: Array<LayerMediaInfo>
+  inactive: Array<LayerMediaInfo>
+  layers: Array<Layer>
+}
+
+export interface LayerMediaInfo {
+  id: string
+  simulcastIdx: number
+  totalBytes: number
+  numPackets: number
+  bitrate: number
+  totalBitrate: number
+  width: number
+  height: number
+  layers: Array<Layer>
+}
+
+export interface Layer extends Omit<LayerMediaInfo, 'id' | 'layers'> {
+  encodingId: string
+  spatialLayerId: number
+  temporalLayerId: number
+}
+
+export interface LayersEvent extends BroadcastEvent {
+  name: Extract<BroadcastEventName, 'layers'>
+  data: LayersEventPayload
+}
+
+/**
+ * Metadata Event
+ */
+export type MetadataEvent = MetadataObject
+
+/**
+ * Events declaration of Viewers that user could listen to
+ */
+export interface ViewerEvents {
+  'broadcastEvent'?: BroadcastEvent
+  'track'?: RTCTrackEvent
+  'metadata'?: MetadataEvent
+  // TODO: elaborate error type
+  'error'?: Error
 }

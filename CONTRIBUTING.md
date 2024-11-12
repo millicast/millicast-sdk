@@ -17,9 +17,40 @@ Asumming that you have Node 12.10.x or newer and `npm` installed, install the re
 npm ci
 ```
 
-### Changesets
+### Pull request - Conventional Commits
 
-Whenever you are working on a new feature, fix or change, make sure you create a **changeset** with a description of the change. Follow [this](.changeset/README.md#Changes-per-feature) guide for further understanding.
+As to improve release processes and automation with [`nx release`](https://nx.dev/recipes/nx-release/get-started-with-nx-release), we need to improve how the commits to main branch are written. Thereforer we are implementing the use of the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for **Pull Request titles**. Refer to the docs if necessary, but below there is a small introduction of this standard.
+
+#### Title structure
+
+The title should be written with the following format:
+
+```
+<type>([optional scope]): <description>
+```
+
+where `<type>` refers to the change made, can be selected from the existing [types](#type), then `([optional scope])` states if there was a specific part or package of the project that was changed and `<description>` adds information about the change itself.
+
+#### Example
+
+```
+feat: H264/avc user unregistered data SEI parsing
+```
+
+#### Type
+
+When a **BREAKING CHANGE** is done, it can be written as that in the description or an exclamation mark (**!**) can be added between the type or scope and the semi-colon. This will imply a major version change.
+
+- `build` - Changes that affect the build system or external dependencies (dependencies update)
+- `ci` - Changes to our CI configuration files and scripts (basically directory .github/workflows)
+- `docs` - Documentation only changes
+- `feat` - A new feature
+- `fix` - A bug fix
+- `chore` - Changes which does not touch the code. It will not generate release notes changes
+- `refactor` - A code change that contains refactor
+  style - Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `test` - Adding missing tests or correcting existing tests and also changes for our test app
+- `perf` - A code change that improves performance
 
 ### Building packages
 
@@ -75,6 +106,7 @@ npm run start
 > Please note that before you run `npm run start`, you need to have built the solution first using `npm run build`
 
 This command opens the following demo apps in your browser:
+
 - millicast-publisher-demo
 - millicast-viewer-demo
 - millicast-sdk
@@ -82,7 +114,9 @@ This command opens the following demo apps in your browser:
 It keeps watching for changes in these packages. You only need to refresh both pages if you modify the code.
 
 ### Running tests
+
 If you want to run all tests, run:
+
 ```sh
 npm run test
 ```
@@ -90,38 +124,46 @@ npm run test
 > Note: There are some requirements to take into account before running E2E tests. Make sure to take a look at [those](#e2e-testing).
 
 #### Unit testing
-If you want to run only unit tests, navigate to the `millicast-sdk` package. 
+
+If you want to run only unit tests, navigate to the `millicast-sdk` package.
+
 ```sh
 cd packages/millicast-sdk
 npm run test-unit
 ```
 
 #### E2E testing
+
 The first step before running E2E tests is setting some environment variables and adjusting the director URL desired.
 
 1. You have to set three variables in the environment based on the token environment you are.
-  * In **MacOS/Linux**:
-  ```sh
-  export PUBLISH_TOKEN=<your_publish_token>
-  export ACCOUNT_ID=<your_account_id>
-  export STREAM_NAME=<your_stream_name>
-  ```
 
-  * In **Windows (Powershell)**:
-  ```sh
-  $env:PUBLISH_TOKEN="<your_publish_token>"
-  $env:ACCOUNT_ID="<your_account_id>"
-  $env:STREAM_NAME="<your_stream_name>"
-  ```
+- In **MacOS/Linux**:
 
-  * In **Windows (CMD)**:
-  ```sh
-  set PUBLISH_TOKEN=<your_publish_token>
-  set ACCOUNT_ID=<your_account_id>
-  set STREAM_NAME=<your_stream_name>
-  ```
+```sh
+export PUBLISH_TOKEN=<your_publish_token>
+export ACCOUNT_ID=<your_account_id>
+export STREAM_NAME=<your_stream_name>
+```
+
+- In **Windows (Powershell)**:
+
+```sh
+$env:PUBLISH_TOKEN="<your_publish_token>"
+$env:ACCOUNT_ID="<your_account_id>"
+$env:STREAM_NAME="<your_stream_name>"
+```
+
+- In **Windows (CMD)**:
+
+```sh
+set PUBLISH_TOKEN=<your_publish_token>
+set ACCOUNT_ID=<your_account_id>
+set STREAM_NAME=<your_stream_name>
+```
 
 If you only want to run E2E tests, in the command line run:
+
 ```sh
 npm run test-e2e
 ```
@@ -194,15 +236,16 @@ classDiagram
   }
   class Director {
     <<Singleton>>
-    +getPublisher(publishToken, streamName, streamType?)
-    +getSubscriber(streamName, streamAccountId, subscribeToken?)
+    const optionsPublish: DirectorPublisherOptions = { token, streamName, streamType? }
+    +getPublisher(optionsPublish)
+    const optionsSubscribe: DirectorSubscriberOptions = { streamName, streamAccountId, subscriberToken? }
+    +getSubscriber(optionsSubscribe)
   }
   class SdpParser {
     <<Singleton>>
     +setStereo(sdp) string
     +setDTX(sdp) string
     +setVideoBitrate(sdp, bitrate) string
-    +setSimulcast(sdp, codec) string
   }
   class Logger {
     <<Singleton>>

@@ -48,7 +48,6 @@
     "@babel/plugin-transform-runtime": "^7.13.10",
     "@babel/preset-env": "^7.23.6",
     "@babel/runtime": "^7.13.10",
-    "@changesets/cli": "^2.27.1",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@maslick/radiaslider": "^1.9.8",

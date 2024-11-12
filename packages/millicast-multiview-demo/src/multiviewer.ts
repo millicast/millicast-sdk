@@ -1,4 +1,5 @@
-import { View, Director } from '@nx-millicast/millicast-sdk';
+import { View, Director } from '@nx-millicast/millicast-sdk'
+import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
@@ -7,14 +8,14 @@ if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
 // Get query params
 const params = new Proxy(new URLSearchParams(window.location.search), {
   get: (searchParams, prop) => searchParams.get(prop),
-});
+})
 
 // Config data
 const accountId = params.accountId || import.meta.env.VITE_ACCOUNT_ID
 const streamName = params.streamName || import.meta.env.VITE_STREAM_NAME
 const metadata = params.metadata === 'true'
 const enableDRM = params.drm === 'true'
-const subscriberToken = params.token || import.meta.env.VITE_SUBSCRIBER_TOKEN;
+const subscriberToken = params.token || import.meta.env.VITE_SUBSCRIBER_TOKEN
 const disableVideo = params.disableVideo === 'true'
 const disableAudio = params.disableAudio === 'true'
 const connectOptions = {
@@ -42,7 +43,8 @@ let transceiverMidToSourceIdMap = {}
 let transceiverToLayersMap = {}
 
 // Create a new viewer instance
-const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken, enableDRM)
+const options: DirectorSubscriberOptions = { streamName, streamAccountId: accountId, subscriberToken }
+const tokenGenerator = () => Director.getSubscriber(options, enableDRM)
 let viewer
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -76,8 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           break
         }
         case 'layers': {
-          if (sourcesDropDown.value)
-            updateLayers(data.medias)
+          if (sourcesDropDown.value) updateLayers(data.medias)
           break
         }
       }
@@ -97,7 +98,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 })
 
 const addRemoteSource = async (data) => {
-
   const sourceId = data.sourceId
   const mediaStream = new MediaStream()
   const videoElement = createVideoElement()
@@ -107,12 +107,12 @@ const addRemoteSource = async (data) => {
     const mediaTransceiver = await viewer.addRemoteTrack(media, [mediaStream])
     return {
       ...track,
-      mediaId: mediaTransceiver.mid
+      mediaId: mediaTransceiver.mid,
     }
   })
   const tracksMapping = await Promise.all(tracksPromises)
-  const videoMediaId = tracksMapping.find(track => track.media === 'video').mediaId
-  const audioMediaId = tracksMapping.find(track => track.media === 'audio')?.mediaId
+  const videoMediaId = tracksMapping.find((track) => track.media === 'video').mediaId
+  const audioMediaId = tracksMapping.find((track) => track.media === 'audio')?.mediaId
   videoElement.id = 'mid-' + videoMediaId
   if (audioMediaId) {
     audioElement.id = 'mid-' + audioMediaId
@@ -138,12 +138,12 @@ const addRemoteSource = async (data) => {
 
 const addMainSource = async (data) => {
   console.log('add main source')
-  const tracksMapping = data.tracks.map(track => {
+  const tracksMapping = data.tracks.map((track) => {
     const { media } = track
     const mediaId = media === 'video' ? mainVideoMid : '1'
     return {
       ...track,
-      mediaId
+      mediaId,
     }
   })
   if (data.encryption && enableDRM) {
@@ -153,7 +153,7 @@ const addMainSource = async (data) => {
       videoEncryptionParams: data.encryption,
       videoMid: mainVideoMid,
     }
-    const audioTrackMapping = tracksMapping.find(track => track.media === 'audio')
+    const audioTrackMapping = tracksMapping.find((track) => track.media === 'audio')
     if (audioTrackMapping) {
       drmOptions.audioMid = audioTrackMapping.mediaId
     }
@@ -177,9 +177,9 @@ const addStreamToVideoElement = (mediaStream, mediaId) => {
 }
 
 const unprojectAndRemoveVideo = async (sourceId) => {
-  const videoMediaId = sourceTracksMap[sourceId].find(track => track.media === 'video').mediaId
-  const audioMediaId = sourceTracksMap[sourceId].find(track => track.media === 'audio')?.mediaId
-  const tracksMediaIds = sourceTracksMap[sourceId].map(track => track.mediaId)
+  const videoMediaId = sourceTracksMap[sourceId].find((track) => track.media === 'video').mediaId
+  const audioMediaId = sourceTracksMap[sourceId].find((track) => track.media === 'audio')?.mediaId
+  const tracksMediaIds = sourceTracksMap[sourceId].map((track) => track.mediaId)
   const video = document.getElementById('mid-' + videoMediaId)
   const audio = document.getElementById('mid-' + audioMediaId)
 
@@ -207,13 +207,19 @@ const updateLayers = (layers) => {
 
   transceiverToLayersMap = layers
 
-  const videoMediaId = sourceTracksMap[sourceId]?.find(track => track.media === 'video').mediaId || null
+  const videoMediaId = sourceTracksMap[sourceId]?.find((track) => track.media === 'video').mediaId || null
   const activeLayers = layers[videoMediaId]?.active || []
   const selectedLayer = layersDropDown.value
 
-  layersDropDown.innerHTML = `<option hidden selected>Select a source</option>` + activeLayers.map(layer => {
-    return `<option value="${layer.id}" ${layer.id === selectedLayer ? 'selected' : ''}>${layer.width}p</option>`
-  }).join('')
+  layersDropDown.innerHTML =
+    `<option hidden selected>Select a source</option>` +
+    activeLayers
+      .map((layer) => {
+        return `<option value="${layer.id}" ${layer.id === selectedLayer ? 'selected' : ''}>${
+          layer.width
+        }p</option>`
+      })
+      .join('')
 }
 
 const createVideoElement = () => {
@@ -248,8 +254,14 @@ const createVideoEventListener = (mediaId) => {
     if (viewer.isDRMOn) {
       viewer.exchangeDRMConfiguration(mediaId, mainVideoMid)
     }
-    await viewer.project(mainVideoSourceId === mainSourceId ? null : mainVideoSourceId, sourceTracksMap[selectedSourceId])
-    await viewer.project(selectedSourceId === mainSourceId ? null : selectedSourceId, sourceTracksMap[mainVideoSourceId])
+    await viewer.project(
+      mainVideoSourceId === mainSourceId ? null : mainVideoSourceId,
+      sourceTracksMap[selectedSourceId]
+    )
+    await viewer.project(
+      selectedSourceId === mainSourceId ? null : selectedSourceId,
+      sourceTracksMap[mainVideoSourceId]
+    )
     const tmp = sourceTracksMap[selectedSourceId]
     sourceTracksMap[selectedSourceId] = sourceTracksMap[mainVideoSourceId]
     sourceTracksMap[mainVideoSourceId] = tmp
@@ -278,23 +290,29 @@ const removeSourceOption = (sourceId) => {
 
 sourcesDropDown.addEventListener('change', () => {
   const sourceId = sourcesDropDown.value === 'main' ? null : sourcesDropDown.value
-  const videoMediaId = sourceTracksMap[sourceId].find(track => track.trackId === 'video').mediaId
+  const videoMediaId = sourceTracksMap[sourceId].find((track) => track.trackId === 'video').mediaId
 
   const sourceActiveLayers = transceiverToLayersMap[videoMediaId]?.active || []
 
-  layersDropDown.innerHTML = `<option hidden selected>Select a source</option>` + sourceActiveLayers.map(layer => {
-    return `<option value="${layer.id}">${layer.width}p</option>`
-  }).join('')
+  layersDropDown.innerHTML =
+    `<option hidden selected>Select a source</option>` +
+    sourceActiveLayers
+      .map((layer) => {
+        return `<option value="${layer.id}">${layer.width}p</option>`
+      })
+      .join('')
 })
 
 layersDropDown.addEventListener('change', (event) => {
   const encodingId = event.target.value
   const sourceId = sourcesDropDown.value === 'main' ? null : sourcesDropDown.value
-  const videoTrack = sourceTracksMap[sourceId].find(track => track.trackId === 'video')
-  viewer.project(sourceId, [{
-    ...videoTrack,
-    layer: {
-      encodingId
-    }
-  }])
+  const videoTrack = sourceTracksMap[sourceId].find((track) => track.trackId === 'video')
+  viewer.project(sourceId, [
+    {
+      ...videoTrack,
+      layer: {
+        encodingId,
+      },
+    },
+  ])
 })
