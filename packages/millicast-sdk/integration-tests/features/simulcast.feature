@@ -13,14 +13,14 @@ Feature: Simulcast Feature
             | events | layers,active |
         Then the "viewer1" connected stream should be LIVE
 
-        When the "viewer1" selects simulcast layer with encodingId "f"
-        Then the "viewer1" verifies video resolution for layer "f"
+        When the "viewer1" selects simulcast layer with encodingId "0"
+        Then the "viewer1" verifies video resolution for layer "0"
 
-        When the "viewer1" selects simulcast layer with encodingId "h"
-        Then the "viewer1" verifies video resolution for layer "h"
+        When the "viewer1" selects simulcast layer with encodingId "1"
+        Then the "viewer1" verifies video resolution for layer "1"
 
-        When the "viewer1" selects simulcast layer with encodingId "q"
-        Then the "viewer1" verifies video resolution for layer "q"
+        When the "viewer1" selects simulcast layer with encodingId "2"
+        Then the "viewer1" verifies video resolution for layer "2"
 
         Examples:
             | codec |
