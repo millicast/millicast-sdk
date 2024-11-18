@@ -2,11 +2,11 @@ import { PublishServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
-export type PublishConnectOptions = {
+export interface PublishConnectOptions {
   /**
    * - Source unique id. Only avialable if stream is multisource.
    */
-  sourceId: string | null
+  sourceId?: string | null
   /**
    * - True to modify SDP for support stereo. Otherwise False.
    */
@@ -27,7 +27,7 @@ export type PublishConnectOptions = {
    * - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    */
-  mediaStream: MediaStream | (MediaStreamTrack | null)[] | null
+  mediaStream: MediaStream | Array<MediaStreamTrack> | null
   /**
    * - Broadcast bandwidth. 0 for unlimited.
    */
@@ -76,7 +76,7 @@ export type PublishConnectOptions = {
   /**
    * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    */
-  events?: PublishServerEvent
+  events?: PublishServerEvent[]
   /**
    * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    */

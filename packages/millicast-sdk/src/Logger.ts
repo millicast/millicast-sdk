@@ -293,12 +293,14 @@ const Logger = {
    *
    * // Output: Diagnostics object with specified configuration
    */
-  diagnose: (config: DiagnosticsOptions = {
-    statsCount: 60,
-    historySize: 1000,
-    minLogLevel: 'TRACE',
-    statsFormat: 'JSON',
-  }): DiagnosticsObject | CMCDDiagnostics => {
+  diagnose: (
+    config: DiagnosticsOptions = {
+      statsCount: 60,
+      historySize: 1000,
+      minLogLevel: 'TRACE',
+      statsFormat: 'JSON',
+    }
+  ): DiagnosticsObject | CMCDDiagnostics => {
     let finalConfig
     const defaultConfig = {
       statsCount: 60,
@@ -315,7 +317,7 @@ const Logger = {
     }
     const { statsCount, historySize, minLogLevel, statsFormat } = finalConfig
     const result = Diagnostics.get(statsCount, statsFormat)
-    const history = Logger.getHistory() as string[]
+    const history = Logger.getHistory()
 
     if (!Number.isInteger(historySize) || historySize <= 0) {
       throw new Error('Invalid Argument Exception : historySize must be a positive integer.')

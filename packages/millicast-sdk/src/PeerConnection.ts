@@ -6,6 +6,8 @@ import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { SdpOptions, MillicastCapability, ICodecs, PeerConnectionConfig } from './types/PeerConnection.types'
 import { AudioCodec, VideoCodec } from './types/Codecs.types'
+import { isAudioCodec, isVideoCodec } from './utils/Codecs'
+import { typedKeys } from './utils/ObjectUtils'
 
 const logger = Logger.get('PeerConnection')
 
@@ -39,17 +41,17 @@ const localSDPOptions = {
  */
 export default class PeerConnection extends EventEmitter {
   public mode: 'Publisher' | 'Viewer' | null
-  public sessionDescription: RTCSessionDescriptionInit | null
   public peer: RTCPeerConnection | null
   public peerConnectionStats: PeerConnectionStats | null
   public transceiverMap: Map<
     RTCRtpTransceiver,
     (value: RTCRtpTransceiver | PromiseLike<RTCRtpTransceiver>) => void
   >
+  public sessionDescription?: RTCSessionDescriptionInit
+
   constructor() {
     super()
     this.mode = null
-    this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
     this.transceiverMap = new Map()
@@ -293,7 +295,7 @@ export default class PeerConnection extends EventEmitter {
     const browserCapabilities = RTCRtpSender.getCapabilities(kind) as MillicastCapability
 
     if (browserCapabilities) {
-      const codecs: { [key: string]: ICodecs } = {}
+      const codecs: { [key in VideoCodec | AudioCodec]?: ICodecs } = {}
       let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i')
 
       if (kind === 'audio') {
@@ -305,23 +307,25 @@ export default class PeerConnection extends EventEmitter {
       }
 
       for (const codec of browserCapabilities.codecs) {
-        const matches = codec.mimeType.match(regex)
+        const matches = codec.mimeType?.match(regex)
         if (matches) {
           const codecName = matches[1].toLowerCase()
-          codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType }
-          if (codec.scalabilityModes) {
-            let modes = codecs[codecName].scalabilityModes || []
-            modes = [...modes, ...codec.scalabilityModes]
-            codecs[codecName].scalabilityModes = [...new Set(modes)]
-          }
-          if (codec.channels) {
-            codecs[codecName].channels = codec.channels
+          if (isVideoCodec(codecName) || isAudioCodec(codecName)) {
+            codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType }
+            if (codec.scalabilityModes) {
+              let modes = codecs[codecName].scalabilityModes || []
+              modes = [...modes, ...codec.scalabilityModes]
+              codecs[codecName].scalabilityModes = [...new Set(modes)]
+            }
+            if (codec.channels) {
+              codecs[codecName].channels = codec.channels
+            }
           }
         }
       }
 
-      browserCapabilities.codecs = Object.keys(codecs).map((key) => {
-        return { codec: key, ...codecs[key] } as ICodecs
+      browserCapabilities.codecs = typedKeys(codecs).map((key) => {
+        return { codec: key, ...codecs[key] }
       })
     }
 
@@ -332,8 +336,13 @@ export default class PeerConnection extends EventEmitter {
    * Get sender tracks
    * @returns {Array<MediaStreamTrack>} An array with all tracks in sender peer.
    */
-  getTracks(): (MediaStreamTrack | null)[] {
-    return this.peer?.getSenders().map((sender: RTCRtpSender) => sender.track) || []
+  getTracks(): MediaStreamTrack[] {
+    return (
+      this.peer
+        ?.getSenders()
+        .map((sender: RTCRtpSender) => sender.track)
+        .filter((track) => track !== null) || []
+    )
   }
 
   /**
@@ -397,7 +406,7 @@ export default class PeerConnection extends EventEmitter {
 const isMediaStreamValid = (mediaStream: MediaStream) =>
   mediaStream.getAudioTracks().length <= 1 && mediaStream.getVideoTracks().length <= 1
 
-const getValidMediaStream = (mediaStream?: MediaStream | Array<MediaStreamTrack>) => {
+const getValidMediaStream = (mediaStream?: MediaStream | Array<MediaStreamTrack> | null) => {
   if (!mediaStream) {
     return null
   }
@@ -514,10 +523,11 @@ const addMediaStreamToPeer = (peer: RTCPeerConnection, mediaStream: MediaStream,
 
     if (track.kind === 'video') {
       initOptions.direction = !options.disableVideo ? 'sendonly' : 'inactive'
-      const encodings = []
+      const encodings: RTCRtpEncodingParameters[] = []
 
       if (options.scalabilityMode && new UserAgent().isChrome()) {
         logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
+        // Typescript dom RTCRtpEncodingParameters is not up to date with scaleabilityMode as as of Typescript 5.6.3
         encodings.push({ scalabilityMode: options.scalabilityMode } as RTCRtpEncodingParameters)
       } else if (options.scalabilityMode) {
         logger.warn('SVC is only supported in Google Chrome')

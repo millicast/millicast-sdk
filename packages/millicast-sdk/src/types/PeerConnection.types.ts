@@ -1,4 +1,4 @@
-import { VideoCodec } from './Codecs.types'
+import { AudioCodec, VideoCodec } from './Codecs.types'
 
 export interface PeerConnectionConfig extends RTCConfiguration {
   /**
@@ -32,8 +32,8 @@ export interface SdpOptions {
 }
 
 export interface ICodecs {
-  codec?: VideoCodec
-  mimeType: string
+  codec?: VideoCodec | AudioCodec
+  mimeType?: string
   scalabilityModes?: Array<string>
   channels?: number
 }
