@@ -533,11 +533,17 @@ const addMediaStreamToPeer = (peer: RTCPeerConnection, mediaStream: MediaStream,
         logger.warn('SVC is only supported in Google Chrome')
       }
       if (options.simulcast) {
-        encodings.push(
-          { rid: 'f', scaleResolutionDownBy: 1.0 },
-          { rid: 'h', scaleResolutionDownBy: 2.0 },
-          { rid: 'q', scaleResolutionDownBy: 4.0 }
-        )
+        if (options.codec !== 'h264' && options.codec !== 'vp8') {
+          logger.warn(
+            `Your selected codec ${options.codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`
+          )
+        } else {
+          encodings.push(
+            { rid: 'f', scaleResolutionDownBy: 1.0 },
+            { rid: 'h', scaleResolutionDownBy: 2.0 },
+            { rid: 'q', scaleResolutionDownBy: 4.0 }
+          )
+        }
       }
       if (encodings.length > 0) {
         initOptions.sendEncodings = encodings
