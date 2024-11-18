@@ -653,7 +653,7 @@ function numberToByteArray(num: number) {
   if (!isNaN(num)) {
     const bigint = BigInt(num)
     for (let i = 0; i < Math.ceil(Math.floor(Math.log2(num) + 1) / 8); i++) {
-      array.unshift(((bigint >> BigInt(8 * i)) & BigInt(255)) as unknown as number)
+      array.unshift(Number((bigint >> BigInt(8 * i)) & BigInt(255)))
     }
   }
   return new Uint8Array(array)
