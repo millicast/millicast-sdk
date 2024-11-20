@@ -26,8 +26,8 @@ function createReceiverTransform(mid: string) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const payloadType = encodedFrame.getMetadata().payloadType
-        const frameCodec = payloadType ? payloadTypeCodec[payloadType] : codec
-        if (frameCodec === 'H264') {
+        const frameCodec = payloadType ? payloadTypeCodec[payloadType].toLowerCase() : codec
+        if (frameCodec === VideoCodec.H264) {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec as VideoCodec)
           if (
             metadata.timecode ||
