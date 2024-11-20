@@ -1,7 +1,6 @@
 import jwtDecode from 'jwt-decode'
 import reemit from 're-emitter'
 import { atob } from 'js-base64'
-import joi from 'joi'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
@@ -16,6 +15,7 @@ import { DecodedJWT, ReconnectData } from './types/BaseWebRTC.types'
 import { SEIUserUnregisteredData } from './types/View.types'
 import { SignalingPublishOptions } from './types/Signaling.types'
 import { VideoCodec } from './types/Codecs.types'
+import { validatePublishConnectOptions } from './utils/Validators'
 
 const logger = Logger.get('Publish')
 
@@ -114,26 +114,7 @@ export default class Publish extends BaseWebRTC {
    * }
    */
   override async connect(options: PublishConnectOptions = connectOptions): Promise<void> {
-    const schema = joi.object({
-      sourceId: joi.string(),
-      stereo: joi.boolean(),
-      dtx: joi.boolean(),
-      absCaptureTime: joi.boolean(),
-      dependencyDescriptor: joi.boolean(),
-      mediaStream: joi.alternatives().try(joi.array().items(joi.object()), joi.object()),
-      bandwidth: joi.number(),
-      metadata: joi.boolean(),
-      disableVideo: joi.boolean(),
-      disableAudio: joi.boolean(),
-      codec: joi.string().valid(...Object.values(VideoCodec)),
-      simulcast: joi.boolean(),
-      scalabilityMode: joi.string(),
-      peerConfig: joi.object(),
-      record: joi.boolean(),
-      events: joi.array().items(joi.string().valid('active', 'inactive', 'viewercount')),
-      priority: joi.number(),
-    })
-    const { error, value } = schema.validate(options)
+    const { error, value } = validatePublishConnectOptions(options)
     if (error) logger.warn(error, value)
     this.options = {
       ...connectOptions,
