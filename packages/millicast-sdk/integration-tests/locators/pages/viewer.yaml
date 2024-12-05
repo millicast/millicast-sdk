@@ -1,0 +1,3 @@
+on load validation: "logo:displayed"
+
+logo: '#coLogo'

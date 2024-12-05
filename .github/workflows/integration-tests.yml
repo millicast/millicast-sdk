@@ -1,0 +1,67 @@
+name: Integration Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  new-integration-tests:
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.qa_env_mode }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        qa_env_mode: [dev, staging]
+        include:
+          - qa_env_mode: dev
+            environment: dev
+          - qa_env_mode: staging
+            environment: staging
+    env:
+      INTEGRATION_DIR: ./packages/millicast-sdk/integration-tests
+      INTEGRATION_TEST_CONFIG: ./packages/millicast-sdk/integration-tests/test.config.json
+
+      VITE_ACCOUNT_ID: ${{ secrets.MILLICAST_ACCOUNT_ID }}
+      VITE_DIRECTOR_ENDPOINT: ${{ vars.MILLICAST_DIRECTOR_EP }}
+      MILLICAST_API_ENDPOINT: ${{ vars.MILLICAST_API_EP }}
+      MILLICAST_API_SECRET: ${{ secrets.MILLICAST_API_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-install
+      - name: Suite Setup
+
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y moreutils
+          sudo apt-get --only-upgrade install google-chrome-stable
+          npm install playwright
+
+          NEW_TOKEN=$(./packages/millicast-sdk/integration-tests/ci/createToken.sh $MILLICAST_API_ENDPOINT $MILLICAST_API_SECRET)
+          export VITE_PUBLISH_TOKEN=$(echo $NEW_TOKEN | jq -r '.data.token')
+          export VITE_STREAM_NAME=$(echo $NEW_TOKEN | jq -r '.data.streams[0].streamName')
+          export NEW_TOKEN_ID=$(echo $NEW_TOKEN | jq -r '.data.id')
+
+          npm run build
+          npm run demo-app:setup
+      - name: Execute Test Suite
+        run: |
+          # Disable artifact collection
+          jq '.video = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+          jq '.trace = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+          jq '.har = "off"' ${INTEGRATION_TEST_CONFIG} | sponge ${INTEGRATION_TEST_CONFIG}
+
+          npm run test-websdk -- tags "not @skip and not @ignore"
+      - name: Suite Teardown
+        if: always()
+        run: |
+          npm run demo-app:teardown
+          npm run test:report
+          ./packages/millicast-sdk/integration-tests/ci/deleteToken.sh $MILLICAST_API_ENDPOINT $MILLICAST_API_SECRET $NEW_TOKEN_ID
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-artifacts
+          path: ./packages/millicast-sdk/integration-tests/test-reports/
+          retention-days: 2
