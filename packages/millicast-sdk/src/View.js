@@ -288,6 +288,17 @@ export default class View extends BaseWebRTC {
               logger.info('The content could not be converted to JSON, returning raw bytes instead')
             }
           }
+          /**
+           * Emits when metadata have been extracted from the stream.
+           *
+           * @event View#metadata
+           * @type {Object}
+           * @property {String} mid - Media identifier that contains the metadata.
+           * @property {Object} track - Track object that contains the metadata.
+           * @property {String} uuid - UUID of the metadata.
+           * @property {Date} timecode - Timecode of when the metadata were generated.
+           * @property {Object} unregistered - Unregistered data.
+           */
           this.emit('metadata', metadata)
           // FIXME : Remove in v0.3.0
           this.emit('onMetadata', metadata)
