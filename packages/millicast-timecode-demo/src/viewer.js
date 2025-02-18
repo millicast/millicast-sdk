@@ -110,6 +110,16 @@ const newViewer = () => {
   })
   millicastView.on('track', (event) => {
     if (event.track.kind === 'video') { addStream(event.streams[0], event.receiver) }
+    else {
+      // for the old insertable streams API, it seems we need to explicitly pipe
+      // readable to writable for any tracks we're not interested in processing
+      // FIXME: check if this saves the trip to the main thread entirely,
+      // otherwise better make it go through a worker anyway
+      if ('createEncodedStreams' in RTCRtpSender.prototype) {
+        const transformer = event.receiver.createEncodedStreams();
+        transformer.readable.pipeTo(transformer.writable);
+      }
+    }
   })
 
   return millicastView
