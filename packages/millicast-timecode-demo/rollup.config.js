@@ -46,7 +46,7 @@ const getBundleConfig = (name, input) => (
       babel({
         babelHelpers: 'bundled',
         presets: ['@babel/preset-env'],
-        exclude: ['/node_modules/**'],
+        exclude: ['/node_modules/**']
       }),
       terser(),
       cleanup({
@@ -60,5 +60,5 @@ const getBundleConfig = (name, input) => (
 
 export default [
   getBundleConfig('viewer', 'src/viewer.js'),
-  getBundleConfig('worker', 'src/worker.ts'),
+  getBundleConfig('worker', 'src/worker.ts')
 ]
