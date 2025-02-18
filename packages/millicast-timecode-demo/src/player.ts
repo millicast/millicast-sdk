@@ -48,14 +48,6 @@ export function initializeMetadataPlayer(
       return this.metadata!
     }
   }(clockRate, video, receiver, worker)
-  
-  if (receiver.track.kind == 'audio') {
-    // Stop videoFrameCallbacks and stop processing them
-    metadataSync.stop();
-    metadataSync.metadata = undefined;
-    return 
-  }
-
   cleanupTasks.push(() => metadataSync.stop())
 
   // monitor for size / resolution changes, request re-render on change
@@ -73,10 +65,11 @@ export function initializeMetadataPlayer(
     video.parentElement.style.aspectRatio = (video.videoWidth / video.videoHeight)
 
     matchCanvasResolution(canvas)
-    
+
     // paint video, then overlay on top
     ctx.globalAlpha = 1
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
     if (!metadataSync.metadata) return
     const { timestamp: ts, lastTimestamp: prevTs, timingInfo: { time_scale, num_units_in_tick } } = metadataSync.metadata
     const ats = { ...prevTs, ...ts }

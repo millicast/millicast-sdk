@@ -97,6 +97,7 @@ switchElement.addEventListener('change', function () {
 
 // MillicastView object
 let millicastView = null
+
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamName, streamAccountId)
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
@@ -108,8 +109,9 @@ const newViewer = () => {
     }
   })
   millicastView.on('track', (event) => {
-    addStream(event.streams[0], event.receiver)
+    if (event.track.kind === 'video') { addStream(event.streams[0], event.receiver) }
   })
+
   return millicastView
 }
 
@@ -148,6 +150,7 @@ const addStream = (stream, receiver) => {
 
   // If we already had a a stream
   if (video.srcObject) {
+    // Create temporal video element and switch streams when we have valid data
     const tmp = video.cloneNode(true)
     // Override the muted attribute with current muted state
     tmp.muted = video.muted
@@ -164,11 +167,23 @@ const addStream = (stream, receiver) => {
     // Replace the video when media has started playing
     tmp.addEventListener('loadedmetadata', (event) => {
       Logger.log('loadedmetadata tmp', event)
-      // metadataPlayer?.() // unmount current player
-      initializeMetadataPlayer(tmp, canvas, receiver)
+      metadataPlayer?.() // unmount current player
+      video.parentNode.replaceChild(tmp, video)
+      metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver)
+      // Pause previous video to avoid duplicated audio until the old PC is closed
+      try { video.pause() } catch (e) {}
+      // If it was in full screen
+      if (document.fullscreenElement == video) {
+        try { document.exitFullscreen(); tmp.requestFullscreen() } catch (e) {}
+      }
+      // If it was in picture in picture mode
+      if (document.pictureInPictureElement == video) {
+        try { document.exitPictureInPicture(); tmp.requestPictureInPicture() } catch (e) {}
+      }
+      // Replace js objects too
+      video = tmp
     })
-  }
-  if (receiver.track.kind === 'video') {
+  } else {
     metadataPlayer?.() // unmount current player
     video.srcObject = stream
     metadataPlayer = initializeMetadataPlayer(video, canvas, receiver)
