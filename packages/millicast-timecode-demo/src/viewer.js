@@ -68,7 +68,7 @@ const newViewer = () => {
   const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
-  
+
     let layers = event.data["layers"] !== null ? event.data["layers"] : {};
     if (event.name === "layers" && Object.keys(layers).length <= 0) {
     }
@@ -110,62 +110,62 @@ const addStream = (stream, receiver) => {
   //Create new video element
   playing = true;
 
-    //Set same id
-    video.id = stream.id;
-    //Set src stream
-    //console.log('addStream');
-    if (!muted) {
-      video.removeAttribute("muted");
-    }
-    if (!autoplay) {
-      video.autoplay = false;
-      playing = false;
-      video.removeAttribute("autoplay");
-    }
+  //Set same id
+  video.id = stream.id;
+  //Set src stream
+  //console.log('addStream');
+  if (!muted) {
+    video.removeAttribute("muted");
+  }
+  if (!autoplay) {
+    video.autoplay = false;
+    playing = false;
+    video.removeAttribute("autoplay");
+  }
 
-    //If we already had a a stream
-    if (video.srcObject) {
-       //Create temporal video element and switch streams when we have valid data
-       const tmp = video.cloneNode(true);
-       //Override the muted attribute with current muted state
-       tmp.muted = video.muted;
-       //Set same volume
-       tmp.volume = video.volume;
-       //Set new stream
-       tmp.srcObject = stream;
-       //Replicate playback state
-       if (video.playing) {
-          try { tmp.play(); } catch (e) {}
-        } else if (video.paused) {
-          try{ tmp.paused(); } catch (e) {}
-       }
-       //Replace the video when media has started playing              
-       tmp.addEventListener('loadedmetadata', (event) => {
-         Logger.log("loadedmetadata tmp",event);
-          metadataPlayer?.(); // unmount current player
-          video.parentNode.replaceChild(tmp, video);
-          metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver);
-          //Pause previous video to avoid duplicated audio until the old PC is closed
-          try { video.pause(); } catch (e) {}
-          //If it was in full screen
-	  if (document.fullscreenElement == video) {
-            try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
-	  }
-          //If it was in picture in picture mode
-          if (document.pictureInPictureElement == video) {
-            try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
-          }
-          //Replace js objects too
-          video = tmp;
-       });
-    } else {
-       metadataPlayer?.(); // unmount current player
-       video.srcObject = stream;
-       metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
-
-       vidPlaceholder.style.display = 'none'
-       vidContainer.style.display = null
+  //If we already had a a stream
+  if (video.srcObject) {
+    //Create temporal video element and switch streams when we have valid data
+    const tmp = video.cloneNode(true);
+    //Override the muted attribute with current muted state
+    tmp.muted = video.muted;
+    //Set same volume
+    tmp.volume = video.volume;
+    //Set new stream
+    tmp.srcObject = stream;
+    //Replicate playback state
+    if (video.playing) {
+      try { tmp.play(); } catch (e) {}
+    } else if (video.paused) {
+      try{ tmp.paused(); } catch (e) {}
     }
+    //Replace the video when media has started playing
+    tmp.addEventListener('loadedmetadata', (event) => {
+      Logger.log("loadedmetadata tmp",event);
+      metadataPlayer?.(); // unmount current player
+      video.parentNode.replaceChild(tmp, video);
+      metadataPlayer = initializeMetadataPlayer(tmp, canvas, receiver);
+      //Pause previous video to avoid duplicated audio until the old PC is closed
+      try { video.pause(); } catch (e) {}
+      //If it was in full screen
+      if (document.fullscreenElement == video) {
+        try { document.exitFullscreen(); tmp.requestFullscreen(); } catch(e) {}
+      }
+      //If it was in picture in picture mode
+      if (document.pictureInPictureElement == video) {
+        try { document.exitPictureInPicture(); tmp.requestPictureInPicture(); } catch(e) {}
+      }
+      //Replace js objects too
+      video = tmp;
+    });
+  } else {
+    metadataPlayer?.(); // unmount current player
+    video.srcObject = stream;
+    metadataPlayer = initializeMetadataPlayer(video, canvas, receiver);
+
+    vidPlaceholder.style.display = 'none'
+    vidContainer.style.display = null
+  }
 };
 
 let isSubscribed = false
@@ -245,7 +245,7 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
   if (!isAvailable) {
     return false
   }
-  
+
   const stateChanged = cast.framework.CastContextEventType.CAST_STATE_CHANGED
   const castContext = cast.framework.CastContext.getInstance()
   castContext.setOptions({
