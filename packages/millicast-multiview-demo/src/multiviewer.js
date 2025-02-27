@@ -212,7 +212,7 @@ const updateLayers = (layers) => {
   const selectedLayer = layersDropDown.value
 
   layersDropDown.innerHTML = `<option hidden selected>Select a source</option>` + activeLayers.map(layer => {
-    return `<option value="${layer.id}" ${layer.id===selectedLayer? 'selected':''}>${layer.width}p</option>`
+    return `<option value="${layer.id}" ${layer.id === selectedLayer ? 'selected' : ''}>${layer.width}p</option>`
   }).join('')
 }
 
@@ -290,7 +290,7 @@ sourcesDropDown.addEventListener('change', () => {
 layersDropDown.addEventListener('change', async (event) => {
   const encodingId = event.target.value
   const sourceId = sourcesDropDown.value
-  const videoTrack=sourceTracksMap[sourceId].find(track => track.media === 'video')
+  const videoTrack = sourceTracksMap[sourceId].find(track => track.media === 'video')
   const sourceIdToProject = sourceId === 'main' ? null : sourceId
   await viewer.project(sourceIdToProject, [{
     ...videoTrack,
