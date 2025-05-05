@@ -128,7 +128,7 @@ npm run test-e2e
 
 ### Building docs
 
-The SDK documentation is written with [JSDcos](https://jsdoc.app/). To build the HTML documentation, run:
+The SDK documentation is written with [JSDocs](https://jsdoc.app/). To build the HTML documentation, run:
 
 ```sh
 npx lerna run build-docs
