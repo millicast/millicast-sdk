@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     viewer = new View(streamName, tokenGenerator)
     viewer.on('metadata', (metadata) => {
-      console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
+      console.log(`Metadata event from ${transceiverMidToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
     })
     // Listen for broadcast events
     viewer.on('broadcastEvent', (event) => {
@@ -203,11 +203,11 @@ const sourcesDropDown = document.getElementById('sourcesDropDown')
 const layersDropDown = document.getElementById('layersDropDown')
 
 const updateLayers = (layers) => {
-  const sourceId = sourcesDropDown.value === 'main' ? null : sourcesDropDown.value
+  const sourceId = sourcesDropDown.value
 
   transceiverToLayersMap = layers
 
-  const videoMediaId = sourceTracksMap[sourceId]?.find(track => track.media === 'video').mediaId || null
+  const videoMediaId = sourceTracksMap[sourceId]?.find(track => track.media === 'video')?.mediaId
   const activeLayers = layers[videoMediaId]?.active || []
   const selectedLayer = layersDropDown.value
 
@@ -287,11 +287,12 @@ sourcesDropDown.addEventListener('change', () => {
   }).join('')
 })
 
-layersDropDown.addEventListener('change', (event) => {
+layersDropDown.addEventListener('change', async (event) => {
   const encodingId = event.target.value
-  const sourceId = sourcesDropDown.value === 'main' ? null : sourcesDropDown.value
-  const videoTrack = sourceTracksMap[sourceId].find(track => track.trackId === 'video')
-  viewer.project(sourceId, [{
+  const sourceId = sourcesDropDown.value
+  const videoTrack = sourceTracksMap[sourceId].find(track => track.media === 'video')
+  const sourceIdToProject = sourceId === 'main' ? null : sourceId
+  await viewer.project(sourceIdToProject, [{
     ...videoTrack,
     layer: {
       encodingId

@@ -57,6 +57,9 @@ export default class View extends BaseWebRTC {
     this.eventQueue = []
     this.isMainStreamActive = false
     if (mediaElement) {
+      this.on(webRTCEvents.track, e => {
+        mediaElement.srcObject = e.streams[0]
+      })
       logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.')
     }
   }
@@ -155,7 +158,7 @@ export default class View extends BaseWebRTC {
 
   /**
    * Start projecting source in selected media ids.
-   * @param {String} sourceId                          - Selected source id.
+   * @param {String | null} sourceId                   - Selected source id.
    * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
    * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
    * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
@@ -285,6 +288,17 @@ export default class View extends BaseWebRTC {
               logger.info('The content could not be converted to JSON, returning raw bytes instead')
             }
           }
+          /**
+           * Emits when metadata have been extracted from the stream.
+           *
+           * @event View#metadata
+           * @type {Object}
+           * @property {String} mid - Media identifier that contains the metadata.
+           * @property {Object} track - Track object that contains the metadata.
+           * @property {String} uuid - UUID of the metadata.
+           * @property {Date} timecode - Timecode of when the metadata were generated.
+           * @property {Object} unregistered - Unregistered data.
+           */
           this.emit('metadata', metadata)
           // FIXME : Remove in v0.3.0
           this.emit('onMetadata', metadata)
@@ -301,30 +315,27 @@ export default class View extends BaseWebRTC {
     })
 
     signalingInstance.on(signalingEvents.broadcastEvent, async (event) => {
-      if (event.data.sourceId === null) {
-        switch (event.name) {
-          case 'active':
-            if (this.DRMProfile == null) {
-              const subscriberData = await this.tokenGenerator()
-              if (subscriberData.drmObject) {
-                // cache the DRM license server URLs
-                this.DRMProfile = subscriberData.drmObject
-              }
-            }
-            this.emit(signalingEvents.broadcastEvent, event)
-            this.isMainStreamActive = true
-            while (this.eventQueue.length > 0) {
-              this.onTrackEvent(this.eventQueue.shift())
-            }
-            return
-          case 'inactive':
-            this.isMainStreamActive = false
-            break
-          default:
-            break
+      if (!this.isMainStreamActive && event.name === 'active') {
+        // handle 'active' event for main stream
+        this.mainSourceId = event.data.sourceId
+        if (!this.DRMProfile && event.data.encryption) {
+          const subscriberData = await this.tokenGenerator()
+          if (subscriberData.drmObject) {
+            // cache the DRM license server URLs
+            this.DRMProfile = subscriberData.drmObject
+          }
         }
         this.emit(signalingEvents.broadcastEvent, event)
+        this.isMainStreamActive = true
+        while (this.eventQueue.length > 0) {
+          this.onTrackEvent(this.eventQueue.shift())
+        }
+        return
       }
+      if (event.name === 'inactive' && this.isMainStreamActive && this.mainSourceId === event.data.sourceId) {
+        this.isMainStreamActive = false
+      }
+      this.emit(signalingEvents.broadcastEvent, event)
     })
 
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
@@ -469,7 +480,7 @@ export default class View extends BaseWebRTC {
       customTransform: this.options.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
-      video: { codec: 'h264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
+      video: { codec: 'H264', encryption: 'cbcs', keyId: hexToUint8Array(options.videoEncryptionParams.keyId), iv: hexToUint8Array(options.videoEncryptionParams.iv) },
       audio: { codec: 'opus', encryption: 'clear' },
       onFetch: this.onRtcDrmFetch.bind(this)
     }

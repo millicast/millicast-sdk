@@ -532,7 +532,7 @@ declare module '@millicast/sdk' {
     previousStats: ConnectionStats;
     /**
      * Initialize the statistics monitoring of the RTCPeerConnection.
-     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.  
+     * @param {statsIntervalMs} the interval, in ms, at which stats are returned to the user.
      */
     init(statsIntervalMs: number): void;
     /**
@@ -558,7 +558,7 @@ declare module '@millicast/sdk' {
 
   export type MediaStreamSource = {
     readonly streamId: string;
-    sourceId: string;
+    sourceId: string | null;
     readonly tracks: MediaTrackInfo[];
   }
 
@@ -1444,7 +1444,7 @@ declare module '@millicast/sdk' {
    * @constructor
    * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
    * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
-   * @param {HTMLMediaElement} [mediaElement=null] - Target HTML media element to mount stream.
+   * @param {HTMLMediaElement} [mediaElement=null] - Deprecated. Please see our docs on how to use this going forward. 
    * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
    */
   export class View extends BaseWebRTC {
