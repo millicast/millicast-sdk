@@ -1,5 +1,14 @@
 # @millicast/sdk
 
+## 0.4.0
+
+### Minor Changes
+
+- 5d25d25: Aligning types for sourceId property within project method and global types .d.ts file
+  Added `metadata` event to documentation
+  Updated DRM SDK and suppressed DRM verbose logging.
+  Updated `@dolbyio/webrtc-stats` to newer version.
+
 ## 0.3.2
 
 ### Patch Changes
