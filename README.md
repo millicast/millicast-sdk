@@ -136,7 +136,7 @@ In vanilla JavaScript:
 
 ## Documentation
 
-The [Documentation](https://docs.dolby.io/streaming-apis/docs/introduction-to-streaming-apis) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.dolby.io/streaming-apis/docs/getting-started) guide as a quick start.
+The [Documentation](https://docs.optiview.dolby.com/millicast/) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.optiview.dolby.com/millicast/getting-started/) guide as a quick start.
 
 The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development. 
 
@@ -158,7 +158,7 @@ Right now, we only have a React Native guide.
 ### React Native
 This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose. 
 
-Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.dolby.io/streaming-apis/docs/rn)!
+Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.optiview.dolby.com/millicast/playback/players-sdks/react-native/)!
 
 ## SDK developer information
 To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/CONTRIBUTING.md)
