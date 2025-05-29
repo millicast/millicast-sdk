@@ -12,3 +12,7 @@ export function swapPropertyValues<T1 extends object, T2 extends object, K exten
     console.error(`One or both objects do not have the property "${String(key)}"`)
   }
 }
+
+export function typedKeys<T extends object>(obj: T): Array<keyof T> {
+  return Object.keys(obj) as Array<keyof T>
+}

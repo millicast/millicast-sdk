@@ -234,7 +234,11 @@ const parseIncomingDirectorResponse = (directorResponse: { data: DirectorRespons
   if (Director.getLiveDomain()) {
     const domainRegex = /\/\/(.*?)\//
     const urlsParsed = directorResponse.data.urls.map((url) => {
-      const matched = domainRegex.exec(url) as RegExpExecArray
+      const matched = domainRegex.exec(url)
+      if (!matched) {
+        logger.warn('Unable to parse incoming director response')
+        return url
+      }
       return url.replace(matched[1], Director.getLiveDomain())
     })
     directorResponse.data.urls = urlsParsed

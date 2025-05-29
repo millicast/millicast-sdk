@@ -294,7 +294,7 @@ export default class Publish extends BaseWebRTC {
 
     const publishPromise = this.signaling.publish(localSdp, this.options as SignalingPublishOptions)
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
-      webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
+      webRTCPeerInstance.sessionDescription
     )
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
