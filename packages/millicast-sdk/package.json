@@ -9,8 +9,8 @@
     "realtime",
     "streaming"
   ],
-  "main": "./index.js",
-  "module": "./index.mjs",
+  "main": "./millicast.mjs",
+  "module": "./millicast.mjs",
   "typings": "./index.d.ts",
   "files": [
     "dist",
@@ -22,8 +22,8 @@
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
     "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
-    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js'",
-    "test-all": "npm run build && jest --testMatch '**/*.steps.js'",
+    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --verbose",
+    "test-all": "npm run build && jest --testMatch '**/*.(test|steps).[jt]s'",
     "test": "npm run test-all"
   },
   "babel": {
