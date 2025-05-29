@@ -1178,6 +1178,19 @@ declare module '@millicast/sdk' {
        */
       maxTemporalLayerId: number;
     };
+    /**
+     * - Ask the server to use the playout delay header extension.
+     */
+    forcePlayoutDelay?: boolean | {
+      /**
+       * - Set minimum playout delay value.
+       */
+      min?: number;
+      /**
+       * - Set maximum playout delay value.
+       */
+      max?: number;
+    };
   }
 
   export type PublishConnectOptions = {
