@@ -321,7 +321,7 @@ const validateConnectOptions = options => {
     dtx: v.nullish(v.boolean()),
     absCaptureTime: v.nullish(v.boolean()),
     dependencyDescriptor: v.nullish(v.boolean()),
-    mediaStream: v.nullish(v.union([v.array(v.looseObject()), v.looseObject()])),
+    mediaStream: v.nullish(v.union([v.array(v.unknown()), v.unknown()])),
     bandwidth: v.nullish(v.number()),
     metadata: v.nullish(v.boolean()),
     disableVideo: v.nullish(v.boolean()),
