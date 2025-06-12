@@ -1191,6 +1191,11 @@ declare module '@millicast/sdk' {
        */
       max?: number;
     };
+
+    /**
+     * Enable/disable force smoothing for this stream. 
+     */
+    forceSmooth?: boolean;
   }
 
   export type PublishConnectOptions = {
