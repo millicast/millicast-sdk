@@ -23,7 +23,8 @@ const connectOptions = {
   peerConfig: {
     autoInitStats: true,
     statsIntervalMs: 1000
-  }
+  },
+  forceSmooth: true
 }
 
 /**
@@ -301,8 +302,6 @@ export default class View extends BaseWebRTC {
            * @property {Object} unregistered - Unregistered data.
            */
           this.emit('metadata', metadata)
-          // FIXME : Remove in v0.3.0
-          this.emit('onMetadata', metadata)
         }
       }
     }
