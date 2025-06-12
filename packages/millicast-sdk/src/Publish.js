@@ -312,8 +312,10 @@ export default class Publish extends BaseWebRTC {
   }
 };
 
+let connectOptionsSchema
+
 const validateConnectOptions = options => {
-  const schema = joi.object({
+  connectOptionsSchema = connectOptionsSchema || joi.object({
     sourceId: joi.string(),
     stereo: joi.boolean(),
     dtx: joi.boolean(),
@@ -337,6 +339,6 @@ const validateConnectOptions = options => {
     events: joi.array().items(joi.string().valid('active', 'inactive', 'viewercount')),
     priority: joi.number()
   })
-  const { error, value } = schema.validate(options)
+  const { error, value } = connectOptionsSchema.validate(options)
   if (error) logger.warn(error, value)
 }
