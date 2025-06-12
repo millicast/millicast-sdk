@@ -329,7 +329,10 @@ const validateConnectOptions = options => {
     codec: v.picklist(Object.values(VideoCodec)),
     simulcast: v.boolean(),
     scalabilityMode: v.string(),
-    peerConfig: v.looseObject(),
+    peerConfig: v.looseObject({
+      autoInitStats: v.boolean(),
+      statsIntervalMs: v.number()
+    }),
     record: v.boolean(),
     events: v.array(v.picklist(['active', 'inactive', 'viewercount'])),
     priority: v.number()
