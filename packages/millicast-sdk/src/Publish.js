@@ -315,27 +315,27 @@ export default class Publish extends BaseWebRTC {
 let connectOptionsSchema
 
 const validateConnectOptions = options => {
-  connectOptionsSchema = connectOptionsSchema || v.object({
-    sourceId: v.string(),
-    stereo: v.boolean(),
-    dtx: v.boolean(),
-    absCaptureTime: v.boolean(),
-    dependencyDescriptor: v.boolean(),
-    mediaStream: v.union([v.array(v.looseObject()), v.looseObject()]),
-    bandwidth: v.number(),
-    metadata: v.boolean(),
-    disableVideo: v.boolean(),
-    disableAudio: v.boolean(),
-    codec: v.picklist(Object.values(VideoCodec)),
-    simulcast: v.boolean(),
-    scalabilityMode: v.string(),
-    peerConfig: v.looseObject({
-      autoInitStats: v.boolean(),
-      statsIntervalMs: v.number()
-    }),
-    record: v.boolean(),
-    events: v.array(v.picklist(['active', 'inactive', 'viewercount'])),
-    priority: v.number()
+  connectOptionsSchema = connectOptionsSchema || v.looseObject({
+    sourceId: v.nullish(v.string()),
+    stereo: v.nullish(v.boolean()),
+    dtx: v.nullish(v.boolean()),
+    absCaptureTime: v.nullish(v.boolean()),
+    dependencyDescriptor: v.nullish(v.boolean()),
+    mediaStream: v.nullish(v.union([v.array(v.looseObject()), v.looseObject()])),
+    bandwidth: v.nullish(v.number()),
+    metadata: v.nullish(v.boolean()),
+    disableVideo: v.nullish(v.boolean()),
+    disableAudio: v.nullish(v.boolean()),
+    codec: v.nullish(v.picklist(Object.values(VideoCodec))),
+    simulcast: v.nullish(v.boolean()),
+    scalabilityMode: v.nullish(v.string()),
+    peerConfig: v.nullish(v.looseObject({
+      autoInitStats: v.nullish(v.boolean()),
+      statsIntervalMs: v.nullish(v.number())
+    })),
+    record: v.nullish(v.boolean()),
+    events: v.nullish(v.array(v.picklist(['active', 'inactive', 'viewercount']))),
+    priority: v.nullish(v.number())
   })
   const { success, issues } = v.safeParse(connectOptionsSchema, options)
   if (!success) logger.warn(issues, options)
