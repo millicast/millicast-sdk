@@ -338,5 +338,5 @@ const validateConnectOptions = options => {
     priority: v.nullish(v.number())
   })
   const { success, issues } = v.safeParse(connectOptionsSchema, options)
-  if (!success) logger.warn(issues, options)
+  if (!success) logger.warn(new v.ValiError(issues), options)
 }
