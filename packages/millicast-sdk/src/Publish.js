@@ -107,32 +107,7 @@ export default class Publish extends BaseWebRTC {
    * }
    */
   async connect (options = connectOptions) {
-    const schema = joi.object({
-      sourceId: joi.string(),
-      stereo: joi.boolean(),
-      dtx: joi.boolean(),
-      absCaptureTime: joi.boolean(),
-      dependencyDescriptor: joi.boolean(),
-      mediaStream: joi
-        .alternatives()
-        .try(
-          joi.array().items(joi.object()),
-          joi.object()
-        ),
-      bandwidth: joi.number(),
-      metadata: joi.boolean(),
-      disableVideo: joi.boolean(),
-      disableAudio: joi.boolean(),
-      codec: joi.string().valid(...Object.values(VideoCodec)),
-      simulcast: joi.boolean(),
-      scalabilityMode: joi.string(),
-      peerConfig: joi.object(),
-      record: joi.boolean(),
-      events: joi.array().items(joi.string().valid('active', 'inactive', 'viewercount')),
-      priority: joi.number()
-    })
-    const { error, value } = schema.validate(options)
-    if (error) logger.warn(error, value)
+    validateConnectOptions(options)
     this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
     this.options.metadata =
       this.options.metadata &&
@@ -336,3 +311,32 @@ export default class Publish extends BaseWebRTC {
     }
   }
 };
+
+const validateConnectOptions = options => {
+  const schema = joi.object({
+    sourceId: joi.string(),
+    stereo: joi.boolean(),
+    dtx: joi.boolean(),
+    absCaptureTime: joi.boolean(),
+    dependencyDescriptor: joi.boolean(),
+    mediaStream: joi
+      .alternatives()
+      .try(
+        joi.array().items(joi.object()),
+        joi.object()
+      ),
+    bandwidth: joi.number(),
+    metadata: joi.boolean(),
+    disableVideo: joi.boolean(),
+    disableAudio: joi.boolean(),
+    codec: joi.string().valid(...Object.values(VideoCodec)),
+    simulcast: joi.boolean(),
+    scalabilityMode: joi.string(),
+    peerConfig: joi.object(),
+    record: joi.boolean(),
+    events: joi.array().items(joi.string().valid('active', 'inactive', 'viewercount')),
+    priority: joi.number()
+  })
+  const { error, value } = schema.validate(options)
+  if (error) logger.warn(error, value)
+}
