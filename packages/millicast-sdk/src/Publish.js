@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode'
 import reemit from 're-emitter'
 import { atob } from 'Base64'
-import joi from 'joi'
+import * as v from 'valibot'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
@@ -315,30 +315,25 @@ export default class Publish extends BaseWebRTC {
 let connectOptionsSchema
 
 const validateConnectOptions = options => {
-  connectOptionsSchema = connectOptionsSchema || joi.object({
-    sourceId: joi.string(),
-    stereo: joi.boolean(),
-    dtx: joi.boolean(),
-    absCaptureTime: joi.boolean(),
-    dependencyDescriptor: joi.boolean(),
-    mediaStream: joi
-      .alternatives()
-      .try(
-        joi.array().items(joi.object()),
-        joi.object()
-      ),
-    bandwidth: joi.number(),
-    metadata: joi.boolean(),
-    disableVideo: joi.boolean(),
-    disableAudio: joi.boolean(),
-    codec: joi.string().valid(...Object.values(VideoCodec)),
-    simulcast: joi.boolean(),
-    scalabilityMode: joi.string(),
-    peerConfig: joi.object(),
-    record: joi.boolean(),
-    events: joi.array().items(joi.string().valid('active', 'inactive', 'viewercount')),
-    priority: joi.number()
+  connectOptionsSchema = connectOptionsSchema || v.object({
+    sourceId: v.string(),
+    stereo: v.boolean(),
+    dtx: v.boolean(),
+    absCaptureTime: v.boolean(),
+    dependencyDescriptor: v.boolean(),
+    mediaStream: v.union([v.array(v.looseObject()), v.looseObject()]),
+    bandwidth: v.number(),
+    metadata: v.boolean(),
+    disableVideo: v.boolean(),
+    disableAudio: v.boolean(),
+    codec: v.picklist(Object.values(VideoCodec)),
+    simulcast: v.boolean(),
+    scalabilityMode: v.string(),
+    peerConfig: v.looseObject(),
+    record: v.boolean(),
+    events: v.array(v.picklist(['active', 'inactive', 'viewercount'])),
+    priority: v.number()
   })
-  const { error, value } = connectOptionsSchema.validate(options)
-  if (error) logger.warn(error, value)
+  const { success, issues } = v.safeParse(connectOptionsSchema, options)
+  if (!success) logger.warn(issues, options)
 }
