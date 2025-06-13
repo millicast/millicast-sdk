@@ -7,7 +7,7 @@ import './__mocks__/MockMediaStream'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
 import Publish from '../../src/Publish'
 import Diagnostics from '../../src/utils/Diagnostics'
-import { version } from '../../package.json'
+import { version } from '../../package.json' with { type: 'json' }
 
 const feature = loadFeature('../features/LoggerDiagnose.feature', { loadRelativePath: true, errors: true })
 
