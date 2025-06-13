@@ -1191,6 +1191,22 @@ declare module '@millicast/sdk' {
        */
       max?: number;
     };
+
+    /**
+     * Forces video to be sent on downlink when switching from higher quality
+     * layers.
+     *
+     * If true, smooth transitions will be enabled when changing from a higher
+     * rate to a lower rate; this may cause congested use cases to take longer 
+     * to recover at the benefit of minor glitches in the network not causing pauses
+     * in the video content. 
+     * 
+     * If false, then when switching from a higher rate to lower rate (due
+     * to congestion) we will stop sending video packets until the next I frame
+     * arrives at the new lower rate causing a pause but improving the impacts of
+     * congestion and recovering quicker.
+     */
+    forceSmooth?: boolean;
   }
 
   export type PublishConnectOptions = {
