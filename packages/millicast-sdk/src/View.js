@@ -23,8 +23,7 @@ const connectOptions = {
   peerConfig: {
     autoInitStats: true,
     statsIntervalMs: 1000
-  },
-  forceSmooth: true
+  }
 }
 
 /**
@@ -84,26 +83,6 @@ export default class View extends BaseWebRTC {
    * Connects to an active stream as subscriber.
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
-<<<<<<< feature/force-smooth
-   * @param {Object} [options]                          - General subscriber options.
-   * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
-   * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
-   * @param {Boolean} [options.drm = false]             - Enable the DRM protected stream playback.
-   * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
-   * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
-   * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
-   * @param {String} [options.pinnedSourceId]           - Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} [options.excludedSourceIds] - Do not receive media from the these source ids.
-   * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
-   * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
-   * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {Object} [options.forcePlayoutDelay = false]- Ask the server to use the playout delay header extension.
-   * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
-   * @param {Number} [options.forcePlayoutDelay.max]    - Set maximum playout delay value.
-   * @param {Boolean} [options.enableDRM]               - Enable DRM, default is false.
-* @param {Boolean} [options.forceSmooth = false]        - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to false.
-=======
    * @param {Object} [options]                                  - General subscriber options.
    * @param {Boolean} [options.dtx = false]                     - True to modify SDP for supporting dtx in opus. Otherwise False.
    * @param {Boolean} [options.absCaptureTime = false]          - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
@@ -121,7 +100,8 @@ export default class View extends BaseWebRTC {
    * @param {Number} [options.forcePlayoutDelay.min]            - Set minimum playout delay value.
    * @param {Number} [options.forcePlayoutDelay.max]            - Set maximum playout delay value.
    * @param {Boolean} [options.enableDRM]                       - Enable DRM, default is false.
->>>>>>> main
+   * @param {Boolean} [options.forceSmooth]                     - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to what the server determines.
+
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
