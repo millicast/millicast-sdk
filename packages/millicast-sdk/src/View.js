@@ -95,7 +95,7 @@ export default class View extends BaseWebRTC {
    * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
    * @param {Number} [options.forcePlayoutDelay.max]    - Set maximum playout delay value.
    * @param {Boolean} [options.enableDRM]               - Enable DRM, default is false.
-   * @param {Boolean} [options.forceSmooth]             - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams.
+* @param {Boolean} [options.forceSmooth = false]        - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to false.
    * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
    * @fires PeerConnection#track
    * @fires Signaling#broadcastEvent
