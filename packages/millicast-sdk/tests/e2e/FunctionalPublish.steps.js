@@ -22,6 +22,7 @@ const defaultOptions = {
   scalabilityMode: null
 }
 let browser = null
+const sleep = ms => new Promise(function (resolve) { setTimeout(resolve, ms) })
 
 afterEach(async () => {
   if (browser) {
@@ -68,7 +69,7 @@ defineFeature(feature, test => {
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
 
       videoFrame1 = await viewerPage.evaluate('getVideoPixelSums()')
-      await viewerPage.waitForTimeout(500)
+      await sleep(500)
       videoFrame2 = await viewerPage.evaluate('getVideoPixelSums()')
     })
 
