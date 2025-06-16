@@ -37,8 +37,8 @@ defineFeature(feature, test => {
     })
 
     then('returns the WebSocket connection and fires a connectionSuccess event', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
     })
   })
 
@@ -53,8 +53,8 @@ defineFeature(feature, test => {
     })
 
     then('returns the WebSocket connection and fires a connectionSuccess event', () => {
-      expect(handler).toBeCalledTimes(2)
-      expect(handler).toBeCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
+      expect(handler).toHaveBeenCalledTimes(2)
+      expect(handler).toHaveBeenCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
     })
   })
 
@@ -72,8 +72,8 @@ defineFeature(feature, test => {
     })
 
     then('fires a connectionError event', () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith(expect.stringMatching(publishWebSocketLocation))
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith(expect.stringMatching(publishWebSocketLocation))
     })
   })
 
@@ -88,8 +88,8 @@ defineFeature(feature, test => {
     })
 
     then('fires a broadcastEvent event', () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith({ name: 'active', data: { streamId: 'streamId' }, namespace: undefined })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith({ name: 'active', data: { streamId: 'streamId' }, namespace: undefined })
     })
   })
 
@@ -105,7 +105,7 @@ defineFeature(feature, test => {
 
     then('the connection closes', async () => {
       await server.closed
-      expect(handler).toBeCalledTimes(1)
+      expect(handler).toHaveBeenCalledTimes(1)
       expect(signaling.webSocket).toBe(null)
     })
   })

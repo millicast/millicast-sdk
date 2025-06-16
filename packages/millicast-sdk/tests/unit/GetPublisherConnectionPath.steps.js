@@ -136,7 +136,7 @@ defineFeature(feature, test => {
     })
 
     then('I get the publish connection path', async () => {
-      expect(fetch).toBeCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('https://director-dev.millicast.com'),
         expect.any(Object)
       )
