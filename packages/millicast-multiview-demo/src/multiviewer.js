@@ -1,4 +1,6 @@
-import { Director, View } from "@millicast/sdk"
+import { Director, View, Logger } from "@millicast/sdk"
+
+window.Logger=Logger
 
 if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
   Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
@@ -17,12 +19,15 @@ const enableDRM = params.drm === 'true'
 const subscriberToken = params.token || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
 const disableVideo = params.disableVideo === 'true'
 const disableAudio = params.disableAudio === 'true'
+const forceSmooth = params.forceSmooth === 'true'
+
 const connectOptions = {
   events: ['active', 'inactive', 'layers'],
   metadata,
   enableDRM,
   disableVideo,
   disableAudio,
+  forceSmooth
 }
 // This will store the main transceiver video mid
 const mainVideoMid = '0'

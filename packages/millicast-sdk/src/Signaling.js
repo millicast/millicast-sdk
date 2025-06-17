@@ -198,19 +198,21 @@ export default class Signaling extends EventEmitter {
 
     // default events
     const events = ['active', 'inactive', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
-    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
+    let data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
 
     if (optionsParsed.vad) { data.vad = true }
     if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
     if (optionsParsed.forcePlayoutDelay) { data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay }
     if (optionsParsed.layer) { data.layer = optionsParsed.layer }
+    if (optionsParsed.forceSmooth) { data.forceSmooth = options.forceSmooth }
+    if (optionsParsed.customKeys) { data = { ...data, ...optionsParsed.customKeys } }
 
     try {
       if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
         throw new Error('Not attempting to connect as video and audio are disabled')
       }
       await this.connect()
-      logger.info('Sending view command')
+      logger.info('Sending view command', data)
       const result = await this.transactionManager.cmd('view', data)
 
       // Check if browser supports AV1X
