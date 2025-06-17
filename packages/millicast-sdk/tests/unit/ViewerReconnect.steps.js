@@ -60,7 +60,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -70,7 +70,7 @@ defineFeature(feature, test => {
     })
 
     then('reconnection is called', async () => {
-      expect(viewer.reconnect).toBeCalledTimes(1)
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -78,7 +78,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -96,7 +96,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -106,7 +106,7 @@ defineFeature(feature, test => {
     })
 
     then('reconnection is called', async () => {
-      expect(viewer.reconnect).toBeCalledTimes(1)
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -114,7 +114,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -124,12 +124,12 @@ defineFeature(feature, test => {
 
     when('reconnect was called and signaling has an error', () => {
       viewer.reconnect()
-      expect(viewer.reconnect).toBeCalledTimes(1)
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
       viewer.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
     })
 
     then('reconnection is not called', async () => {
-      expect(viewer.reconnect).toBeCalledTimes(1)
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -137,7 +137,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection disabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, false)
+      viewer = new View(undefined, mockTokenGenerator, null, false)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -155,7 +155,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -178,7 +178,7 @@ defineFeature(feature, test => {
     const errorMessage = 'Error has ocurred'
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
@@ -205,7 +205,7 @@ defineFeature(feature, test => {
       expect(reconnectHandler).toHaveBeenCalledTimes(6)
       expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: 32000, error: new Error(errorMessage) })
       jest.runOnlyPendingTimers()
-      expect(viewer.connect).toBeCalledTimes(7)
+      expect(viewer.connect).toHaveBeenCalledTimes(7)
     })
   })
 
@@ -213,7 +213,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       await viewer.connect()
     })
 
@@ -231,7 +231,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View('streamName', mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, null, true)
       await viewer.connect()
     })
 
