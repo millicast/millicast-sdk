@@ -10,7 +10,8 @@ export type SignalingSubscribeOptions = {
   layer?: LayerInfo
   forcePlayoutDelay?: { min: number; max: number }
   disableVideo?: boolean
-  disableAudio?: boolean
+  disableAudio?: boolean,
+  forceSmooth?: boolean
 }
 
 export type SignalingPublishOptions = {

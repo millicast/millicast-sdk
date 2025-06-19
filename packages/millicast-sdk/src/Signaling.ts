@@ -211,7 +211,7 @@ export default class Signaling extends EventEmitter {
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    const data: ViewCmd = {
+    let data: ViewCmd = {
       sdp,
     }
 
@@ -234,6 +234,9 @@ export default class Signaling extends EventEmitter {
     }
     if (options.layer) {
       data.layer = options.layer
+    }
+    if(options.forceSmooth){ 
+      data.forceSmooth = options.forceSmooth
     }
 
     try {

@@ -132,6 +132,12 @@ export default class View extends BaseWebRTC {
    * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
    * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
    */
+  
+  /**
+   * @typedef {RTCConfiguration} PeerConnectionConfig - RTC Peer Connection Configuration object. Extends `RTCConfiguration`.
+   * @property {Boolean} [autoInitStats = true]  - Whether stats collection should be auto initialized.
+   * @property {Number} [statsIntervalMs = 1000] - The interval, in milliseconds, at which we poll stats.
+   */
 
   /**
    * Connects to an active stream as subscriber.
@@ -148,7 +154,7 @@ export default class View extends BaseWebRTC {
    * @param {String} [options.pinnedSourceId]           - Id of the main source that will be received by the default MediaStream.
    * @param {Array<String>} [options.excludedSourceIds] - Do not receive media from the these source ids.
    * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
-   * @param {RTCConfiguration} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
+   * @param {PeerConnection} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
    * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
    * @param {Object} [options.forcePlayoutDelay]        - Ask the server to use the playout delay header extension.
    * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
