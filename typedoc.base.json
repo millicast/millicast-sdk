@@ -1,0 +1,7 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "navigationLinks": {
+        "GitHub": "https://github.com/millicast/millicast-sdk"
+    },
+    "includeVersion": true
+}
