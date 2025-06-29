@@ -1,3 +1,7 @@
+/**
+ * Response from the Director API.
+ * @hidden
+ */
 export type MillicastDirectorResponse = {
   /**
    * - WebSocket available URLs.
@@ -13,6 +17,10 @@ export type MillicastDirectorResponse = {
   iceServers: Array<RTCIceServer>
 }
 
+/**
+ * Director Publisher Options
+ * @hidden
+ */
 export type DirectorPublisherOptions = {
   /**
    * - Millicast Publishing Token.
@@ -22,11 +30,9 @@ export type DirectorPublisherOptions = {
    * - Millicast Stream Name.
    */
   streamName: string
-  /**
-   * - Millicast Stream Type.
-   */
-  streamType?: 'WebRtc' | 'Rtmp'
 }
+
+/** @hidden */
 export type DirectorSubscriberOptions = {
   /**
    * - Millicast publisher Stream Name.
@@ -42,6 +48,7 @@ export type DirectorSubscriberOptions = {
   subscriberToken?: string
 }
 
+/** @hidden */
 export type DirectorResponse = {
   urls: string[]
   jwt: string
@@ -52,6 +59,7 @@ export type DirectorResponse = {
 
 /**
  * DRM profile from director API which includes the URLs of license servers
+ * @hidden
  */
 export interface DRMProfile {
   playReadyUrl?: string
@@ -60,4 +68,5 @@ export interface DRMProfile {
   fairPlayCertUrl?: string
 }
 
+/** @hidden */
 export type TokenGeneratorCallback = () => Promise<DirectorResponse>

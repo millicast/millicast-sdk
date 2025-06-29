@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { mockFetchJsonReturnValue, mockFetchRejectValue } from './__mocks__/Fetch'
-import Director from '../../src/Director'
+import { Director } from '../../src/Director'
 const feature = loadFeature('../features/GetSubscriberConnectionPath.feature', {
   loadRelativePath: true,
   errors: true,
@@ -12,7 +12,7 @@ const dummyToken =
 defineFeature(feature, (test) => {
   beforeEach(() => {
     fetch.mockClear()
-    Director.setLiveDomain('')
+    Director.liveDomain = '';
   })
 
   test('Subscribe to an existing unrestricted stream, valid accountId and no token', ({
@@ -132,7 +132,7 @@ defineFeature(feature, (test) => {
     given('I have an existing stream name, accountId and no token', async () => {
       accountId = 'Existing_accountId'
       streamName = 'Existing_stream_name'
-      Director.setEndpoint('https://director-dev.millicast.com')
+      Director.endpoint = 'https://director-dev.millicast.com'
     })
 
     when('I request a connection path to Director API', async () => {
@@ -142,7 +142,7 @@ defineFeature(feature, (test) => {
     })
 
     then('I get the subscriber connection path', async () => {
-      expect(fetch).toBeCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('https://director-dev.millicast.com'),
         expect.any(Object)
       )
@@ -206,7 +206,7 @@ defineFeature(feature, (test) => {
     })
 
     when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
-      Director.setLiveDomain('test.com')
+      Director.liveDomain = 'dolby.com'
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
       const options = { streamName, streamAccountId: accountId }
       response = await Director.getSubscriber(options)

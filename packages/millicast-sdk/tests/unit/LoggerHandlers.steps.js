@@ -15,8 +15,8 @@ defineFeature(feature, (test) => {
     })
 
     then('I receive this message in handler', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
         level: Logger.INFO,
         filterLevel: Logger.TRACE,
       })
@@ -51,8 +51,8 @@ defineFeature(feature, (test) => {
     })
 
     then('I receive this message in handler', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
         level: Logger.ERROR,
         filterLevel: Logger.TRACE,
       })
@@ -73,14 +73,14 @@ defineFeature(feature, (test) => {
     })
 
     then('both handlers receive this message', async () => {
-      expect(infoHandler).toBeCalledTimes(1)
-      expect(infoHandler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+      expect(infoHandler).toHaveBeenCalledTimes(1)
+      expect(infoHandler).toHaveBeenCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
         level: Logger.ERROR,
         filterLevel: Logger.TRACE,
       })
 
-      expect(errorHandler).toBeCalledTimes(1)
-      expect(errorHandler).toBeCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
+      expect(errorHandler).toHaveBeenCalledTimes(1)
+      expect(errorHandler).toHaveBeenCalledWith(expect.objectContaining({ 0: 'This is a log message' }), {
         level: Logger.ERROR,
         filterLevel: Logger.TRACE,
       })

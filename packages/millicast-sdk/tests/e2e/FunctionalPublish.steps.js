@@ -61,11 +61,11 @@ defineFeature(feature, (test) => {
     when('I broadcast a stream and connect to stream as viewer', async () => {
       await broadcastPage.evaluate(
         async ({ options, publishToken, streamName }) =>
-          await startPublisher(publishToken, streamName, options),
+          startPublisher(publishToken, streamName, options),
         { options, publishToken, streamName }
       )
       await viewerPage.evaluate(
-        async ({ streamName, accountId }) => await startViewer(streamName, accountId),
+        async ({ streamName, accountId }) => startViewer(streamName, accountId),
         { streamName, accountId }
       )
 

@@ -16,10 +16,18 @@
     "dist",
     "scripts"
   ],
+  "watch": {
+    "build-docs": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "ts,js"
+    }
+  },
   "scripts": {
     "build": "nx build @millicast/sdk",
     "build-docs": "typedoc",
-    "start-docs": "npm run build-docs && serve docs",
+    "start-docs": "npm run build-docs && serve docs & npm-watch",
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
     "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
     "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --verbose",
@@ -49,5 +57,13 @@
     "type": "git",
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "jest": "^29.4.1",
+    "jest-cucumber": "^3.0.1",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-environment-node": "^29.4.1",
+    "jest-puppeteer": "^9.0.1",
+    "jest-websocket-mock": "^2.2.0",
+    "npm-watch": "^0.13.0"
+  }
 }

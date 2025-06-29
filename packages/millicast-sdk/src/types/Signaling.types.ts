@@ -1,6 +1,6 @@
 import { PublishServerEvent, ViewServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
-import { LayerInfo } from './View.types'
+import { LayerInfo } from './Viewer.types'
 
 export type SignalingSubscribeOptions = {
   vad?: boolean

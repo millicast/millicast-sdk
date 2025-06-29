@@ -3,8 +3,8 @@
 import { AudioCodec, PictureParameterSet, SequenceParameterSet, VUIParameters } from '../types/Codecs.types'
 import BitStreamReader from './BitStreamReader'
 import { VideoCodec } from '../types/Codecs.types'
-import { SEIUserUnregisteredData } from '../types/View.types'
 import { TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
+import { SEIUserUnregisteredData } from '../types/events'
 
 const NALUType = {
   SLICE_NON_IDR: 1,

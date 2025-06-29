@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection, { webRTCEvents } from '../../src/PeerConnection'
+import PeerConnection from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
@@ -24,15 +24,15 @@ defineFeature(feature, (test) => {
     })
 
     when('peer returns new track', async () => {
-      peerConnection.on(webRTCEvents.track, handler)
+      peerConnection.on('track', handler)
       peerConnection.peer.emitMockEvent('ontrack', { streams: ['new stream incoming'] })
     })
 
     then('track event is fired', async () => {
       // PeerConnection's track event is asynchronous now
       await new Promise((resolve) => setTimeout(resolve, 100))
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith({ streams: ['new stream incoming'] })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith({ streams: ['new stream incoming'] })
     })
   })
 
@@ -46,15 +46,15 @@ defineFeature(feature, (test) => {
     })
 
     when('peer starts to connect', async () => {
-      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.on('connectionStateChange', handler)
       await peerConnection.setRTCRemoteSDP(sdp)
       peerConnection.peer.connectionState = 'connecting'
       peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('connecting')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('connecting')
     })
   })
 
@@ -68,15 +68,15 @@ defineFeature(feature, (test) => {
     })
 
     when('peer connects', async () => {
-      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.on('connectionStateChange', handler)
       await peerConnection.setRTCRemoteSDP(sdp)
       peerConnection.peer.connectionState = 'connected'
       peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('connected')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('connected')
     })
   })
 
@@ -92,14 +92,14 @@ defineFeature(feature, (test) => {
     })
 
     when('peer disconnects', async () => {
-      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.on('connectionStateChange', handler)
       peerConnection.peer.connectionState = 'disconnected'
       peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('disconnected')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('disconnected')
     })
   })
 
@@ -115,14 +115,14 @@ defineFeature(feature, (test) => {
     })
 
     when('peer have a connection error', async () => {
-      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.on('connectionStateChange', handler)
       peerConnection.peer.connectionState = 'failed'
       peerConnection.peer.emitMockEvent('onconnectionstatechange', {})
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('failed')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('failed')
     })
   })
 
@@ -137,14 +137,14 @@ defineFeature(feature, (test) => {
     })
 
     when('peer is instanced', async () => {
-      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.on('connectionStateChange', handler)
       await peerConnection.setRTCRemoteSDP(sdp)
       peerConnection.peer.emitMockEvent('oniceconnectionstatechange')
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('connected')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('connected')
     })
   })
 })

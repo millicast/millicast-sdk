@@ -8,6 +8,8 @@ import { SdpOptions, MillicastCapability, ICodecs, PeerConnectionConfig } from '
 import { AudioCodec, VideoCodec } from './types/Codecs.types'
 import { isAudioCodec, isVideoCodec } from './utils/Codecs'
 import { typedKeys } from './utils/ObjectUtils'
+import { TypedEventEmitter } from './utils/TypedEventEmitter'
+import { PeerConnectionEvents } from './types/events'
 
 const logger = Logger.get('PeerConnection')
 
@@ -17,10 +19,6 @@ export const ConnectionType: {
 } = {
   Publisher: 'Publisher',
   Viewer: 'Viewer',
-}
-export const webRTCEvents = {
-  track: 'track',
-  connectionStateChange: 'connectionStateChange',
 }
 
 const localSDPOptions = {
@@ -39,7 +37,7 @@ const localSDPOptions = {
  * @example const peerConnection = new PeerConnection()
  * @constructor
  */
-export default class PeerConnection extends EventEmitter {
+export default class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
   public mode: 'Publisher' | 'Viewer' | null
   public peer: RTCPeerConnection | null
   public peerConnectionStats: PeerConnectionStats | null
@@ -95,7 +93,7 @@ export default class PeerConnection extends EventEmitter {
     this.peer?.close()
     this.peer = null
     this.stopStats()
-    this.emit(webRTCEvents.connectionStateChange, 'closed')
+    this.emit('connectionStateChange', 'closed')
   }
 
   /**
@@ -352,10 +350,10 @@ export default class PeerConnection extends EventEmitter {
    * @fires PeerConnection#stats
    * @example peerConnection.initStats()
    * @example
-   * import Publish from '@millicast/sdk'
+   * import { Publisher } from '@millicast/sdk'
    *
    * //Initialize and connect your Publisher
-   * const millicastPublish = new Publish(tokenGenerator)
+   * const millicastPublish = new Publisher(tokenGenerator)
    * await millicastPublish.connect(options)
    *
    * //Initialize get stats
@@ -366,7 +364,7 @@ export default class PeerConnection extends EventEmitter {
    *   console.log('Stats from event: ', stats)
    * })
    * @example
-   * import View from '@millicast/sdk'
+   * import { Viewer } from '@millicast/sdk'
    *
    * //Initialize and connect your Viewer
    * const millicastView = new View(tokenGenerator)
@@ -471,7 +469,7 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection) =
      * @type {RTCTrackEvent}
      */
     setTimeout(() => {
-      instanceClass.emit(webRTCEvents.track, event)
+      instanceClass.emit('track', event)
     }, 0)
   }
 
@@ -484,7 +482,7 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection) =
        * @event PeerConnection#connectionStateChange
        * @type {RTCPeerConnectionState}
        */
-      instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState)
+      instanceClass.emit('connectionStateChange', peer.connectionState)
     }
   } else {
     // ConnectionStateChange does not exists in Firefox.
@@ -493,7 +491,7 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection) =
       /**
        * @fires PeerConnection#connectionStateChange
        */
-      instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
+      instanceClass.emit('connectionStateChange', peer.iceConnectionState)
     }
   }
   peer.onnegotiationneeded = async () => {

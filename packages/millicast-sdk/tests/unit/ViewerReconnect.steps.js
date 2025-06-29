@@ -1,6 +1,4 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { webRTCEvents } from '../../src/PeerConnection'
-import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 
@@ -8,7 +6,7 @@ const feature = loadFeature('../features/ViewerReconnection.feature', {
   loadRelativePath: true,
   errors: true,
 })
-let View
+let Viewer
 let setTimeout
 
 jest.useFakeTimers()
@@ -56,7 +54,7 @@ beforeEach(() => {
   jest.clearAllTimers()
   setTimeout = jest.spyOn(window, 'setTimeout')
   jest.isolateModules(() => {
-    View = require('../../src/View').default
+    Viewer = require('../../src/Viewer').Viewer
   })
 })
 
@@ -65,17 +63,18 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
 
     when('peer has an error', () => {
-      viewer.webRTCPeer.emit(webRTCEvents.connectionStateChange, 'failed')
+      viewer.webRTCPeer.emit('connectionStateChange', 'failed')
     })
 
     then('reconnection is called', async () => {
-      expect(viewer.reconnect).toBeCalledTimes(1)
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -83,13 +82,14 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
 
     when('peer change status to connected', () => {
-      viewer.webRTCPeer.emit(webRTCEvents.connectionStateChange, 'connected')
+      viewer.webRTCPeer.emit('connectionStateChange', 'connected')
     })
 
     then('reconnection is not called', async () => {
@@ -101,17 +101,18 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
 
     when('signaling has an error', () => {
-      viewer.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+      viewer.signaling.emit('wsConnectionError', 'webSocketLocation')
     })
 
     then('reconnection is called', async () => {
-      expect(viewer.reconnect).toBeCalledTimes(1)
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -123,22 +124,23 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
-        viewer.firstReconnection = false
-        viewer.alreadyDisconnected = true
+        viewer.firstReconnection = false;
+        viewer.alreadyDisconnected = true;
       })
       await viewer.connect()
     })
 
     when('reconnect was called and signaling has an error', () => {
-      viewer.reconnect()
-      expect(viewer.reconnect).toBeCalledTimes(1)
-      viewer.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+      viewer.reconnect();
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
+      viewer.signaling.emit('wsConnectionError', 'webSocketLocation')
     })
 
-    then('reconnection is not called', async () => {
-      expect(viewer.reconnect).toBeCalledTimes(1)
+    then('reconnection is not called', () => {
+      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -146,13 +148,14 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection disabled', async () => {
-      viewer = new View(mockTokenGenerator, false)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: false})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
 
     when('peer has an error', () => {
-      viewer.webRTCPeer.emit(webRTCEvents.connectionStateChange, 'failed')
+      viewer.webRTCPeer.emit('connectionStateChange', 'failed')
     })
 
     then('reconnection is not called', async () => {
@@ -164,13 +167,14 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
 
     when('peer has a disconnection', () => {
-      viewer.webRTCPeer.emit(webRTCEvents.connectionStateChange, 'disconnected')
+      viewer.webRTCPeer.emit('connectionStateChange', 'disconnected')
     })
 
     then('waits and call reconnection', async () => {
@@ -187,7 +191,8 @@ defineFeature(feature, (test) => {
     const errorMessage = 'Error has ocurred'
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
@@ -222,7 +227,7 @@ defineFeature(feature, (test) => {
       expect(reconnectHandler).toHaveBeenCalledTimes(6)
       expect(reconnectHandler).toHaveBeenLastCalledWith({ timeout: 32000, error: new Error(errorMessage) })
       jest.runOnlyPendingTimers()
-      expect(viewer.connect).toBeCalledTimes(7)
+      expect(viewer.connect).toHaveBeenCalledTimes(7)
     })
   })
 
@@ -230,7 +235,8 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       await viewer.connect()
     })
 
@@ -248,7 +254,8 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(mockTokenGenerator, true)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
       await viewer.connect()
     })
 

@@ -57,27 +57,25 @@ In vanilla JavaScript:
       const yourPublishingToken = '...'
       const yourStreamName = '...'
 
-      // Define callback for generate new tokens
-      const tokenGenerator = () =>
-        const options : DirectorPublisherOptions = {token: yourPublishingToken, streamName: yourStreamName}
-        millicast.Director.getPublisher(options)
-
       // Create a new instance
-      const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
+      const millicastPublisher = new millicast.Publisher({
+        streamName: yourStreamName,
+        publishToken: yourPublishingToken,
+      });
 
       // Get user camera and microphone
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
       // Publishing options
       const broadcastOptions = {
         mediaStream,
-      }
+      };
 
       // Start broadcast
       try {
-        await millicastPublish.connect(broadcastOptions)
+        await millicastPublisher.connect(broadcastOptions);
       } catch (e) {
-        console.log('Connection failed, handle error', e)
+        console.log('Connection failed, handle error', e);
       }
     </script>
   </body>
@@ -110,19 +108,20 @@ In vanilla JavaScript:
       const yourStreamName = '...'
       const yourStreamAccountId = '...'
 
-      // Define callback for generate new token
-      const options: DirectorSubscriberOptions = {
+      // Create a new instance
+      const millicastViewer = new millicast.View(er{
         streamName: yourStreamName,
         streamAccountId: yourStreamAccountId,
-      }
-      const tokenGenerator = () => millicast.Director.getSubscriber(options)
+      });
 
-      // Create a new instance
-      const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
+      // Listen to the track event to receive the streams from the publisher.
+      millicastViewer.on('track', (event) => {
+        video.srcObject = event.streams[0]);
+      });
 
       // Start connection to publisher
       try {
-        await millicastView.connect()
+        await millicastViewer.connect()
       } catch (e) {
         console.log('Connection failed, handle error', e)
       }

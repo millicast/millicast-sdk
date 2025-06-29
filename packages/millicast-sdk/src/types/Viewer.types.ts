@@ -2,7 +2,33 @@ import { Media, ViewServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
-export type ViewConnectOptions = {
+/**
+ * Viewer Options.
+ */
+export interface ViewerOptions {
+  /**
+   * Millicast publisher Stream Name.
+   */
+  streamName: string
+  /**
+   * Millicast Account ID.
+   */
+  streamAccountId: string
+  /**
+   * Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
+   */
+  subscriberToken?: string
+  /**
+   * Auto reconnect if the stream is offline.
+   * @default true
+   */
+  autoReconnect?: boolean
+}
+
+/**
+ * Options when connecting to a stream.
+ */
+export interface ViewerConnectOptions {
   /**
    * - True to modify SDP for supporting dtx in opus. Otherwise False.
    */
@@ -69,44 +95,43 @@ export type ViewConnectOptions = {
   codec?: VideoCodec
 }
 
+/** Description of a source mapping used for projection. */
 export type ViewProjectSourceMapping = {
-  /**
-   * - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
-   */
+  /** Track id from the source (received on the "active" event), if not set the media kind will be used instead. */
   trackId?: string
   /**
-   * - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
+   * mid value of the rtp receiver in which the media is going to be projected.
+   * If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
    */
   mediaId?: string
-  /**
-   * - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
-   */
+  /** Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead. */
   media?: Media
-  /**
-   * - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
-   */
+  /** Select the simulcast encoding layer and svc layers, only applicable to video tracks. */
   layer?: LayerInfo
+  /** To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true. */
+  promote?: boolean;
 }
 
+/** Description of a quality layer. */
 export type LayerInfo = {
   /**
-   * - rid value of the simulcast encoding of the track  (default: automatic selection)
+   * rid value of the simulcast encoding of the track (default: automatic selection)
    */
   encodingId: string
   /**
-   * - The spatial layer id to send to the outgoing stream (default: max layer available)
+   * The spatial layer id to send to the outgoing stream (default: max layer available)
    */
   spatialLayerId: number
   /**
-   * - The temporaral layer id to send to the outgoing stream (default: max layer available)
+   * The temporaral layer id to send to the outgoing stream (default: max layer available)
    */
   temporalLayerId: number
   /**
-   * - Max spatial layer id (default: unlimited)
+   * Max spatial layer id (default: unlimited)
    */
   maxSpatialLayerId: number
   /**
-   * - Max temporal layer id (default: unlimited)
+   * Max temporal layer id (default: unlimited)
    */
   maxTemporalLayerId: number
 }
@@ -170,24 +195,6 @@ export type EncryptionParameters = {
   iv: string
 }
 
-export type SEIUserUnregisteredData = string | object | number
-
-export interface MetadataObject {
-  mid: string
-  track: MediaStreamTrack
-  uuid: string
-  unregistered: SEIUserUnregisteredData
-  timecode: Date
-}
-
-/**
- * Broadcast event
- */
-export type BroadcastEventName = ViewServerEvent
-
-export interface BroadcastEvent {
-  name: BroadcastEventName
-}
 
 /**
  * Active Event
@@ -195,100 +202,4 @@ export interface BroadcastEvent {
 export interface TrackInfo {
   trackId: string
   media: Media
-}
-
-export interface ActiveEventPayload {
-  streamId: string
-  sourceId: string | null
-  tracks: TrackInfo[]
-  encryption?: EncryptionParameters
-}
-
-export interface ActiveEvent extends BroadcastEvent {
-  name: Extract<BroadcastEventName, 'active'>
-  data: ActiveEventPayload
-}
-
-
-/**
- * Inactive Event
- */
-export interface InactiveEventPayload {
-  streamId: string
-  sourceId: string | null
-}
-
-export interface InactiveEvent extends BroadcastEvent {
-  name: Extract<BroadcastEventName, 'inactive'>
-  data: InactiveEventPayload
-}
-
-
-/**
- * ViewerCount Event
- */
-export interface ViewerCountEventPayload {
-  viewerCount: number
-}
-
-export interface ViewerCountEvent extends BroadcastEvent {
-  name: Extract<BroadcastEventName, 'viewercount'>
-  data: ViewerCountEventPayload
-}
-
-
-/**
- * Layers Event
- */
-export interface LayersEventPayload {
-  medias: LayersMediaCollection
-}
-
-export interface LayersMediaCollection {
-  [key: string]: LayerMedia
-}
-
-export interface LayerMedia {
-  active: Array<LayerMediaInfo>
-  inactive: Array<LayerMediaInfo>
-  layers: Array<Layer>
-}
-
-export interface LayerMediaInfo {
-  id: string
-  simulcastIdx: number
-  totalBytes: number
-  numPackets: number
-  bitrate: number
-  totalBitrate: number
-  width: number
-  height: number
-  layers: Array<Layer>
-}
-
-export interface Layer extends Omit<LayerMediaInfo, 'id' | 'layers'> {
-  encodingId: string
-  spatialLayerId: number
-  temporalLayerId: number
-}
-
-export interface LayersEvent extends BroadcastEvent {
-  name: Extract<BroadcastEventName, 'layers'>
-  data: LayersEventPayload
-}
-
-/**
- * Metadata Event
- */
-export type MetadataEvent = MetadataObject
-
-/**
- * Events declaration of Viewers that user could listen to
- */
-export interface ViewerEvents {
-  'broadcastEvent'?: BroadcastEvent
-  'track'?: RTCTrackEvent
-  'metadata'?: MetadataEvent
-  // TODO: elaborate error type
-  'error'?: Error
 }

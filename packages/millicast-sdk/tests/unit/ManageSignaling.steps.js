@@ -37,8 +37,8 @@ defineFeature(feature, (test) => {
     })
 
     then('returns the WebSocket connection and fires a connectionSuccess event', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
     })
   })
 
@@ -53,8 +53,8 @@ defineFeature(feature, (test) => {
     })
 
     then('returns the WebSocket connection and fires a connectionSuccess event', () => {
-      expect(handler).toBeCalledTimes(2)
-      expect(handler).toBeCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
+      expect(handler).toHaveBeenCalledTimes(2)
+      expect(handler).toHaveBeenCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
     })
   })
 
@@ -72,26 +72,70 @@ defineFeature(feature, (test) => {
     })
 
     then('fires a connectionError event', () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith(expect.stringMatching(publishWebSocketLocation))
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith(expect.stringMatching(publishWebSocketLocation))
     })
   })
 
-  test('Receive broadcast events from server', ({ given, when, then }) => {
+  const testEvent = (eventName, eventData, given, when, then) => {
     given('I am connected to server', async () => {
-      signaling.on('broadcastEvent', handler)
+      signaling.on(eventName, handler);
+      await signaling.connect();
+    });
+
+    when(`the server send an ${eventName} event`, () => {
+      server.send({ type: 'event', name: eventName, data: eventData });
+    });
+
+    then(`fires an ${eventName} event`, () => () => {
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith({ ...eventData, namespace: undefined });
+    });
+  };
+
+  test('Receive active event from server', ({ given, when, then }) => {
+    testEvent('active', { streamId: 'streamId' }, given, when, then);
+  });
+
+  test('Receive inactive event from server', ({ given, when, then }) => {
+    testEvent('inactive', { streamId: 'streamId', sourceId: 'sourceId' }, given, when, then);
+  });
+
+  test('Receive viewercount event from server', ({ given, when, then }) => {
+    given('I am connected to server', async () => {
+      signaling.on('viewercount', handler)
       await signaling.connect()
-    })
+    });
 
-    when('the server send a broadcast event', () => {
-      server.send({ type: 'event', name: 'active', data: { streamId: 'streamId' } })
-    })
+    when('the server send an viewercount event', () => {
+      server.send({ type: 'event', name: 'viewercount', data: {viewercount: 123} });
+    });
 
-    then('fires a broadcastEvent event', () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith({ name: 'active', data: { streamId: 'streamId' }, namespace: undefined })
-    })
-  })
+    then('fires an viewercount event', () => () => {
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith(123)
+    });
+  });
+
+  test('Receive migrate event from server', ({ given, when, then }) => {
+    testEvent('migrate', {}, given, when, then);
+  });
+
+  test('Receive updated event from server', ({ given, when, then }) => {
+    testEvent('updated', {}, given, when, then);
+  });
+
+  test('Receive stopped event from server', ({ given, when, then }) => {
+    testEvent('stopped', {}, given, when, then);
+  });
+
+  test('Receive vad event from server', ({ given, when, then }) => {
+    testEvent('vad', {}, given, when, then);
+  });
+
+  test('Receive layers event from server', ({ given, when, then }) => {
+    testEvent('layers', { medias: {} }, given, when, then);
+  });
 
   test('Close existing server connection', ({ given, when, then }) => {
     given('I am connected to server', async () => {
@@ -105,7 +149,7 @@ defineFeature(feature, (test) => {
 
     then('the connection closes', async () => {
       await server.closed
-      expect(handler).toBeCalledTimes(1)
+      expect(handler).toHaveBeenCalledTimes(1)
       expect(signaling.webSocket).toBe(null)
     })
   })

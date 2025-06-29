@@ -1,5 +1,5 @@
 import { VideoCodec } from '../types/Codecs.types'
-import { PublishConnectOptions } from '../types/Publish.types'
+import { PublishConnectOptions } from '../types/Publisher.types'
 
 class ValidationError extends Error {
   messages: string[]
@@ -10,6 +10,8 @@ class ValidationError extends Error {
     this.messages = messages
   }
 }
+
+export const isNotDefined = (value: string | null | undefined) => !value || !value.length;
 
 const isString = (value: unknown) => typeof value === 'string'
 

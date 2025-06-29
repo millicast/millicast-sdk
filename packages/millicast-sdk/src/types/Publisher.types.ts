@@ -2,32 +2,54 @@ import { PublishServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
+/**
+ * Publisher Options
+ */
+export interface PublisherOptions {
+  /**
+   * Millicast publisher Stream Name.
+   */
+  streamName: string
+  /**
+   * Publish token.
+   */
+  publishToken: string
+  /**
+   * Enable auto reconnect in case of disconnection.
+   * @default true
+   */
+  autoReconnect?: boolean
+}
+
+/**
+ * Options to publish a stream.
+ */
 export interface PublishConnectOptions {
   /**
    * - Source unique id. Only avialable if stream is multisource.
    */
-  sourceId?: string | null
+  sourceId?: string | null;
   /**
    * - True to modify SDP for support stereo. Otherwise False.
    */
-  stereo?: boolean
+  stereo?: boolean;
   /**
    * - True to modify SDP for supporting dtx in opus. Otherwise False.
    */
-  dtx?: boolean
+  dtx?: boolean;
   /**
    * - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
    */
-  absCaptureTime?: boolean
+  absCaptureTime?: boolean;
   /**
    * - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
    */
-  dependencyDescriptor?: boolean
+  dependencyDescriptor?: boolean;
   /**
    * - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    */
-  mediaStream: MediaStream | Array<MediaStreamTrack> | null
+  mediaStream: MediaStream | Array<MediaStreamTrack> | null;
   /**
    * - Broadcast bandwidth. 0 for unlimited.
    */

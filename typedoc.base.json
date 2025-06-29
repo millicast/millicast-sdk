@@ -1,7 +1,8 @@
 {
     "$schema": "https://typedoc.org/schema.json",
     "navigationLinks": {
-        "GitHub": "https://github.com/millicast/millicast-sdk"
+        "GitHub": "https://github.com/millicast/millicast-sdk",
+        "NPM Package": "https://www.npmjs.com/package/@millicast/sdk"
     },
     "includeVersion": true
 }

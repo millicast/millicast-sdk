@@ -6,9 +6,7 @@
       const startPublisher = async (publishToken, streamName, options) => {
         const millicast = window.millicast
         millicast.Logger.setLevel(millicast.Logger.DEBUG)
-        const publishOptions = { token: publishToken, streamName, ...options }
-        const tokenGenerator = () => millicast.Director.getPublisher(publishOptions)
-        const publish = new millicast.Publish(tokenGenerator)
+        const publish = new millicast.Publisher({publishToken, streamName, ...options})
         const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
         document.getElementById('my-video').srcObject = mediaStream
         await publish.connect({
@@ -24,8 +22,7 @@
           const video = document.getElementById('my-video')
           millicast.Logger.setLevel(millicast.Logger.DEBUG)
           const options = { streamName, streamAccountId: accountId }
-          const tokenGenerator = () => millicast.Director.getSubscriber(options)
-          const view = new millicast.View(tokenGenerator)
+          const view = new millicast.Viewer(options)
           video.addEventListener('timeupdate', () => {
             if (video.currentTime > 1) {
               resolve()

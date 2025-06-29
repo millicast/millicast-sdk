@@ -1,4 +1,3 @@
-import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
@@ -13,15 +12,10 @@ import {
 } from './types/Signaling.types'
 import { ICodecs } from './types/PeerConnection.types'
 import { VideoCodec } from './types/Codecs.types'
+import { TypedEventEmitter } from './utils/TypedEventEmitter'
+import { ActiveEventPayload, InactiveEventPayload, LayersEventPayload, SignalingEvents } from './types/events'
 
 const logger = Logger.get('Signaling')
-
-export const signalingEvents = {
-  connectionSuccess: 'wsConnectionSuccess',
-  connectionError: 'wsConnectionError',
-  connectionClose: 'wsConnectionClose',
-  broadcastEvent: 'broadcastEvent',
-}
 
 /**
  * @typedef {Object} LayerInfo
@@ -60,7 +54,7 @@ export const signalingEvents = {
  * @param {String} options.url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
  */
 
-export default class Signaling extends EventEmitter {
+export default class Signaling extends TypedEventEmitter<SignalingEvents> {
   public streamName: string | null
   public wsUrl: string
   public webSocket: WebSocket | null = null
@@ -107,7 +101,7 @@ export default class Signaling extends EventEmitter {
        * @property {WebSocket} ws - WebSocket object which represents active connection.
        * @property {TransactionManager} tm - [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands.
        */
-      this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
+      this.emit('wsConnectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
       return this.webSocket
     }
 
@@ -118,35 +112,49 @@ export default class Signaling extends EventEmitter {
         logger.info('WebSocket opened')
         this.transactionManager &&
           this.transactionManager.on('event', (evt: TransactionManager.Event) => {
-            /**
-             * Passthrough of available Millicast broadcast events.
-             *
-             * Active - Fires when the live stream is, or has started broadcasting.
-             *
-             * Inactive - Fires when the stream has stopped broadcasting, but is still available.
-             *
-             * Stopped - Fires when the stream has stopped for a given reason.
-             *
-             * Vad - Fires when using multiplexed tracks for audio.
-             *
-             * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
-             *
-             * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
-             *
-             * Viewercount - Fires when the viewer count changes.
-             *
-             * Updated - when an active stream's tracks are updated
-             *
-             * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
-             *
-             * @event Signaling#broadcastEvent
-             * @type {Object}
-             * @property {String} type - In this case the type of this message is "event".
-             * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
-             * @property {Object} data - Custom event data.
-             */
-            this.emit(signalingEvents.broadcastEvent, evt)
-          })
+            const data: any = evt.data;
+            switch (evt.name) {
+              case 'active':
+                const activePayload: ActiveEventPayload = {
+                  streamId: data.streamId,
+                  sourceId: data.sourceId,
+                  tracks: data.tracks,
+                  encryption: data.encryption,
+                };
+                this.emit('active', activePayload);
+                return;
+              case 'inactive':
+                const inactivePayload: InactiveEventPayload = {
+                  streamId: data.streamId,
+                  sourceId: data.sourceId,
+                };
+                this.emit('inactive', inactivePayload);
+                return;
+              case 'viewercount':
+                this.emit('viewercount', data.viewerCount);
+                return;
+              case 'migrate':
+                this.emit('migrate');
+                return;
+              case 'updated':
+                this.emit('updated');
+                return;
+              case 'stopped':
+                this.emit('stopped');
+                return;
+              case 'vad':
+                this.emit('vad');
+                return;
+              case 'layers':
+                const layersPayload = data as LayersEventPayload;
+                this.emit('layers', layersPayload);
+                return;
+              default:
+                break
+            }
+            logger.info('The following event was not properly understood', evt);
+          });
+
         if (this.webSocket) {
           logger.info('Connected to server: ', this.webSocket.url)
           logger.debug('WebSocket value: ', {
@@ -156,7 +164,7 @@ export default class Signaling extends EventEmitter {
             binaryType: this.webSocket.binaryType,
             extensions: this.webSocket.extensions,
           })
-          this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
+          this.emit('wsConnectionSuccess', { ws: this.webSocket, tm: this.transactionManager })
           resolve(this.webSocket)
         }
       }
@@ -170,7 +178,7 @@ export default class Signaling extends EventEmitter {
            * @event Signaling#wsConnectionError
            * @type {String}
            */
-          this.emit(signalingEvents.connectionError, this.webSocket.url)
+          this.emit('wsConnectionError', this.webSocket.url)
           reject(this.webSocket.url)
         }
       }
@@ -183,7 +191,7 @@ export default class Signaling extends EventEmitter {
          *
          * @event Signaling#wsConnectionClose
          */
-        this.emit(signalingEvents.connectionClose)
+        this.emit('wsConnectionClose')
       }
     })
   }

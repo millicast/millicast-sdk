@@ -1,8 +1,8 @@
-import { View, Director } from '@nx-millicast/millicast-sdk'
+import { Viewer, Director, ActiveEventPayload, InactiveEventPayload, LayersEventPayload } from '@nx-millicast/millicast-sdk'
 import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
+  Director.endpoint = import.meta.env.VITE_DIRECTOR_ENDPOINT
 }
 
 // Get query params
@@ -43,8 +43,6 @@ let transceiverMidToSourceIdMap = {}
 let transceiverToLayersMap = {}
 
 // Create a new viewer instance
-const options: DirectorSubscriberOptions = { streamName, streamAccountId: accountId, subscriberToken }
-const tokenGenerator = () => Director.getSubscriber(options, enableDRM)
 let viewer
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -52,36 +50,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   mainVideoElement = document.getElementById('mid-0')
   mainAudioElement = document.getElementById('mid-1')
   try {
-    viewer = new View(tokenGenerator)
+    viewer = new Viewer({
+      streamName,
+      streamAccountId: accountId,
+      subscriberToken,
+    })
     viewer.on('metadata', (metadata) => {
       console.log(`Metadata event from ${transceiverToSourceIdMap[metadata.mid] || 'main'}:`, metadata)
     })
     // Listen for broadcast events
-    viewer.on('broadcastEvent', (event) => {
-      // Get event name and data
-      const { name, data } = event
-      switch (name) {
-        case 'active': {
-          const sourceId = data.sourceId || mainSourceId
-          if (sourceId === mainSourceId) {
-            addMainSource(data)
-          } else {
-            addRemoteSource(data)
-          }
-          addSourceOption(sourceId)
-          break
-        }
-        case 'inactive': {
-          const sourceId = data.sourceId || mainSourceId
-          unprojectAndRemoveVideo(sourceId)
-          removeSourceOption(sourceId)
-          break
-        }
-        case 'layers': {
-          if (sourcesDropDown.value) updateLayers(data.medias)
-          break
-        }
+    viewer.on('active', (event: ActiveEventPayload) => {
+      const sourceId = event.sourceId || mainSourceId
+      if (sourceId === mainSourceId) {
+        addMainSource(event)
+      } else {
+        addRemoteSource(event)
       }
+      addSourceOption(sourceId)
+    })
+    viewer.on('inactive', (event: InactiveEventPayload) => {
+      const sourceId = event.sourceId || mainSourceId
+      unprojectAndRemoveVideo(sourceId)
+      removeSourceOption(sourceId)
+    })
+    viewer.on('broadcastEvent', (layers: LayersEventPayload) => {
+      if (sourcesDropDown.value) updateLayers(layers.medias)
     })
 
     // This aplication does not support audio only streams. It's not intented to work using audio only streams.

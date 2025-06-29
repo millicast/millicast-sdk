@@ -1,7 +1,12 @@
 Feature: As a user I want to subscribe to a stream without managing connections
 
-  Scenario: Instance viewer without tokenGenerator
-    Given no token generator
+  Scenario: Instance viewer without stream name
+    Given nothing
+    When I instance a View
+    Then throws an error
+
+  Scenario: Instance viewer without stream account id
+    Given nothing
     When I instance a View
     Then throws an error
 
@@ -40,7 +45,7 @@ Feature: As a user I want to subscribe to a stream without managing connections
     When I check if subscription is active
     Then returns false
 
-  Scenario: Subscribe to stream with invalid token generator
-    Given an instance of View with invalid token generator
+  Scenario: Subscribe to stream with invalid options
+    Given an instance of View with invalid options
     When I subscribe to a stream
     Then throws token generator error

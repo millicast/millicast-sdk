@@ -89,7 +89,7 @@ export const peerConnectionStatsEvents = {
  * This method takes statistical data from @dolbyio/webrtc-stats and transforms it into
  * a structured format compatible with previous versions.
  *
- * @param {Object} webRTCStats - The statistics object containing various WebRTC stats
+ * @param webRTCStats - The statistics object containing various WebRTC stats
  */
 const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
   /* eslint-disable @typescript-eslint/no-unused-vars */

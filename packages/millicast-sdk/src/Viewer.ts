@@ -1,9 +1,9 @@
 import reemit from 're-emitter'
 import jwtDecode from 'jwt-decode'
 import Logger from './Logger'
-import BaseWebRTC from './utils/BaseWebRTC'
-import Signaling, { signalingEvents } from './Signaling'
-import PeerConnection, { webRTCEvents } from './PeerConnection'
+import { BaseWebRTC } from './utils/BaseWebRTC'
+import Signaling from './Signaling'
+import PeerConnection from './PeerConnection'
 import { hexToUint8Array } from './utils/StringUtils'
 import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
@@ -19,22 +19,21 @@ import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import SdpParser from './utils/SdpParser'
 import { TokenGeneratorCallback } from './types/Director.types'
 import {
-  ViewConnectOptions,
+  ViewerConnectOptions,
   LayerInfo,
   ViewProjectSourceMapping,
   DRMOptions,
-  MetadataObject,
-  SEIUserUnregisteredData,
-  ViewerEvents,
-} from './types/View.types.js'
+  ViewerOptions,
+} from './types/Viewer.types.js'
 import { DRMProfile } from './types/Director.types'
 import { DecodedJWT, Media } from './types/BaseWebRTC.types'
 import { VideoCodec } from './types/Codecs.types'
+import { Director } from './Director'
+import { ActiveEventPayload, InactiveEventPayload, MetadataEventPayload, SEIUserUnregisteredData, ViewerEvents } from './types/events'
+import TransactionManager from 'transaction-manager'
+import { isNotDefined } from './utils/Validators'
 
-const logger = Logger.get('View')
-logger.setLevel(Logger.DEBUG)
-
-const defaultConnectOptions: ViewConnectOptions = {
+const defaultConnectOptions: ViewerConnectOptions = {
   metadata: false,
   enableDRM: false,
   disableVideo: false,
@@ -64,19 +63,67 @@ const defaultConnectOptions: ViewConnectOptions = {
 // }
 
 /**
- * @class View
- * @extends BaseWebRTC
- * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
- * and establishes a WebRTC connection to view a live stream.
+ * This object manages the connection to the platform to subscribe and receive streams.
+ * 
+ * @example
+ * How to connect to a stream:
+ * ```typescript
+ * import { ViewerConnectOptions, Viewer, ViewerOptions } from '@millicast/sdk';
  *
- * Before you can view an active broadcast, you will need:
+ * const streamName = 'My Millicast Stream Name';
+ * const accountId = 'Millicast Publisher account Id';
+ * 
+ * const options: ViewerOptions = {
+ *  streamName,
+ *  streamAccountId,
+ * };
  *
- * - A connection path that you can get from {@link Director} module or from your own implementation.
- * @constructor
- * @param {tokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
- * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
+ * // Create a new viewer
+ * const viewer = new Viewer(options);
+ *
+ * // Listen to the track event to receive the streams from the publisher.
+ * viewer.on('track', (event) => {
+ *   addStreamToYourVideoTag(event.streams[0]);
+ * });
+ *
+ * // Connect to the stream
+ * const connectOptions: ViewerConnectOptions = {};
+ * await viewer.connect(connectOptions);
+ * ```
+ * 
+ * @example
+ * How to connect to a secure stream:
+ * ```typescript
+ * import { ViewerConnectOptions, Viewer, ViewerOptions } from '@millicast/sdk';
+ *
+ * const streamName = 'My Millicast Stream Name';
+ * const accountId = 'Millicast Publisher account Id';
+ * const subscriberToken = '176949b9e57de248d37edcff1689a84a047370ddc3f0dd960939ad1021e0b744';
+ * 
+ * const options: ViewerOptions = {
+ *  streamName,
+ *  accountId,
+ *  subscriberToken,
+ * };
+ *
+ * // Create a new viewer
+ * const viewer = new Viewer(options);
+ *
+ * // Listen to the track event to receive the streams from the publisher.
+ * viewer.on('track', (event) => {
+ *   addStreamToYourVideoTag(event.streams[0]);
+ * });
+ *
+ * // Connect to the stream
+ * const connectOptions: ViewerConnectOptions = {};
+ * await viewer.connect(connectOptions);
+ * 
+ * @fires This class may fire the following events:
+ *  * {@link ViewerEvents.track | track}
+ *  * {@link ViewerEvents.active | active}
+ *  * {@link ViewerEvents.inactive | inactive}
  */
-export default class View extends BaseWebRTC {
+export class Viewer extends BaseWebRTC<ViewerEvents> {
   // States what payload type is associated with each codec from the SDP answer.
   private payloadTypeCodec: { [key: number]: string } = {}
   // Follows the media id values of each transceiver's track from the 'track' events.
@@ -91,107 +138,74 @@ export default class View extends BaseWebRTC {
   private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
-  private events: { [K in keyof ViewerEvents]: Array<(payload: ViewerEvents[K]) => void> } = {}
-  protected override options: ViewConnectOptions | null = null
-  constructor(tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
-    super(tokenGenerator, logger, autoReconnect)
-  }
-
-  override on<K extends keyof ViewerEvents>(eventName: K, listener: (payload: ViewerEvents[K]) => void): this {
-    if (!this.events[eventName]) {
-      this.events[eventName] = []
-    }
-    this.events[eventName].push(listener)
-    return this
-  }
-
-  override off<K extends keyof ViewerEvents>(eventName: K, listener: (payload: ViewerEvents[K]) => void): this {
-    const listeners = this.events[eventName]
-    if (listeners) {
-      const idx = listeners.indexOf(listener)
-      if (idx >= 0) {
-        listeners.splice(idx, 1)
-      }
-    }
-    return this
-  }
-
-  override emit<K extends keyof ViewerEvents>(eventName: K, payload: ViewerEvents[K]): boolean {
-      if (this.events[eventName]) {
-        this.events[eventName].forEach((listener) => listener(payload))
-        return true
-      }
-      return false
-  }
+  protected override options: ViewerConnectOptions | null = null
 
   /**
-   * @typedef {Object} LayerInfo
-   * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
-   * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
-   * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
-   * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
-   * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+   * Creates a Viewer object.
+   * 
+   * @param options Options for the viewer.
    */
-  
-  /**
-   * @typedef {RTCConfiguration} PeerConnectionConfig - RTC Peer Connection Configuration object. Extends `RTCConfiguration`.
-   * @property {Boolean} [autoInitStats = true]  - Whether stats collection should be auto initialized.
-   * @property {Number} [statsIntervalMs = 1000] - The interval, in milliseconds, at which we poll stats.
-   */
+  constructor(options: ViewerOptions) {
+    const logger = Logger.get('Viewer');
+
+    if (isNotDefined(options.streamName)) {
+      logger.error('The Stream Name is missing.');
+      throw new Error('The Stream Name is missing.');
+    }
+
+    if (isNotDefined(options.streamAccountId)) {
+      logger.error('The Stream Name is missing.');
+      throw new Error('The Stream Account ID is missing.');
+    }
+
+    const tokenGenerator: TokenGeneratorCallback = () => Director.getSubscriber({
+      streamName: options.streamName,
+      streamAccountId: options.streamAccountId,
+      subscriberToken: options.subscriberToken,
+    });
+
+    super(tokenGenerator, logger, options.autoReconnect ?? true);
+  }
 
   /**
-   * Connects to an active stream as subscriber.
+   * Connects to a stream as a subscriber.
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
-   * @param {Object} [options]                          - General subscriber options.
-   * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
-   * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
-   * @param {Boolean} [options.drm = false]             - Enable the DRM protected stream playback.
-   * @param {Boolean} [options.disableVideo = false]    - Disable the opportunity to receive video stream.
-   * @param {Boolean} [options.disableAudio = false]    - Disable the opportunity to receive audio stream.
-   * @param {Number} [options.multiplexedAudioTracks]   - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
-   * @param {String} [options.pinnedSourceId]           - Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} [options.excludedSourceIds] - Do not receive media from the these source ids.
-   * @param {Array<String>} [options.events]            - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
-   * @param {PeerConnection} [options.peerConfig]     - Options to configure the new RTCPeerConnection.
-   * @param {LayerInfo} [options.layer]                 - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {Object} [options.forcePlayoutDelay]        - Ask the server to use the playout delay header extension.
-   * @param {Number} [options.forcePlayoutDelay.min]    - Set minimum playout delay value.
-   * @param {Number} [options.forcePlayoutDelay.max]    - Set maximum playout delay value.
-   * @param {Boolean} [options.enableDRM]               - Enable DRM, default is false.
-   * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
-   * @fires PeerConnection#track
-   * @fires Signaling#broadcastEvent
-   * @fires PeerConnection#connectionStateChange
-   * @example await millicastView.connect(options)
+   * 
+   * @param options General subscriber options.
+   * 
+   * @returns Promise object which resolves when the connection was successfully established.
+   * 
    * @example
-   * import View from '@millicast/sdk'
+   * import { Viewer, ViewerOptions } from '@millicast/sdk';
    *
-   * //Define callback for generate new token
-   * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
+   * const streamName = "My Millicast Stream Name";
+   * const accountId = "Millicast Publisher account Id";
+   * const options: ViewerOptions = {
+   *  streamName,
+   *  streamAccountId,
+   * };
    *
-   * //Create a new instance
-   * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(tokenGenerator)
+   * // Create a new viewer
+   * const viewer = new Viewer(options);
    *
-   * //Set track event handler to receive streams from Publisher.
-   * millicastView.on('track', (event) => {
-   *   addStreamToYourVideoTag(event.streams[0])
-   * })
+   * // Listen to the track event to receive the streams from the publisher.
+   * viewer.on('track', (event) => {
+   *   addStreamToYourVideoTag(event.streams[0]);
+   * });
    *
-   * millicastView.on('error', (error) => {
-   *   console.error('Error from Millicast SDK', error)
-   * })
+   * viewer.on('error', (error) => {
+   *   console.error('Error from Millicast SDK', error);
+   * });
    *
-   * //Start connection to broadcast
    * try {
-   *  await millicastView.connect()
+   *  const options = {};
+   *  await viewer.connect(options);
    * } catch (e) {
-   *  console.log('Connection failed, handle error', e)
+   *  console.error('Connection failed', e);
    * }
    */
-  override async connect(options: ViewConnectOptions = defaultConnectOptions): Promise<void> {
+  override async connect(options: ViewerConnectOptions = defaultConnectOptions): Promise<void> {
     this.options = {
       ...defaultConnectOptions,
       ...options,
@@ -203,13 +217,13 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Select the simulcast encoding layer and svc layers for the main video track
-   * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
+   * Selects the simulcast encoding layer and svc layers for the main video track
+   * @param layer leave empty for automatic layer selection based on bandwidth estimation.
    */
   async select(layer?: LayerInfo): Promise<void> {
-    logger.debug('Viewer select layer values: ', layer)
-    await this.signaling?.cmd('select', { layer })
-    logger.info('Connected to streamName: ', this.streamName)
+    this.logger.debug('Viewer select layer values: ', layer);
+    await this.signaling?.cmd('select', { layer });
+    this.logger.info('Connected to streamName: ', this.streamName);
   }
 
   /**
@@ -219,7 +233,7 @@ export default class View extends BaseWebRTC {
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack(media: Media, streams: Array<MediaStream>): Promise<RTCRtpTransceiver> {
-    logger.info('Viewer adding remote track', media)
+    this.logger.info('Viewer adding remote track', media)
     const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
     for (const stream of streams) {
       stream.addTrack(transceiver.receiver.track)
@@ -229,50 +243,44 @@ export default class View extends BaseWebRTC {
 
   /**
    * Start projecting source in selected media ids.
-   * @param {String} sourceId                          - Selected source id.
-   * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
-   * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
-   * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
-   * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
-   * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
-   * @param {Boolean} [mapping.promote]                - To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true.
+   * 
+   * @param sourceId Selected source id.
+   * @param mapping Mapping of the source track ids to the receiver mids.
    */
   async project(sourceId: string, mapping: ViewProjectSourceMapping[]): Promise<void> {
     for (const map of mapping) {
       if (!map.trackId && !map.media) {
-        logger.error('Error in projection mapping, trackId or mediaId must be set')
-        throw new Error('Error in projection mapping, trackId or mediaId must be set')
+        this.logger.error('Error in projection mapping, trackId or mediaId must be set');
+        throw new Error('Error in projection mapping, trackId or mediaId must be set');
       }
-      const peer = this.webRTCPeer.getRTCPeer()
+      const peer = this.webRTCPeer.getRTCPeer();
       // Check we have the mediaId in the transceivers
       if (
         map.mediaId &&
         !peer?.getTransceivers().find((t: RTCRtpTransceiver) => t.mid === map.mediaId?.toString())
       ) {
-        logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
+        this.logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
         throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
       }
     }
-    logger.debug('Viewer project source: layer mappings: ', sourceId, mapping)
-    await this.signaling?.cmd('project', { sourceId, mapping })
-    logger.info('Projection done')
+
+    this.logger.debug('Viewer project source: layer mappings: ', sourceId, mapping);
+    await this.signaling?.cmd('project', { sourceId, mapping });
+    this.logger.info('Projection done');
   }
 
   /**
    * Stop projecting attached source in selected media ids.
-   * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
+   * 
+   * @param mediaIds mid value of the receivers that are going to be detached.
    */
   async unproject(mediaIds: Array<string>): Promise<void> {
-    logger.debug('Viewer unproject mediaIds: ', mediaIds)
-    await this.signaling?.cmd('unproject', { mediaIds })
-    logger.info('Unprojection done')
+    this.logger.debug('Viewer unproject mediaIds: ', mediaIds);
+    await this.signaling?.cmd('unproject', { mediaIds });
+    this.logger.info('Unprojection done');
   }
 
-  override async replaceConnection(): Promise<void> {
-    logger.info('Migrating current connection')
-    await this.initConnection({ migrate: true })
-  }
-
+  /** Close the connection. */
   override stop(): void {
     super.stop()
     this.drmOptionsMap?.clear()
@@ -284,12 +292,17 @@ export default class View extends BaseWebRTC {
     this.eventQueue.length = 0
   }
 
-  async initConnection(data: { migrate: boolean }) {
-    logger.debug('Viewer connect options values: ', this.options)
+
+
+
+
+
+  private async initConnection(data: { migrate: boolean }) {
+    this.logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false
     let promises
     if (!data.migrate && this.isActive()) {
-      logger.warn('Viewer currently subscribed')
+      this.logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
     let subscriberData
@@ -304,7 +317,7 @@ export default class View extends BaseWebRTC {
       }
     } catch (error) {
       // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
-      logger.error('Error generating token.')
+      this.logger.error('Error generating token.')
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
@@ -317,7 +330,7 @@ export default class View extends BaseWebRTC {
       throw error
     }
     if (!subscriberData) {
-      logger.error('Error while subscribing. Subscriber data required')
+      this.logger.error('Error while subscribing. Subscriber data required')
       throw new Error('Subscriber data required')
     }
     const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT
@@ -337,13 +350,19 @@ export default class View extends BaseWebRTC {
 
     await webRTCPeerInstance.createRTCPeer(this.options?.peerConfig)
     // Stop emiting events from the previous instances
-    this.stopReemitingWebRTCPeerInstanceEvents?.()
+    this.stopReemitingWebRTCPeerInstanceEvents?.();
+    this.stopReemitingSignalingInstanceEvents?.();
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(
       webRTCPeerInstance,
       this,
-      Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
-    )
+      [ 'connectionStateChange' ]
+    );
+    this.stopReemitingSignalingInstanceEvents = reemit(
+      signalingInstance,
+      this,
+      [ 'viewercount', 'migrate', 'updated' ]
+    );
 
     if (this.options?.metadata) {
       if (!this.worker) {
@@ -352,7 +371,7 @@ export default class View extends BaseWebRTC {
       this.worker.onmessage = (message) => {
         if (message.data.event === 'metadata') {
           const decoder = new TextDecoder()
-          const metadata: MetadataObject = message.data.metadata
+          const metadata: MetadataEventPayload = message.data.metadata
           metadata.mid = message.data.mid
           metadata.track = this.tracksMidValues[message.data.mid]
           if (message.data.metadata.uuid) {
@@ -373,22 +392,12 @@ export default class View extends BaseWebRTC {
               metadata.unregistered = json
             } catch (e) {
               // was not a JSON, just return the raw bytes (i.e. do nothing)
-              logger.info('The content could not be converted to JSON, returning raw bytes instead')
+              this.logger.info('The content could not be converted to JSON, returning raw bytes instead')
             }
           
           }
-          /**
-           * Emits when metadata have been extracted from the stream.
-           *
-           * @event View#metadata
-           * @type {Object}
-           * @property {String} mid - Media identifier that contains the metadata.
-           * @property {Object} track - Track object that contains the metadata.
-           * @property {String} uuid - UUID of the metadata.
-           * @property {Date} timecode - Timecode of when the metadata were generated.
-           * @property {Object} unregistered - Unregistered data.
-           */
-          this.emit('metadata', metadata)
+          // Emits when metadata have been extracted from the stream.
+          this.emit('metadata', metadata);
         }
       }
     }
@@ -399,29 +408,22 @@ export default class View extends BaseWebRTC {
         return
       }
       this.onTrackEvent(trackEvent)
-    })
+    });
 
-    signalingInstance.on(signalingEvents.broadcastEvent, (event) => {
-      if (event.data.sourceId === null) {
-        switch (event.name) {
-          case 'active':
-            this.emit('broadcastEvent', event)
-            this.isMainStreamActive = true
-            while (this.eventQueue.length > 0) {
-              this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent)
-            }
-            return
-          case 'inactive':
-            this.isMainStreamActive = false
-            break
-          default:
-            break
-        }
+    signalingInstance.on('active', (obj: ActiveEventPayload) => {
+      this.emit('active', obj);
+      this.isMainStreamActive = true;
+      while (this.eventQueue.length > 0) {
+        this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent);
       }
-      this.emit('broadcastEvent', event)
-    })
+    });
 
-    const options = { ...(this.options as ViewConnectOptions), stereo: true }
+    signalingInstance.on('inactive', (obj: InactiveEventPayload) => {
+      this.emit('inactive', obj);
+      this.isMainStreamActive = false;
+    });
+
+    const options = { ...(this.options as ViewerConnectOptions), stereo: true }
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(options)
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
@@ -433,7 +435,7 @@ export default class View extends BaseWebRTC {
     const subscribePromise = this.signaling.subscribe(localSdp, {
       ...this.options,
       vad: !!this.options?.multiplexedAudioTracks,
-    } as ViewConnectOptions)
+    } as ViewerConnectOptions)
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
       webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
     )
@@ -444,20 +446,20 @@ export default class View extends BaseWebRTC {
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 
-    logger.info('Connected to streamName: ', this.streamName)
+    this.logger.info('Connected to streamName: ', this.streamName)
 
     let oldWebRTCPeer: PeerConnection | null = this.webRTCPeer
     this.webRTCPeer = webRTCPeerInstance
     this.setReconnect()
 
     if (data.migrate) {
-      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      this.webRTCPeer.on('connectionStateChange', (state: string) => {
         if (state === 'connected') {
           setTimeout(() => {
             oldSignaling?.close?.()
             oldWebRTCPeer?.closeRTCPeer?.()
             oldSignaling = oldWebRTCPeer = null
-            logger.info('Current connection migrated')
+            this.logger.info('Current connection migrated')
           }, 1000)
         } else if (['disconnected', 'failed', 'closed'].includes(state)) {
           oldSignaling?.close?.()
@@ -478,11 +480,8 @@ export default class View extends BaseWebRTC {
           try {
             rtcDrmOnTrack(trackEvent, drmOptions)
           } catch (error) {
-            logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
-            this.emit(
-              'error',
-              new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error)
-            )
+            this.logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
+            this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
           }
           if (!this.worker) {
             this.worker = new TransformWorker()
@@ -494,10 +493,10 @@ export default class View extends BaseWebRTC {
             }
           })
         } else {
-          logger.warn('drmConfig not defined in track event')
+          this.logger.warn('drmConfig not defined in track event')
         }
       } else {
-        logger.warn('mediaId not defined in track event')
+        this.logger.warn('mediaId not defined in track event')
       }
     }
     if (this.options?.metadata) {
@@ -527,6 +526,22 @@ export default class View extends BaseWebRTC {
     this.emit('track', trackEvent)
   }
 
+  /** @ignore */
+  override async replaceConnection(): Promise<void> {
+    this.logger.info('Migrating current connection')
+    await this.initConnection({ migrate: true })
+  }
+
+
+
+
+
+
+
+
+
+
+
   getDRMConfiguration(mediaId: string) {
     return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
   }
@@ -543,7 +558,7 @@ export default class View extends BaseWebRTC {
     if (this.subscriberToken) {
       opts.headers.append('Authorization', `Bearer ${this.subscriberToken}`)
     } else {
-      logger.warn('onRtcDrmFetch: no subscriberToken')
+      this.logger.warn('onRtcDrmFetch: no subscriberToken')
     }
     return fetch(url, opts)
   }
@@ -618,7 +633,7 @@ export default class View extends BaseWebRTC {
       }
       drmOptions.videoElement.addEventListener('rtcdrmerror', (event: unknown) => {
         const rtcDrmErrorEvent = event as { detail: { message: string } }
-        logger.error(
+        this.logger.error(
           'DRM error: ',
           rtcDrmErrorEvent.detail.message,
           'in video element:',
@@ -627,7 +642,7 @@ export default class View extends BaseWebRTC {
         this.emit('error', new Error(rtcDrmErrorEvent.detail.message))
       })
     } catch (error) {
-      logger.error('Failed to configure DRM with options:', options, 'error is:', error)
+      this.logger.error('Failed to configure DRM with options:', options, 'error is:', error)
     }
   }
 
@@ -640,9 +655,9 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Check if there are any DRM protected Track
+   * Checks if there are any DRM protected tracks.
    */
-  get isDRMOn() {
+  public get isDRMOn() {
     return !!this.drmOptionsMap && this.drmOptionsMap.size > 0
   }
 
@@ -666,12 +681,12 @@ export default class View extends BaseWebRTC {
     try {
       rtcDrmConfigure(targetDRMOptions)
     } catch (error) {
-      logger.error('Failed to configure DRM with options:', targetDRMOptions, 'error is:', error)
+      this.logger.error('Failed to configure DRM with options:', targetDRMOptions, 'error is:', error)
     }
     try {
       rtcDrmConfigure(sourceDRMOptions)
     } catch (error) {
-      logger.error('Failed to configure DRM with options:', sourceDRMOptions, 'error is:', error)
+      this.logger.error('Failed to configure DRM with options:', sourceDRMOptions, 'error is:', error)
     }
   }
 }

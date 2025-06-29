@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { mockFetchJsonReturnValue, mockFetchRejectValue } from './__mocks__/Fetch'
-import Director from '../../src/Director'
+import { Director } from '../../src/Director'
 const feature = loadFeature('../features/GetPublisherConnectionPath.feature', {
   loadRelativePath: true,
   errors: true,
@@ -11,7 +11,7 @@ const dummyToken =
 
 defineFeature(feature, (test) => {
   beforeEach(() => {
-    Director.setLiveDomain('')
+    Director.liveDomain = ''
   })
 
   test('Publish with an existing stream name and valid token', ({ given, when, then }) => {
@@ -134,7 +134,7 @@ defineFeature(feature, (test) => {
     given('I have a valid token and an existing stream name', async () => {
       token = 'Valid_token'
       streamName = 'Existing_stream_name'
-      Director.setEndpoint('https://director-dev.millicast.com')
+      Director.endpoint = 'https://director-dev.millicast.com'
     })
 
     when('I request a connection path to Director API', async () => {
@@ -144,7 +144,7 @@ defineFeature(feature, (test) => {
     })
 
     then('I get the publish connection path', async () => {
-      expect(fetch).toBeCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('https://director-dev.millicast.com'),
         expect.any(Object)
       )
@@ -206,7 +206,7 @@ defineFeature(feature, (test) => {
     })
 
     when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
-      Director.setLiveDomain('test.com')
+      Director.liveDomain = 'dolby.com'
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
       const options = { token, streamName }
       response = await Director.getPublisher(options)
