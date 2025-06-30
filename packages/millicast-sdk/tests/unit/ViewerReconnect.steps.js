@@ -64,7 +64,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -83,7 +83,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -102,7 +102,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -125,7 +125,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false;
         viewer.alreadyDisconnected = true;
@@ -149,7 +149,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection disabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: false})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -168,7 +168,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -192,7 +192,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
@@ -236,7 +236,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       await viewer.connect()
     })
 
@@ -255,7 +255,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Viewer with reconnection enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       await viewer.connect()
     })
 

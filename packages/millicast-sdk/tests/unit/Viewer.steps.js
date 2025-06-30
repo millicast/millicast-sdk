@@ -70,7 +70,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of View', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
     })
 
     when('I subscribe to a stream with a connection path', async () => {
@@ -91,7 +91,7 @@ defineFeature(feature, (test) => {
     when('I instance a View with a token generator without connection path', async () => {
       viewer = new Viewer({streamName: 'streamName', streamAccountId: 'streamAccountId'})
       const mockErrorTokenGenerator = () => Promise.resolve(null);
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockErrorTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockErrorTokenGenerator);
 
       expectError = expect(async () => await viewer.connect())
     })
@@ -108,7 +108,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of View already connected', async () => {
       viewer = new Viewer({streamName: 'streamName', streamAccountId: 'streamAccountId'})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       await viewer.connect()
     })
 
@@ -124,7 +124,7 @@ defineFeature(feature, (test) => {
 
   test('Stop subscription', ({ given, when, then }) => {
     const viewer = new Viewer({streamName: 'streamName', streamAccountId: 'streamAccountId'})
-    jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
     let signaling
 
     given('I am subscribed to a stream', async () => {
@@ -145,7 +145,7 @@ defineFeature(feature, (test) => {
 
   test('Stop inactive subscription', ({ given, when, then }) => {
     const viewer = new Viewer({streamName: 'streamName', streamAccountId: 'streamAccountId'})
-    jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
 
     given('I am not connected to a stream', () => null)
 
@@ -161,7 +161,7 @@ defineFeature(feature, (test) => {
 
   test('Check status of active subscription', ({ given, when, then }) => {
     const viewer = new Viewer({streamName: 'streamName', streamAccountId: 'streamAccountId'})
-    jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
     let result
 
     given('I am subscribed to a stream', async () => {
@@ -179,7 +179,7 @@ defineFeature(feature, (test) => {
 
   test('Check status of inactive subscription', ({ given, when, then }) => {
     const viewer = new Viewer({streamName: 'streamName', streamAccountId: 'streamAccountId'})
-    jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
     let result
 
     given('I am not subscribed to a stream', () => null)
@@ -202,7 +202,7 @@ defineFeature(feature, (test) => {
       const errorTokenGenerator = jest.fn(() => {
         throw new Error('Error getting token')
       })
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(errorTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(errorTokenGenerator);
     })
 
     when('I subscribe to a stream', async () => {

@@ -65,7 +65,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Publish with connection path', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     })
 
     when('I broadcast a stream with media stream', async () => {
@@ -83,7 +83,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Publish', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     })
 
     when('I broadcast a stream without options', async () => {
@@ -105,7 +105,7 @@ defineFeature(feature, (test) => {
     when('I instance a Publish with token generator without connection path', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
       const mockErrorTokenGenerator = () => Promise.resolve(null);
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockErrorTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockErrorTokenGenerator);
       expectError = expect(() => publisher.connect({ mediaStream }))
     })
 
@@ -121,7 +121,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Publish', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     })
 
     when('I broadcast a stream without a mediaStream', async () => {
@@ -141,7 +141,7 @@ defineFeature(feature, (test) => {
     given('an instance of Publish already connected', async () => {
       jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
       await publisher.connect({ mediaStream })
     })
 
@@ -161,7 +161,7 @@ defineFeature(feature, (test) => {
     given('an instance of Publish', async () => {
       jest.spyOn(PeerConnection.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     })
 
     when('I broadcast a stream with bandwidth restriction', async () => {
@@ -179,7 +179,7 @@ defineFeature(feature, (test) => {
 
   test('Stop publish', ({ given, when, then }) => {
     const publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-    jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     let signaling
 
     given('I am publishing a stream', async () => {
@@ -201,7 +201,7 @@ defineFeature(feature, (test) => {
 
   test('Stop inactive publish', ({ given, when, then }) => {
     const publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-    jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
 
     given('I am not publishing a stream', () => null)
 
@@ -217,7 +217,7 @@ defineFeature(feature, (test) => {
 
   test('Check status of active publish', ({ given, when, then }) => {
     const publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-    jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     let result
 
     given('I am publishing a stream', async () => {
@@ -236,7 +236,7 @@ defineFeature(feature, (test) => {
 
   test('Check status of inactive publish', ({ given, when, then }) => {
     const publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-    jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+    jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     let result
 
     given('I am not publishing a stream', () => null)
@@ -259,7 +259,7 @@ defineFeature(feature, (test) => {
       const errorTokenGenerator = jest.fn(() => {
         throw new Error('Error getting token')
       })
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(errorTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(errorTokenGenerator);
     })
 
     when('I broadcast a stream', async () => {
@@ -282,7 +282,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Publish with valid token generator with no recording available', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
     })
 
     when('I broadcast a stream', async () => {
@@ -301,7 +301,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Publish', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue({
         codecs: [
           { codec: 'vp8', mimeType: 'video/VP8' },
@@ -326,7 +326,7 @@ defineFeature(feature, (test) => {
 
     given('an instance of Publish', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockTokenGenerator);
       jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue({
         codecs: [
           { codec: 'vp8', mimeType: 'video/VP8' },

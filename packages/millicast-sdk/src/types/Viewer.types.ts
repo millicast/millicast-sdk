@@ -1,4 +1,4 @@
-import { Media, ViewServerEvent } from './BaseWebRTC.types'
+import { Media, ViewerServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
@@ -68,7 +68,7 @@ export interface ViewerConnectOptions {
   /**
    * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
    */
-  events?: ViewServerEvent[]
+  events?: ViewerServerEvent[]
   /**
    * - Options to configure the new RTCPeerConnection.
    */

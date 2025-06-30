@@ -6,17 +6,17 @@ import { BaseWebRTC } from './utils/BaseWebRTC'
 import Signaling from './Signaling'
 import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
 import PeerConnection, { ConnectionType } from './PeerConnection'
+import * as Urls from './urls'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import { PublisherOptions, PublishConnectOptions } from './types/Publisher.types'
-import { TokenGeneratorCallback } from './types/Director.types'
-import { DecodedJWT, ReconnectData } from './types/BaseWebRTC.types'
+import { DecodedJWT, MillicastDirectorResponse, ReconnectData } from './types/BaseWebRTC.types'
 import { SignalingPublishOptions } from './types/Signaling.types'
 import { VideoCodec } from './types/Codecs.types'
 import { isNotDefined, validatePublishConnectOptions } from './utils/Validators'
-import { Director } from './Director'
 import { PublisherEvents, SEIUserUnregisteredData } from './types/events'
+import Diagnostics from './utils/Diagnostics'
 
 const connectOptions: PublishConnectOptions = {
   sourceId: null,
@@ -68,7 +68,8 @@ export class Publisher extends BaseWebRTC<PublisherEvents> {
   private streamName = ''
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
-  protected override options: PublishConnectOptions = connectOptions
+  #options: PublisherOptions;
+  protected override options: PublishConnectOptions = connectOptions;
 
   /**
    * Creates a Publisher object.
@@ -88,12 +89,9 @@ export class Publisher extends BaseWebRTC<PublisherEvents> {
       throw new Error('The Publish Token is missing.');
     }
 
-    const tokenGenerator: TokenGeneratorCallback = () => Director.getPublisher({
-      streamName: options.streamName,
-      token: options.publishToken,
-    });
+    super(logger, options.autoReconnect ?? true);
 
-    super(tokenGenerator, logger, options.autoReconnect ?? true);
+    this.#options = options;
   }
 
   /**
@@ -205,9 +203,9 @@ export class Publisher extends BaseWebRTC<PublisherEvents> {
       this.logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
     }
-    let publisherData
+    let publisherData: MillicastDirectorResponse;
     try {
-      publisherData = await this.tokenGenerator()
+      publisherData = await this.getConnectionData()
       if (this.options.peerConfig) {
         //  Set the iceServers from the publish data into the peerConfig
         this.options.peerConfig.iceServers = publisherData?.iceServers
@@ -354,6 +352,41 @@ export class Publisher extends BaseWebRTC<PublisherEvents> {
         warningMessage += '\n- Stream not being published.'
       }
       this.logger.warn(warningMessage)
+    }
+  }
+
+
+
+  /**
+   * Gets the publisher connection data.
+   * 
+   * @param options Millicast options.
+   * 
+   * @returns A {@link !Promise Promise} whose fulfillment handler receives a {@link MillicastDirectorResponse} object which represents the result of getting the publishing connection path.
+   */
+  private async getConnectionData(): Promise<MillicastDirectorResponse> {
+    this.logger.info('Getting publisher connection path for stream name: ', this.#options.streamName)
+    const payload = {
+      streamName: this.#options.streamName,
+      streamType: 'WebRtc',
+    }
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${this.#options.publishToken}` }
+    const url = `${Urls.getEndpoint()}/api/director/publish`
+    try {
+      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      let data = await response.json()
+      if (data.status === 'fail') {
+        const error = new FetchError(data.data.message, response.status)
+        throw error
+      }
+      data = this.parseIncomingDirectorResponse(data)
+      this.logger.debug('Getting publisher response: ', data)
+      Diagnostics.initAccountId(data.data.streamAccountId)
+
+      return data.data
+    } catch (e) {
+      this.logger.error('Error while getting publisher connection path. ', e)
+      throw e
     }
   }
 }

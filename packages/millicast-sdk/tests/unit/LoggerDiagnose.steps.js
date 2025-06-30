@@ -68,7 +68,7 @@ defineFeature(feature, (test) => {
 
     given('connection has failed', () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b'});
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(() => null);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(() => null);
 
       expectedError = expect(() => viewer.connect())
       expectedError.rejects.toThrow(Error)
@@ -89,7 +89,7 @@ defineFeature(feature, (test) => {
 
     given('connection to a stream', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockViewerTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockViewerTokenGenerator);
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
@@ -109,7 +109,7 @@ defineFeature(feature, (test) => {
 
     given('connection to a stream and stats enabled', async () => {
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockViewerTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockViewerTokenGenerator);
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       viewer.webRTCPeer.initStats()
@@ -135,7 +135,7 @@ defineFeature(feature, (test) => {
       changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
 
       viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
-      jest.spyOn(viewer, "tokenGenerator").mockImplementation(mockViewerTokenGenerator);
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockViewerTokenGenerator);
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
@@ -156,7 +156,7 @@ defineFeature(feature, (test) => {
 
     given('a stream being published', async () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockPublishTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockPublishTokenGenerator);
       await publisher.connect({ mediaStream })
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
@@ -179,7 +179,7 @@ defineFeature(feature, (test) => {
     given('a stream cannot be published', () => {
       publisher = new Publisher({streamName: 'a', publishToken: 'b'})
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      jest.spyOn(publisher, "tokenGenerator").mockImplementation(mockErrorTokenGenerator);
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockErrorTokenGenerator);
 
       expectedError = expect(async () => await publisher.connect({ mediaStream }))
       expectedError.rejects.toThrow(Error)

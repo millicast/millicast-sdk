@@ -1,4 +1,4 @@
-import { PublishServerEvent } from './BaseWebRTC.types'
+import { PublisherServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
 
@@ -98,7 +98,7 @@ export interface PublishConnectOptions {
   /**
    * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    */
-  events?: PublishServerEvent[]
+  events?: PublisherServerEvent[]
   /**
    * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    */

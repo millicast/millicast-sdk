@@ -6,7 +6,7 @@ const publishToken = window.token
 class MillicastPublishTest {
   constructor() {
     millicast.Logger.setLevel(millicast.Logger.DEBUG);
-    millicast.Director.endpoint = window.directorEndpoint;
+    millicast.Urls.setEndpoint(window.directorEndpoint);
 
     const options = { publishToken, streamName };
     this.millicastPublish = new millicast.Publisher(options);

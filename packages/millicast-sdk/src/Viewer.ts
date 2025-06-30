@@ -17,7 +17,6 @@ import {
 } from './drm/rtc-drm-transform.min.js'
 import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import SdpParser from './utils/SdpParser'
-import { TokenGeneratorCallback } from './types/Director.types'
 import {
   ViewerConnectOptions,
   LayerInfo,
@@ -25,13 +24,12 @@ import {
   DRMOptions,
   ViewerOptions,
 } from './types/Viewer.types.js'
-import { DRMProfile } from './types/Director.types'
-import { DecodedJWT, Media } from './types/BaseWebRTC.types'
+import { DecodedJWT, DRMProfile, Media, MillicastDirectorResponse } from './types/BaseWebRTC.types'
 import { VideoCodec } from './types/Codecs.types'
-import { Director } from './Director'
+import * as Urls from './urls'
 import { ActiveEventPayload, InactiveEventPayload, MetadataEventPayload, SEIUserUnregisteredData, ViewerEvents } from './types/events'
-import TransactionManager from 'transaction-manager'
 import { isNotDefined } from './utils/Validators'
+import Diagnostics from './utils/Diagnostics'
 
 const defaultConnectOptions: ViewerConnectOptions = {
   metadata: false,
@@ -138,11 +136,11 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
   private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null
-  protected override options: ViewerConnectOptions | null = null
+  #options: ViewerOptions;
+  protected override options: ViewerConnectOptions | null = null;
 
   /**
    * Creates a Viewer object.
-   * 
    * @param options Options for the viewer.
    */
   constructor(options: ViewerOptions) {
@@ -158,13 +156,9 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       throw new Error('The Stream Account ID is missing.');
     }
 
-    const tokenGenerator: TokenGeneratorCallback = () => Director.getSubscriber({
-      streamName: options.streamName,
-      streamAccountId: options.streamAccountId,
-      subscriberToken: options.subscriberToken,
-    });
+    super(logger, options.autoReconnect ?? true);
 
-    super(tokenGenerator, logger, options.autoReconnect ?? true);
+    this.#options = options;
   }
 
   /**
@@ -305,9 +299,9 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       this.logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
-    let subscriberData
+    let subscriberData: MillicastDirectorResponse;
     try {
-      subscriberData = await this.tokenGenerator()
+      subscriberData = await this.getConnectionData()
       // Set the iceServers from the subscribe data into the peerConfig
       if (this.options?.peerConfig) {
         this.options.peerConfig.iceServers = subscriberData?.iceServers
@@ -687,6 +681,50 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       rtcDrmConfigure(sourceDRMOptions)
     } catch (error) {
       this.logger.error('Failed to configure DRM with options:', sourceDRMOptions, 'error is:', error)
+    }
+  }
+
+  /**
+   * Get subscriber connection data.
+   * 
+   * @param options Millicast options.
+   * 
+   * @returns A {@link !Promise Promise} whose fulfillment handler receives a {@link MillicastDirectorResponse} object which represents the result of getting the subscribe connection data.
+   */
+  private async getConnectionData(): Promise<MillicastDirectorResponse> {
+    Diagnostics.initAccountId(this.#options.streamAccountId);
+    this.logger.info(`Getting subscriber connection data for stream name: ${this.#options.streamName} and account id: ${this.#options.streamAccountId}`);
+
+    const payload = {
+      streamAccountId: this.#options.streamAccountId,
+      streamName: this.#options.streamName,
+    };
+
+    const subscriberToken = this.#options.subscriberToken;
+    let headers: { 'Content-Type': string; Authorization?: string } = { 'Content-Type': 'application/json' };
+    if (subscriberToken) {
+      headers = { ...headers, Authorization: `Bearer ${subscriberToken}` };
+    }
+    const url = `${Urls.getEndpoint()}/api/director/subscribe`;
+    try {
+      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) });
+      let data = await response.json();
+
+      if (data.status === 'fail') {
+        const error = new FetchError(data.data.message, response.status);
+        throw error;
+      }
+
+      data = this.parseIncomingDirectorResponse(data);
+      this.logger.debug('Getting subscriber response:', data);
+      if (this.#options.subscriberToken) {
+        data.data.subscriberToken = this.#options.subscriberToken;
+      }
+      
+      return data.data;
+    } catch (e) {
+      this.logger.error('Error while getting subscriber connection path.', e);
+      throw e;
     }
   }
 }

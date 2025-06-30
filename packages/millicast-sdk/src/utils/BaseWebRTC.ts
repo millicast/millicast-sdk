@@ -2,13 +2,13 @@ import Logger from '../Logger'
 import PeerConnection from '../PeerConnection'
 import Signaling from '../Signaling'
 import Diagnostics from './Diagnostics'
-import { TokenGeneratorCallback } from '../types/Director.types'
 import { ILogger } from 'js-logger'
-import { ReconnectData } from '../types/BaseWebRTC.types'
+import { MillicastDirectorResponse, ReconnectData } from '../types/BaseWebRTC.types'
 import { PublishConnectOptions } from '../types/Publisher.types'
 import { ViewerConnectOptions } from '../types/Viewer.types'
 import { BaseWebRTCEvents } from '../types/events';
 import { TypedEventEmitter } from './TypedEventEmitter'
+import * as Urls from '../urls'
 
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
@@ -29,28 +29,21 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
   private firstReconnection: boolean
   protected stopReconnection: boolean
   #isReconnecting: boolean
-  protected tokenGenerator: TokenGeneratorCallback
   protected options: ViewerConnectOptions | PublishConnectOptions | null
   protected logger: ILogger;
 
   /**
    * Creates a BaseWebRTC object.
    * 
-   * @param tokenGenerator Callback function executed when a new token is needed.
    * @param loggerInstance Logger instance from the extended classes.
    * @param autoReconnect Enable auto reconnect.
    */
-  constructor(tokenGenerator: TokenGeneratorCallback, loggerInstance: ILogger, autoReconnect: boolean) {
+  constructor(loggerInstance: ILogger, autoReconnect: boolean) {
     super()
 
     this.logger = loggerInstance ?? Logger.get('BaseWebRTC');
     this.logger.setLevel(Logger.DEBUG);
     
-    if (!tokenGenerator) {
-      this.logger.error('Token generator is required to construct this module.')
-      throw new Error('Token generator is required to construct this module.')
-    }
-
     this.webRTCPeer = new PeerConnection()
     this.signaling = null
     this.autoReconnect = autoReconnect
@@ -59,7 +52,6 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
     this.firstReconnection = true
     this.stopReconnection = false
     this.#isReconnecting = false
-    this.tokenGenerator = tokenGenerator
     this.options = null
   }
 
@@ -173,4 +165,43 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
   async connect(_options: unknown): Promise<void> {
     /* tslint:disable:no-empty */
   }
+
+  /** @ignore */
+  protected parseIncomingDirectorResponse = (directorResponse: { data: MillicastDirectorResponse }) => {
+    if (Urls.getLiveDomain()) {
+      const domainRegex = /\/\/(.*?)\//
+      const urlsParsed = directorResponse.data.urls.map((url) => {
+        const matched = domainRegex.exec(url)
+        if (!matched) {
+          this.logger.warn('Unable to parse incoming director response')
+          return url
+        }
+        return url.replace(matched[1], Urls.getLiveDomain())
+      })
+      directorResponse.data.urls = urlsParsed
+    }
+
+    // TODO: remove this when server returns full path of DRM license server URLs
+    if (directorResponse.data.drmObject) {
+      const playReadyUrl = directorResponse.data.drmObject.playReadyUrl
+      if (playReadyUrl) {
+        directorResponse.data.drmObject.playReadyUrl = `${Urls.getEndpoint()}${playReadyUrl}`
+      }
+      const widevineUrl = directorResponse.data.drmObject.widevineUrl
+      if (widevineUrl) {
+        directorResponse.data.drmObject.widevineUrl = `${Urls.getEndpoint()}${widevineUrl}`
+      }
+      const fairPlayUrl = directorResponse.data.drmObject.fairPlayUrl
+      if (fairPlayUrl) {
+        directorResponse.data.drmObject.fairPlayUrl = `${Urls.getEndpoint()}${fairPlayUrl}`
+      }
+      const fairPlayCertUrl = directorResponse.data.drmObject.fairPlayCertUrl
+      if (fairPlayCertUrl) {
+        directorResponse.data.drmObject.fairPlayCertUrl = `${Urls.getEndpoint()}${fairPlayCertUrl}`
+      }
+    }
+
+    return directorResponse;
+  }
+
 }

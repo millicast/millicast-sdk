@@ -1,6 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { mockFetchJsonReturnValue, mockFetchRejectValue } from './__mocks__/Fetch'
-import { Director } from '../../src/Director'
+import { Publisher } from '../../src/Publisher'
+import * as Urls from '../../src/urls'
 const feature = loadFeature('../features/GetPublisherConnectionPath.feature', {
   loadRelativePath: true,
   errors: true,
@@ -11,11 +12,11 @@ const dummyToken =
 
 defineFeature(feature, (test) => {
   beforeEach(() => {
-    Director.liveDomain = ''
+    Urls.setLiveDomain('');
   })
 
   test('Publish with an existing stream name and valid token', ({ given, when, then }) => {
-    let token
+    let publishToken
     let streamName
     let response
     const mockedResponse = {
@@ -28,14 +29,15 @@ defineFeature(feature, (test) => {
       },
     }
     given('I have a valid token and an existing stream name', async () => {
-      token = 'Valid_token'
+      publishToken = 'Valid_token'
       streamName = 'Existing_stream_name'
     })
 
     when('I request a connection path to Director API', async () => {
       mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      const options = { token, streamName }
-      response = await Director.getPublisher(options)
+      const options = { publishToken, streamName };
+      const publisher = new Publisher(options);
+      response = await publisher.getConnectionData(options);
     })
 
     then('I get the publish connection path', async () => {
@@ -45,7 +47,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Publish with an unexisting stream name and valid token', ({ given, when, then }) => {
-    let token
+    let publishToken
     let streamName
     let responseError
     const mockedResponse = {
@@ -59,15 +61,16 @@ defineFeature(feature, (test) => {
       },
     }
     given('I have a valid token and an unexisting stream name', async () => {
-      token = 'Valid_token'
+      publishToken = 'Valid_token'
       streamName = 'Unexisting_stream_name'
     })
 
     when('I request a connection path to Director API', async () => {
       mockFetchRejectValue(mockedResponse)
       try {
-        const options = { token, streamName }
-        responseError = await Director.getPublisher(options)
+        const options = { publishToken, streamName };
+        const publisher = new Publisher(options);
+        responseError = await publisher.getConnectionData(options);
       } catch (error) {
         responseError = error
       }
@@ -80,7 +83,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Publish with an existing stream name and invalid token', ({ given, when, then }) => {
-    let token
+    let publishToken
     let streamName
     let responseError
     const mockedResponse = {
@@ -94,15 +97,16 @@ defineFeature(feature, (test) => {
       },
     }
     given('I have an invalid token and an existing stream name', async () => {
-      token = 'Invalid_token'
+      publishToken = 'Invalid_token'
       streamName = 'Existing_stream_name'
     })
 
     when('I request a connection path to Director API', async () => {
       mockFetchRejectValue(mockedResponse)
       try {
-        const options = { token, streamName }
-        responseError = await Director.getPublisher(options)
+        const options = { publishToken, streamName };
+        const publisher = new Publisher(options);
+        responseError = await publisher.getConnectionData(options);
       } catch (error) {
         responseError = error
       }
@@ -119,7 +123,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    let token
+    let publishToken
     let streamName
     let response
     const mockedResponse = {
@@ -132,15 +136,16 @@ defineFeature(feature, (test) => {
       },
     }
     given('I have a valid token and an existing stream name', async () => {
-      token = 'Valid_token'
+      publishToken = 'Valid_token'
       streamName = 'Existing_stream_name'
-      Director.endpoint = 'https://director-dev.millicast.com'
+      Urls.setEndpoint('https://director-dev.millicast.com');
     })
 
     when('I request a connection path to Director API', async () => {
-      mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      const options = { token, streamName }
-      response = await Director.getPublisher(options)
+      mockFetchJsonReturnValue(Promise.resolve(mockedResponse));
+      const options = { publishToken, streamName };
+      const publisher = new Publisher(options);
+      response = await publisher.getConnectionData(options);
     })
 
     then('I get the publish connection path', async () => {
@@ -154,7 +159,7 @@ defineFeature(feature, (test) => {
   })
 
   test('Publish with an existing stream name, valid token and options as object', ({ given, when, then }) => {
-    let token
+    let publishToken
     let streamName
     let response
     const mockedResponse = {
@@ -167,14 +172,15 @@ defineFeature(feature, (test) => {
       },
     }
     given('I have a valid token and an existing stream name', async () => {
-      token = 'Valid_token'
+      publishToken = 'Valid_token'
       streamName = 'Existing_stream_name'
     })
 
     when('I request a connection path to Director API using options object', async () => {
-      mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      const options = { token, streamName }
-      response = await Director.getPublisher(options)
+      mockFetchJsonReturnValue(Promise.resolve(mockedResponse));
+      const options = { publishToken, streamName };
+      const publisher = new Publisher(options);
+      response = await publisher.getConnectionData(options);
     })
 
     then('I get the publish connection path', async () => {
@@ -188,7 +194,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    let token
+    let publishToken
     let streamName
     let response
     const mockedResponse = {
@@ -201,15 +207,16 @@ defineFeature(feature, (test) => {
       },
     }
     given('I have a valid token and an existing stream name', async () => {
-      token = 'Valid_token'
+      publishToken = 'Valid_token'
       streamName = 'Existing_stream_name'
     })
 
     when('I set a custom live websocket domain and I request a connection path to Director API', async () => {
-      Director.liveDomain = 'dolby.com'
-      mockFetchJsonReturnValue(Promise.resolve(mockedResponse))
-      const options = { token, streamName }
-      response = await Director.getPublisher(options)
+      Urls.setLiveDomain('dolby.com');
+      mockFetchJsonReturnValue(Promise.resolve(mockedResponse));
+      const options = { publishToken, streamName };
+      const publisher = new Publisher(options);
+      response = await publisher.getConnectionData(options);
     })
 
     then('I get the publish connection path', async () => {
