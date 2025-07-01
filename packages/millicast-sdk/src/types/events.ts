@@ -1,16 +1,25 @@
 import { BaseWebRTC } from '../utils/BaseWebRTC';
 import { Publisher } from '../Publisher';
 import { Viewer } from '../Viewer';
-import PeerConnection from '../PeerConnection';
+import { PeerConnection } from '../PeerConnection';
 import { Signaling } from '../Signaling';
 import TransactionManager from 'transaction-manager';
 import { EncryptionParameters, TrackInfo } from './Viewer.types';
 import { EmittedEvents } from '../utils/TypedEventEmitter';
+import { ConnectionStats } from './stats.types';
+
+/**
+ * Events triggered by the {@link PeerConnectionStats} classe.
+ */
+export interface PeerConnectionStatsEvents extends EmittedEvents {
+  /** Triggered when a new track is available. */
+  stats(webRtcStats: ConnectionStats): void;
+}
 
 /**
  * Events triggered by the {@link PeerConnection} classe.
  */
-export interface PeerConnectionEvents extends EmittedEvents {
+export interface PeerConnectionEvents extends PeerConnectionStatsEvents, EmittedEvents {
   /** Triggered when a new track is available. */
   track(trackEvent: RTCTrackEvent): void;
 

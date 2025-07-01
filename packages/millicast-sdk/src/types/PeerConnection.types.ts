@@ -1,5 +1,6 @@
 import { AudioCodec, VideoCodec } from './Codecs.types'
 
+/** PeerConnection configuration. */
 export interface PeerConnectionConfig extends RTCConfiguration {
   /**
    * - whether stats collection should be auto initialized. Defaults to `true`
@@ -32,13 +33,18 @@ export interface SdpOptions {
 }
 
 export interface ICodecs {
+  /** Audio or video codec name. */
   codec?: VideoCodec | AudioCodec
+  /** Audio or video codec mime type. */
   mimeType?: string
+  /** In case of SVC support, a list of scalability modes supported. */
   scalabilityModes?: Array<string>
+  /** Only for audio, the number of audio channels supported. */
   channels?: number
 }
 
 export interface MillicastCapability {
   codecs: ICodecs[]
+  /** An array specifying the URI of the header extension, as described in RFC 5285. */
   headerExtensions: Array<RTCRtpHeaderExtensionCapability>
 }

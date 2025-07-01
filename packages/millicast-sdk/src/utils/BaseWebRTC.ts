@@ -1,5 +1,5 @@
 import Logger from '../Logger'
-import PeerConnection from '../PeerConnection'
+import { PeerConnection } from '../PeerConnection'
 import { Signaling } from '../Signaling'
 import Diagnostics from './Diagnostics'
 import { ILogger } from 'js-logger'

@@ -1,5 +1,6 @@
 import { InputAudio, InputVideo, OutputAudio, OutputVideo } from "@dolbyio/webrtc-stats"
 
+/** Connection statistics description. */
 export type ConnectionStats = {
   /**
    * - All RTCPeerConnection stats without parsing. Reference {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport}.

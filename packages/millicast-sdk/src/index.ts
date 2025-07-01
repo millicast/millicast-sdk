@@ -1,17 +1,21 @@
 import Logger from './Logger';
-import PeerConnection from './PeerConnection';
-export { Logger, PeerConnection };
+export { Logger };
 
 /** @hidden */
 export * as Urls from './urls';
 
 export * from './types/events';
 
+export * from './types/PeerConnection.types';
+export { PeerConnection } from './PeerConnection';
+
 export * from './types/Signaling.types';
 export * from './Signaling';
 
 export * from './types/Viewer.types';
 export * from './Viewer';
+
+export { VideoCodec } from './types/Codecs.types';
 
 export * from './types/Publisher.types';
 export * from './Publisher';
