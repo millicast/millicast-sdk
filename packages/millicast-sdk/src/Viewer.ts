@@ -2,7 +2,7 @@ import reemit from 're-emitter'
 import jwtDecode from 'jwt-decode'
 import Logger from './Logger'
 import { BaseWebRTC } from './utils/BaseWebRTC'
-import Signaling from './Signaling'
+import { Signaling } from './Signaling'
 import PeerConnection from './PeerConnection'
 import { hexToUint8Array } from './utils/StringUtils'
 import { swapPropertyValues } from './utils/ObjectUtils'
@@ -115,11 +115,6 @@ const defaultConnectOptions: ViewerConnectOptions = {
  * // Connect to the stream
  * const connectOptions: ViewerConnectOptions = {};
  * await viewer.connect(connectOptions);
- * 
- * @fires This class may fire the following events:
- *  * {@link ViewerEvents.track | track}
- *  * {@link ViewerEvents.active | active}
- *  * {@link ViewerEvents.inactive | inactive}
  */
 export class Viewer extends BaseWebRTC<ViewerEvents> {
   // States what payload type is associated with each codec from the SDP answer.
@@ -152,7 +147,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     }
 
     if (isNotDefined(options.streamAccountId)) {
-      logger.error('The Stream Name is missing.');
+      logger.error('The Stream Account ID is missing.');
       throw new Error('The Stream Account ID is missing.');
     }
 
@@ -295,11 +290,14 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     this.logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false
     let promises
+
     if (!data.migrate && this.isActive()) {
       this.logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
     }
+
     let subscriberData: MillicastDirectorResponse;
+
     try {
       subscriberData = await this.getConnectionData()
       // Set the iceServers from the subscribe data into the peerConfig
@@ -323,16 +321,19 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       }
       throw error
     }
+
     if (!subscriberData) {
-      this.logger.error('Error while subscribing. Subscriber data required')
-      throw new Error('Subscriber data required')
+      this.logger.error('Error while subscribing. Subscriber data required');
+      throw new Error('Subscriber data required');
     }
+
     const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT
     this.streamName = decodedJWT['millicast'].streamName
     const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`,
     })
+
     if (subscriberData.drmObject) {
       // cache the DRM license server URLs
       this.DRMProfile = subscriberData.drmObject
@@ -417,19 +418,20 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       this.isMainStreamActive = false;
     });
 
-    const options = { ...(this.options as ViewerConnectOptions), stereo: true }
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(options)
-    const signalingConnectPromise = signalingInstance.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
+    const options = { ...(this.options as ViewerConnectOptions), stereo: true };
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(options);
+    const signalingConnectPromise = signalingInstance.connect();
 
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+
+    const localSdp = promises[0]
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 
     const subscribePromise = this.signaling.subscribe(localSdp, {
       ...this.options,
       vad: !!this.options?.multiplexedAudioTracks,
-    } as ViewerConnectOptions)
+    } as ViewerConnectOptions);
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
       webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
     )
@@ -711,8 +713,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       let data = await response.json();
 
       if (data.status === 'fail') {
-        const error = new FetchError(data.data.message, response.status);
-        throw error;
+        throw new FetchError(data.data.message, response.status);
       }
 
       data = this.parseIncomingDirectorResponse(data);

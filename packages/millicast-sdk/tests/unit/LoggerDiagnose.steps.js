@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import Logger from '../../src/Logger'
-import Signaling from '../../src/Signaling'
+import { Signaling } from '../../src/Signaling'
 import { Viewer } from '../../src/Viewer'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'

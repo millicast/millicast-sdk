@@ -1,6 +1,7 @@
 import { PublisherServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
+import PeerConnection from '../PeerConnection'
 
 /**
  * Publisher Options
@@ -79,7 +80,7 @@ export interface PublishConnectOptions {
    */
   simulcast?: boolean
   /**
-   * - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
+   * - Selected scalability mode. You can get the available capabilities using {@link PeerConnection.getCapabilities} method.
    * **Only available in Google Chrome.**
    */
   scalabilityMode?: string | null

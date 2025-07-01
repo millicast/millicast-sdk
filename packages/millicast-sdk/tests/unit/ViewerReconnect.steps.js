@@ -1,6 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
+import { Signaling } from '../../src/Signaling'
 
 const feature = loadFeature('../features/ViewerReconnection.feature', {
   loadRelativePath: true,
@@ -24,14 +25,6 @@ jest.mock('../../src/Signaling', () => {
   return {
     __esModule: true,
     ...originalSignaling,
-    default: class MockSignaling extends originalSignaling.default {
-      async connect() {
-        return Promise.resolve()
-      }
-      async subscribe() {
-        return Promise.resolve('SDP')
-      }
-    },
   }
 })
 
@@ -56,6 +49,9 @@ beforeEach(() => {
   jest.isolateModules(() => {
     Viewer = require('../../src/Viewer').Viewer
   })
+
+  jest.spyOn(Signaling.prototype, 'connect').mockReturnValue(Promise.resolve())
+  jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue(Promise.resolve('SDP'))
 })
 
 defineFeature(feature, (test) => {
@@ -254,7 +250,7 @@ defineFeature(feature, (test) => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new Viewer({streamName: 'a', streamAccountId: 'b', autoReconnect: true})
+      viewer = new Viewer({streamName: 'test-stream', streamAccountId: 'b', autoReconnect: true});
       jest.spyOn(viewer, "getConnectionData").mockImplementation(mockTokenGenerator);
       await viewer.connect()
     })

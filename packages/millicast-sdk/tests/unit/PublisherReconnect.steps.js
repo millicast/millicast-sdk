@@ -2,6 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
+import { Signaling } from '../../src/Signaling'
 
 const feature = loadFeature('../features/PublisherReconnection.feature', {
   loadRelativePath: true,
@@ -27,14 +28,6 @@ jest.mock('../../src/Signaling', () => {
   return {
     __esModule: true,
     ...originalSignaling,
-    default: class MockSignaling extends originalSignaling.default {
-      async connect() {
-        return Promise.resolve()
-      }
-      async publish() {
-        return Promise.resolve('SDP')
-      }
-    },
   }
 })
 
@@ -52,6 +45,9 @@ beforeEach(() => {
   jest.isolateModules(() => {
     Publisher = require('../../src/Publisher').Publisher
   })
+  
+  jest.spyOn(Signaling.prototype, 'connect').mockReturnValue(Promise.resolve())
+  jest.spyOn(Signaling.prototype, 'publish').mockReturnValue(Promise.resolve('SDP'))
 })
 
 defineFeature(feature, (test) => {

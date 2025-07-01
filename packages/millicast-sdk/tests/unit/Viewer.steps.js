@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { Viewer } from '../../src/Viewer'
-import Signaling from '../../src/Signaling'
+import { Signaling } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 

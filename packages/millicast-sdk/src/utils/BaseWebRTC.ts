@@ -1,6 +1,6 @@
 import Logger from '../Logger'
 import PeerConnection from '../PeerConnection'
-import Signaling from '../Signaling'
+import { Signaling } from '../Signaling'
 import Diagnostics from './Diagnostics'
 import { ILogger } from 'js-logger'
 import { MillicastDirectorResponse, ReconnectData } from '../types/BaseWebRTC.types'
@@ -128,9 +128,9 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
 
   /**
    * Reconnects to last broadcast.
-   * @fires BaseWebRTC#reconnect
-   * @param {ReconnectData} [data] - This object contains the error property. It may be expanded to contain more information in the future.
-   * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
+   * 
+   * @param data This object contains the error property. It may be expanded to contain more information in the future.
+   * @property error - The value sent in the first [reconnect event]{@link BaseWebRTCEvents.reconnect} within the error key of the payload
    */
   async reconnect(data?: ReconnectData) {
     try {

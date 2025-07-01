@@ -2,8 +2,22 @@ import { PublisherServerEvent, ViewerServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { LayerInfo } from './Viewer.types'
 
+/**
+ * Signaling Options
+ */
+export interface SignalingOptions {
+  /**
+   * Stream Name to subscribe to.
+   */
+  streamName: string | null;
+  /**
+   * WebSocket URL to signal the server and establish a WebRTC connection.
+   */
+  url: string;
+}
+
 /**  */
-export type SignalingSubscribeOptions = {
+export interface SignalingSubscribeOptions {
   /** Enable VAD multiplexing for secondary sources. */
   vad?: boolean;
   /** Id of the main source that will be received by the default MediaStream. */
@@ -21,7 +35,7 @@ export type SignalingSubscribeOptions = {
 }
 
 /**  */
-export type SignalingPublishOptions = {
+export interface SignalingPublishOptions {
   /** Codec for publish stream. */
   codec: VideoCodec;
   /** Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.** */

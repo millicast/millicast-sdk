@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-import Signaling from '../../src/Signaling'
+import { Signaling } from '../../src/Signaling'
 import './__mocks__/MockBrowser'
 import { WebSocket } from 'mock-socket'
 const feature = loadFeature('../features/ManageSignaling.feature', { loadRelativePath: true, errors: true })

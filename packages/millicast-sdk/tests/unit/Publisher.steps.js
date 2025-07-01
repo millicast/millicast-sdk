@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { Publisher } from '../../src/Publisher'
 import PeerConnection from '../../src/PeerConnection'
-import Signaling from '../../src/Signaling'
+import { Signaling } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'

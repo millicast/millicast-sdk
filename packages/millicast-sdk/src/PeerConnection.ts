@@ -1,4 +1,3 @@
-import EventEmitter from 'events'
 import reemit from 're-emitter'
 import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnectionStats'
 import SdpParser from './utils/SdpParser'
@@ -31,11 +30,8 @@ const localSDPOptions = {
 }
 
 /**
- * @class PeerConnection
- * @extends EventEmitter
- * @classdesc Manages WebRTC connection and SDP information between peers.
+ * Manages WebRTC connection and SDP information between peers.
  * @example const peerConnection = new PeerConnection()
- * @constructor
  */
 export default class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
   public mode: 'Publisher' | 'Viewer' | null

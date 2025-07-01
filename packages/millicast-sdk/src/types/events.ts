@@ -2,7 +2,7 @@ import { BaseWebRTC } from '../utils/BaseWebRTC';
 import { Publisher } from '../Publisher';
 import { Viewer } from '../Viewer';
 import PeerConnection from '../PeerConnection';
-import Signaling from '../Signaling';
+import { Signaling } from '../Signaling';
 import TransactionManager from 'transaction-manager';
 import { EncryptionParameters, TrackInfo } from './Viewer.types';
 import { EmittedEvents } from '../utils/TypedEventEmitter';
@@ -23,7 +23,7 @@ export interface PeerConnectionEvents extends EmittedEvents {
  */
 export interface SignalingEvents extends EmittedEvents {
   /**
-   * Connection success.
+   * WebSocket connection was successfully established with signaling server.
    */
   wsConnectionSuccess(event: {
     /** WebSocket object which represents active connection. */
@@ -32,8 +32,11 @@ export interface SignalingEvents extends EmittedEvents {
     tm: TransactionManager | null
   }): void;
 
-  /** Triggered when there is a web socket connection error. */
-  wsConnectionError(event: string): void;
+  /**
+   * Triggered when there is a web socket connection error.
+   * @param url URL of the web socket. 
+   */
+  wsConnectionError(url: string): void;
 
   /** Triggered when the web socket connection closes. */
   wsConnectionClose(): void;
@@ -177,7 +180,7 @@ export interface ReconnectEventPayload {
    * * `Signaling error: wsConnectionError` if there was an error in the Websocket connection.
    * * `Connection state change: RTCPeerConnectionState disconnected` if there was an error in the RTCPeerConnection.
    * * `Attempting to reconnect` if the reconnect was trigered externally.
-   * * Or any internal error thrown by either <a href="Publish#connect">Publish.connect</a> or <a href="View#connect">View.connect</a> methods
+   * * Or any internal error thrown by either {@link Publisher.connect}> or {@link Viewer.connect} methods
    */
   error: Error
 }
