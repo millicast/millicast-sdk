@@ -66,6 +66,7 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
   return statsObject
 }
 
+/** PeerConnection statistics. */
 export class PeerConnectionStats extends TypedEventEmitter<PeerConnectionStatsEvents> {
   #logger: ILogger;
   peer: RTCPeerConnection

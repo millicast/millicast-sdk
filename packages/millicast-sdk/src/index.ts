@@ -1,5 +1,5 @@
-import Logger from './Logger';
-export { Logger };
+import Logger, { LogLevel } from './Logger';
+export { Logger, LogLevel };
 
 /** @hidden */
 export * as Urls from './urls';
@@ -8,6 +8,9 @@ export * from './types/events';
 
 export * from './types/PeerConnection.types';
 export { PeerConnection } from './PeerConnection';
+
+export * from './types/stats.types';
+export * from './PeerConnectionStats';
 
 export * from './types/Signaling.types';
 export * from './Signaling';

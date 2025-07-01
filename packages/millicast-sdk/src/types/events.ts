@@ -2,6 +2,7 @@ import { BaseWebRTC } from '../utils/BaseWebRTC';
 import { Publisher } from '../Publisher';
 import { Viewer } from '../Viewer';
 import { PeerConnection } from '../PeerConnection';
+import { PeerConnectionStats } from '../PeerConnectionStats';
 import { Signaling } from '../Signaling';
 import TransactionManager from 'transaction-manager';
 import { EncryptionParameters, TrackInfo } from './Viewer.types';
@@ -9,7 +10,7 @@ import { EmittedEvents } from '../utils/TypedEventEmitter';
 import { ConnectionStats } from './stats.types';
 
 /**
- * Events triggered by the {@link PeerConnectionStats} classe.
+ * Events triggered by the {@link PeerConnectionStats} class.
  */
 export interface PeerConnectionStatsEvents extends EmittedEvents {
   /** Triggered when a new track is available. */
@@ -17,7 +18,7 @@ export interface PeerConnectionStatsEvents extends EmittedEvents {
 }
 
 /**
- * Events triggered by the {@link PeerConnection} classe.
+ * Events triggered by the {@link PeerConnection} class.
  */
 export interface PeerConnectionEvents extends PeerConnectionStatsEvents, EmittedEvents {
   /** Triggered when a new track is available. */
@@ -28,7 +29,7 @@ export interface PeerConnectionEvents extends PeerConnectionStatsEvents, Emitted
 }
 
 /**
- * Events triggered by the {@link Signaling} classe.
+ * Events triggered by the {@link Signaling} class.
  */
 export interface SignalingEvents extends EmittedEvents {
   /**
