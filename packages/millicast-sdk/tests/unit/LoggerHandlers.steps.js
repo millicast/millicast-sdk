@@ -35,7 +35,7 @@ defineFeature(feature, (test) => {
     })
 
     then('custom handler does not receive any message', async () => {
-      expect(handler).not.toBeCalled()
+      expect(handler).not.toHaveBeenCalled()
     })
   })
 
