@@ -385,7 +385,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
             try {
               const json: SEIUserUnregisteredData = JSON.parse(content)
               metadata.unregistered = json
-            } catch (e) {
+            } catch {
               // was not a JSON, just return the raw bytes (i.e. do nothing)
               this.logger.info('The content could not be converted to JSON, returning raw bytes instead')
             }

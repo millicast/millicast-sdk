@@ -26,6 +26,7 @@ const isObject = (value: unknown) => typeof value === 'object' && value !== null
 const isSupporedVideoCodec = (value: unknown): value is VideoCodec =>
   Object.values(VideoCodec).includes(value as VideoCodec)
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function validatePublishConnectOptions(obj: any): {
   error?: ValidationError
   value: PublishConnectOptions

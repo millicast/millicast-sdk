@@ -51,6 +51,7 @@ class MillicastViewTest {
       })
     } catch (error) {
       console.log('There was an error while trying to connect with the publisher')
+      console.error(error)
       this.millicastView.reconnect()
     }
   }

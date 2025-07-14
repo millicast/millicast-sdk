@@ -69,7 +69,6 @@ const createDefaultHandler = jsLogger.createDefaultHandler as (
   options?: CreateDefaultHandlerOptions
 ) => ILogHandler
 
-
 /**
  * Manages all log messages from SDK modules, you can use this logger to add your custom
  * messages and set your custom log handlers to forward all messages to your own monitoring
@@ -300,4 +299,4 @@ const Logger = {
   VERSION: version,
 }
 
-export default Logger
+export default Logger;

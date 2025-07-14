@@ -1,6 +1,7 @@
 import { PublisherServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PeerConnection } from '../PeerConnection'
 
 /**

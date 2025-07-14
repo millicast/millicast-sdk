@@ -79,50 +79,53 @@ export class Signaling extends TypedEventEmitter<SignalingEvents> {
 
       this.webSocket.onopen = () => {
         this.#logger.info('WebSocket opened')
-        this.#transactionManager &&
-          this.#transactionManager.on('event', (evt: TransactionManager.Event) => {
-            const data: any = evt.data;
-            switch (evt.name) {
-              case 'active':
-                const activePayload: ActiveEventPayload = {
-                  streamId: data.streamId,
-                  sourceId: data.sourceId,
-                  tracks: data.tracks,
-                  encryption: data.encryption,
-                };
-                this.emit('active', activePayload);
-                return;
-              case 'inactive':
-                const inactivePayload: InactiveEventPayload = {
-                  streamId: data.streamId,
-                  sourceId: data.sourceId,
-                };
-                this.emit('inactive', inactivePayload);
-                return;
-              case 'viewercount':
-                this.emit('viewercount', data.viewerCount);
-                return;
-              case 'migrate':
-                this.emit('migrate');
-                return;
-              case 'updated':
-                this.emit('updated');
-                return;
-              case 'stopped':
-                this.emit('stopped');
-                return;
-              case 'vad':
-                this.emit('vad');
-                return;
-              case 'layers':
-                const layersPayload = data as LayersEventPayload;
-                this.emit('layers', layersPayload);
-                return;
-              default:
-                break
+        this.#transactionManager?.on('event', (evt: TransactionManager.Event) => {
+          /* eslint-disable @typescript-eslint/no-explicit-any */
+          const data: any = evt.data;
+          switch (evt.name) {
+            case 'active': {
+              const activePayload: ActiveEventPayload = {
+                streamId: data.streamId,
+                sourceId: data.sourceId,
+                tracks: data.tracks,
+                encryption: data.encryption,
+              };
+              this.emit('active', activePayload);
+              return;
             }
-            this.#logger.info('The following event was not properly understood', evt);
-          });
+            case 'inactive': {
+              const inactivePayload: InactiveEventPayload = {
+                streamId: data.streamId,
+                sourceId: data.sourceId,
+              };
+              this.emit('inactive', inactivePayload);
+              return;
+            }
+            case 'viewercount':
+              this.emit('viewercount', data.viewerCount);
+              return;
+            case 'migrate':
+              this.emit('migrate');
+              return;
+            case 'updated':
+              this.emit('updated');
+              return;
+            case 'stopped':
+              this.emit('stopped');
+              return;
+            case 'vad':
+              this.emit('vad');
+              return;
+            case 'layers': {
+              const layersPayload = data as LayersEventPayload;
+              this.emit('layers', layersPayload);
+              return;
+            }
+            default:
+              break
+          }
+          this.#logger.info('The following event was not properly understood', evt);
+        });
 
         if (this.webSocket) {
           this.#logger.info('Connected to server: ', this.webSocket.url)
@@ -182,7 +185,7 @@ export class Signaling extends TypedEventEmitter<SignalingEvents> {
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
 
-    let data: ViewCmd = {
+    const data: ViewCmd = {
       sdp,
     }
 

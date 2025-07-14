@@ -1,5 +1,5 @@
-import Logger, { LogLevel } from './Logger';
-export { Logger, LogLevel };
+import Logger from './Logger';
+export { Logger};
 
 /** @hidden */
 export * as Urls from './urls';

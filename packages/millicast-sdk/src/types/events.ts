@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { BaseWebRTC } from '../utils/BaseWebRTC';
 import { Publisher } from '../Publisher';
 import { Viewer } from '../Viewer';
@@ -8,6 +9,7 @@ import TransactionManager from 'transaction-manager';
 import { EncryptionParameters, TrackInfo } from './Viewer.types';
 import { EmittedEvents } from '../utils/TypedEventEmitter';
 import { ConnectionStats } from './stats.types';
+/* eslint-enable */
 
 /**
  * Events triggered by the {@link PeerConnectionStats} class.

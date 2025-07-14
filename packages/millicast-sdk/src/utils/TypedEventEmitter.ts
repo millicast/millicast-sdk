@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 
-export interface EmittedEvents extends Record<string | symbol, (...args: any) => any> {
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type EmittedEvents = Record<string | symbol, (...args: any) => any>;
 
 export interface TypedEventEmitter<TEvents extends EmittedEvents> {
   /**
@@ -20,4 +20,6 @@ export interface TypedEventEmitter<TEvents extends EmittedEvents> {
   emit<N extends keyof TEvents>(eventName: N, ...args: Parameters<TEvents[N]>): boolean;
 }
 
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export class TypedEventEmitter<TEvents extends EmittedEvents> extends EventEmitter {};
