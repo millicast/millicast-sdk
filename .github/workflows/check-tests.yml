@@ -23,7 +23,7 @@ jobs:
       - name: Check Linter and Build 📑
         run: |
           npm run build
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+          npm run lint
 
   unit-test:
     runs-on: ubuntu-latest
