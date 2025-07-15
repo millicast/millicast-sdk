@@ -72,7 +72,7 @@ defineFeature(feature, (test) => {
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
 
       videoFrame1 = await viewerPage.evaluate('getVideoPixelSums()')
-      await viewerPage.waitForTimeout(500)
+      await new Promise((resolve) => setTimeout(resolve, 500));
       videoFrame2 = await viewerPage.evaluate('getVideoPixelSums()')
     })
 
