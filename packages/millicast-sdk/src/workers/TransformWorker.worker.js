@@ -38,6 +38,7 @@ function createReceiverTransform (mid) {
 function isVideoFrame (frame) {
   if (typeof RTCEncodedVideoFrame !== 'undefined') {
     try {
+      // eslint-disable-next-line no-undef
       if (frame instanceof RTCEncodedVideoFrame) {
         return true
       }
@@ -87,7 +88,6 @@ function createSenderTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      // eslint-disable-next-line no-undef
       if (isVideoFrame(encodedFrame)) {
         const frameMetadata = encodedFrame.getMetadata()
         const newSyncSource = frameMetadata.synchronizationSource

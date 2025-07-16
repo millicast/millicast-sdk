@@ -17,8 +17,5 @@ module.exports = {
       version: 24
     }
   },
-  extends: 'standard',
-  globals: {
-    RTCEncodedVideoFrame: true
-  }
+  extends: 'standard'
 }
