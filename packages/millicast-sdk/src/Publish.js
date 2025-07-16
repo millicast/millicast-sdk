@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode'
 import reemit from 're-emitter'
 import { atob } from 'Base64'
-import joi from 'joi'
+import * as v from 'valibot'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
@@ -72,7 +72,7 @@ export default class Publish extends BaseWebRTC {
    * @param {Boolean} [options.simulcast = false] - Enable simulcast. **Only available in Chromium based browsers and with H.264 or VP8 video codecs.**
    * @param {String} [options.scalabilityMode = null] - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
-   * @param {RTCConfiguration} [options.peerConfig = null] - Options to configure the new RTCPeerConnection.
+   * @param {PeerConnectionConfig} [options.peerConfig = null] - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record = false ] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
    * @param {Array<String>} [options.events = null] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    * @param {Number} [options.priority = null] - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
@@ -107,32 +107,7 @@ export default class Publish extends BaseWebRTC {
    * }
    */
   async connect (options = connectOptions) {
-    const schema = joi.object({
-      sourceId: joi.string(),
-      stereo: joi.boolean(),
-      dtx: joi.boolean(),
-      absCaptureTime: joi.boolean(),
-      dependencyDescriptor: joi.boolean(),
-      mediaStream: joi
-        .alternatives()
-        .try(
-          joi.array().items(joi.object()),
-          joi.object()
-        ),
-      bandwidth: joi.number(),
-      metadata: joi.boolean(),
-      disableVideo: joi.boolean(),
-      disableAudio: joi.boolean(),
-      codec: joi.string().valid(...Object.values(VideoCodec)),
-      simulcast: joi.boolean(),
-      scalabilityMode: joi.string(),
-      peerConfig: joi.object(),
-      record: joi.boolean(),
-      events: joi.array().items(joi.string().valid('active', 'inactive', 'viewercount')),
-      priority: joi.number()
-    })
-    const { error, value } = schema.validate(options)
-    if (error) logger.warn(error, value)
+    validateConnectOptions(options)
     this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
     this.options.metadata =
       this.options.metadata &&
@@ -336,3 +311,32 @@ export default class Publish extends BaseWebRTC {
     }
   }
 };
+
+let connectOptionsSchema
+
+const validateConnectOptions = options => {
+  connectOptionsSchema = connectOptionsSchema || v.looseObject({
+    sourceId: v.nullish(v.string()),
+    stereo: v.nullish(v.boolean()),
+    dtx: v.nullish(v.boolean()),
+    absCaptureTime: v.nullish(v.boolean()),
+    dependencyDescriptor: v.nullish(v.boolean()),
+    mediaStream: v.nullish(v.union([v.array(v.unknown()), v.unknown()])),
+    bandwidth: v.nullish(v.number()),
+    metadata: v.nullish(v.boolean()),
+    disableVideo: v.nullish(v.boolean()),
+    disableAudio: v.nullish(v.boolean()),
+    codec: v.nullish(v.picklist(Object.values(VideoCodec))),
+    simulcast: v.nullish(v.boolean()),
+    scalabilityMode: v.nullish(v.string()),
+    peerConfig: v.nullish(v.looseObject({
+      autoInitStats: v.nullish(v.boolean()),
+      statsIntervalMs: v.nullish(v.number())
+    })),
+    record: v.nullish(v.boolean()),
+    events: v.nullish(v.array(v.picklist(['active', 'inactive', 'viewercount']))),
+    priority: v.nullish(v.number())
+  })
+  const { success, issues } = v.safeParse(connectOptionsSchema, options)
+  if (!success) logger.warn(new v.ValiError(issues), options)
+}
