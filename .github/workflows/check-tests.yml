@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install the dependencies 🧱
         run: npm ci
-      - name: Check Linter and Build 📑
+      - name: Build and Check Linter 📑
         run: |
           npm run build
           npm run lint
@@ -54,5 +54,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install the dependencies 🧱
         run: npm ci
-      - name: build docs
+      - name: Build documentation 📖
         run: npm run build-docs

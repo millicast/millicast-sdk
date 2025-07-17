@@ -6,8 +6,6 @@
         "cacheableOperations": [
           "build",
           "test",
-          "lint",
-          "lint:format",
           "prepare",
           "build-docs",
           "test-unit",
@@ -22,8 +20,6 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
@@ -97,12 +93,6 @@
       }
     },
     {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    },
-    {
       "plugin": "@nx/jest/plugin",
       "options": {
         "targetName": "test"
@@ -112,7 +102,6 @@
   "generators": {
     "@nx/web:application": {
       "style": "css",
-      "linter": "eslint",
       "unitTestRunner": "jest",
       "e2eTestRunner": "none"
     }

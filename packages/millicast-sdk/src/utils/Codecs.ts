@@ -1,5 +1,3 @@
-/* eslint-disable no-new-wrappers */
-/* eslint-disable camelcase */
 import { AudioCodec, PictureParameterSet, SequenceParameterSet, VUIParameters } from '../types/Codecs.types'
 import BitStreamReader from './BitStreamReader'
 import { VideoCodec } from '../types/Codecs.types'

@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 module.exports = (request, options) => {
   // Remove any query parameters in the request path
   // (e.g. ?worker, which Vite uses for worker imports)

@@ -23,7 +23,6 @@ function createReceiverTransform(mid: string) {
       // This function is intentionally left empty
     },
     async transform(encodedFrame: RTCEncodedVideoFrame, controller) {
-      // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const payloadType = encodedFrame.getMetadata().payloadType
         const frameCodec = payloadType ? payloadTypeCodec[payloadType].toLowerCase() : codec
@@ -80,7 +79,6 @@ function createSenderTransform(): TransformStream {
       // This function is intentionally left empty
     },
     async transform(encodedFrame: RTCEncodedVideoFrame, controller) {
-      // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
         const newSyncSource = frameMetadata.synchronizationSource as number
@@ -117,7 +115,6 @@ function setupPipe(
   readable.pipeThrough(transform).pipeTo(writable)
 }
 
-// eslint-disable-next-line no-undef
 addEventListener('rtctransform', (event: unknown) => {
   const transformEvent = event as TransformEvent
   let transform: TransformStream
