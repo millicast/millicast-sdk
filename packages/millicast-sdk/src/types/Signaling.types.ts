@@ -1,6 +1,6 @@
-import { PublisherServerEvent, ViewerServerEvent } from './BaseWebRTC.types'
-import { VideoCodec } from './Codecs.types'
-import { LayerInfo } from './Viewer.types'
+import { PublisherServerEvent, ViewerServerEvent } from './BaseWebRTC.types';
+import { VideoCodec } from './Codecs.types';
+import { LayerInfo } from './Viewer.types';
 
 /**
  * Signaling Options
@@ -44,38 +44,38 @@ export interface SignalingPublishOptions {
   sourceId?: string | null;
   /** Override which events will be delivered by the server ("active" | "inactive"). */
   events?: PublisherServerEvent[];
-  intraOnlyForwarding?: boolean
-  priority?: number
-  simulcastId?: string
-  live?: boolean
-  vod?: boolean
-  norestream?: boolean
-  overrideBWE?: number
-  disableVideo?: boolean
-  disableAudio?: boolean
+  intraOnlyForwarding?: boolean;
+  priority?: number;
+  simulcastId?: string;
+  live?: boolean;
+  vod?: boolean;
+  norestream?: boolean;
+  overrideBWE?: number;
+  disableVideo?: boolean;
+  disableAudio?: boolean;
 }
 
 export type ViewCmd = SignalingSubscribeOptions & {
-  sdp: string
-}
+  sdp: string;
+};
 
 export type ViewResponse = {
-  sdp: string
-  subscriberId: string
-  clusterId: string
-  streamId: string
-  streamViewId: string
-}
+  sdp: string;
+  subscriberId: string;
+  clusterId: string;
+  streamId: string;
+  streamViewId: string;
+};
 
 export type PublishCmd = SignalingPublishOptions & {
-  sdp: string
-}
+  sdp: string;
+};
 
 export type PublishResponse = {
-  uuid: string
-  feedId: string
-  publisherId: string
-  clusterId: string
-  streamId: string
-  sdp: string
-}
+  uuid: string;
+  feedId: string;
+  publisherId: string;
+  clusterId: string;
+  streamId: string;
+  sdp: string;
+};

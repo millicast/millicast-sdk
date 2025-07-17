@@ -1,8 +1,8 @@
-import { PublisherServerEvent } from './BaseWebRTC.types'
-import { VideoCodec } from './Codecs.types'
-import { PeerConnectionConfig } from './PeerConnection.types'
+import { PublisherServerEvent } from './BaseWebRTC.types';
+import { VideoCodec } from './Codecs.types';
+import { PeerConnectionConfig } from './PeerConnection.types';
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PeerConnection } from '../PeerConnection'
+import { PeerConnection } from '../PeerConnection';
 
 /**
  * Publisher Options
@@ -11,16 +11,16 @@ export interface PublisherOptions {
   /**
    * Millicast publisher Stream Name.
    */
-  streamName: string
+  streamName: string;
   /**
    * Publish token.
    */
-  publishToken: string
+  publishToken: string;
   /**
    * Enable auto reconnect in case of disconnection.
    * @default true
    */
-  autoReconnect?: boolean
+  autoReconnect?: boolean;
 }
 
 /**
@@ -55,58 +55,58 @@ export interface PublishConnectOptions {
   /**
    * - Broadcast bandwidth. 0 for unlimited.
    */
-  bandwidth?: number
+  bandwidth?: number;
   /**
    * - Enable metadata insertion. This feature is only supported with the H.264 codec.
    */
-  metadata?: boolean
+  metadata?: boolean;
   /**
-   * - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+   * - Number of audio tracks to receive VAD multiplexed audio for secondary sources.
    */
-  multiplexedAudioTracks?: number
+  multiplexedAudioTracks?: number;
   /**
    * - Disable the opportunity to send video stream.
    */
-  disableVideo?: boolean
+  disableVideo?: boolean;
   /**
    * - Disable the opportunity to send audio stream.
    */
-  disableAudio?: boolean
+  disableAudio?: boolean;
   /**
    * - Codec for publish stream.
    */
-  codec?: VideoCodec
+  codec?: VideoCodec;
   /**
    * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
    */
-  simulcast?: boolean
+  simulcast?: boolean;
   /**
    * - Selected scalability mode. You can get the available capabilities using {@link PeerConnection.getCapabilities} method.
    * **Only available in Google Chrome.**
    */
-  scalabilityMode?: string | null
+  scalabilityMode?: string | null;
   /**
    * - Options to configure the new RTCPeerConnection.
    */
-  peerConfig?: PeerConnectionConfig
+  peerConfig?: PeerConnectionConfig;
   /**
    * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
    */
-  record?: boolean
+  record?: boolean;
   /**
    * - Enable Drm
    */
-  enableDRM?: boolean
+  enableDRM?: boolean;
   /**
    * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    */
-  events?: PublisherServerEvent[]
+  events?: PublisherServerEvent[];
   /**
    * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    */
-  priority?: number
+  priority?: number;
   /**
    * TODO
    */
-  setSDPToPeer?: boolean
+  setSDPToPeer?: boolean;
 }

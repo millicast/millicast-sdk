@@ -1,5 +1,5 @@
 import Logger from './Logger';
-export { Logger};
+export { Logger };
 
 /** @hidden */
 export * as Urls from './urls';

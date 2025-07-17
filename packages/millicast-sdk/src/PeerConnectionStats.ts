@@ -1,11 +1,11 @@
-import Logger from './Logger'
-import Diagnostics from './utils/Diagnostics'
-import { OnStats, WebRTCStats } from '@dolbyio/webrtc-stats'
-import { PeerConnectionConfig } from './types/PeerConnection.types'
-import { ConnectionStats } from './types/stats.types'
-import { ILogger } from 'js-logger'
-import { PeerConnectionStatsEvents } from './types/events'
-import { TypedEventEmitter } from './utils/TypedEventEmitter'
+import Logger from './Logger';
+import Diagnostics from './utils/Diagnostics';
+import { OnStats, WebRTCStats } from '@dolbyio/webrtc-stats';
+import { PeerConnectionConfig } from './types/PeerConnection.types';
+import { ConnectionStats } from './types/stats.types';
+import { ILogger } from 'js-logger';
+import { PeerConnectionStatsEvents } from './types/events';
+import { TypedEventEmitter } from './utils/TypedEventEmitter';
 
 /**
  * Parses incoming WebRTC statistics
@@ -16,7 +16,7 @@ import { TypedEventEmitter } from './utils/TypedEventEmitter'
  */
 const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  const { input, output, rawStats, ...filteredStats } = webRTCStats
+  const { input, output, rawStats, ...filteredStats } = webRTCStats;
   const statsObject: ConnectionStats = {
     ...filteredStats,
     audio: {
@@ -62,31 +62,31 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
       })),
     },
     raw: webRTCStats.rawStats,
-  }
-  return statsObject
-}
+  };
+  return statsObject;
+};
 
 /** PeerConnection statistics. */
 export class PeerConnectionStats extends TypedEventEmitter<PeerConnectionStatsEvents> {
   #logger: ILogger;
-  peer: RTCPeerConnection
-  collection: WebRTCStats | null
-  initialized: boolean
+  peer: RTCPeerConnection;
+  collection: WebRTCStats | null;
+  initialized: boolean;
 
   constructor(
     peer: RTCPeerConnection,
     options: PeerConnectionConfig = { statsIntervalMs: 1000, autoInitStats: true }
   ) {
-    super()
+    super();
 
     this.#logger = Logger.get('PeerConnectionStats');
     this.#logger.setLevel(Logger.DEBUG);
 
-    this.peer = peer
-    this.collection = null
-    this.initialized = false
+    this.peer = peer;
+    this.collection = null;
+    this.initialized = false;
     if (options.autoInitStats && options.statsIntervalMs) {
-      this.init(options.statsIntervalMs)
+      this.init(options.statsIntervalMs);
     }
   }
 
@@ -97,20 +97,22 @@ export class PeerConnectionStats extends TypedEventEmitter<PeerConnectionStatsEv
    */
   public init(statsIntervalMs: number) {
     if (this.initialized) {
-      this.#logger.warn('PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.');
+      this.#logger.warn(
+        'PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.'
+      );
       return;
     }
 
-    this.#logger.info('Initializing peer connection stats')
-    const peer = this.peer
+    this.#logger.info('Initializing peer connection stats');
+    const peer = this.peer;
     try {
       this.collection = new WebRTCStats({
         getStatsInterval: statsIntervalMs,
         getStats: () => {
-          return peer.getStats()
+          return peer.getStats();
         },
         includeRawStats: true,
-      })
+      });
 
       this.collection.on('stats', (stats) => {
         const parsedStats = parseWebRTCStats(stats);
@@ -120,7 +122,7 @@ export class PeerConnectionStats extends TypedEventEmitter<PeerConnectionStatsEv
       this.collection.start();
       this.initialized = true;
     } catch (e) {
-      this.#logger.error(e)
+      this.#logger.error(e);
     }
   }
 

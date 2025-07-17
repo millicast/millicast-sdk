@@ -7,14 +7,15 @@
     "millicast",
     "webrtc",
     "realtime",
-    "streaming"
+    "streaming",
+    "dolby",
+    "optiview"
   ],
   "main": "./millicast.mjs",
   "module": "./millicast.mjs",
   "typings": "./index.d.ts",
   "files": [
-    "dist",
-    "scripts"
+    "dist"
   ],
   "watch": {
     "build-docs": {
@@ -27,6 +28,7 @@
   "scripts": {
     "build": "nx build @millicast/sdk",
     "build-docs": "typedoc",
+    "pretty": "npx prettier . --write",
     "lint": "eslint .",
     "lint-fix": "eslint . --ext .js,.ts --fix",
     "start-docs": "npm run build-docs && serve docs & npm-watch",

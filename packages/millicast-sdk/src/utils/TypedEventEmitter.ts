@@ -1,4 +1,4 @@
-import EventEmitter from 'events'
+import EventEmitter from 'events';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type EmittedEvents = Record<string | symbol, (...args: any) => any>;
@@ -22,4 +22,4 @@ export interface TypedEventEmitter<TEvents extends EmittedEvents> {
 
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-export class TypedEventEmitter<TEvents extends EmittedEvents> extends EventEmitter {};
+export class TypedEventEmitter<TEvents extends EmittedEvents> extends EventEmitter {}

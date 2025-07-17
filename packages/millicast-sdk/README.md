@@ -54,8 +54,8 @@ In vanilla JavaScript:
 
   <body>
     <script type="module">
-      const yourPublishingToken = '...'
-      const yourStreamName = '...'
+      const yourPublishingToken = '...';
+      const yourStreamName = '...';
 
       // Create a new instance
       const millicastPublisher = new millicast.Publisher({
@@ -109,13 +109,13 @@ In vanilla JavaScript:
       const yourStreamAccountId = '...'
 
       // Create a new instance
-      const millicastViewer = new millicast.View(er{
+      const viewer = new millicast.Viewer({
         streamName: yourStreamName,
         streamAccountId: yourStreamAccountId,
       });
 
       // Listen to the track event to receive the streams from the publisher.
-      millicastViewer.on('track', (event) => {
+      viewer.on('track', (event) => {
         video.srcObject = event.streams[0]);
       });
 

@@ -18,6 +18,7 @@
   "scripts": {
     "build": "nx build @millicast/sdk",
     "build-docs": "nx build-docs @millicast/sdk",
+    "pretty": "npm run pretty --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "lint-fix": "npm run lint-fix --workspaces --if-present",
     "start": "nx run-many -t serve --parallel --maxParallel=100",

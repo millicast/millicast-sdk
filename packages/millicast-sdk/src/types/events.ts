@@ -39,14 +39,14 @@ export interface SignalingEvents extends EmittedEvents {
    */
   wsConnectionSuccess(event: {
     /** WebSocket object which represents active connection. */
-    ws: WebSocket,
+    ws: WebSocket;
     /** [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands. */
-    tm: TransactionManager | null
+    tm: TransactionManager | null;
   }): void;
 
   /**
    * Triggered when there is a web socket connection error.
-   * @param url URL of the web socket. 
+   * @param url URL of the web socket.
    */
   wsConnectionError(url: string): void;
 
@@ -70,7 +70,7 @@ export interface SignalingEvents extends EmittedEvents {
 
   /** Triggered when an active stream's tracks are updated. */
   updated(): void;
-  
+
   /**
    * Fires when the live stream is, or has started broadcasting.
    * @param obj event payload.
@@ -133,9 +133,7 @@ export interface BaseWebRTCEvents extends EmittedEvents {
 /**
  * Events triggered by the {@link Publisher} class.
  */
-export interface PublisherEvents extends PeerConnectionEvents, SignalingEvents, BaseWebRTCEvents {
-
-}
+export interface PublisherEvents extends PeerConnectionEvents, SignalingEvents, BaseWebRTCEvents {}
 
 /**
  * Events triggered by the {@link Viewer} class.
@@ -186,7 +184,7 @@ export type SEIUserUnregisteredData = string | object | number;
 /** Event payload triggered by {@link BaseWebRTCEvents.reconnect}. */
 export interface ReconnectEventPayload {
   /** Next retry interval in milliseconds. */
-  timeout: number,
+  timeout: number;
   /**
    * Error object with cause of failure. Possible errors are:
    * * `Signaling error: wsConnectionError` if there was an error in the Websocket connection.
@@ -194,7 +192,7 @@ export interface ReconnectEventPayload {
    * * `Attempting to reconnect` if the reconnect was trigered externally.
    * * Or any internal error thrown by either {@link Publisher.connect}> or {@link Viewer.connect} methods
    */
-  error: Error
+  error: Error;
 }
 
 /** Event payload triggered by {@link BaseWebRTCEvents.active}. */
@@ -219,37 +217,37 @@ export interface InactiveEventPayload {
 
 /** Event payload triggered by {@link BaseWebRTCEvents.inactive}. */
 export interface LayersEventPayload {
-  medias: LayersMediaCollection
+  medias: LayersMediaCollection;
 }
 
 /** */
 export interface LayersMediaCollection {
-  [key: string]: LayerMedia
+  [key: string]: LayerMedia;
 }
 
 /** */
 export interface LayerMedia {
-  active: Array<LayerMediaInfo>
-  inactive: Array<LayerMediaInfo>
-  layers: Array<Layer>
+  active: Array<LayerMediaInfo>;
+  inactive: Array<LayerMediaInfo>;
+  layers: Array<Layer>;
 }
 
 /** */
 export interface LayerMediaInfo {
-  id: string
-  simulcastIdx: number
-  totalBytes: number
-  numPackets: number
-  bitrate: number
-  totalBitrate: number
-  width: number
-  height: number
-  layers: Array<Layer>
+  id: string;
+  simulcastIdx: number;
+  totalBytes: number;
+  numPackets: number;
+  bitrate: number;
+  totalBitrate: number;
+  width: number;
+  height: number;
+  layers: Array<Layer>;
 }
 
 /** */
 export interface Layer extends Omit<LayerMediaInfo, 'id' | 'layers'> {
-  encodingId: string
-  spatialLayerId: number
-  temporalLayerId: number
+  encodingId: string;
+  spatialLayerId: number;
+  temporalLayerId: number;
 }
