@@ -13,4 +13,4 @@ export default {
   resolver: './jest_resolver.js',
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/packages/millicast-sdk',
-}
+};

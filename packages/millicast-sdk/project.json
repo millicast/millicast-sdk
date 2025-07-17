@@ -9,7 +9,7 @@
       "executor": "@nx/vite:build",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/millicast-sdk",
+        "outputPath": "packages/millicast-sdk/dist",
         "main": "packages/millicast-sdk/src/index.ts",
         "tsConfig": "packages/millicast-sdk/tsconfig.lib.json",
         "assets": ["packages/millicast-sdk/*.md"]

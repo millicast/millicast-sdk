@@ -1,16 +1,16 @@
-import { Publish } from '@nx-millicast/millicast-sdk'
+import { PublishConnectOptions, Publisher, PublisherOptions } from '@nx-millicast/millicast-sdk'
 import MillicastMedia from './MillicastMedia'
-import { PublishConnectOptions } from 'packages/millicast-sdk/src/types/Publish.types'
+import { MillicastMediaOptions } from '../types/MillicastMedia.types'
 
-export default class MillicastPublishUserMedia extends Publish {
+export default class MillicastPublishUserMedia extends Publisher {
   mediaManager: MillicastMedia
-  constructor(options, tokenGenerator, autoReconnect) {
-    super(tokenGenerator, autoReconnect)
-    this.mediaManager = new MillicastMedia(options)
+  constructor(opts: MillicastMediaOptions, options: PublisherOptions) {
+    super(options)
+    this.mediaManager = new MillicastMedia(opts)
   }
 
-  static async build(options, tokenGenerator, autoReconnect = true) {
-    const instance = new MillicastPublishUserMedia(options, tokenGenerator, autoReconnect)
+  static async build(opts: MillicastMediaOptions, options: PublisherOptions) {
+    const instance = new MillicastPublishUserMedia(opts, options)
     await instance.getMediaStream()
     return instance
   }

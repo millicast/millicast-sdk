@@ -15,10 +15,45 @@ Feature: As a developer I want to manage signaling to Millicast Server so I can 
     When I want to connect to no responding server
     Then fires a connectionError event
 
-  Scenario: Receive broadcast events from server
+  Scenario: Receive active event from server
     Given I am connected to server
-    When the server send a broadcast event
-    Then fires a broadcastEvent event
+    When the server send an active event
+    Then fires an active event
+
+  Scenario: Receive inactive event from server
+    Given I am connected to server
+    When the server send an inactive event
+    Then fires an inactive event
+
+  Scenario: Receive viewercount event from server
+    Given I am connected to server
+    When the server send an viewercount event
+    Then fires an viewercount event
+
+  Scenario: Receive migrate event from server
+    Given I am connected to server
+    When the server send an migrate event
+    Then fires an migrate event
+
+  Scenario: Receive updated event from server
+    Given I am connected to server
+    When the server send an updated event
+    Then fires an updated event
+
+  Scenario: Receive stopped event from server
+    Given I am connected to server
+    When the server send an stopped event
+    Then fires an stopped event
+
+  Scenario: Receive vad event from server
+    Given I am connected to server
+    When the server send an vad event
+    Then fires an vad event
+
+  Scenario: Receive layers event from server
+    Given I am connected to server
+    When the server send an layers event
+    Then fires an layers event
 
   Scenario: Close existing server connection
     Given I am connected to server

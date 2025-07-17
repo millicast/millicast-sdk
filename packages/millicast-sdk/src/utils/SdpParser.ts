@@ -1,38 +1,38 @@
-import { SDPInfo, MediaInfo, Direction } from 'semantic-sdp'
-import Logger from '../Logger'
-import UserAgent from './UserAgent'
+import { SDPInfo, MediaInfo, Direction } from 'semantic-sdp';
+import Logger from '../Logger';
+import UserAgent from './UserAgent';
 
-const logger = Logger.get('SdpParser')
+const logger = Logger.get('SdpParser');
 
-const firstPayloadTypeLowerRange = 35
-const lastPayloadTypeLowerRange = 65
+const firstPayloadTypeLowerRange = 35;
+const lastPayloadTypeLowerRange = 65;
 
-const firstPayloadTypeUpperRange = 96
-const lastPayloadTypeUpperRange = 127
+const firstPayloadTypeUpperRange = 96;
+const lastPayloadTypeUpperRange = 127;
 
 const payloadTypeLowerRange = Array.from(
   { length: lastPayloadTypeLowerRange - firstPayloadTypeLowerRange + 1 },
   (_, i) => i + firstPayloadTypeLowerRange
-)
+);
 const payloadTypeUppperRange = Array.from(
   { length: lastPayloadTypeUpperRange - firstPayloadTypeUpperRange + 1 },
   (_, i) => i + firstPayloadTypeUpperRange
-)
+);
 
-const firstHeaderExtensionIdLowerRange = 1
-const lastHeaderExtensionIdLowerRange = 14
+const firstHeaderExtensionIdLowerRange = 1;
+const lastHeaderExtensionIdLowerRange = 14;
 
-const firstHeaderExtensionIdUpperRange = 16
-const lastHeaderExtensionIdUpperRange = 255
+const firstHeaderExtensionIdUpperRange = 16;
+const lastHeaderExtensionIdUpperRange = 255;
 
 const headerExtensionIdLowerRange = Array.from(
   { length: lastHeaderExtensionIdLowerRange - firstHeaderExtensionIdLowerRange + 1 },
   (_, i) => i + firstHeaderExtensionIdLowerRange
-)
+);
 const headerExtensionIdUppperRange = Array.from(
   { length: lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange + 1 },
   (_, i) => i + firstHeaderExtensionIdUpperRange
-)
+);
 
 /**
  * @module SdpParser
@@ -48,11 +48,11 @@ const SdpParser = {
    * @example SdpParser.setStereo(sdp)
    */
   setStereo(sdp = ''): string {
-    logger.info('Replacing SDP response for support stereo')
-    sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1; stereo=1')
-    logger.info('Replaced SDP response for support stereo')
-    logger.debug('New SDP value: ', sdp)
-    return sdp
+    logger.info('Replacing SDP response for support stereo');
+    sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1; stereo=1');
+    logger.info('Replaced SDP response for support stereo');
+    logger.debug('New SDP value: ', sdp);
+    return sdp;
   },
 
   /**
@@ -64,11 +64,11 @@ const SdpParser = {
    * @example SdpParser.setDTX(sdp)
    */
   setDTX(sdp = ''): string {
-    logger.info('Replacing SDP response for support dtx')
-    sdp = sdp.replace('useinbandfec=1', 'useinbandfec=1; usedtx=1')
-    logger.info('Replaced SDP response for support dtx')
-    logger.debug('New SDP value: ', sdp)
-    return sdp
+    logger.info('Replacing SDP response for support dtx');
+    sdp = sdp.replace('useinbandfec=1', 'useinbandfec=1; usedtx=1');
+    logger.info('Replaced SDP response for support dtx');
+    logger.debug('New SDP value: ', sdp);
+    return sdp;
   },
 
   /**
@@ -80,17 +80,17 @@ const SdpParser = {
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
   setAbsoluteCaptureTime(sdp = ''): string {
-    const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
-    const header = 'a=extmap:' + id + ' http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n'
+    const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0];
+    const header = 'a=extmap:' + id + ' http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time\r\n';
 
-    const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm
+    const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm;
 
-    sdp = sdp.replace(regex, (_match, p1, p2) => p1 + header + p2)
+    sdp = sdp.replace(regex, (_match, p1, p2) => p1 + header + p2);
 
-    logger.info('Replaced SDP response for setting absolute capture time')
-    logger.debug('New SDP value: ', sdp)
+    logger.info('Replaced SDP response for setting absolute capture time');
+    logger.debug('New SDP value: ', sdp);
 
-    return sdp
+    return sdp;
   },
 
   /**
@@ -102,20 +102,20 @@ const SdpParser = {
    * @example SdpParser.setAbsoluteCaptureTime(sdp)
    */
   setDependencyDescriptor(sdp = ''): string {
-    const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0]
+    const id = SdpParser.getAvailableHeaderExtensionIdRange(sdp)[0];
     const header =
       'a=extmap:' +
       id +
-      ' https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension\r\n'
+      ' https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension\r\n';
 
-    const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm
+    const regex = /(m=.*\r\n(?:.*\r\n)*?)(a=extmap.*\r\n)/gm;
 
-    sdp = sdp.replace(regex, (_match, p1, p2) => p1 + header + p2)
+    sdp = sdp.replace(regex, (_match, p1, p2) => p1 + header + p2);
 
-    logger.info('Replaced SDP response for setting depency descriptor')
-    logger.debug('New SDP value: ', sdp)
+    logger.info('Replaced SDP response for setting depency descriptor');
+    logger.debug('New SDP value: ', sdp);
 
-    return sdp
+    return sdp;
   },
 
   /**
@@ -129,17 +129,17 @@ const SdpParser = {
    */
   setVideoBitrate(sdp = '', bitrate = 0): string {
     if (bitrate < 1) {
-      logger.info('Remove bitrate restrictions')
-      sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '')
+      logger.info('Remove bitrate restrictions');
+      sdp = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
     } else {
-      const offer = SDPInfo.parse(sdp)
-      const videoOffer = offer.getMedia('video')
+      const offer = SDPInfo.parse(sdp);
+      const videoOffer = offer.getMedia('video');
 
-      logger.info('Setting video bitrate')
-      videoOffer.setBitrate(bitrate)
-      sdp = offer.toString()
+      logger.info('Setting video bitrate');
+      videoOffer.setBitrate(bitrate);
+      sdp = offer.toString();
     }
-    return sdp
+    return sdp;
   },
 
   /**
@@ -152,15 +152,15 @@ const SdpParser = {
    * @example SdpParser.removeSdpLine(sdp, 'custom line')
    */
   removeSdpLine(sdp = '', sdpLine = ''): string {
-    logger.debug('SDP before trimming: ', sdp)
+    logger.debug('SDP before trimming: ', sdp);
     sdp = sdp
       .split('\n')
       .filter((line) => {
-        return line.trim() !== sdpLine
+        return line.trim() !== sdpLine;
       })
-      .join('\n')
-    logger.debug('SDP trimmed result: ', sdp)
-    return sdp
+      .join('\n');
+    logger.debug('SDP trimmed result: ', sdp);
+    return sdp;
   },
 
   /**
@@ -174,11 +174,11 @@ const SdpParser = {
    */
   adaptCodecName(sdp = '', codec = '', newCodecName = ''): string {
     if (!sdp) {
-      return sdp
+      return sdp;
     }
-    const regex = new RegExp(`${codec}`, 'i')
+    const regex = new RegExp(`${codec}`, 'i');
 
-    return sdp.replace(regex, newCodecName)
+    return sdp.replace(regex, newCodecName);
   },
 
   /**
@@ -192,16 +192,16 @@ const SdpParser = {
    * @example SdpParser.setMultiopus(sdp, mediaStream)
    */
   setMultiopus(sdp = '', mediaStream?: MediaStream | null): string {
-    const browserData = new UserAgent()
+    const browserData = new UserAgent();
     if (!browserData.isFirefox() && (!mediaStream || hasAudioMultichannel(mediaStream))) {
       if (!sdp.includes('multiopus/48000/6')) {
-        logger.info('Setting multiopus')
+        logger.info('Setting multiopus');
         // Find the audio m-line
-        const res = new RegExp('m=audio 9 UDP/TLS/RTP/SAVPF (.*)\\r\\n').exec(sdp) ?? []
+        const res = new RegExp('m=audio 9 UDP/TLS/RTP/SAVPF (.*)\\r\\n').exec(sdp) ?? [];
         // Get audio line
-        const audio = res[0] ?? ''
+        const audio = res[0] ?? '';
         // Get free payload number for multiopus
-        const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0]
+        const pt = SdpParser.getAvailablePayloadTypeRange(sdp)[0];
         // Add multiopus
         const multiopus =
           audio.replace('\r\n', ' ') +
@@ -212,16 +212,16 @@ const SdpParser = {
           ' multiopus/48000/6\r\n' +
           'a=fmtp:' +
           pt +
-          ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n'
+          ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n';
         // Change sdp
-        sdp = sdp.replace(audio, multiopus)
-        logger.info('Multiopus offer created')
-        logger.debug('SDP parsed for multioups: ', sdp)
+        sdp = sdp.replace(audio, multiopus);
+        logger.info('Multiopus offer created');
+        logger.debug('SDP parsed for multioups: ', sdp);
       } else {
-        logger.info('Multiopus already setted')
+        logger.info('Multiopus already setted');
       }
     }
-    return sdp
+    return sdp;
   },
 
   /**
@@ -232,17 +232,17 @@ const SdpParser = {
    * @returns {Array<Number>} All available payload type ids.
    */
   getAvailablePayloadTypeRange(sdp = ''): Array<number> {
-    const regex = new RegExp('m=(?:.*) (?:.*) UDP/TLS/RTP/SAVPF (.*)\\r\\n', 'gm')
+    const regex = new RegExp('m=(?:.*) (?:.*) UDP/TLS/RTP/SAVPF (.*)\\r\\n', 'gm');
 
-    const matches = sdp.matchAll(regex)
-    let ptAvailable = payloadTypeUppperRange.concat(payloadTypeLowerRange)
+    const matches = sdp.matchAll(regex);
+    let ptAvailable = payloadTypeUppperRange.concat(payloadTypeLowerRange);
 
     for (const match of matches) {
-      const usedNumbers = match[1].split(' ').map((n) => parseInt(n))
-      ptAvailable = ptAvailable.filter((n) => !usedNumbers.includes(n))
+      const usedNumbers = match[1].split(' ').map((n) => parseInt(n));
+      ptAvailable = ptAvailable.filter((n) => !usedNumbers.includes(n));
     }
 
-    return ptAvailable
+    return ptAvailable;
   },
 
   /**
@@ -253,17 +253,17 @@ const SdpParser = {
    * @returns {Array<Number>} All available header extension IDs.
    */
   getAvailableHeaderExtensionIdRange(sdp = ''): Array<number> {
-    const regex = new RegExp('a=extmap:(\\d+)(?:.*)\\r\\n', 'gm')
+    const regex = new RegExp('a=extmap:(\\d+)(?:.*)\\r\\n', 'gm');
 
-    const matches = sdp.matchAll(regex)
-    let idAvailable = headerExtensionIdLowerRange.concat(headerExtensionIdUppperRange)
+    const matches = sdp.matchAll(regex);
+    let idAvailable = headerExtensionIdLowerRange.concat(headerExtensionIdUppperRange);
 
     for (const match of matches) {
-      const usedNumbers = match[1].split(' ').map((n) => parseInt(n))
-      idAvailable = idAvailable.filter((n) => !usedNumbers.includes(n))
+      const usedNumbers = match[1].split(' ').map((n) => parseInt(n));
+      idAvailable = idAvailable.filter((n) => !usedNumbers.includes(n));
     }
 
-    return idAvailable
+    return idAvailable;
   },
 
   /**
@@ -275,37 +275,37 @@ const SdpParser = {
    * @param {String} remoteDescription - Previous remote sdp
    */
   renegotiate(localDescription = '', remoteDescription = '') {
-    const offer = SDPInfo.parse(localDescription)
-    const answer = SDPInfo.parse(remoteDescription)
+    const offer = SDPInfo.parse(localDescription);
+    const answer = SDPInfo.parse(remoteDescription);
 
     // Check all transceivers on the offer are on the answer
     for (const offeredMedia of offer.getMedias()) {
       // Get associated mid on the answer
-      let answeredMedia = answer.getMediaById(offeredMedia.getId())
+      let answeredMedia = answer.getMediaById(offeredMedia.getId());
       // If not found in answer
       if (!answeredMedia) {
         // Create new one
-        answeredMedia = new MediaInfo(offeredMedia.getId(), offeredMedia.getType())
+        answeredMedia = new MediaInfo(offeredMedia.getId(), offeredMedia.getType());
         // Set direction
-        answeredMedia.setDirection(Direction.reverse(offeredMedia.getDirection()))
+        answeredMedia.setDirection(Direction.reverse(offeredMedia.getDirection()));
         // Find first media line for same kind
-        const first = answer.getMedia(offeredMedia.getType())
+        const first = answer.getMedia(offeredMedia.getType());
         // If found
         if (first) {
           // Copy codec info
-          answeredMedia.setCodecs(first.getCodecs())
+          answeredMedia.setCodecs(first.getCodecs());
           // Copy extension info
           for (const [id, extension] of first.getExtensions()) {
             // Add it
-            answeredMedia.addExtension(id, extension)
+            answeredMedia.addExtension(id, extension);
           }
         }
         // Add it to answer
-        answer.addMedia(answeredMedia)
+        answer.addMedia(answeredMedia);
       }
     }
 
-    return answer.toString()
+    return answer.toString();
   },
 
   /**
@@ -317,42 +317,42 @@ const SdpParser = {
    * @returns {String} SDP updated with missing extensions.
    */
   updateMissingVideoExtensions(localDescription = '', remoteDescription = ''): string | undefined {
-    const offer = SDPInfo.parse(localDescription)
-    const answer = SDPInfo.parse(remoteDescription)
+    const offer = SDPInfo.parse(localDescription);
+    const answer = SDPInfo.parse(remoteDescription);
     // Get extensions of answer
-    const remoteVideoExtensions = answer.getMediasByType('video')[0]?.getExtensions()
+    const remoteVideoExtensions = answer.getMediasByType('video')[0]?.getExtensions();
     if (!remoteVideoExtensions) {
-      return
+      return;
     }
     for (const offeredMedia of offer.getMediasByType('video')) {
-      const offerExtensions = offeredMedia.getExtensions()
+      const offerExtensions = offeredMedia.getExtensions();
       remoteVideoExtensions.forEach((val, key) => {
         // If the extension is not present in offer then add it
         if (!offerExtensions.get(key)) {
-          const id = offeredMedia.getId()
-          const header = 'a=extmap:' + key + ' ' + val + '\r\n'
-          const regex = new RegExp('(a=mid:' + id + '\\r\\n(?:.*\\r\\n)*?)', 'g')
-          localDescription = localDescription.replace(regex, (_, p1) => p1 + header)
+          const id = offeredMedia.getId();
+          const header = 'a=extmap:' + key + ' ' + val + '\r\n';
+          const regex = new RegExp('(a=mid:' + id + '\\r\\n(?:.*\\r\\n)*?)', 'g');
+          localDescription = localDescription.replace(regex, (_, p1) => p1 + header);
         }
-      })
+      });
     }
-    return localDescription
+    return localDescription;
   },
   getCodecPayloadType(sdp = '') {
-    const reg = new RegExp('a=rtpmap:(\\d+) (\\w+)/\\d+', 'g')
-    const matches = sdp.matchAll(reg)
-    const codecMap: { [key: string]: string } = {}
+    const reg = new RegExp('a=rtpmap:(\\d+) (\\w+)/\\d+', 'g');
+    const matches = sdp.matchAll(reg);
+    const codecMap: { [key: string]: string } = {};
 
     for (const match of matches) {
-      codecMap[match[1]] = match[2]
+      codecMap[match[1]] = match[2];
     }
-    return codecMap
+    return codecMap;
   },
-}
+};
 
 // Checks if mediaStream has more than 2 audio channels.
 const hasAudioMultichannel = (mediaStream: MediaStream) => {
-  return mediaStream.getAudioTracks().some((value) => (value.getSettings().channelCount as number) > 2)
-}
+  return mediaStream.getAudioTracks().some((value) => (value.getSettings().channelCount as number) > 2);
+};
 
-export default SdpParser
+export default SdpParser;

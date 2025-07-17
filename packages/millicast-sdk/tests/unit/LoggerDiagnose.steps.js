@@ -1,11 +1,11 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import Logger from '../../src/Logger'
-import Signaling from '../../src/Signaling'
-import View from '../../src/View'
+import { Signaling } from '../../src/Signaling'
+import { Viewer } from '../../src/Viewer'
 import MockRTCPeerConnection, { rawStats } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
-import Publish from '../../src/Publish'
+import { Publisher } from '../../src/Publisher'
 import Diagnostics from '../../src/utils/Diagnostics'
 import { version } from '../../package.json'
 
@@ -38,7 +38,7 @@ const expectedObject = {
   stats: expect.any(Array),
 }
 
-const mockViewTokenGenerator = jest.fn(() => {
+const mockViewerTokenGenerator = jest.fn(() => {
   return {
     urls: ['ws://localhost:8080'],
     jwt: 'this-is-a-jwt-dummy-token',
@@ -66,16 +66,16 @@ defineFeature(feature, (test) => {
     let expectedError
     let diagnose
 
-    given('connection has failed', async () => {
-      const mockErrorTokenGenerator = () => Promise.resolve(null)
-      viewer = new View(mockErrorTokenGenerator)
+    given('connection has failed', () => {
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b'});
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(() => null);
 
       expectedError = expect(() => viewer.connect())
       expectedError.rejects.toThrow(Error)
     })
 
-    when('I call Logger diagnose function', async () => {
-      diagnose = await Logger.diagnose()
+    when('I call Logger diagnose function', () => {
+      diagnose = Logger.diagnose()
     })
 
     then('console logs an information object', async () => {
@@ -88,16 +88,17 @@ defineFeature(feature, (test) => {
     let diagnose
 
     given('connection to a stream', async () => {
-      viewer = new View(mockViewTokenGenerator)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockViewerTokenGenerator);
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
 
-    when('I call Logger diagnose function', async () => {
-      diagnose = await Logger.diagnose()
+    when('I call Logger diagnose function', () => {
+      diagnose = Logger.diagnose()
     })
 
-    then('console logs an information object', async () => {
+    then('console logs an information object', () => {
       expect(diagnose).toMatchObject(expectedObject)
     })
   }, 10000)
@@ -107,7 +108,8 @@ defineFeature(feature, (test) => {
     let diagnose
 
     given('connection to a stream and stats enabled', async () => {
-      viewer = new View(mockViewTokenGenerator)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockViewerTokenGenerator);
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       viewer.webRTCPeer.initStats()
@@ -115,56 +117,13 @@ defineFeature(feature, (test) => {
       Diagnostics.addStats(stats)
     })
 
-    when('I call Logger diagnose function', async () => {
-      diagnose = await Logger.diagnose(1)
+    when('I call Logger diagnose function', () => {
+      diagnose = Logger.diagnose(1)
     })
 
-    then('console logs an information object with stats attribute not empty', async () => {
+    then('console logs an information object with stats attribute not empty', () => {
       expect(diagnose).toMatchObject(expectedObject)
       expect(diagnose.stats.length).toBe(1)
-    })
-  }, 10000)
-
-  test('Get information while publishing a stream', ({ given, when, then }) => {
-    let diagnose
-    let publisher
-    const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
-
-    given('a stream being published', async () => {
-      publisher = new Publish(mockPublishTokenGenerator)
-      await publisher.connect({ mediaStream })
-      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
-    })
-
-    when('I call Logger diagnose function', async () => {
-      diagnose = await Logger.diagnose()
-    })
-
-    then('console logs an information object', async () => {
-      expect(diagnose).toMatchObject(expectedObject)
-    })
-  }, 10000)
-
-  test('Get information while failing to publish a stream', ({ given, when, then }) => {
-    let diagnose
-    let publisher
-    let expectedError
-    const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
-
-    given('a stream cannot be published', async () => {
-      const mockErrorTokenGenerator = () => Promise.resolve(null)
-      publisher = new Publish(mockErrorTokenGenerator)
-
-      expectedError = expect(() => publisher.connect({ mediaStream }))
-      expectedError.rejects.toThrow(Error)
-    })
-
-    when('I call Logger diagnose function', async () => {
-      diagnose = await Logger.diagnose()
-    })
-
-    then('console logs an information object', async () => {
-      expect(diagnose).toMatchObject(expectedObject)
     })
   }, 10000)
 
@@ -175,17 +134,63 @@ defineFeature(feature, (test) => {
     given('I am in Firefox and start a connection to a stream', async () => {
       changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
 
-      viewer = new View(mockViewTokenGenerator)
+      viewer = new Viewer({streamName: 'a', streamAccountId: 'b'})
+      jest.spyOn(viewer, "getConnectionData").mockImplementation(mockViewerTokenGenerator);
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
 
-    when('I call Logger diagnose function', async () => {
-      diagnose = await Logger.diagnose()
+    when('I call Logger diagnose function', () => {
+      diagnose = Logger.diagnose()
     })
 
     then("console logs an information object with Firefox's userAgent", async () => {
       expect(diagnose.userAgent).not.toBe(expectedObject.userAgent)
+    })
+  }, 10000)
+
+  test('Get information while publishing a stream', ({ given, when, then }) => {
+    let diagnose
+    let publisher
+    const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
+
+    given('a stream being published', async () => {
+      publisher = new Publisher({streamName: 'a', publishToken: 'b'})
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockPublishTokenGenerator);
+      await publisher.connect({ mediaStream })
+      expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+    })
+
+    when('I call Logger diagnose function', () => {
+      diagnose = Logger.diagnose()
+    })
+
+    then('console logs an information object', () => {
+      expect(diagnose).toMatchObject(expectedObject)
+    })
+  }, 10000)
+
+  test('Get information while failing to publish a stream', ({ given, when, then }) => {
+    let diagnose
+    let publisher
+    let expectedError
+    const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
+
+    given('a stream cannot be published', () => {
+      publisher = new Publisher({streamName: 'a', publishToken: 'b'})
+      const mockErrorTokenGenerator = () => Promise.resolve(null)
+      jest.spyOn(publisher, "getConnectionData").mockImplementation(mockErrorTokenGenerator);
+
+      expectedError = expect(async () => await publisher.connect({ mediaStream }))
+      expectedError.rejects.toThrow(Error)
+    })
+
+    when('I call Logger diagnose function', () => {
+      diagnose = Logger.diagnose()
+    })
+
+    then('console logs an information object', () => {
+      expect(diagnose).toMatchObject(expectedObject)
     })
   }, 10000)
 })

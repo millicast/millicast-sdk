@@ -1,8 +1,8 @@
-declare module 're-emitter'
+declare module 're-emitter';
 
 declare module '*.worker.js' {
   class WebWorker extends Worker {
-    constructor()
+    constructor();
   }
-  export default WebWorker
+  export default WebWorker;
 }

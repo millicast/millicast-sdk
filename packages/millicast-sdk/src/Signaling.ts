@@ -1,315 +1,302 @@
-import EventEmitter from 'events'
-import TransactionManager from 'transaction-manager'
-import Logger from './Logger'
-import SdpParser from './utils/SdpParser'
-import PeerConnection from './PeerConnection'
-import Diagnostics from './utils/Diagnostics'
+import { ILogger } from 'js-logger';
+import TransactionManager from 'transaction-manager';
+import Logger from './Logger';
+import SdpParser from './utils/SdpParser';
+import { PeerConnection } from './PeerConnection';
+import Diagnostics from './utils/Diagnostics';
 import {
   PublishCmd,
+  SignalingOptions,
   SignalingPublishOptions,
   SignalingSubscribeOptions,
   ViewCmd,
   ViewResponse,
-} from './types/Signaling.types'
-import { ICodecs } from './types/PeerConnection.types'
-import { VideoCodec } from './types/Codecs.types'
-
-const logger = Logger.get('Signaling')
-
-export const signalingEvents = {
-  connectionSuccess: 'wsConnectionSuccess',
-  connectionError: 'wsConnectionError',
-  connectionClose: 'wsConnectionClose',
-  broadcastEvent: 'broadcastEvent',
-}
+} from './types/Signaling.types';
+import { ICodecs } from './types/PeerConnection.types';
+import { VideoCodec } from './types/Codecs.types';
+import { TypedEventEmitter } from './utils/TypedEventEmitter';
+import {
+  ActiveEventPayload,
+  InactiveEventPayload,
+  LayersEventPayload,
+  SignalingEvents,
+} from './types/events';
 
 /**
- * @typedef {Object} LayerInfo
- * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
- * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
- * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
- * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
- * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+ * Starts WebSocket connection and manages the messages between peers.
  */
+export class Signaling extends TypedEventEmitter<SignalingEvents> {
+  #logger: ILogger;
+  #streamName: string | null;
+  #wsUrl: string;
+  #transactionManager: TransactionManager | null = null;
+  #serverId: string | null = null;
+  #clusterId: string | null = null;
+  #streamViewId: string | null = null;
 
-/**
- * @typedef {Object} SignalingSubscribeOptions
- * @property {String} vad - Enable VAD multiplexing for secondary sources.
- * @property {String} pinnedSourceId - Id of the main source that will be received by the default MediaStream.
- * @property {Array<String>} excludedSourceIds - Do not receive media from the these source ids.
- * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive" | "vad" | "layers" | "updated").
- * @property {LayerInfo} layer - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
- */
+  public webSocket: WebSocket | null = null;
 
-/**
- * @typedef {Object} SignalingPublishOptions
- * @property {VideoCodec} [codec="h264"] - Codec for publish stream.
- * @property {Boolean} [record] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
- * @property {String} [sourceId] - Source unique id. **Only available in Tokens with multisource enabled.***
- * @property {Array<String>} events - Override which events will be delivered by the server ("active" | "inactive").
- */
-
-/**
- * @class Signaling
- * @extends EventEmitter
- * @classdesc Starts WebSocket connection and manages the messages between peers.
- * @example const millicastSignaling = new Signaling(options)
- * @constructor
- * @param {Object} options - General signaling options.
- * @param {String} options.streamName - Millicast stream name to get subscribed.
- * @param {String} options.url - WebSocket URL to signal Millicast server and establish a WebRTC connection.
- */
-
-export default class Signaling extends EventEmitter {
-  public streamName: string | null
-  public wsUrl: string
-  public webSocket: WebSocket | null = null
-  public transactionManager: TransactionManager | null = null
-  public serverId: string | null = null
-  public clusterId: string | null = null
-  public streamViewId: string | null = null
+  /**
+   * Creates a Signaling object.
+   * @param options Options for the signaling object.
+   */
   constructor(
-    options: { streamName: string | null; url: string } = {
+    options: SignalingOptions = {
       streamName: null,
       url: 'ws://localhost:8080/',
     }
   ) {
-    super()
-    this.streamName = options.streamName
-    this.wsUrl = options.url
+    super();
+
+    this.#logger = Logger.get('Signaling');
+    this.#logger.setLevel(Logger.DEBUG);
+
+    this.#streamName = options.streamName;
+    this.#wsUrl = options.url;
   }
 
   /**
    * Starts a WebSocket connection with signaling server.
-   * @example const response = await millicastSignaling.connect()
-   * @returns {Promise<WebSocket>} Promise object which represents the [WebSocket object]{@link https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API} of the establshed connection.
-   * @fires Signaling#wsConnectionSuccess
-   * @fires Signaling#wsConnectionError
-   * @fires Signaling#wsConnectionClose
-   * @fires Signaling#broadcastEvent
+   *
+   * @returns A {@link !Promise Promise} whose fulfillment handler receives a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) object of the established connection.
+   *
+   * @example const response = await signaling.connect();
    */
-  async connect(): Promise<WebSocket> {
-    logger.info('Connecting to Signaling Server')
-    if (this.transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
-      logger.info('Connected to server: ', this.webSocket.url)
-      logger.debug('WebSocket value: ', {
+  public async connect(): Promise<WebSocket> {
+    this.#logger.info('Connecting to Signaling Server');
+    if (this.#transactionManager && this.webSocket?.readyState === WebSocket.OPEN) {
+      this.#logger.info('Connected to server: ', this.webSocket.url);
+      this.#logger.debug('WebSocket value: ', {
         url: this.webSocket.url,
         protocol: this.webSocket.protocol,
         readyState: this.webSocket.readyState,
         binaryType: this.webSocket.binaryType,
         extensions: this.webSocket.extensions,
-      })
-      /**
-       * WebSocket connection was successfully established with signaling server.
-       *
-       * @event Signaling#wsConnectionSuccess
-       * @type {Object}
-       * @property {WebSocket} ws - WebSocket object which represents active connection.
-       * @property {TransactionManager} tm - [TransactionManager](https://github.com/medooze/transaction-manager) object that simplify WebSocket commands.
-       */
-      this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
-      return this.webSocket
+      });
+
+      this.emit('wsConnectionSuccess', { ws: this.webSocket, tm: this.#transactionManager });
+      return this.webSocket;
     }
 
     return new Promise((resolve, reject) => {
-      this.webSocket = new WebSocket(this.wsUrl)
-      this.transactionManager = new TransactionManager(this.webSocket)
+      this.webSocket = new WebSocket(this.#wsUrl);
+      this.#transactionManager = new TransactionManager(this.webSocket);
+
       this.webSocket.onopen = () => {
-        logger.info('WebSocket opened')
-        this.transactionManager &&
-          this.transactionManager.on('event', (evt: TransactionManager.Event) => {
-            /**
-             * Passthrough of available Millicast broadcast events.
-             *
-             * Active - Fires when the live stream is, or has started broadcasting.
-             *
-             * Inactive - Fires when the stream has stopped broadcasting, but is still available.
-             *
-             * Stopped - Fires when the stream has stopped for a given reason.
-             *
-             * Vad - Fires when using multiplexed tracks for audio.
-             *
-             * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
-             *
-             * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
-             *
-             * Viewercount - Fires when the viewer count changes.
-             *
-             * Updated - when an active stream's tracks are updated
-             *
-             * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
-             *
-             * @event Signaling#broadcastEvent
-             * @type {Object}
-             * @property {String} type - In this case the type of this message is "event".
-             * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
-             * @property {Object} data - Custom event data.
-             */
-            this.emit(signalingEvents.broadcastEvent, evt)
-          })
+        this.#logger.info('WebSocket opened');
+        this.#transactionManager?.on('event', (evt: TransactionManager.Event) => {
+          /* eslint-disable @typescript-eslint/no-explicit-any */
+          const data: any = evt.data;
+          switch (evt.name) {
+            case 'active': {
+              const activePayload: ActiveEventPayload = {
+                streamId: data.streamId,
+                sourceId: data.sourceId,
+                tracks: data.tracks,
+                encryption: data.encryption,
+              };
+              this.emit('active', activePayload);
+              return;
+            }
+            case 'inactive': {
+              const inactivePayload: InactiveEventPayload = {
+                streamId: data.streamId,
+                sourceId: data.sourceId,
+              };
+              this.emit('inactive', inactivePayload);
+              return;
+            }
+            case 'viewercount':
+              this.emit('viewercount', data.viewerCount);
+              return;
+            case 'migrate':
+              this.emit('migrate');
+              return;
+            case 'updated':
+              this.emit('updated');
+              return;
+            case 'stopped':
+              this.emit('stopped');
+              return;
+            case 'vad':
+              this.emit('vad');
+              return;
+            case 'layers': {
+              const layersPayload = data as LayersEventPayload;
+              this.emit('layers', layersPayload);
+              return;
+            }
+            default:
+              break;
+          }
+          this.#logger.info('The following event was not properly understood', evt);
+        });
+
         if (this.webSocket) {
-          logger.info('Connected to server: ', this.webSocket.url)
-          logger.debug('WebSocket value: ', {
+          this.#logger.info('Connected to server: ', this.webSocket.url);
+          this.#logger.debug('WebSocket value: ', {
             url: this.webSocket.url,
             protocol: this.webSocket.protocol,
             readyState: this.webSocket.readyState,
             binaryType: this.webSocket.binaryType,
             extensions: this.webSocket.extensions,
-          })
-          this.emit(signalingEvents.connectionSuccess, { ws: this.webSocket, tm: this.transactionManager })
-          resolve(this.webSocket)
+          });
+          this.emit('wsConnectionSuccess', { ws: this.webSocket, tm: this.#transactionManager });
+          resolve(this.webSocket);
         }
-      }
+      };
+
       this.webSocket.onerror = () => {
         if (this.webSocket) {
-          logger.error('WebSocket not connected: ', this.webSocket.url)
-          /**
-           * WebSocket connection failed with signaling server.
-           * Returns url of WebSocket
-           *
-           * @event Signaling#wsConnectionError
-           * @type {String}
-           */
-          this.emit(signalingEvents.connectionError, this.webSocket.url)
-          reject(this.webSocket.url)
+          this.#logger.error('WebSocket not connected:', this.webSocket.url);
+          this.emit('wsConnectionError', this.webSocket.url);
+          reject({ url: this.webSocket.url });
         }
-      }
+      };
+
       this.webSocket.onclose = () => {
-        this.webSocket = null
-        this.transactionManager = null
-        logger.info('Connection closed with Signaling Server.')
-        /**
-         * WebSocket connection with signaling server was successfully closed.
-         *
-         * @event Signaling#wsConnectionClose
-         */
-        this.emit(signalingEvents.connectionClose)
-      }
-    })
+        this.webSocket = null;
+        this.#transactionManager = null;
+        this.#logger.info('Connection closed with Signaling Server.');
+        this.emit('wsConnectionClose');
+      };
+    });
   }
 
   /**
-   * Close WebSocket connection with Millicast server.
-   * @example millicastSignaling.close()
+   * Closes the WebSocket connection with the server.
+   *
+   * @example signaling.close();
    */
-  close() {
-    logger.info('Closing connection with Signaling Server.')
-    this.webSocket?.close()
+  public close() {
+    this.#logger.info('Closing connection with Signaling Server.');
+    this.webSocket?.close();
   }
 
   /**
-   * Establish WebRTC connection with Millicast Server as Subscriber role.
-   * @param {String} sdp - The SDP information created by your offer.
-   * @param {SignalingSubscribeOptions} options - Signaling Subscribe Options.
-   * @example const response = await millicastSignaling.subscribe(sdp)
-   * @return {Promise<String>} Promise object which represents the SDP command response.
+   * Establishes a WebRTC connection with the Server as Subscriber role.
+   *
+   * @param sdp The SDP information created by your offer.
+   * @param options Signaling Subscribe Options.
+   *
+   * @returns A {@link !Promise Promise} whose fulfillment handler receives a string which represents the SDP command response.
+   *
+   * @example const response = await signaling.subscribe(sdp);
    */
-  async subscribe(sdp = '', options: SignalingSubscribeOptions = {}): Promise<string> {
-    logger.info('Starting subscription to streamName: ', this.streamName)
-    logger.debug('Subcription local description: ', sdp)
+  public async subscribe(sdp: string = '', options: SignalingSubscribeOptions = {}): Promise<string> {
+    this.#logger.info('Starting subscription to streamName: ', this.#streamName);
+    this.#logger.debug('Subcription local description: ', sdp);
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
-    sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
+    sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1);
 
-    let data: ViewCmd = {
+    const data: ViewCmd = {
       sdp,
-    }
+    };
 
     if (options.pinnedSourceId) {
-      data.pinnedSourceId = options.pinnedSourceId
+      data.pinnedSourceId = options.pinnedSourceId;
     }
 
     if (options.excludedSourceIds) {
-      data.excludedSourceIds = options.excludedSourceIds
+      data.excludedSourceIds = options.excludedSourceIds;
     }
 
     if (options.vad) {
-      data.vad = true
+      data.vad = true;
     }
     if (Array.isArray(options.events)) {
-      data.events = options.events
+      data.events = options.events;
     }
     if (options.forcePlayoutDelay) {
-      data.forcePlayoutDelay = options.forcePlayoutDelay
+      data.forcePlayoutDelay = options.forcePlayoutDelay;
     }
     if (options.layer) {
-      data.layer = options.layer
+      data.layer = options.layer;
     }
-    if(options.forceSmooth){ 
-      data.forceSmooth = options.forceSmooth
+    if (options.forceSmooth) {
+      data.forceSmooth = options.forceSmooth;
     }
 
     try {
       if (options.disableVideo && options.disableAudio) {
-        throw new Error('Not attempting to connect as video and audio are disabled')
+        throw new Error('Not attempting to connect as video and audio are disabled');
       }
-      await this.connect()
-      if (this.transactionManager) {
-        logger.info('Sending view command')
-        const result = (await this.transactionManager.cmd('view', data)) as ViewResponse
+      await this.connect();
+      if (this.#transactionManager) {
+        this.#logger.info('Sending view command');
+        const result = (await this.#transactionManager.cmd('view', data)) as ViewResponse;
 
         // Check if browser supports AV1X
         const AV1X = RTCRtpReceiver.getCapabilities?.('video')?.codecs?.find?.(
           (codec) => codec.mimeType === 'video/AV1X'
-        )
+        );
         // Signaling server returns 'AV1'. If browser supports AV1X, we change it to AV1X
-        result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
+        result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp;
 
-        logger.info('Command sent, subscriberId: ', result.subscriberId)
-        logger.debug('Command result: ', result)
-        this.serverId = result.subscriberId
-        this.clusterId = result.clusterId
-        this.streamViewId = result.streamViewId
+        this.#logger.info('Command sent, subscriberId:', result.subscriberId);
+        this.#logger.debug('Command result:', result);
+
+        this.#serverId = result.subscriberId;
+        this.#clusterId = result.clusterId;
+        this.#streamViewId = result.streamViewId;
 
         // Save for diagnostics
-        Diagnostics.initStreamName(this.streamName || '')
-        Diagnostics.initSubscriberId(this.serverId || '')
-        Diagnostics.initStreamViewId(result.streamViewId)
-        Diagnostics.setClusterId(this.clusterId || '')
-        return result.sdp
+        Diagnostics.initStreamName(this.#streamName || '');
+        Diagnostics.initSubscriberId(this.#serverId || '');
+        Diagnostics.initStreamViewId(this.#streamViewId);
+        Diagnostics.setClusterId(this.#clusterId || '');
+
+        return result.sdp;
       } else {
-        return ''
+        return '';
       }
     } catch (e) {
-      logger.error('Error sending view command, error: ', e)
-      throw e
+      this.#logger.error('Error sending view command, error: ', e);
+      throw e;
     }
   }
 
   /**
-   * Establish WebRTC connection with Millicast Server as Publisher role.
-   * @param {String} sdp - The SDP information created by your offer.
-   * @param {SignalingPublishOptions} options - Signaling Publish Options.
-   * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
-   * @return {Promise<String>} Promise object which represents the SDP command response.
+   * Establishes a WebRTC connection with the Server as Publisher role.
+   *
+   * @param sdp The SDP information created by your offer.
+   * @param options Signaling Publish Options.
+   *
+   * @returns A {@link !Promise Promise} whose fulfillment handler receives a string which represents the SDP command response.
+   *
+   * @example const response = await signaling.publish(sdp, {codec: 'h264'});
    */
-  async publish(sdp = '', options: SignalingPublishOptions = { codec: VideoCodec.H264 }) {
-    logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${options.codec}`)
-    logger.debug('Publishing local description: ', sdp)
+  async publish(
+    sdp: string = '',
+    options: SignalingPublishOptions = { codec: VideoCodec.H264 }
+  ): Promise<string> {
+    this.#logger.info(`Starting publishing to streamName: ${this.#streamName}, codec: ${options.codec}`);
+    this.#logger.debug('Publishing local description: ', sdp);
     const supportedVideoCodecs =
-      PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: ICodecs) => cdc.codec) ?? []
+      PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: ICodecs) => cdc.codec) ?? [];
 
-    const videoCodecs = Object.values(VideoCodec)
+    const videoCodecs = Object.values(VideoCodec);
     if (videoCodecs.indexOf(options.codec) === -1) {
-      logger.error(`Invalid codec ${options.codec}. Possible values are: `, videoCodecs)
-      throw new Error(`Invalid codec ${options.codec}. Possible values are: ${videoCodecs}`)
+      this.#logger.error(`Invalid codec ${options.codec}. Possible values are: `, videoCodecs);
+      throw new Error(`Invalid codec ${options.codec}. Possible values are: ${videoCodecs}`);
     }
 
     if (supportedVideoCodecs.length > 0 && supportedVideoCodecs.indexOf(options.codec) === -1) {
-      logger.error(`Unsupported codec ${options.codec}. Possible values are: `, supportedVideoCodecs)
-      throw new Error(`Unsupported codec ${options.codec}. Possible values are: ${supportedVideoCodecs}`)
+      this.#logger.error(`Unsupported codec ${options.codec}. Possible values are: `, supportedVideoCodecs);
+      throw new Error(`Unsupported codec ${options.codec}. Possible values are: ${supportedVideoCodecs}`);
     }
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
     if (options.codec === VideoCodec.AV1) {
-      sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
+      sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1);
     }
 
     const data: PublishCmd = {
       sdp,
       codec: options.codec,
       sourceId: options.sourceId,
-    }
+    };
 
     if (options.priority) {
       if (
@@ -317,71 +304,73 @@ export default class Signaling extends EventEmitter {
         options.priority >= -2147483648 &&
         options.priority <= 2147483647
       ) {
-        data.priority = options.priority
+        data.priority = options.priority;
       } else {
         throw new Error(
           'Invalid value for priority option. It should be a decimal integer between the range [-2^31, +2^31 - 1]'
-        )
+        );
       }
     }
 
     if (options.record !== null) {
-      data.record = options.record
+      data.record = options.record;
     }
     if (Array.isArray(options.events)) {
-      data.events = options.events
+      data.events = options.events;
     }
     try {
       if (options.disableVideo && options.disableAudio) {
-        throw new Error('Not attempting to connect as video and audio are disabled')
+        throw new Error('Not attempting to connect as video and audio are disabled');
       }
-      await this.connect()
-      if (this.transactionManager) {
-        logger.info('Sending publish command')
-        const result = (await this.transactionManager.cmd('publish', data)) as {
-          sdp: string
-          publisherId: string
-          clusterId: string
-          feedId: string
-        }
+      await this.connect();
+      if (this.#transactionManager) {
+        this.#logger.info('Sending publish command');
+        const result = (await this.#transactionManager.cmd('publish', data)) as {
+          sdp: string;
+          publisherId: string;
+          clusterId: string;
+          feedId: string;
+        };
 
         if (options.codec === VideoCodec.AV1) {
           // If browser supports AV1X, we change from AV1 to AV1X
           const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(
             (codec) => codec.mimeType === 'video/AV1X'
-          )
-          result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
+          );
+          result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp;
         }
 
-        logger.info('Command sent, publisherId: ', result.publisherId)
-        logger.debug('Command result: ', result)
-        this.serverId = result.publisherId
-        this.clusterId = result.clusterId
+        this.#logger.info('Command sent, publisherId: ', result.publisherId);
+        this.#logger.debug('Command result: ', result);
+        this.#serverId = result.publisherId;
+        this.#clusterId = result.clusterId;
 
         // Save for diagnostics
-        Diagnostics.initStreamName(this.streamName || '')
-        Diagnostics.initSubscriberId(this.serverId || '')
-        Diagnostics.initFeedId(result.feedId)
-        Diagnostics.setClusterId(this.clusterId || '')
-        return result.sdp
+        Diagnostics.initStreamName(this.#streamName || '');
+        Diagnostics.initSubscriberId(this.#serverId || '');
+        Diagnostics.initFeedId(result.feedId);
+        Diagnostics.setClusterId(this.#clusterId || '');
+        return result.sdp;
       } else {
-        return ''
+        return '';
       }
     } catch (e) {
-      logger.error('Error sending publish command, error: ', e)
-      throw e
+      this.#logger.error('Error sending publish command, error: ', e);
+      throw e;
     }
   }
 
   /**
-   * Send command to the server.
-   * @param {String} cmd - Command name.
-   * @param {Object} [data] - Command parameters.
-   * @return {Promise<Object>} Promise object which represents the command response.
+   * Sends a command to the server.
+   *
+   * @param cmd Name of the command to sent.
+   * @param data Command parameters.
+   *
+   * @returns A {@link !Promise Promise} whose fulfillment handler receives an object which represents the response to the command sent.
    */
   async cmd(cmd: string, data?: object): Promise<object> {
-    logger.info(`Sending cmd: ${cmd}`)
+    this.#logger.info(`Sending cmd: ${cmd}`);
 
-    return this.transactionManager?.cmd(cmd, data) as object
+    return this.#transactionManager?.cmd(cmd, data) as object;
   }
 }

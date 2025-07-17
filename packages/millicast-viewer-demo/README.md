@@ -44,14 +44,8 @@ This demo application allows the user to set some URL parameters for configuring
 | **url**             | WebSocket URL                                                                                  | `wss://turn.millicast.com/millisock`
 | **accountId**       | Publisher's account ID.                                                                        | `null`
 | **streamName**      | Publisher's stream name.                                                                       | `null`
-| **metadata**        | Enable metadata extraction.                                                                    | `false`
 | **disableVideo**    | Set to disable video from the stream.                                                          | `false`
 | **disableAudio**    | Set to disable audio from the stream.                                                          | `false`
 | **muted**           | Set to mute the video player at first connection.                                              | `true`
 | **autoplay**        | Set to play the video at first connection.                                                     | `true`
 | **autoReconnect**   | Set to enable auto reconnection.                                                               | `true`
-| **disableControls** | Set to disable video player controls, such us volume, fullscreen, play/pause.                  | `false`
-| **disableVolume**   | Set to disable volume control.                                                                 | `false`
-| **disablePlay**     | Set to disable play/pause control.                                                             | `false`
-| **disableFull**     | Set to disable fullscreen control.                                                             | `false`
-

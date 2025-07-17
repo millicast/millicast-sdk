@@ -1,4 +1,4 @@
-import PeerConnectionStats, { peerConnectionStatsEvents } from '../../src/PeerConnectionStats'
+import { PeerConnectionStats } from '../../src/PeerConnectionStats'
 
 jest.mock('events')
 
@@ -60,6 +60,6 @@ describe('PeerConnectionStats', () => {
     statsInstance.collection.emit('stats', mockStatsInput)
 
     expect(emitSpy).toHaveBeenCalledTimes(1)
-    expect(emitSpy).toHaveBeenCalledWith(peerConnectionStatsEvents.stats, mockStatsOutput)
+    expect(emitSpy).toHaveBeenCalledWith('stats', mockStatsOutput)
   })
 })

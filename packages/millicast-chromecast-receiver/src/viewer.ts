@@ -1,10 +1,9 @@
-import { View, Director, Logger } from '@nx-millicast/millicast-sdk'
-import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
+import { Viewer, Urls, Logger } from '@nx-millicast/millicast-sdk'
 
 window.Logger = Logger
 
 if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+  Urls.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT);
 }
 
 const addStream = (stream) => {
@@ -20,21 +19,19 @@ const removeStream = () => {
 }
 
 const subscribe = async (streamName, streamAccountId) => {
-  const options: DirectorSubscriberOptions = { streamName, streamAccountId }
-  const tokenGenerator = () => Director.getSubscriber(options)
-  const millicastView = new View(tokenGenerator)
-  millicastView.on('broadcastEvent', (event) => {
-    const layers = event.data.layers !== null ? event.data.layers : {}
-    if (event.name === 'layers' && Object.keys(layers).length <= 0) {
-      // call play logic or being reconnect interval
-      close().then(() => {
-        subscribe(streamName, streamAccountId)
-      })
-      console.error('Feed no longer found.')
-    }
-  })
+  const millicastView = new Viewer({ streamName, streamAccountId })
+  // millicastView.on('layers', (event: LayersEventPayload) => {
+  //   const layers = event.layers !== null ? event.layers : {}
+  //   if (Object.keys(layers).length <= 0) {
+  //     // call play logic or being reconnect interval
+  //     close().then(() => {
+  //       subscribe(streamName, streamAccountId)
+  //     })
+  //     console.error('Feed no longer found.')
+  //   }
+  // })
 
-  millicastView.on('newTrack', (event) => {
+  millicastView.on('track', (event) => {
     addStream(event.streams[0])
   })
 

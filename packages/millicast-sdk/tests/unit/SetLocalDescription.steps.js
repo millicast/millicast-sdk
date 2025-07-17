@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection from '../../src/PeerConnection'
+import { PeerConnection } from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
@@ -316,7 +316,7 @@ defineFeature(feature, (test) => {
     then('returns the SDP with scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
-      expect(peerConnection.peer.addTransceiver).toBeCalledTimes(2)
+      expect(peerConnection.peer.addTransceiver).toHaveBeenCalledTimes(2)
     })
   })
 
