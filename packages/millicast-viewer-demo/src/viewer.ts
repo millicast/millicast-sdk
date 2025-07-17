@@ -1,4 +1,4 @@
-import { Viewer, Director, Logger, ActiveEventPayload, MetadataEventPayload } from "@nx-millicast/millicast-sdk";
+import { Viewer, Urls, Logger, ActiveEventPayload, MetadataEventPayload } from "@nx-millicast/millicast-sdk";
 import { DRMOptions } from "packages/millicast-sdk/src/types/Viewer.types";
 
 window.Logger = Logger
@@ -6,7 +6,7 @@ window.Logger = Logger
 Logger.setLevel(Logger.DEBUG)
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.endpoint = import.meta.env.VITE_DIRECTOR_ENDPOINT
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 //Get our url
@@ -31,19 +31,7 @@ const disableVideo = href.searchParams.get('disableVideo') === 'true'
 const disableAudio = href.searchParams.get('disableAudio') === 'true'
 const muted = href.searchParams.get('muted') === 'true' || href.searchParams.get('muted') === null
 const autoplay = href.searchParams.get('autoplay') === 'true' || href.searchParams.get('autoplay') === null
-const autoReconnect =
-  href.searchParams.get('autoReconnect') === 'true' || href.searchParams.get('autoReconnect') === null
-const disableControls =
-  href.searchParams.get('disableControls') === 'true' && href.searchParams.get('disableControls') !== null
-const disableVolume =
-  (href.searchParams.get('disableVolume') === 'true' && href.searchParams.get('disableVolume') !== null) ||
-  disableControls
-const disablePlay =
-  (href.searchParams.get('disablePlay') === 'true' && href.searchParams.get('disablePlay') !== null) ||
-  disableControls
-const disableFull =
-  (href.searchParams.get('disableFull') === 'true' && href.searchParams.get('disableFull') !== null) ||
-  disableControls
+const autoReconnect = href.searchParams.get('autoReconnect') === 'true' || href.searchParams.get('autoReconnect') === null
 
 let playing = false;
 let fullBtn = document.querySelector("#fullBtn") as HTMLButtonElement;

@@ -1,4 +1,4 @@
-import { Viewer, Director, Logger } from '@nx-millicast/millicast-sdk'
+import { Viewer, Urls, Logger } from '@nx-millicast/millicast-sdk'
 import CircularSlider from '@maslick/radiaslider/src/slider-circular'
 console.log(CircularSlider)
 
@@ -7,7 +7,7 @@ window.Logger = Logger
 Logger.setLevel(Logger.DEBUG)
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.endpoint = import.meta.env.VITE_DIRECTOR_ENDPOINT
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 // Get our url

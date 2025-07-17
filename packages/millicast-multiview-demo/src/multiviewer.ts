@@ -1,8 +1,7 @@
-import { Viewer, Director, ActiveEventPayload, InactiveEventPayload, LayersEventPayload } from '@nx-millicast/millicast-sdk'
-import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
+import { Viewer, Urls, ActiveEventPayload, InactiveEventPayload, LayersEventPayload } from '@nx-millicast/millicast-sdk'
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.endpoint = import.meta.env.VITE_DIRECTOR_ENDPOINT
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 // Get query params

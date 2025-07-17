@@ -1,10 +1,9 @@
-import { Viewer, Director, Logger, LayersEventPayload } from '@nx-millicast/millicast-sdk'
-import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
+import { Viewer, Urls, Logger } from '@nx-millicast/millicast-sdk'
 
 window.Logger = Logger
 
 if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.endpoint = import.meta.env.MILLICAST_DIRECTOR_ENDPOINT
+  Urls.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT);
 }
 
 const addStream = (stream) => {

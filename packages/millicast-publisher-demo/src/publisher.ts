@@ -1,16 +1,12 @@
-import {
-  DirectorPublisherOptions,
-  MillicastDirectorResponse,
-} from 'packages/millicast-sdk/src/types/Director.types'
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { Director, Logger } from '@nx-millicast/millicast-sdk'
+import { Urls, Logger } from '@nx-millicast/millicast-sdk'
 
 window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG)
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.endpoint = import.meta.env.VITE_DIRECTOR_ENDPOINT
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 const streamName: string =
