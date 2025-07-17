@@ -11,9 +11,9 @@
     "dolby",
     "optiview"
   ],
-  "main": "./millicast.mjs",
-  "module": "./millicast.mjs",
-  "typings": "./index.d.ts",
+  "main": "dist/millicast.mjs",
+  "module": "dist/millicast.mjs",
+  "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],

@@ -62,8 +62,8 @@ jobs:
       - name: Install the dependencies 🧱
         run: npm ci
 
-      - name: Add Readme to package
-        run: cp README.md packages/millicast-sdk/README.md
+      - name: Add LICENSE to package
+        run: cp LICENSE packages/millicast-sdk/LICENSE
 
       - name: Publish package
         working-directory: './packages/millicast-sdk'

@@ -3,12 +3,10 @@ node_modules
 coverage
 dist
 docs
-docs-translations
+docs-json
 .env
 puppeteerrc.cjs
 test-environment.js
 **/.DS_Store
-**/src/TransformWorker.worker.ts
 vite.config.*.timestamp-*
 .nx/
-docs-json/

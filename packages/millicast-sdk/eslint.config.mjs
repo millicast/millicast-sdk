@@ -5,7 +5,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ['**/*.d.ts', 'src/drm/*', 'package.json', 'docs/', 'jest.config.ts'],
+    ignores: ['dist/', 'docs/', '**/*.d.ts', 'src/drm/*', 'package.json', 'jest.config.ts'],
   },
   {
     files: ['**/*.ts', '**/*.js'],

@@ -109,8 +109,8 @@ jobs:
           path: |
             packages/millicast-sdk/dist
           key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
-      - name: Add Readme to package
-        run: cp README.md packages/millicast-sdk/README.md
+      - name: Add LICENSE to package
+        run: cp LICENSE packages/millicast-sdk/LICENSE
       - name: publish
         working-directory: './packages/millicast-sdk'
         env:
