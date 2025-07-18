@@ -2,7 +2,7 @@
 import { BaseWebRTC } from '../utils/BaseWebRTC';
 import { Publisher } from '../Publisher';
 import { Viewer } from '../Viewer';
-import { PeerConnection } from '../PeerConnection';
+import PeerConnection from '../PeerConnection';
 import { PeerConnectionStats } from '../PeerConnectionStats';
 import { Signaling } from '../Signaling';
 import TransactionManager from 'transaction-manager';

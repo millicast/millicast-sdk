@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { PeerConnection, ConnectionType } from '../../src/PeerConnection'
+import PeerConnection, { ConnectionType } from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'

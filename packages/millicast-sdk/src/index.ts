@@ -7,7 +7,7 @@ export * as Urls from './urls';
 export * from './types/events';
 
 export * from './types/PeerConnection.types';
-export { PeerConnection } from './PeerConnection';
+export * from './PeerConnection';
 
 export * from './types/stats.types';
 export * from './PeerConnectionStats';

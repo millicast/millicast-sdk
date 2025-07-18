@@ -2,7 +2,7 @@ import { ILogger } from 'js-logger';
 import TransactionManager from 'transaction-manager';
 import Logger from './Logger';
 import SdpParser from './utils/SdpParser';
-import { PeerConnection } from './PeerConnection';
+import PeerConnection from './PeerConnection';
 import Diagnostics from './utils/Diagnostics';
 import {
   PublishCmd,

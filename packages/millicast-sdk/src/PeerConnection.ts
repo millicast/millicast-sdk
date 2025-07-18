@@ -31,9 +31,9 @@ const localSDPOptions = {
 
 /**
  * Manages WebRTC connection and SDP information between peers.
- * @example const peerConnection = new PeerConnection()
+ * @example const peerConnection = new PeerConnection();
  */
-export class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
+export default class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
   public mode: 'Publisher' | 'Viewer' | null;
   public peer: RTCPeerConnection | null;
   public peerConnectionStats: PeerConnectionStats | null;
@@ -265,7 +265,7 @@ export class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
 
     if (browserCapabilities) {
       const codecs: { [key in VideoCodec | AudioCodec]?: ICodecs } = {};
-      let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i');
+      let regex: RegExp;
 
       if (kind === 'audio') {
         regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i');
@@ -273,12 +273,14 @@ export class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
         if (browserData.isChrome()) {
           codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 };
         }
+      } else {
+        regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i');
       }
 
       for (const codec of browserCapabilities.codecs) {
         const matches = codec.mimeType?.match(regex);
         if (matches) {
-          const codecName = matches[1].toLowerCase();
+          const codecName: string = matches[1].toLowerCase();
           if (isVideoCodec(codecName) || isAudioCodec(codecName)) {
             codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType };
             if (codec.scalabilityModes) {

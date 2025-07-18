@@ -3,7 +3,7 @@ import jwtDecode from 'jwt-decode';
 import Logger from './Logger';
 import { BaseWebRTC } from './utils/BaseWebRTC';
 import { Signaling } from './Signaling';
-import { PeerConnection } from './PeerConnection';
+import PeerConnection from './PeerConnection';
 import { hexToUint8Array } from './utils/StringUtils';
 import { swapPropertyValues } from './utils/ObjectUtils';
 import FetchError from './utils/FetchError';

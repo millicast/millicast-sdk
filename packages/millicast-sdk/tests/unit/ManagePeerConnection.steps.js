@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { PeerConnection } from '../../src/PeerConnection'
+import PeerConnection from '../../src/PeerConnection'
 import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 const feature = loadFeature('../features/ManagePeerConnection.feature', {
