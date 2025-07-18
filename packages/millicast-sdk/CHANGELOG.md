@@ -1,5 +1,17 @@
 # @millicast/sdk
 
+## 0.5.0
+
+### Minor Changes
+
+- 6304c52: Added forceSmooth to viewer connect options.
+
+### Patch Changes
+
+- 8b24ea1: Improved support for frame metadata extraction on older browsers
+- 4dfc848: Optimized the bundle size.
+- 6304c52: Removed `onMetadata` event which was already deprecated. This has been superceded by `metadata` as of v0.3.0
+
 ## 0.4.0
 
 ### Minor Changes

@@ -17,8 +17,7 @@ function createReceiverTransform (mid) {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      // eslint-disable-next-line no-undef
-      if (encodedFrame instanceof RTCEncodedVideoFrame) {
+      if (isVideoFrame(encodedFrame)) {
         const frameCodec = payloadTypeCodec[encodedFrame.getMetadata().payloadType]?.toUpperCase() || codec?.toUpperCase()
         if (frameCodec === 'H264') {
           const metadata = extractH26xMetadata(encodedFrame, frameCodec)
@@ -34,6 +33,33 @@ function createReceiverTransform (mid) {
       controller.enqueue(encodedFrame)
     }
   })
+}
+
+function isVideoFrame (frame) {
+  if (typeof RTCEncodedVideoFrame !== 'undefined') {
+    try {
+      // eslint-disable-next-line no-undef
+      if (frame instanceof RTCEncodedVideoFrame) {
+        return true
+      }
+    } catch (e) {
+      // instanceof might fail in some contexts
+    }
+  }
+
+  if (frame.constructor && frame.constructor.name === 'RTCEncodedVideoFrame') {
+    return true
+  }
+
+  if (typeof frame.width === 'number' && typeof frame.height === 'number') {
+    return true
+  }
+
+  if (frame.type === 'video') {
+    return true
+  }
+
+  return false
 }
 
 function clearMetadata () {
@@ -62,8 +88,7 @@ function createSenderTransform () {
     start () {},
     flush () {},
     async transform (encodedFrame, controller) {
-      // eslint-disable-next-line no-undef
-      if (encodedFrame instanceof RTCEncodedVideoFrame) {
+      if (isVideoFrame(encodedFrame)) {
         const frameMetadata = encodedFrame.getMetadata()
         const newSyncSource = frameMetadata.synchronizationSource
 
