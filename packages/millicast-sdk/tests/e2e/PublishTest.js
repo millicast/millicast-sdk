@@ -9,7 +9,7 @@ class MillicastPublishTest {
   constructor () {
     millicast.Logger.setLevel(millicast.Logger.DEBUG)
     millicast.Director.setEndpoint(window.directorEndpoint)
-    this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
+    this.millicastPublish = new millicast.Publish(undefined, tokenGenerator)
   }
 
   async init () {

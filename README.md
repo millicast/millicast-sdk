@@ -66,7 +66,7 @@ In vanilla JavaScript:
       })
 
       // Create a new instance
-      const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
+      const millicastPublish = new millicast.Publish(undefined, tokenGenerator)
 
       // Get user camera and microphone
       const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
@@ -121,7 +121,7 @@ In vanilla JavaScript:
       })
 
       // Create a new instance
-      const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
+      const millicastView = new millicast.View(undefined, tokenGenerator, video)
 
       // Start connection to publisher
       try {

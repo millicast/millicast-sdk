@@ -66,7 +66,7 @@ defineFeature(feature, test => {
     })
 
     then('reconnection is called', async () => {
-      expect(publisher.reconnect).toBeCalledTimes(1)
+      expect(publisher.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -102,7 +102,7 @@ defineFeature(feature, test => {
     })
 
     then('reconnection is called', async () => {
-      expect(publisher.reconnect).toBeCalledTimes(1)
+      expect(publisher.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -120,12 +120,12 @@ defineFeature(feature, test => {
 
     when('reconnect was called and signaling has an error', () => {
       publisher.reconnect()
-      expect(publisher.reconnect).toBeCalledTimes(1)
+      expect(publisher.reconnect).toHaveBeenCalledTimes(1)
       publisher.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
     })
 
     then('reconnection is not called', async () => {
-      expect(publisher.reconnect).toBeCalledTimes(1)
+      expect(publisher.reconnect).toHaveBeenCalledTimes(1)
     })
   })
 

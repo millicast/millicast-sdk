@@ -28,8 +28,8 @@ defineFeature(feature, test => {
     then('track event is fired', async () => {
       // PeerConnection's track event is asynchronous now
       await new Promise((resolve) => setTimeout(resolve, 100))
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith({ streams: ['new stream incoming'] })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith({ streams: ['new stream incoming'] })
     })
   })
 
@@ -50,8 +50,8 @@ defineFeature(feature, test => {
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('connecting')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('connecting')
     })
   })
 
@@ -72,8 +72,8 @@ defineFeature(feature, test => {
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('connected')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('connected')
     })
   })
 
@@ -95,8 +95,8 @@ defineFeature(feature, test => {
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('disconnected')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('disconnected')
     })
   })
 
@@ -118,8 +118,8 @@ defineFeature(feature, test => {
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('failed')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('failed')
     })
   })
 
@@ -140,8 +140,8 @@ defineFeature(feature, test => {
     })
 
     then('connectionStateChange event is fired', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('connected')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('connected')
     })
   })
 })

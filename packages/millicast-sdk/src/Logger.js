@@ -1,5 +1,5 @@
 import jsLogger from 'js-logger'
-import { version } from '../package.json'
+import { version } from '../package.json' with { type: 'json' }
 import Diagnostics from './utils/Diagnostics'
 
 /**

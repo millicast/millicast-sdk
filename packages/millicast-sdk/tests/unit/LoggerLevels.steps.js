@@ -87,8 +87,8 @@ defineFeature(feature, test => {
     })
 
     then('a message is logged in console', async () => {
-      expect(console).toBeCalledTimes(1)
-      expect(console).toBeCalledWith(expect.any(String), 'This is a log message')
+      expect(console).toHaveBeenCalledTimes(1)
+      expect(console).toHaveBeenCalledWith(expect.any(String), 'This is a log message')
     })
   })
 })

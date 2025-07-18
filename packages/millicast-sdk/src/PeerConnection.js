@@ -329,7 +329,7 @@ export default class PeerConnection extends EventEmitter {
    * import Publish from '@millicast/sdk'
    *
    * //Initialize and connect your Publisher
-   * const millicastPublish = new Publish(streamName, tokenGenerator)
+   * const millicastPublish = new Publish(undefined, tokenGenerator)
    * await millicastPublish.connect(options)
    *
    * //Initialize get stats
@@ -343,7 +343,7 @@ export default class PeerConnection extends EventEmitter {
    * import View from '@millicast/sdk'
    *
    * //Initialize and connect your Viewer
-   * const millicastView = new View(streamName, tokenGenerator)
+   * const millicastView = new View(undefined, tokenGenerator)
    * await millicastView.connect()
    *
    * //Initialize get stats

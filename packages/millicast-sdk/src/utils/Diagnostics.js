@@ -1,4 +1,4 @@
-import { version } from '../../package.json'
+import { version } from '../../package.json' with { type: 'json' }
 
 const MAX_STATS_HISTORY_SIZE = 60
 

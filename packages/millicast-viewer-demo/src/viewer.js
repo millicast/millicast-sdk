@@ -64,7 +64,7 @@ let hasAudio = false
 
 const newViewer = () => {
   const tokenGenerator = () => Director.getSubscriber(streamName, accountId, subscriberToken, enableDRM);
-  const millicastView = new View(streamName, tokenGenerator, null, autoReconnect)
+  const millicastView = new View(undefined, tokenGenerator, null, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
     if (event.name === "active") {
