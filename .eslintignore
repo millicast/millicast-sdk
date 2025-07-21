@@ -11,3 +11,8 @@ packages/millicast-chromecast-receiver
 packages/millicast-multiview-demo
 /**/src/*.worker.js
 /**/rtc-drm-transform.js
+
+packages/millicast-sdk/rollup.config.js
+packages/millicast-sdk/src/Logger.js
+packages/millicast-sdk/src/utils/Diagnostics.js
+packages/millicast-sdk/tests/unit/LoggerDiagnose.steps.js

@@ -89,7 +89,7 @@ export default class Publish extends BaseWebRTC {
    * //Create a new instance
    * // streamName is not necessary in the constructor anymore, could be null or undefined
    * const streamName = "My Millicast Stream Name"
-   * const millicastPublish = new Publish(streamName, tokenGenerator)
+   * const millicastPublish = new Publish(undefined, tokenGenerator)
    *
    * //Get MediaStream
    * const mediaStream = getYourMediaStream()

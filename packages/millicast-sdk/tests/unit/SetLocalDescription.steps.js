@@ -248,7 +248,7 @@ defineFeature(feature, test => {
     then('returns the SDP with scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
-      expect(peerConnection.peer.addTransceiver).toBeCalledTimes(2)
+      expect(peerConnection.peer.addTransceiver).toHaveBeenCalledTimes(2)
     })
   })
 

@@ -82,8 +82,8 @@ defineFeature(feature, test => {
     })
 
     then('the peer is closed and emits connectionStateChange event', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('closed')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('closed')
       expect(peerConnection.peer).toBeNull()
     })
   })

@@ -115,7 +115,7 @@ export default class View extends BaseWebRTC {
    *
    * //Create a new instance
    * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(streamName, tokenGenerator)
+   * const millicastView = new View(undefined, tokenGenerator)
    *
    * //Set track event handler to receive streams from Publisher.
    * millicastView.on('track', (event) => {
