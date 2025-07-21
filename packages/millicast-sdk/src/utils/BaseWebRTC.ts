@@ -1,5 +1,5 @@
 import Logger from '../Logger';
-import PeerConnection from '../PeerConnection';
+import { PeerConnection } from '../PeerConnection';
 import { Signaling } from '../Signaling';
 import Diagnostics from './Diagnostics';
 import { ILogger } from 'js-logger';
@@ -17,10 +17,13 @@ const nextReconnectInterval = (interval: number) => {
   return interval < maxReconnectionInterval ? interval * 2 : interval;
 };
 
+/** @hidden */
+export type ConnectOptions = PublishConnectOptions | ViewerConnectOptions;
+
 /**
  * Base class for common actions about peer connection and reconnect mechanism for Publisher and Viewer instances.
  */
-export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmitter<TEvents> {
+export class BaseWebRTC<TEvents extends BaseWebRTCEvents, TConnectOptions extends ConnectOptions> extends TypedEventEmitter<TEvents> {
   protected webRTCPeer: PeerConnection;
   protected signaling: Signaling | null;
   protected autoReconnect: boolean;
@@ -29,7 +32,7 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
   private firstReconnection: boolean;
   protected stopReconnection: boolean;
   #isReconnecting: boolean;
-  protected options: ViewerConnectOptions | PublishConnectOptions | null;
+  protected connectOptions!: TConnectOptions;
   protected logger: ILogger;
 
   /**
@@ -52,7 +55,6 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
     this.firstReconnection = true;
     this.stopReconnection = false;
     this.#isReconnecting = false;
-    this.options = null;
   }
 
   /**
@@ -140,12 +142,12 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
       if (!this.isActive() && !this.stopReconnection && !this.#isReconnecting) {
         this.stop();
 
-        (this as BaseWebRTC<BaseWebRTCEvents>).emit('reconnect', {
+        (this as BaseWebRTC<BaseWebRTCEvents, TConnectOptions>).emit('reconnect', {
           timeout: nextReconnectInterval(this.#reconnectionInterval),
           error: data?.error ? data?.error : new Error('Attempting to reconnect'),
         });
         this.#isReconnecting = true;
-        await this.connect(this.options);
+        await this.connect(this.connectOptions);
         this.alreadyDisconnected = false;
         this.#reconnectionInterval = baseInterval;
         this.firstReconnection = true;
@@ -164,7 +166,7 @@ export class BaseWebRTC<TEvents extends BaseWebRTCEvents> extends TypedEventEmit
     /* tslint:disable:no-empty */
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async connect(_options: unknown): Promise<void> {
+  async connect(_options: TConnectOptions): Promise<void> {
     /* tslint:disable:no-empty */
   }
 

@@ -1,6 +1,7 @@
 {
     "$schema": "https://typedoc.org/schema.json",
     "navigationLinks": {
+        "Dolby OptiView": "https://optiview.dolby.com",
         "GitHub": "https://github.com/millicast/millicast-sdk",
         "NPM Package": "https://www.npmjs.com/package/@millicast/sdk"
     },

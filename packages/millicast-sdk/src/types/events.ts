@@ -2,7 +2,7 @@
 import { BaseWebRTC } from '../utils/BaseWebRTC';
 import { Publisher } from '../Publisher';
 import { Viewer } from '../Viewer';
-import PeerConnection from '../PeerConnection';
+import { PeerConnection } from '../PeerConnection';
 import { PeerConnectionStats } from '../PeerConnectionStats';
 import { Signaling } from '../Signaling';
 import TransactionManager from 'transaction-manager';
@@ -15,7 +15,16 @@ import { ConnectionStats } from './stats.types';
  * Events triggered by the {@link PeerConnectionStats} class.
  */
 export interface PeerConnectionStatsEvents extends EmittedEvents {
-  /** Triggered when a new track is available. */
+  /**
+   * Triggered when new WebRTC statistics are available.
+   *
+   * @example
+   * ```ts
+   * viewer.on('stats', (webRtcStats: ConnectionStats) => {
+   *   console.log(webRtcStats);
+   * });
+   * ```
+   */
   stats(webRtcStats: ConnectionStats): void;
 }
 
@@ -87,14 +96,12 @@ export interface SignalingEvents extends EmittedEvents {
 /**
  * Events triggered by the {@link Viewer}, {@link Publisher} and {@link BaseWebRTC} classes.
  */
-export interface BaseWebRTCEvents extends EmittedEvents {
+export interface BaseWebRTCEvents extends PeerConnectionStatsEvents {
   /**
    * Event triggered from time to time to indicate the number of viewers connected to the stream.
    *
    * @example
    * ```ts
-   * // TODO
-   *
    * viewer.on('viewercount', (count: number) => {
    *   console.log(count, 'viewer(s) connected.');
    * });

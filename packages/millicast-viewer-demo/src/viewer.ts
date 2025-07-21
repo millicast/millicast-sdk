@@ -213,7 +213,7 @@ const subscribe = async () => {
     window.millicastView = millicastView = newViewer()
     await millicastView.connect(options)
 
-    millicastView.webRTCPeer.on('stats', (event) => {
+    millicastView.on('stats', (event) => {
       console.log(event)
     })
   } catch (error) {

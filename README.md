@@ -37,17 +37,15 @@ npm i --save @millicast/sdk
 
 The following examples demonstrate how to broadcast with the Publisher app capturing the user's camera and microphone. You can then view the stream using the Viewer app.
 
-You will need to use a [Dolby Millicast account](https://streaming.dolby.io/) with a valid publishing token.
+You will need to use a [Dolby OptiView account](https://optiview.dolby.com/) with a valid publishing token.
 
 ### Publisher app
 
 Please be sure to set up the credentials filling up the `yourStreamName` and `yourPublishingToken` fields.
 
-In vanilla JavaScript:
-
-`publisher.html`
-
 ```html
+<!-- publisher.html -->
+
 <html>
   <head>
     <!-- Import the Millicast JS SDK -->
@@ -56,30 +54,28 @@ In vanilla JavaScript:
 
   <body>
     <script type="module">
-      const yourPublishingToken = '...'
-      const yourStreamName = '...'
-
-      // Define callback for generate new tokens
-      const tokenGenerator = () =>
-        const options : DirectorPublisherOptions = {token: yourPublishingToken, streamName: yourStreamName}
-        millicast.Director.getPublisher(options)
+      const yourPublishingToken = '...';
+      const yourStreamName = '...';
 
       // Create a new instance
-      const millicastPublish = new millicast.Publish(yourStreamName, tokenGenerator)
+      const millicastPublisher = new millicast.Publisher({
+        streamName: yourStreamName,
+        publishToken: yourPublishingToken,
+      });
 
       // Get user camera and microphone
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
       // Publishing options
       const broadcastOptions = {
         mediaStream,
-      }
+      };
 
       // Start broadcast
       try {
-        await millicastPublish.connect(broadcastOptions)
+        await millicastPublisher.connect(broadcastOptions);
       } catch (e) {
-        console.log('Connection failed, handle error', e)
+        console.error('Connection failed, handle error', e);
       }
     </script>
   </body>
@@ -90,11 +86,9 @@ In vanilla JavaScript:
 
 Please be sure to set up the credentials filling up the `yourStreamName` and `yourStreamAccountId` fields.
 
-In vanilla JavaScript:
-
-`viewer.html`
-
 ```html
+<!-- viewer.html -->
+
 <html>
   <head>
     <!-- Import the Millicast JS SDK -->
@@ -106,27 +100,28 @@ In vanilla JavaScript:
 
     <script type="module">
       // Get media element
-      const video = document.getElementById('my-video')
+      const video = document.getElementById('my-video');
 
       // Set the credentials for the streaming
-      const yourStreamName = '...'
-      const yourStreamAccountId = '...'
-
-      // Define callback for generate new token
-      const options: DirectorSubscriberOptions = {
-        streamName: yourStreamName,
-        streamAccountId: yourStreamAccountId,
-      }
-      const tokenGenerator = () => millicast.Director.getSubscriber(options)
+      const yourStreamName = '...';
+      const yourStreamAccountId = '...';
 
       // Create a new instance
-      const millicastView = new millicast.View(yourStreamName, tokenGenerator, video)
+      const viewer = new millicast.Viewer({
+        streamName: yourStreamName,
+        streamAccountId: yourStreamAccountId,
+      });
+
+      // Listen to the track event to receive the streams from the publisher.
+      viewer.on('track', (event) => {
+        video.srcObject = event.streams[0]);
+      });
 
       // Start connection to publisher
       try {
-        await millicastView.connect()
+        await millicastViewer.connect();
       } catch (e) {
-        console.log('Connection failed, handle error', e)
+        console.error('Connection failed, handle error', e);
       }
     </script>
   </body>
@@ -135,7 +130,7 @@ In vanilla JavaScript:
 
 ## Documentation
 
-The [Documentation](https://docs.optiview.dolby.com/millicast/) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.optiview.dolby.com/millicast/getting-started/) guide as a quick start.
+The [Documentation](https://optiview.dolby.com/docs/millicast/) provides an overview of the Dolby OptiView streaming services. This includes a [Getting Started](https://optiview.dolby.com/docs/millicast/getting-started/) guide as a quick start.
 
 The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development.
 
@@ -158,7 +153,7 @@ Right now, we only have a React Native guide.
 
 This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose.
 
-Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.optiview.dolby.com/millicast/playback/players-sdks/react-native/)!
+Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://optiview.dolby.com/docs/millicast/playback/players-sdks/react-native/)!
 
 ## SDK developer information
 

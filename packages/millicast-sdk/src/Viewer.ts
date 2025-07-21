@@ -3,7 +3,7 @@ import jwtDecode from 'jwt-decode';
 import Logger from './Logger';
 import { BaseWebRTC } from './utils/BaseWebRTC';
 import { Signaling } from './Signaling';
-import PeerConnection from './PeerConnection';
+import { PeerConnection } from './PeerConnection';
 import { hexToUint8Array } from './utils/StringUtils';
 import { swapPropertyValues } from './utils/ObjectUtils';
 import FetchError from './utils/FetchError';
@@ -69,6 +69,8 @@ const defaultConnectOptions: ViewerConnectOptions = {
 /**
  * This object manages the connection to the platform to subscribe and receive streams.
  *
+ * The events from {@link ViewerEvents} may be fired from this object.
+ *
  * @example
  * How to connect to a stream:
  * ```typescript
@@ -122,7 +124,7 @@ const defaultConnectOptions: ViewerConnectOptions = {
  * const connectOptions: ViewerConnectOptions = {};
  * await viewer.connect(connectOptions);
  */
-export class Viewer extends BaseWebRTC<ViewerEvents> {
+export class Viewer extends BaseWebRTC<ViewerEvents, ViewerConnectOptions> {
   // States what payload type is associated with each codec from the SDP answer.
   private payloadTypeCodec: { [key: number]: string } = {};
   // Follows the media id values of each transceiver's track from the 'track' events.
@@ -138,7 +140,6 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null;
   private stopReemitingSignalingInstanceEvents: (() => void) | null = null;
   #options: ViewerOptions;
-  protected override options: ViewerConnectOptions | null = null;
 
   /**
    * Creates a Viewer object.
@@ -148,13 +149,15 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     const logger = Logger.get('Viewer');
 
     if (isNotDefined(options.streamName)) {
-      logger.error('The Stream Name is missing.');
-      throw new Error('The Stream Name is missing.');
+      const errorMessage = 'The Stream Name is missing.';
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
     }
 
     if (isNotDefined(options.streamAccountId)) {
-      logger.error('The Stream Account ID is missing.');
-      throw new Error('The Stream Account ID is missing.');
+      const errorMessage = 'The Stream Account ID is missing.';
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
     }
 
     super(logger, options.autoReconnect ?? true);
@@ -201,7 +204,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
    * }
    */
   override async connect(options: ViewerConnectOptions = defaultConnectOptions): Promise<void> {
-    this.options = {
+    this.connectOptions = {
       ...defaultConnectOptions,
       ...options,
       peerConfig: { ...defaultConnectOptions.peerConfig, ...options.peerConfig },
@@ -288,7 +291,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
   }
 
   private async initConnection(data: { migrate: boolean }) {
-    this.logger.debug('Viewer connect options values: ', this.options);
+    this.logger.debug('Viewer connect options values: ', this.connectOptions);
     this.stopReconnection = false;
     let promises;
 
@@ -302,11 +305,11 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     try {
       subscriberData = await this.getConnectionData();
       // Set the iceServers from the subscribe data into the peerConfig
-      if (this.options?.peerConfig) {
-        this.options.peerConfig.iceServers = subscriberData?.iceServers;
+      if (this.connectOptions?.peerConfig) {
+        this.connectOptions.peerConfig.iceServers = subscriberData?.iceServers;
         // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
-        this.options.peerConfig.encodedInsertableStreams =
-          supportsInsertableStreams && (this.options.enableDRM || this.options.metadata);
+        this.connectOptions.peerConfig.encodedInsertableStreams =
+          supportsInsertableStreams && (this.connectOptions.enableDRM || this.connectOptions.metadata);
       }
     } catch (error) {
       // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
@@ -344,19 +347,22 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer;
 
-    await webRTCPeerInstance.createRTCPeer(this.options?.peerConfig);
+    await webRTCPeerInstance.createRTCPeer(this.connectOptions?.peerConfig);
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.();
     this.stopReemitingSignalingInstanceEvents?.();
     // And start emitting from the new ones
-    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, ['connectionStateChange']);
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, [
+      'connectionStateChange',
+      'stats',
+    ]);
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [
       'viewercount',
       'migrate',
       'updated',
     ]);
 
-    if (this.options?.metadata) {
+    if (this.connectOptions?.metadata) {
       if (!this.worker) {
         this.worker = new TransformWorker();
       }
@@ -414,7 +420,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
       this.isMainStreamActive = false;
     });
 
-    const options = { ...(this.options as ViewerConnectOptions), stereo: true };
+    const options = { ...(this.connectOptions as ViewerConnectOptions), stereo: true };
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(options);
     const signalingConnectPromise = signalingInstance.connect();
 
@@ -425,8 +431,8 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     this.signaling = signalingInstance;
 
     const subscribePromise = this.signaling.subscribe(localSdp, {
-      ...this.options,
-      vad: !!this.options?.multiplexedAudioTracks,
+      ...this.connectOptions,
+      vad: !!this.connectOptions?.multiplexedAudioTracks,
     } as ViewerConnectOptions);
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
       webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
@@ -494,12 +500,12 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
         this.logger.warn('mediaId not defined in track event');
       }
     }
-    if (this.options?.metadata) {
+    if (this.connectOptions?.metadata) {
       if (supportsRTCRtpScriptTransform && this.worker) {
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
           name: 'receiverTransform',
           payloadTypeCodec: { ...this.payloadTypeCodec },
-          codec: this.options.metadata && VideoCodec.H264,
+          codec: this.connectOptions.metadata && VideoCodec.H264,
           mid: trackEvent.transceiver?.mid,
         });
       } else if (supportsInsertableStreams) {
@@ -509,7 +515,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
           {
             action: 'insertable-streams-receiver',
             payloadTypeCodec: { ...this.payloadTypeCodec },
-            codec: this.options.metadata && VideoCodec.H264,
+            codec: this.connectOptions.metadata && VideoCodec.H264,
             mid: trackEvent.transceiver?.mid,
             readable,
             writable,
@@ -581,7 +587,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents> {
     const drmOptions: DrmConfig = {
       merchant: 'dolby',
       environment: rtcDrmEnvironments.Production,
-      customTransform: this.options?.metadata,
+      customTransform: this.connectOptions?.metadata,
       videoElement: options.videoElement,
       audioElement: options.audioElement,
       video: {

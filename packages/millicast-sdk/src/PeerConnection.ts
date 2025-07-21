@@ -30,10 +30,9 @@ const localSDPOptions = {
 };
 
 /**
- * Manages WebRTC connection and SDP information between peers.
- * @example const peerConnection = new PeerConnection();
+ * Manages the WebRTC connection and SDP information between peers.
  */
-export default class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
+export class PeerConnection extends TypedEventEmitter<PeerConnectionEvents> {
   public mode: 'Publisher' | 'Viewer' | null;
   public peer: RTCPeerConnection | null;
   public peerConnectionStats: PeerConnectionStats | null;
