@@ -1,16 +1,15 @@
 const millicast = window.millicast
 const accountId = window.accountId
 const streamName = window.streamName
-const token = window.token
-
-const options = { token, streamName }
-const tokenGenerator = () => millicast.Director.getPublisher(options)
+const publishToken = window.token
 
 class MillicastPublishTest {
   constructor() {
-    millicast.Logger.setLevel(millicast.Logger.DEBUG)
-    millicast.Director.setEndpoint(window.directorEndpoint)
-    this.millicastPublish = new millicast.Publish(streamName, tokenGenerator)
+    millicast.Logger.setLevel(millicast.Logger.DEBUG);
+    millicast.Urls.setEndpoint(window.directorEndpoint);
+
+    const options = { publishToken, streamName };
+    this.millicastPublish = new millicast.Publisher(options);
   }
 
   async init() {
@@ -83,13 +82,9 @@ class MillicastPublishTest {
         absCaptureTime: true,
         events: ['active', 'inactive', 'viewercount'],
       }
-      this.millicastPublish.on('broadcastEvent', (data) => {
-        console.log('Broadcast Event: ', data)
-        // Getting User Count from broadcastEvent.
-        if (data.name === 'viewercount') {
-          document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${data.count}`
-        }
-      })
+      this.millicastPublish.on('viewercount', (count) => {
+        document.getElementById('broadcast-viewers').innerHTML = `Viewers: ${count}`
+      });
       this.millicastPublish.on('connectionStateChange', (state) => {
         if (state === 'connected') {
           const viewLink = `http://localhost:10002/?streamAccountId=${accountId}&streamId=${streamName}`

@@ -1,0 +1,24 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "name": "Millicast SDK",
+  "json": "../../docs-json/millicast-sdk.json",
+  "entryPoints": ["src/index.ts"],
+  "entryPointStrategy": "expand",
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeNotDocumented": true,
+  "excludeNotDocumentedKinds": ["Property", "Interface", "TypeAlias"],
+  "plugin": ["typedoc-plugin-mdn-links"],
+  "externalSymbolLinkMappings": {
+    // used by {@link !Promise}
+    "global": {
+      "MediaStreamConstraints": "https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints",
+      "Error": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error"
+    },
+    "typescript": {
+      "MediaStreamConstraints": "https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints",
+      "Error": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error"
+    }
+  },
+  "out": "docs"
+}

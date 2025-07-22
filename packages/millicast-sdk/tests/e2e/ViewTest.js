@@ -6,7 +6,7 @@ const streamName = window.streamName
 class MillicastViewTest {
   constructor() {
     millicast.Logger.setLevel(millicast.Logger.DEBUG)
-    millicast.Director.setEndpoint(window.directorEndpoint)
+    millicast.Urls.setEndpoint(window.directorEndpoint);
     const href = new URL(window.location.href)
     this.streamAccountId = href.searchParams.get('streamAccountId')
       ? href.searchParams.get('streamAccountId')
@@ -15,9 +15,7 @@ class MillicastViewTest {
     this.playing = false
     this.disableVideo = false
     this.disableAudio = false
-    const options = { streamName: this.streamName, streamAccountId: this.streamAccountId }
-    const tokenGenerator = () => millicast.Director.getSubscriber(options)
-    this.millicastView = new millicast.View(this.streamName, tokenGenerator)
+    this.millicastView = new millicast.Viewer({streamName: this.streamName, streamAccountId: this.streamAccountId})
     this.tracks = []
   }
 
@@ -53,6 +51,7 @@ class MillicastViewTest {
       })
     } catch (error) {
       console.log('There was an error while trying to connect with the publisher')
+      console.error(error)
       this.millicastView.reconnect()
     }
   }

@@ -1,11 +1,76 @@
-import jsLogger, { ILogLevel, ILogHandler, ILogger } from 'js-logger'
-import { version } from '../package.json'
-import Diagnostics from './utils/Diagnostics'
-import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/stats.types'
+import jsLogger, { ILogLevel, ILogHandler, ILogger } from 'js-logger';
+import { version } from '../package.json';
+import Diagnostics from './utils/Diagnostics';
+import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/stats.types';
+
+/** Definition of the log level. */
+export type LogLevel = ILogLevel;
+
+jsLogger.useDefaults({ defaultLevel: jsLogger.TRACE });
+
+const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'];
+
+const formatter: ILogHandler = (messages, context) => {
+  messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} - ${context.level.name} -`);
+};
+
+const enabledFor = (level: ILogLevel, loggerName: string) => {
+  if (loggerName) {
+    return level.value >= namedLoggerLevels[loggerName].value;
+  }
+  return level.value >= loggerLevel.value;
+};
+
+const historyHandler: ILogHandler = (messages, context) => {
+  messages = Array.prototype.slice.call(messages);
+  messages = messages.map((m) => (typeof m === 'object' ? JSON.stringify(m) : m));
+  formatter(messages, context);
+
+  if (maxLogHistorySize !== 0) {
+    history.push(messages.join(' '));
+    if (history.length >= maxLogHistorySize) {
+      history = history.slice(-maxLogHistorySize);
+    }
+  } else {
+    history = [];
+  }
+};
+
+const consoleHandler = jsLogger.createDefaultHandler({ formatter });
+jsLogger.setHandler((messages, context) => {
+  historyHandler(messages, context);
+  if (enabledFor(context.level, context.name || '')) {
+    consoleHandler(messages, context);
+  }
+
+  for (const { handler, level } of customHandlers) {
+    if (context.level.value >= level.value) {
+      handler(messages, context);
+    }
+  }
+});
+
+const DEFAULT_LOG_HISTORY_SIZE = 10000;
+let maxLogHistorySize = DEFAULT_LOG_HISTORY_SIZE;
+let history: string[] = [];
+let loggerLevel: LogLevel = jsLogger.OFF;
+const namedLoggerLevels: {
+  [key: string]: LogLevel;
+} = {};
+const customHandlers: { handler: ILogHandler; level: LogLevel }[] = [];
+
+// TS compiler error complaining about not having CreateDefaultHandlerOptions type and it is not exported by
+// jsLogger so it is copied here so that we can type Logger
+interface CreateDefaultHandlerOptions {
+  formatter?: ILogHandler;
+}
+
+const createDefaultHandler = jsLogger.createDefaultHandler as (
+  options?: CreateDefaultHandlerOptions
+) => ILogHandler;
 
 /**
- * @module Logger
- * @description Manages all log messages from SDK modules, you can use this logger to add your custom
+ * Manages all log messages from SDK modules, you can use this logger to add your custom
  * messages and set your custom log handlers to forward all messages to your own monitoring
  * system.
  *
@@ -35,139 +100,44 @@ import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/
  * Logger.timeEnd('Timer name')
  * // Timer name: 35282.997802734375 ms
  */
-
-export type LogLevel = {
-  /**
-   * - The numerical representation of the level.
-   */
-  value: number
-  /**
-   * - Human readable name of the log level.
-   */
-  name: string
-}
-
-jsLogger.useDefaults({ defaultLevel: jsLogger.TRACE })
-
-const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR']
-
-const formatter: ILogHandler = (messages, context) => {
-  messages.unshift(`[${context.name || 'Global'}] ${new Date().toISOString()} - ${context.level.name} -`)
-}
-const enabledFor = (level: ILogLevel, loggerName: string) => {
-  if (loggerName) {
-    return level.value >= namedLoggerLevels[loggerName].value
-  }
-  return level.value >= loggerLevel.value
-}
-
-const historyHandler: ILogHandler = (messages, context) => {
-  messages = Array.prototype.slice.call(messages)
-  messages = messages.map((m) => (typeof m === 'object' ? JSON.stringify(m) : m))
-  formatter(messages, context)
-
-  if (maxLogHistorySize !== 0) {
-    history.push(messages.join(' '))
-    if (history.length >= maxLogHistorySize) {
-      history = history.slice(-maxLogHistorySize)
-    }
-  } else {
-    history = []
-  }
-}
-
-const consoleHandler = jsLogger.createDefaultHandler({ formatter })
-jsLogger.setHandler((messages, context) => {
-  historyHandler(messages, context)
-  if (enabledFor(context.level, context.name || '')) {
-    consoleHandler(messages, context)
-  }
-
-  for (const { handler, level } of customHandlers) {
-    if (context.level.value >= level.value) {
-      handler(messages, context)
-    }
-  }
-})
-
-const DEFAULT_LOG_HISTORY_SIZE = 10000
-let maxLogHistorySize = DEFAULT_LOG_HISTORY_SIZE
-let history: string[] = []
-let loggerLevel = jsLogger.OFF
-const namedLoggerLevels: {
-  [key: string]: LogLevel
-} = {}
-const customHandlers: { handler: ILogHandler; level: LogLevel }[] = []
-
-/**
- * @typedef {Object} LogLevel
- * @global
- * @property {Number} value - The numerical representation of the level.
- * @property {String} name - Human readable name of the log level.
- */
-
-/** @constant {LogLevel} TRACE - Logger.TRACE */
-/** @constant {LogLevel} DEBUG - Logger.DEBUG */
-/** @constant {LogLevel} INFO  - Logger.INFO */
-/** @constant {LogLevel} TIME  - Logger.TIME */
-/** @constant {LogLevel} WARN  - Logger.WARN */
-/** @constant {LogLevel} ERROR - Logger.ERROR */
-/** @constant {LogLevel} OFF   - Logger.OFF */
-
-// TS compiler error complaining about not having CreateDefaultHandlerOptions type and it is not exported by
-// jsLogger so it is copied here so that we can type Logger
-interface CreateDefaultHandlerOptions {
-  formatter?: ILogHandler
-}
-
-const createDefaultHandler = jsLogger.createDefaultHandler as (
-  options?: CreateDefaultHandlerOptions
-) => ILogHandler
-
 const Logger = {
   ...jsLogger,
   createDefaultHandler,
   enabledFor,
+
   /**
-   * @function
-   * @name getHistory
-   * @description Get all logs generated during a session.
+   * Get all logs generated during a session.
    * All logs are recollected besides the log level selected by the user.
-   * @returns {Array<String>} All logs recollected from level TRACE.
+   * @returns All logs recollected from level TRACE.
    * @example Logger.getHistory()
-   * // Outupt
+   * // Output
    * // [
    * //   "[Director] 2021-04-05T14:09:26.625Z - Getting publisher connection data for stream name:  1xxx2",
    * //   "[Director] 2021-04-05T14:09:27.064Z - Getting publisher response",
    * //   "[Publish]  2021-04-05T14:09:27.066Z - Broadcasting"
    * // ]
    */
-  getHistory: () => history,
+  getHistory: (): Array<string> => history,
+
   /**
-   * @function
-   * @name getHistoryMaxSize
-   * @description Get the maximum count of logs preserved during a session.
+   * Get the maximum count of logs preserved during a session.
    * @example Logger.getHistoryMaxSize()
    */
   getHistoryMaxSize: () => maxLogHistorySize,
 
   /**
-   * @function
-   * @name setHistoryMaxSize
-   * @description Set the maximum count of logs to preserve during a session.
+   * Set the maximum count of logs to preserve during a session.
    * By default it is set to 10000.
    * @param {Number} maxSize - Max size of log history. Set 0 to disable history or -1 to unlimited log history.
    * @example Logger.setHistoryMaxSize(100)
    */
   setHistoryMaxSize: (maxSize: number) => {
-    maxLogHistorySize = maxSize
+    maxLogHistorySize = maxSize;
   },
 
   /**
-   * @function
-   * @name setLevel
-   * @description Set log level to all loggers.
-   * @param {LogLevel} level - New log level to be set.
+   * Set log level to all loggers.
+   * @param level - New log level to be set.
    * @example
    * // Global Level
    * Logger.setLevel(Logger.DEBUG)
@@ -176,18 +146,16 @@ const Logger = {
    * Logger.get('Publish').setLevel(Logger.DEBUG)
    */
   setLevel: (level: LogLevel) => {
-    loggerLevel = level
+    loggerLevel = level;
     for (const key in namedLoggerLevels) {
-      namedLoggerLevels[key] = level
+      namedLoggerLevels[key] = level;
     }
   },
 
   /**
-   * @function
-   * @name getLevel
-   * @description Get global current logger level.
+   * Get global current logger level.
    * Also you can get the level of any particular logger.
-   * @returns {LogLevel}
+   * @returns The current log level.
    * @example
    * // Global Level
    * Logger.getLevel()
@@ -199,12 +167,10 @@ const Logger = {
    * // Output
    * // {value: 5, name: 'WARN'}
    */
-  getLevel: () => loggerLevel,
+  getLevel: (): LogLevel => loggerLevel,
 
   /**
-   * @function
-   * @name get
-   * @description Gets or creates a named logger. Named loggers are used to group log messages
+   * Gets or creates a named logger. Named loggers are used to group log messages
    * that refers to a common context.
    * @param {String} name
    * @returns {Object} Logger object with same properties and functions as Logger except
@@ -224,31 +190,20 @@ const Logger = {
    */
   get: (name: string): ILogger => {
     if (!namedLoggerLevels[name]) {
-      namedLoggerLevels[name] = loggerLevel
+      namedLoggerLevels[name] = loggerLevel;
     }
-    const logger = jsLogger.get(name)
+    const logger = jsLogger.get(name);
     logger.setLevel = (level) => {
-      namedLoggerLevels[name] = level
-    }
-    logger.getLevel = () => namedLoggerLevels[name]
-    return logger
+      namedLoggerLevels[name] = level;
+    };
+    logger.getLevel = () => namedLoggerLevels[name];
+    return logger;
   },
+
   /**
-   * Callback which handles log messages.
-   *
-   * @callback loggerHandler
-   * @global
-   * @param {any[]} messages         - Arguments object with the supplied log messages.
-   * @param {Object} context
-   * @param {LogLevel} context.level - The currrent log level.
-   * @param {String?} context.name   - The optional current logger name.
-   */
-  /**
-   * @function
-   * @name setHandler
-   * @description Add your custom log handler to Logger at the specified level.
-   * @param {loggerHandler} handler  - Your custom log handler function.
-   * @param {LogLevel} level         - Log level to filter messages.
+   * Add your custom log handler to Logger at the specified level.
+   * @param handler  - Your custom log handler function.
+   * @param  level         - Log level to filter messages.
    * @example
    * const myHandler = (messages, context) => {
    *  // You can filter by logger
@@ -265,13 +220,12 @@ const Logger = {
    * Logger.setHandler(myHandler, Logger.INFO)
    */
   setHandler: (handler: ILogHandler, level: LogLevel) => {
-    customHandlers.push({ handler, level })
+    customHandlers.push({ handler, level });
   },
+
   /**
-   * @function
-   * @name diagnose
-   * @description Returns diagnostics information about the connection and environment, formatted according to the specified parameters.
-   * @param {Object | Number} config - Configuration object for the diagnostic parameters
+   * Returns diagnostics information about the connection and environment, formatted according to the specified parameters.
+   * @param  config - Configuration object for the diagnostic parameters
    * @param {Number} [config.statsCount = 60] - Number of stats objects to be included in the diagnostics report.
    * @param {Number} [config.historySize = 1000]  - Amount of history messages to be returned.
    * @param {String} [config.minLogLevel] - Levels of history messages to be included.
@@ -301,48 +255,48 @@ const Logger = {
       statsFormat: 'JSON',
     }
   ): DiagnosticsObject | CMCDDiagnostics => {
-    let finalConfig
+    let finalConfig;
     const defaultConfig = {
       statsCount: 60,
       historySize: 1000,
       minLogLevel: 'TRACE',
       statsFormat: 'JSON',
-    }
+    };
     // Method originally only took statsCount:number, check for backwards compatibility
     if (typeof config === 'number') {
-      defaultConfig.statsCount = config
-      finalConfig = defaultConfig
+      defaultConfig.statsCount = config;
+      finalConfig = defaultConfig;
     } else {
-      finalConfig = { ...defaultConfig, ...config }
+      finalConfig = { ...defaultConfig, ...config };
     }
-    const { statsCount, historySize, minLogLevel, statsFormat } = finalConfig
-    const result = Diagnostics.get(statsCount, statsFormat)
-    const history = Logger.getHistory()
+    const { statsCount, historySize, minLogLevel, statsFormat } = finalConfig;
+    const result = Diagnostics.get(statsCount, statsFormat);
+    const history = Logger.getHistory();
 
     if (!Number.isInteger(historySize) || historySize <= 0) {
-      throw new Error('Invalid Argument Exception : historySize must be a positive integer.')
+      throw new Error('Invalid Argument Exception : historySize must be a positive integer.');
     }
 
     if (!LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
       throw new Error(
         'Invalid Argument Exception : the minLogLevel parameter only excepts "trace", "debug", "info", "warn", and "error" as arguments.'
-      )
+      );
     }
     if (LOG_LEVELS.includes(minLogLevel.toUpperCase())) {
-      const filteredLogLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(minLogLevel.toUpperCase()))
-      const filteredLevels = history.filter((log) => filteredLogLevels.some((level) => log.includes(level)))
-      result.history = filteredLevels.slice(-historySize)
+      const filteredLogLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(minLogLevel.toUpperCase()));
+      const filteredLevels = history.filter((log) => filteredLogLevels.some((level) => log.includes(level)));
+      result.history = filteredLevels.slice(-historySize);
     }
-    return result
+    return result;
   },
+
   JSON: 'JSON',
   CMCD: 'CMCD',
+
   /**
-   * @var
-   * @name VERSION
-   * @description Returns the current SDK version.
+   * Returns the current SDK version.
    */
   VERSION: version,
-}
+};
 
-export default Logger
+export default Logger;

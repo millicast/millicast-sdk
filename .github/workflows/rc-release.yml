@@ -14,8 +14,8 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: build docs
         run: npm run build-docs
       - name: deploy docs
@@ -32,8 +32,8 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: build
         run: npx lerna run build --scope=@millicast/sdk
       - name: cache SDK build
@@ -54,8 +54,8 @@ jobs:
         MILLICAST_STREAM_NAME: ${{ vars.MULTIVIEW_DEMO_STREAM_NAME }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: Restore sdk build
         uses: actions/cache/restore@v4
         with:
@@ -79,8 +79,8 @@ jobs:
         MILLICAST_PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: Restore sdk build
         uses: actions/cache/restore@v4
         with:
@@ -101,16 +101,16 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: Restore sdk build
         uses: actions/cache/restore@v4
         with:
           path: |
             packages/millicast-sdk/dist
           key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
-      - name: Add Readme to package
-        run: cp README.md packages/millicast-sdk/README.md
+      - name: Add LICENSE to package
+        run: cp LICENSE packages/millicast-sdk/LICENSE
       - name: publish
         working-directory: './packages/millicast-sdk'
         env:

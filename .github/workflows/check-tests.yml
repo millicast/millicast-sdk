@@ -18,19 +18,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
-      - name: Check Linter and Build 📑
+      - name: Install the dependencies 🧱
+        run: npm ci
+      - name: Build and Check Linter 📑
         run: |
           npm run build
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+          npm run lint
 
   unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
         run: npm run test-unit
@@ -39,8 +39,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: npm run test-e2e
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup and Install
-        uses: ./.github/actions/setup-install
-      - name: build docs
+      - name: Install the dependencies 🧱
+        run: npm ci
+      - name: Build documentation 📖
         run: npm run build-docs

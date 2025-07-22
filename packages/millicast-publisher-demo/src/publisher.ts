@@ -1,16 +1,12 @@
-import {
-  DirectorPublisherOptions,
-  MillicastDirectorResponse,
-} from 'packages/millicast-sdk/src/types/Director.types'
 import MillicastPublishUserMedia from './js/MillicastPublishUserMedia'
-import { Director, Logger } from '@nx-millicast/millicast-sdk'
+import { Urls, Logger } from '@nx-millicast/millicast-sdk'
 
 window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG)
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 const streamName: string =
@@ -89,12 +85,8 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   function setUserCount(): void {
     // Add listener of broacastEvent to get UserCount
     console.log(millicastPublishUserMedia._events, 'publisher user media')
-    millicastPublishUserMedia.on('broadcastEvent', (event) => {
-      const { name, data } = event
-      console.log(event, 'broadcastEvent')
-      if (name === 'viewercount') {
-        userCount.innerHTML = data.viewercount
-      }
+    millicastPublishUserMedia.on('viewercount', (count) => {
+      userCount.innerHTML = count.toString();
     })
   }
   //////
@@ -143,13 +135,10 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   }
 
   /////////////////////////
-  const options: DirectorPublisherOptions = { token: publishToken, streamName }
-  const tokenGenerator: () => Promise<MillicastDirectorResponse> = () => Director.getPublisher(options)
   const millicastPublishUserMedia = (window.millicastPublish = await MillicastPublishUserMedia.build(
-    { streamName },
-    tokenGenerator,
-    true
-  ))
+    {streamName},
+    {streamName, publishToken, autoReconnect: true}
+  ));
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton') as HTMLElement | null
   let bandwidth: number = 0
   const events: string[] = ['viewercount']

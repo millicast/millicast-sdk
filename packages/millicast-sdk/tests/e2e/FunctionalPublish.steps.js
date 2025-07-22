@@ -61,18 +61,18 @@ defineFeature(feature, (test) => {
     when('I broadcast a stream and connect to stream as viewer', async () => {
       await broadcastPage.evaluate(
         async ({ options, publishToken, streamName }) =>
-          await startPublisher(publishToken, streamName, options),
+          startPublisher(publishToken, streamName, options),
         { options, publishToken, streamName }
       )
       await viewerPage.evaluate(
-        async ({ streamName, accountId }) => await startViewer(streamName, accountId),
+        async ({ streamName, accountId }) => startViewer(streamName, accountId),
         { streamName, accountId }
       )
 
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
 
       videoFrame1 = await viewerPage.evaluate('getVideoPixelSums()')
-      await viewerPage.waitForTimeout(500)
+      await new Promise((resolve) => setTimeout(resolve, 500));
       videoFrame2 = await viewerPage.evaluate('getVideoPixelSums()')
     })
 

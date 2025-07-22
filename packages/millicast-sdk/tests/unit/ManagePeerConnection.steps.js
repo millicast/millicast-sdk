@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection, { webRTCEvents } from '../../src/PeerConnection'
+import { PeerConnection } from '../../src/PeerConnection'
 import { defaultConfig } from './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 const feature = loadFeature('../features/ManagePeerConnection.feature', {
@@ -77,7 +77,7 @@ defineFeature(feature, (test) => {
     given('I have a RTC peer', async () => {
       peerConnection = new PeerConnection()
       await peerConnection.createRTCPeer()
-      peerConnection.on(webRTCEvents.connectionStateChange, handler)
+      peerConnection.on('connectionStateChange', handler)
     })
 
     when('I close the RTC peer', async () => {
@@ -85,8 +85,8 @@ defineFeature(feature, (test) => {
     })
 
     then('the peer is closed and emits connectionStateChange event', async () => {
-      expect(handler).toBeCalledTimes(1)
-      expect(handler).toBeCalledWith('closed')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('closed')
       expect(peerConnection.peer).toBeNull()
     })
   })

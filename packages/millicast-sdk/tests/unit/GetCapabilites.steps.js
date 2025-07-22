@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection from '../../src/PeerConnection'
+import { PeerConnection } from '../../src/PeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
 
 const feature = loadFeature('../features/GetCapabilities.feature', { loadRelativePath: true, errors: true })

@@ -7,19 +7,31 @@
     "millicast",
     "webrtc",
     "realtime",
-    "streaming"
+    "streaming",
+    "dolby",
+    "optiview"
   ],
-  "main": "./millicast.mjs",
-  "module": "./millicast.mjs",
-  "typings": "./index.d.ts",
+  "main": "dist/millicast.mjs",
+  "module": "dist/millicast.mjs",
+  "typings": "dist/index.d.ts",
   "files": [
-    "dist",
-    "scripts"
+    "dist"
   ],
+  "watch": {
+    "build-docs": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "ts,js"
+    }
+  },
   "scripts": {
     "build": "nx build @millicast/sdk",
-    "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
-    "start-docs": "npm run build-docs && serve docs",
+    "build-docs": "typedoc",
+    "pretty": "npx prettier . --write",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --ext .js,.ts --fix",
+    "start-docs": "npm run build-docs && serve docs & npm-watch",
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
     "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
     "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --verbose",
@@ -49,5 +61,36 @@
     "type": "git",
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "@dolbyio/webrtc-stats": "^1.0.4",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "js-base64": "^3.7.7",
+    "js-logger": "^1.6.1",
+    "jwt-decode": "^3.1.2",
+    "re-emitter": "^1.1.4",
+    "semantic-sdp": "^3.22.0",
+    "transaction-manager": "^2.1.3",
+    "tslib": "^2.7.0",
+    "ua-parser-js": "^1.0.38"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.31.0",
+    "@nx/eslint": "^21.3.2",
+    "@nx/eslint-plugin": "^21.3.2",
+    "@types/ua-parser-js": "^0.7.39",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "jest": "^30.0.4",
+    "jest-cucumber": "^4.5.0",
+    "jest-environment-jsdom": "^30.0.4",
+    "jest-environment-node": "^30.0.4",
+    "jest-puppeteer": "^11.0.0",
+    "jest-websocket-mock": "^2.5.0",
+    "lint-staged": "^10.5.4",
+    "mock-socket": "^9.0.3",
+    "npm-watch": "^0.13.0",
+    "typescript-eslint": "^8.37.0"
+  }
 }

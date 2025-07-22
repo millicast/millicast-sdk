@@ -1,0 +1,8 @@
+{
+    "extends": ["./typedoc.base.json"],
+    "name": "Dolby OptiView",
+    "entryPointStrategy": "merge",
+    "entryPoints": ["docs-json/*.json"],
+    "includeVersion": false,
+    "out": "docs"
+}

@@ -2,6 +2,7 @@ import { VideoCodec } from '../../src/types/Codecs.types'
 import { validatePublishConnectOptions } from '../../src/utils/Validators'
 
 describe('Validator: "validatePublishConnectOptions"', () => {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   let validPublishConnectionOptions: any
   beforeEach(() => {
     validPublishConnectionOptions = {

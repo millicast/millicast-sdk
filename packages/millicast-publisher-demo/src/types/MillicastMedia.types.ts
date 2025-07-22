@@ -1,5 +1,5 @@
 export type MillicastMediaOptions = {
-  constraints: MediaStreamConstraints
+  constraints?: MediaStreamConstraints
   streamName: String
 }
 

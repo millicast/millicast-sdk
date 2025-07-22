@@ -1,6 +1,5 @@
-import { View, Director, Logger } from '@nx-millicast/millicast-sdk'
+import { Viewer, Urls, Logger } from '@nx-millicast/millicast-sdk'
 import CircularSlider from '@maslick/radiaslider/src/slider-circular'
-import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
 console.log(CircularSlider)
 
 window.Logger = Logger
@@ -8,7 +7,7 @@ window.Logger = Logger
 Logger.setLevel(Logger.DEBUG)
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 // Get our url
@@ -59,9 +58,11 @@ document.body.onclick = async () => {
 
   // Create audio context
   const audioContext = new window.AudioContext({ sampleRate: 48000 })
-  const options: DirectorSubscriberOptions = { streamName, streamAccountId }
-  const tokenGenerator = () => Director.getSubscriber(options)
-  window.millicastView = millicastView = new View(tokenGenerator, true)
+  window.millicastView = millicastView = new Viewer({
+    streamName,
+    streamAccountId,
+    autoReconnect: true,
+  })
   millicastView.on('track', ({ track }) => {
     // Ignore non audio tracks
     if (track.kind !== 'audio') {

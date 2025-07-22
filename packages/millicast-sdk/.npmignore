@@ -3,5 +3,4 @@ docs
 coverage
 node_modules
 jest.config.js
-jsdoc.json
-docs-translations
+eslint.config.mjs

@@ -1,13 +1,12 @@
-import { View, Director, Logger } from "@nx-millicast/millicast-sdk";
-import { DirectorSubscriberOptions } from "packages/millicast-sdk/src/types/Director.types";
-import { ActiveEvent, DRMOptions } from "packages/millicast-sdk/src/types/View.types";
+import { Viewer, Urls, Logger, ActiveEventPayload, MetadataEventPayload } from "@nx-millicast/millicast-sdk";
+import { DRMOptions } from "packages/millicast-sdk/src/types/Viewer.types";
 
 window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG)
 
 if (import.meta.env.VITE_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT)
+  Urls.setEndpoint(import.meta.env.VITE_DIRECTOR_ENDPOINT);
 }
 
 //Get our url
@@ -32,19 +31,7 @@ const disableVideo = href.searchParams.get('disableVideo') === 'true'
 const disableAudio = href.searchParams.get('disableAudio') === 'true'
 const muted = href.searchParams.get('muted') === 'true' || href.searchParams.get('muted') === null
 const autoplay = href.searchParams.get('autoplay') === 'true' || href.searchParams.get('autoplay') === null
-const autoReconnect =
-  href.searchParams.get('autoReconnect') === 'true' || href.searchParams.get('autoReconnect') === null
-const disableControls =
-  href.searchParams.get('disableControls') === 'true' && href.searchParams.get('disableControls') !== null
-const disableVolume =
-  (href.searchParams.get('disableVolume') === 'true' && href.searchParams.get('disableVolume') !== null) ||
-  disableControls
-const disablePlay =
-  (href.searchParams.get('disablePlay') === 'true' && href.searchParams.get('disablePlay') !== null) ||
-  disableControls
-const disableFull =
-  (href.searchParams.get('disableFull') === 'true' && href.searchParams.get('disableFull') !== null) ||
-  disableControls
+const autoReconnect = href.searchParams.get('autoReconnect') === 'true' || href.searchParams.get('autoReconnect') === null
 
 let playing = false;
 let fullBtn = document.querySelector("#fullBtn") as HTMLButtonElement;
@@ -54,34 +41,36 @@ let video = document.querySelector("video") as HTMLVideoElement;
 let millicastView = null
 
 const newViewer = () => {
-  const options: DirectorSubscriberOptions = { streamName, streamAccountId: accountId, subscriberToken }
-  const tokenGenerator = () => Director.getSubscriber(options);
-  const millicastView = new View(tokenGenerator, autoReconnect)
-  millicastView.on("broadcastEvent", (event) => {
+  const millicastView = new Viewer({
+    streamName,
+    streamAccountId: accountId,
+    subscriberToken,
+    autoReconnect,
+  });
+
+  millicastView.on("active", (event: ActiveEventPayload) => {
     if (!autoReconnect) return;
-    if (event.name === "active") {
-      const _event = event as ActiveEvent
-      const encryption = _event.data.encryption
-      if (encryption && enableDRM) {
-        const drmOptions: DRMOptions = {
-          videoElement: document.querySelector("video"),
-          audioElement: document.querySelector("audio"),
-          videoEncryptionParams: encryption,
-          videoMid: '0',
-        };
-        const audioTrackInfo = _event.data.tracks.find((track) => track.media === 'audio')
-        if (audioTrackInfo) {
-          drmOptions.audioMid = audioTrackInfo.trackId;
-        }
-        millicastView.configureDRM(drmOptions)
+    const encryption = event.encryption
+    if (encryption && enableDRM) {
+      const drmOptions: DRMOptions = {
+        videoElement: document.querySelector("video"),
+        audioElement: document.querySelector("audio"),
+        videoEncryptionParams: encryption,
+        videoMid: '0',
+      };
+      const audioTrackInfo = event.tracks.find((track) => track.media === 'audio')
+      if (audioTrackInfo) {
+        drmOptions.audioMid = audioTrackInfo.trackId;
       }
+      millicastView.configureDRM(drmOptions)
     }
   });
+
   millicastView.on("track", (event) => {
     if (!millicastView.isDRMOn) addStream(event.streams[0]);
   });
 
-  millicastView.on('metadata', (metadata) => {
+  millicastView.on('metadata', (metadata: MetadataEventPayload) => {
     if (metadata.unregistered) {
       console.log('received SEI unregistered messsage', metadata.unregistered)
     }
@@ -90,7 +79,7 @@ const newViewer = () => {
     }
   })
 
-  millicastView.on('error', (error) => {
+  millicastView.on('error', (error: Error) => {
     console.log('Error from Millicast SDK', error)
   })
 
@@ -224,7 +213,7 @@ const subscribe = async () => {
     window.millicastView = millicastView = newViewer()
     await millicastView.connect(options)
 
-    millicastView.webRTCPeer.on('stats', (event) => {
+    millicastView.on('stats', (event) => {
       console.log(event)
     })
   } catch (error) {
