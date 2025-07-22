@@ -23,7 +23,10 @@ export type ConnectOptions = PublishConnectOptions | ViewerConnectOptions;
 /**
  * Base class for common actions about peer connection and reconnect mechanism for Publisher and Viewer instances.
  */
-export class BaseWebRTC<TEvents extends BaseWebRTCEvents, TConnectOptions extends ConnectOptions> extends TypedEventEmitter<TEvents> {
+export class BaseWebRTC<
+  TEvents extends BaseWebRTCEvents,
+  TConnectOptions extends ConnectOptions,
+> extends TypedEventEmitter<TEvents> {
   protected webRTCPeer: PeerConnection;
   protected signaling: Signaling | null;
   protected autoReconnect: boolean;

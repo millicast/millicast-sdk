@@ -1,4 +1,4 @@
-import jwtDecode from 'jwt-decode';
+import jwtDecode from "jwt-decode";
 import reemit from 're-emitter';
 import { atob } from 'js-base64';
 import Logger from './Logger';
@@ -99,7 +99,7 @@ export class Publisher extends BaseWebRTC<PublisherEvents, PublishConnectOptions
    * Starts broadcast to an existing stream name.
    *
    * @param options - General broadcast options.
-   * 
+   *
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
    *
    * @example
@@ -136,7 +136,10 @@ export class Publisher extends BaseWebRTC<PublisherEvents, PublishConnectOptions
       setSDPToPeer: false,
     };
 
-    this.connectOptions.metadata = this.connectOptions.metadata && this.connectOptions.codec === VideoCodec.H264 && !this.connectOptions.disableVideo;
+    this.connectOptions.metadata =
+      this.connectOptions.metadata &&
+      this.connectOptions.codec === VideoCodec.H264 &&
+      !this.connectOptions.disableVideo;
 
     await this.initConnection({ migrate: false });
   }
@@ -230,7 +233,7 @@ export class Publisher extends BaseWebRTC<PublisherEvents, PublishConnectOptions
       this.logger.error('Error while broadcasting. Publisher data required');
       throw new Error('Publisher data required');
     }
-    const decodedJWT = jwtDecode(publisherData.jwt) as DecodedJWT;
+    const decodedJWT = jwtDecode<DecodedJWT>(publisherData.jwt);
     this.streamName = decodedJWT['millicast'].streamName;
     this.#recordingAvailable = decodedJWT[atob('bWlsbGljYXN0')].record;
     if (this.connectOptions.record && !this.#recordingAvailable) {
@@ -260,7 +263,9 @@ export class Publisher extends BaseWebRTC<PublisherEvents, PublishConnectOptions
       'viewercount',
     ]);
 
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.connectOptions as SignalingPublishOptions);
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(
+      this.connectOptions as SignalingPublishOptions
+    );
     const signalingConnectPromise = signalingInstance.connect();
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise]);
     const localSdp = promises[0];
@@ -304,7 +309,11 @@ export class Publisher extends BaseWebRTC<PublisherEvents, PublishConnectOptions
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise]);
     let remoteSdp = promises[0];
 
-    if (!this.connectOptions.disableVideo && this.connectOptions.bandwidth && this.connectOptions.bandwidth > 0) {
+    if (
+      !this.connectOptions.disableVideo &&
+      this.connectOptions.bandwidth &&
+      this.connectOptions.bandwidth > 0
+    ) {
       remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.connectOptions.bandwidth);
     }
 

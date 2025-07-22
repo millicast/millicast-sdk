@@ -331,7 +331,7 @@ export class Viewer extends BaseWebRTC<ViewerEvents, ViewerConnectOptions> {
       throw new Error('Subscriber data required');
     }
 
-    const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT;
+    const decodedJWT = jwtDecode<DecodedJWT>(subscriberData.jwt);
     this.streamName = decodedJWT['millicast'].streamName;
     const signalingInstance = new Signaling({
       streamName: this.streamName,
