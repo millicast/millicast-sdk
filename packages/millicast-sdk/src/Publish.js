@@ -221,20 +221,6 @@ export default class Publish extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
-    if (this.options.simulcast && !this.options.disableVideo) {
-      const videoSenders = webRTCPeerInstance.peer.getSenders().filter(sender =>
-        sender.track && sender.track.kind === 'video'
-      )
-
-      for (const sender of videoSenders) {
-        const params = sender.getParameters()
-        if (params.encodings && params.encodings.length > 1) {
-          logger.info('Simulcast enabled via modern API')
-          break
-        }
-      }
-    }
-
     if (this.options.metadata) {
       if (!this.worker) {
         this.worker = new TransformWorker()
