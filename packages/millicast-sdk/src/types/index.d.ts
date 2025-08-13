@@ -1,7 +1,7 @@
 import * as js_logger from 'js-logger';
 import * as events from 'events';
 
-declare module '@millicast/sdk' {
+
 
   export type LogLevel = {
     /**
@@ -524,7 +524,7 @@ declare module '@millicast/sdk' {
     qualityLimitationDurations: Object
   };
 
-  class PeerConnectionStats extends events.EventEmitter {
+  export class PeerConnectionStats extends events.EventEmitter {
     constructor(peer: PeerConnection, config: PeerConnectionConfig);
     peer: PeerConnection;
     stats: ConnectionStats;
@@ -1314,7 +1314,7 @@ declare module '@millicast/sdk' {
   }
 
   export type TokenGeneratorCallback = () => Promise<MillicastDirectorResponse>
-  class BaseWebRTC extends events.EventEmitter {
+  export class BaseWebRTC extends events.EventEmitter {
     constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);
     webRTCPeer?: PeerConnection;
     signaling: Signaling;
@@ -1590,4 +1590,4 @@ declare module '@millicast/sdk' {
     replaceConnection(): Promise<void>;
     webRTCPeer?: PeerConnection;
   }
-}
+
