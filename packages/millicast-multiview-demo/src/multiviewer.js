@@ -27,7 +27,13 @@ const connectOptions = {
   enableDRM,
   disableVideo,
   disableAudio,
-  forceSmooth
+  forceSmooth,
+  abrConfiguration: {
+    strategy: 'quality',
+    metadata : {
+      bitrate: 1_500_000
+    }
+  }
 }
 // This will store the main transceiver video mid
 const mainVideoMid = '0'

@@ -200,12 +200,27 @@ export default class Signaling extends EventEmitter {
     const events = ['active', 'inactive', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
     let data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
 
-    if (optionsParsed.vad) { data.vad = true }
-    if (Array.isArray(optionsParsed.events)) { data.events = optionsParsed.events }
-    if (optionsParsed.forcePlayoutDelay) { data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay }
-    if (optionsParsed.layer) { data.layer = optionsParsed.layer }
-    if (optionsParsed.forceSmooth) { data.forceSmooth = options.forceSmooth }
-    if (optionsParsed.customKeys) { data = { ...data, ...optionsParsed.customKeys } }
+    if (optionsParsed.vad) {
+      data.vad = true
+    }
+    if (Array.isArray(optionsParsed.events)) {
+      data.events = optionsParsed.events
+    }
+    if (optionsParsed.forcePlayoutDelay) {
+      data.forcePlayoutDelay = optionsParsed.forcePlayoutDelay
+    }
+    if (optionsParsed.layer) {
+      data.layer = optionsParsed.layer
+    }
+    if (optionsParsed.forceSmooth) {
+      data.forceSmooth = options.forceSmooth
+    }
+    if (optionsParsed.abrConfiguration) {
+      data.abrConfiguration = options.abrConfiguration
+    }
+    if (optionsParsed.customKeys) {
+      data = { ...data, ...optionsParsed.customKeys }
+    }
 
     try {
       if (optionsParsed.disableVideo && optionsParsed.disableAudio) {

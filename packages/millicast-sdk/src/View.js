@@ -23,6 +23,9 @@ const connectOptions = {
   peerConfig: {
     autoInitStats: true,
     statsIntervalMs: 1000
+  },
+  abrConfiguration: {
+    strategy: 'quality'
   }
 }
 
@@ -65,74 +68,95 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * @typedef {Object} LayerInfo
-   * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
-   * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
-   * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
-   * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
-   * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
-   */
+     * @typedef {Object} LayerInfo
+     * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
+     * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
+     * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+     * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
+     * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+     */
 
   /**
-   * @typedef {RTCConfiguration} PeerConnectionConfig - RTC Peer Connection Configuration object. Extends `RTCConfiguration`.
-   * @property {Boolean} [autoInitStats = true]  - Whether stats collection should be auto initialized.
-   * @property {Number} [statsIntervalMs = 1000] - The interval, in milliseconds, at which we poll stats.
-   */
+     * @typedef {RTCConfiguration} PeerConnectionConfig - RTC Peer Connection Configuration object. Extends `RTCConfiguration`.
+     * @property {Boolean} [autoInitStats = true]  - Whether stats collection should be auto initialized.
+     * @property {Number} [statsIntervalMs = 1000] - The interval, in milliseconds, at which we poll stats.
+     */
 
   /**
-   * Connects to an active stream as subscriber.
-   *
-   * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
-   * @param {Object} [options]                                  - General subscriber options.
-   * @param {Boolean} [options.dtx = false]                     - True to modify SDP for supporting dtx in opus. Otherwise False.
-   * @param {Boolean} [options.absCaptureTime = false]          - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   * @param {Boolean} [options.metadata = false]                - Enable metadata extraction if stream is compatible.
-   * @param {Boolean} [options.drm = false]                     - Enable the DRM protected stream playback.
-   * @param {Boolean} [options.disableVideo = false]            - Disable the opportunity to receive video stream.
-   * @param {Boolean} [options.disableAudio = false]            - Disable the opportunity to receive audio stream.
-   * @param {Number} [options.multiplexedAudioTracks]           - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
-   * @param {String} [options.pinnedSourceId]                   - Id of the main source that will be received by the default MediaStream.
-   * @param {Array<String>} [options.excludedSourceIds]         - Do not receive media from the these source ids.
-   * @param {Array<String>} [options.events]                    - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
-   * @param {PeerConnectionConfig} [options.peerConfig = null]  - Options to configure the new RTCPeerConnection.
-   * @param {LayerInfo} [options.layer]                         - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
-   * @param {Object} [options.forcePlayoutDelay = false]        - Ask the server to use the playout delay header extension.
-   * @param {Number} [options.forcePlayoutDelay.min]            - Set minimum playout delay value.
-   * @param {Number} [options.forcePlayoutDelay.max]            - Set maximum playout delay value.
-   * @param {Boolean} [options.enableDRM]                       - Enable DRM, default is false.
-   * @param {Boolean} [options.forceSmooth]                     - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to what the server determines.
+     * @typedef {"performance" | "quality" | "bandwidth"} AbrStrategy
+     */
 
-   * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
-   * @fires PeerConnection#track
-   * @fires Signaling#broadcastEvent
-   * @fires PeerConnection#connectionStateChange
-   * @example await millicastView.connect(options)
-   * @example
-   * import View from '@millicast/sdk'
-   *
-   * //Define callback for generate new token
-   * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
-   *
-   * //Create a new instance
-   * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(streamName, tokenGenerator)
-   *
-   * //Set track event handler to receive streams from Publisher.
-   * millicastView.on('track', (event) => {
-   *   addStreamToYourVideoTag(event.streams[0])
-   * })
-   *
-   * millicastView.on('error', (error) => {
-   *   console.error('Error from Millicast SDK', error)
-   * })
-   *
-   * //Start connection to broadcast
-   * try {
-   *  await millicastView.connect()
-   * } catch (e) {
-   *  console.log('Connection failed, handle error', e)
-   * }
-   */
+  /**
+     * @typedef {Object} AbrStrategyMetadata
+     * @property {number|undefined} bitrate - The initial bitrate, in bits per second. This value is nullable.
+     *
+     */
+
+  /**
+      * Configuration options for ABR (Adaptive Bitrate) behavior.
+      *
+      * @typedef {Object} AbrConfigurationOptions
+      * @property {AbrStrategy} [strategy="quality"] - The strategy for initial playback behavior.
+      *   - `"quality"` (default): Prioritizes highest quality first with high ABR aggressiveness.
+      *   - `"bandwidth"`: Conservative quality selection based on network estimates with medium ABR aggressiveness.
+      *   - `"performance"`: Prioritizes lowest quality first with conservative ABR aggressiveness.
+      * @property {AbrStrategyMetadata} [metadata] - The metadata configuration for the initial playback strategy. This value is nullable.
+      */
+
+  /**
+     * Connects to an active stream as subscriber.
+     *
+     * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
+     * @param {Object} [options]                                  - General subscriber options.
+     * @param {Boolean} [options.dtx = false]                     - True to modify SDP for supporting dtx in opus. Otherwise False.
+     * @param {Boolean} [options.absCaptureTime = false]          - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+     * @param {Boolean} [options.metadata = false]                - Enable metadata extraction if stream is compatible.
+     * @param {Boolean} [options.drm = false]                     - Enable the DRM protected stream playback.
+     * @param {Boolean} [options.disableVideo = false]            - Disable the opportunity to receive video stream.
+     * @param {Boolean} [options.disableAudio = false]            - Disable the opportunity to receive audio stream.
+     * @param {Number} [options.multiplexedAudioTracks]           - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+     * @param {String} [options.pinnedSourceId]                   - Id of the main source that will be received by the default MediaStream.
+     * @param {Array<String>} [options.excludedSourceIds]         - Do not receive media from the these source ids.
+     * @param {Array<String>} [options.events]                    - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
+     * @param {PeerConnectionConfig} [options.peerConfig = null]  - Options to configure the new RTCPeerConnection.
+     * @param {LayerInfo} [options.layer]                         - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
+     * @param {Object} [options.forcePlayoutDelay = false]        - Ask the server to use the playout delay header extension.
+     * @param {Number} [options.forcePlayoutDelay.min]            - Set minimum playout delay value.
+     * @param {Number} [options.forcePlayoutDelay.max]            - Set maximum playout delay value.
+     * @param {Boolean} [options.enableDRM]                       - Enable DRM, default is false.
+     * @param {Boolean} [options.forceSmooth]                     - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to what the server determines.
+     * @param {AbrConfigurationOptions} [options.abrConfiguration] - The strategy for initial playback behavior. Can be one of ("quality" | "performance" | "bandwidth")
+     * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
+     * @fires PeerConnection#track
+     * @fires Signaling#broadcastEvent
+     * @fires PeerConnection#connectionStateChange
+     * @example await millicastView.connect(options)
+     * @example
+     * import View from '@millicast/sdk'
+     *
+     * //Define callback for generate new token
+     * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
+     *
+     * //Create a new instance
+     * const streamName = "Millicast Stream Name where i want to connect"
+     * const millicastView = new View(streamName, tokenGenerator)
+     *
+     * //Set track event handler to receive streams from Publisher.
+     * millicastView.on('track', (event) => {
+     *   addStreamToYourVideoTag(event.streams[0])
+     * })
+     *
+     * millicastView.on('error', (error) => {
+     *   console.error('Error from Millicast SDK', error)
+     * })
+     *
+     * //Start connection to broadcast
+     * try {
+     *  await millicastView.connect()
+     * } catch (e) {
+     *  console.log('Connection failed, handle error', e)
+     * }
+     */
   async connect (options = connectOptions) {
     this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
     this.eventQueue.length = 0
@@ -222,6 +246,20 @@ export default class View extends BaseWebRTC {
     logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false
     let promises
+    if (data.abrConfiguration) {
+      if (!data.abrConfiguration.abrStrategy) {
+        data.abrConfiguration.abrStrategy = 'quality'
+      }
+      if (data.abrConfiguration.metadata) {
+        const bitrate = data.abrConfiguration.metadata.bitrate
+        if (bitrate) {
+          if (bitrate < 0) {
+            throw new Error(`Invalid bitrate ${bitrate} supplied for ABR. The value must be... TBD`)
+          }
+        }
+      }
+    }
+
     if (!data.migrate && this.isActive()) {
       logger.warn('Viewer currently subscribed')
       throw new Error('Viewer currently subscribed')
