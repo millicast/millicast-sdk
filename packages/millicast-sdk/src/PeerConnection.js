@@ -30,7 +30,7 @@ const localSDPOptions = {
 
 /**
 
- * Get optimized simulcast encodings based on Millicast recommendations
+ * Get optimized simulcast encodings.
  * @param {Number} width - Video width
  * @param {Number} height - Video height
  * @returns {Array} Optimized encoding configurations
