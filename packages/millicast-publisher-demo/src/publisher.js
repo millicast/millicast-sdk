@@ -171,6 +171,12 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         simulcast,
         disableVideo,
         disableAudio,
+        stereo: false,
+        dtx: true,
+        scalabilityMode: null,
+        absCaptureTime: false,
+        dependencyDescriptor: false,
+        setSDPToPeer: true,
         peerConfig : {
           autoInitStats: true,
           statsIntervalMs : 5000
@@ -253,8 +259,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     millicastPublishUserMedia.mediaManager.constraints = {
       audio: !disableAudio ? a : false,
       video: !disableVideo ? {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
         frameRate: { ideal: 24 },
       } : false,
     };

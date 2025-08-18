@@ -170,7 +170,7 @@ classDiagram
     +stopStats()
     +async getRTCLocalSDP(options) string
     +async setRTCRemoteSDP(sdp)
-    +updateBandwidthRestriction(sdp, bitrate) string
+    +updateBandwidthRestriction(bitrate) string
     +async updateBitrate(bitrate)
   }
   class Signaling {
