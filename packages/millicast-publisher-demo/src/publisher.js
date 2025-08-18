@@ -171,6 +171,12 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         simulcast,
         disableVideo,
         disableAudio,
+        stereo: false,
+        dtx: true,
+        scalabilityMode: null,
+        absCaptureTime: false,
+        dependencyDescriptor: false,
+        setSDPToPeer: true,
         peerConfig : {
           autoInitStats: true,
           statsIntervalMs : 5000

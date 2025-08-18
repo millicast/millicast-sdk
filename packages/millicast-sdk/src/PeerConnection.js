@@ -5,6 +5,7 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './utils/Codecs'
+import BitrateManager from './utils/BitrateManager'
 
 const logger = Logger.get('PeerConnection')
 
@@ -46,7 +47,8 @@ const getOptimizedSimulcastEncodings = (width, height) => {
 
   let resolutionTier
 
-  if (totalPixels >= RESOLUTION_1080P * 0.8) { // Allow some tolerance
+  if (totalPixels >= RESOLUTION_1080P * 0.8) {
+    // Allow some tolerance
     resolutionTier = '1080p'
   } else if (totalPixels >= RESOLUTION_720P * 0.8) {
     resolutionTier = '720p'
@@ -171,7 +173,9 @@ export default class PeerConnection extends EventEmitter {
     this.sessionDescription = null
     this.peer = null
     this.peerConnectionStats = null
+    this.options = {}
     this.transceiverMap = new Map()
+    this.bitrateManager = new BitrateManager()
   }
 
   /**
@@ -223,6 +227,9 @@ export default class PeerConnection extends EventEmitter {
 
     try {
       await this.peer.setRemoteDescription(answer)
+      if (this.options.dtx && !this.options.disableAudio) {
+        await configureDTX(this.peer, this.options.dtx, this.sessionDescription)
+      }
       logger.info('RTC Remote SDP was set successfully.')
       logger.debug('RTC Remote SDP new value: ', sdp)
     } catch (e) {
@@ -240,9 +247,9 @@ export default class PeerConnection extends EventEmitter {
      * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
      * @param {VideoCodec} options.codec - Selected codec for support simulcast.
      * @param {String} options.scalabilityMode - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
-     * **Only available in Google Chrome.**
+     * **Only available in Google Chrome. When configured with Simulcast, simulcast takes precedence.**
      * @param {Boolean} options.absCaptureTime - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-     * @param {Boolean} options.dependencyDescriptor - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
+     * @param {Boolean} options.dependencyDescriptor - This is an experimental setting. Set this to true to enable support for aom dependency descriptor header extension. False by default.
      * @param {Boolean} options.disableAudio - True to not support audio.
      * @param {Boolean} options.disableVideo - True to not support video.
      * @param {Boolean} options.setSDPToPeer - True to set the SDP to local peer.
@@ -251,37 +258,30 @@ export default class PeerConnection extends EventEmitter {
   async getRTCLocalSDP (options = localSDPOptions) {
     logger.info('Getting RTC Local SDP')
     options = { ...localSDPOptions, ...options }
+    this.options = options
     logger.debug('Options: ', options)
 
     const mediaStream = getValidMediaStream(options.mediaStream)
     if (mediaStream) {
-      addMediaStreamToPeer(this.peer, mediaStream, options)
+      await addMediaStreamToPeer(this.peer, mediaStream, options)
     } else {
       addReceiveTransceivers(this.peer, options)
     }
 
+    if (!options.disableAudio) {
+      if (options.stereo) {
+        configureAudioCodec(this.peer, options.stereo)
+      }
+      await configureMultiOpus(this.peer, mediaStream)
+    }
+
     logger.info('Creating peer offer')
     const response = await this.peer.createOffer()
+
     logger.info('Peer offer created')
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
-
-    if (!options.disableAudio) {
-      if (options.stereo) {
-        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
-      }
-      if (options.dtx) {
-        this.sessionDescription.sdp = SdpParser.setDTX(this.sessionDescription.sdp)
-      }
-      this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
-    }
-    if (options.absCaptureTime) {
-      this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp)
-    }
-    if (options.dependencyDescriptor) {
-      this.sessionDescription.sdp = SdpParser.setDependencyDescriptor(this.sessionDescription.sdp)
-    }
 
     if (options.setSDPToPeer) {
       await this.peer.setLocalDescription(this.sessionDescription)
@@ -313,19 +313,19 @@ export default class PeerConnection extends EventEmitter {
 
   /**
      * Update remote SDP information to restrict bandwidth.
-     * @param {String} sdp - Remote SDP.
      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
      * @return {String} Updated SDP information with new bandwidth restriction.
      */
-  updateBandwidthRestriction (sdp, bitrate) {
+  async updateBandwidthRestriction (bitrate) {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
     }
 
     logger.info('Updating bandwidth restriction, bitrate value: ', bitrate)
-    logger.debug('SDP value: ', sdp)
-    return SdpParser.setVideoBitrate(sdp, bitrate)
+
+    // Use the new bitrate manager instead of SDP munging
+    await this.bitrateManager.updateVideoBitrate(bitrate)
   }
 
   /**
@@ -345,10 +345,7 @@ export default class PeerConnection extends EventEmitter {
 
     logger.info('Updating bitrate to value: ', bitrate)
     this.sessionDescription = await this.peer.createOffer()
-    await this.peer.setLocalDescription(this.sessionDescription)
-    const sdp = this.updateBandwidthRestriction(this.peer.remoteDescription.sdp, bitrate)
-    await this.setRTCRemoteSDP(sdp)
-    logger.info('Bitrate restrictions updated: ', `${bitrate > 0 ? bitrate : 'unlimited'} kbps`)
+    await this.updateBandwidthRestriction(bitrate)
   }
 
   /**
@@ -448,40 +445,40 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
-   * Initialize the statistics monitoring of the RTCPeerConnection.
-   *
-   * It will be emitted every second.
-   * @fires PeerConnection#stats
-   * @example peerConnection.initStats()
-   * @example
-   * import Publish from '@millicast/sdk'
-   *
-   * //Initialize and connect your Publisher
-   * const millicastPublish = new Publish(undefined, tokenGenerator)
-   * await millicastPublish.connect(options)
-   *
-   * //Initialize get stats
-   * millicastPublish.webRTCPeer.initStats()
-   *
-   * //Capture new stats from event every second
-   * millicastPublish.webRTCPeer.on('stats', (stats) => {
-   *   console.log('Stats from event: ', stats)
-   * })
-   * @example
-   * import View from '@millicast/sdk'
-   *
-   * //Initialize and connect your Viewer
-   * const millicastView = new View(undefined, tokenGenerator)
-   * await millicastView.connect()
-   *
-   * //Initialize get stats
-   * millicastView.webRTCPeer.initStats()
-   *
-   * //Capture new stats from event every second
-   * millicastView.webRTCPeer.on('stats', (stats) => {
-   *   console.log('Stats from event: ', stats)
-   * })
-   */
+     * Initialize the statistics monitoring of the RTCPeerConnection.
+     *
+     * It will be emitted every second.
+     * @fires PeerConnection#stats
+     * @example peerConnection.initStats()
+     * @example
+     * import Publish from '@millicast/sdk'
+     *
+     * //Initialize and connect your Publisher
+     * const millicastPublish = new Publish(undefined, tokenGenerator)
+     * await millicastPublish.connect(options)
+     *
+     * //Initialize get stats
+     * millicastPublish.webRTCPeer.initStats()
+     *
+     * //Capture new stats from event every second
+     * millicastPublish.webRTCPeer.on('stats', (stats) => {
+     *   console.log('Stats from event: ', stats)
+     * })
+     * @example
+     * import View from '@millicast/sdk'
+     *
+     * //Initialize and connect your Viewer
+     * const millicastView = new View(undefined, tokenGenerator)
+     * await millicastView.connect()
+     *
+     * //Initialize get stats
+     * millicastView.webRTCPeer.initStats()
+     *
+     * //Capture new stats from event every second
+     * millicastView.webRTCPeer.on('stats', (stats) => {
+     *   console.log('Stats from event: ', stats)
+     * })
+     */
   initStats (options) {
     if (this.peerConnectionStats) {
       logger.warn('PeerConnection.initStats() has already been called. Automatic initialization occurs via View.connect(), Publish.connect() or this.createRTCPeer(). See options')
@@ -592,6 +589,7 @@ const addPeerEvents = (instanceClass, peer) => {
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }
   }
+  // TODO
   peer.onnegotiationneeded = async (event) => {
     if (!peer.remoteDescription) return
     logger.info('Peer onnegotiationneeded, updating local description')
@@ -606,8 +604,84 @@ const addPeerEvents = (instanceClass, peer) => {
   }
 }
 
-const addMediaStreamToPeer = (peer, mediaStream, options) => {
-  logger.info('Adding mediaStream tracks to RTCPeerConnection')
+async function configureDTX (peerConnection, enabled, sessionDescription) {
+  const transceivers = peerConnection.getTransceivers()
+  for (const transceiver of transceivers) {
+    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
+      const params = transceiver.sender.getParameters()
+      const opusCodec = params.codecs.find((codec) => codec.mimeType.toLowerCase() === 'audio/opus')
+      if (opusCodec) {
+        opusCodec.parameters = {
+          ...opusCodec.parameters,
+          dtx: true
+        }
+        logger.debug('Setting dtx to ', enabled)
+        await transceiver.sender.setParameters(params)
+
+        sessionDescription = await peerConnection.createOffer()
+        logger.debug('222Received SDP', sessionDescription)
+
+        const validation = await transceiver.sender.getParameters()
+        console.log('Validation result', validation)
+      }
+    }
+  }
+}
+
+async function configureMultiOpus (peerConnection, mediaStream) {
+  if (!mediaStream) return
+
+  const audioTracks = mediaStream.getAudioTracks()
+  const transceivers = peerConnection.getTransceivers()
+
+  // Multi-opus typically means multiple audio tracks with different configurations
+  for (let i = 0; i < transceivers.length; i++) {
+    const transceiver = transceivers[i]
+
+    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
+      const params = transceiver.sender.getParameters()
+      const opusCodec = params.codecs.find((codec) => codec.mimeType.toLowerCase() === 'audio/opus')
+
+      if (opusCodec && audioTracks[i]) {
+        // Configure each Opus stream differently if needed
+        opusCodec.parameters = {
+          ...opusCodec.parameters,
+          maxaveragebitrate: '128000',
+          useinbandfec: '1'
+        }
+
+        await transceiver.sender.setParameters(params)
+      }
+    }
+  }
+}
+
+async function configureAudioCodec (peerConnection, stereo = true) {
+  const transceivers = peerConnection.getTransceivers()
+
+  for (const transceiver of transceivers) {
+    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
+      const params = transceiver.sender.getParameters()
+
+      // Find Opus codec
+      const opusCodec = params.codecs.find((codec) => codec.mimeType.toLowerCase() === 'audio/opus')
+
+      if (opusCodec) {
+        // Set stereo parameters
+        opusCodec.parameters = {
+          ...opusCodec.parameters,
+          stereo: stereo ? '1' : '0',
+          'sprop-stereo': stereo ? '1' : '0'
+        }
+
+        await transceiver.sender.setParameters(params)
+      }
+    }
+  }
+}
+
+const addMediaStreamToPeer = async (peer, mediaStream, options) => {
+  logger.debug('Adding mediaStream tracks to RTCPeerConnection')
 
   for (const track of mediaStream.getTracks()) {
     const initOptions = {
@@ -620,8 +694,6 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
 
     if (track.kind === 'video') {
       initOptions.direction = !options.disableVideo ? 'sendonly' : 'inactive'
-
-      // Handle simulcast using modern API only
       if (options.simulcast && !options.disableVideo) {
         const browserData = new UserAgent()
         if (browserData.isChromium()) {
@@ -644,12 +716,11 @@ const addMediaStreamToPeer = (peer, mediaStream, options) => {
     }
 
     const transceiver = peer.addTransceiver(track, initOptions)
-
     // Set codec preferences for simulcast if specified
     if (track.kind === 'video' && options.simulcast && options.codec) {
       setCodecPreferences(transceiver, options.codec)
     }
-
+    await configureRtpExtensions(peer, options)
     logger.info(`Track '${track.label}' added: `, `id: ${track.id}`, `kind: ${track.kind}`)
   }
 }
@@ -673,6 +744,44 @@ const addReceiveTransceivers = (peer, options) => {
     peer.addTransceiver('audio', {
       direction: 'recvonly'
     })
+  }
+}
+
+const configureRtpExtensions = async (peer, options) => {
+  const transceivers = peer.getTransceivers()
+
+  for (const transceiver of transceivers) {
+    const existingExtensions = await transceiver.getHeaderExtensionsToNegotiate()
+    const extensionsToNegotiate = [...existingExtensions]
+
+    const isVideo = transceiver.sender.track?.kind === 'video'
+
+    // Add dependency descriptor for video if requested and not already present
+    if (options.dependencyDescriptor && isVideo) {
+      const uri = 'https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension'
+      if (!extensionsToNegotiate.some((ext) => ext.uri === uri)) {
+        extensionsToNegotiate.push({ uri, direction: transceiver.direction })
+      }
+    }
+
+    // Add absolute capture time if requested and not already present
+    if (options.absCaptureTime) {
+      const uri = 'http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time'
+      if (!extensionsToNegotiate.some((ext) => ext.uri === uri)) {
+        extensionsToNegotiate.push({ uri, direction: 'sendonly' })
+      }
+    }
+
+    if (extensionsToNegotiate.length > 0) {
+      try {
+        await transceiver.setHeaderExtensionsToNegotiate(extensionsToNegotiate)
+        const negotiated = await transceiver.getNegotiatedHeaderExtensions()
+        console.log(`Successfully configured header extensions for ${transceiver.mid}.`)
+        logger.info('Negoiated header extensions', negotiated)
+      } catch (error) {
+        console.error(`Failed to set header extensions for ${transceiver.mid}:`, error)
+      }
+    }
   }
 }
 
