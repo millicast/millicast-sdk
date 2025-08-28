@@ -198,7 +198,7 @@ export default class Signaling extends EventEmitter {
 
     // default events
     const events = ['active', 'inactive', 'layers', 'viewercount', 'vad', 'updated', 'migrate', 'stopped']
-    let data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
+    const data = { sdp, streamId: this.streamName, pinnedSourceId: optionsParsed.pinnedSourceId, excludedSourceIds: optionsParsed.excludedSourceIds, events }
 
     if (optionsParsed.vad) {
       data.vad = true
@@ -212,14 +212,18 @@ export default class Signaling extends EventEmitter {
     if (optionsParsed.layer) {
       data.layer = optionsParsed.layer
     }
-    if (optionsParsed.forceSmooth) {
-      data.forceSmooth = options.forceSmooth
-    }
+
     if (optionsParsed.abrConfiguration) {
       data.abrConfiguration = options.abrConfiguration
     }
     if (optionsParsed.customKeys) {
-      data = { ...data, ...optionsParsed.customKeys }
+      data.customKeys = optionsParsed.customKeys
+    }
+    if (optionsParsed.forceSmooth) {
+      data.abrConfiguration = {
+        ...(data.abrConfiguration || {}),
+        forceSmooth: optionsParsed.forceSmooth
+      }
     }
 
     try {
