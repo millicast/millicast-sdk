@@ -23,9 +23,6 @@ const connectOptions = {
   peerConfig: {
     autoInitStats: true,
     statsIntervalMs: 1000
-  },
-  abrConfiguration: {
-    strategy: 'quality'
   }
 }
 
