@@ -192,6 +192,7 @@ export default class Signaling extends EventEmitter {
   async subscribe (sdp, options, pinnedSourceId = null, excludedSourceIds = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
+    logger.debug('Options received', options)
     const optionsParsed = getSubscribeOptions(options, pinnedSourceId, excludedSourceIds)
 
     // Signaling server only recognizes 'AV1' and not 'AV1X'
