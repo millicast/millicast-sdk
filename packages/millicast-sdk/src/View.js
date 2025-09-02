@@ -84,6 +84,12 @@ export default class View extends BaseWebRTC {
      */
 
   /**
+     * @typedef {Object} AbrStrategyMetadata
+     * @property {number|undefined} bitrate - The initial bitrate, in bits per second. This value is nullable.
+     *
+     */
+
+  /**
      * Configuration options for ABR (Adaptive Bitrate) behavior.
      *
      * @typedef {Object} AbrConfigurationOptions
@@ -91,7 +97,7 @@ export default class View extends BaseWebRTC {
      *   - `"quality"` : Prioritizes highest quality first with high ABR aggressiveness.
      *   - `"bandwidth"`: Conservative quality selection based on network estimates with medium ABR aggressiveness.
      *   - `"performance"`: Prioritizes lowest quality first with conservative ABR aggressiveness.
-     * @property {number|undefined} bitrate - The initial bitrate, in bits per second. This value is nullable.
+     * @property {AbrStrategyMetadata} [metadata] - The metadata configuration for the initial playback strategy. This value is nullable.
      */
 
   /**
@@ -237,14 +243,10 @@ export default class View extends BaseWebRTC {
     logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false
     let promises
-    if (data.abrConfiguration) {
-      if (data.abrConfiguration.bitrate) {
-        const bitrate = data.abrConfiguration.bitrate
-        if (bitrate) {
-          if (bitrate < 0) {
-            throw new Error(`Invalid bitrate ${bitrate} supplied for ABR. The value must be... TBD`)
-          }
-        }
+    if (data.abrConfiguration && data.abrConfiguration.metadata) {
+      const bitrate = data.abrConfiguration.metadata.bitrate
+      if (!bitrate || bitrate < 0) {
+        throw new Error(`Invalid bitrate ${bitrate} supplied for ABR. The value must be a non-negative integer value.`)
       }
     }
 
