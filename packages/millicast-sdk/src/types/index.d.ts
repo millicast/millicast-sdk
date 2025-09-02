@@ -1420,7 +1420,7 @@ declare module "@millicast/sdk" {
      *
      * //Create a new instance
      * const streamName = "My Millicast Stream Name"
-     * const millicastPublish = new Publish(streamName, tokenGenerator)
+     * const millicastPublish = new Publish(undefined, tokenGenerator)
      *
      * //Get MediaStream
      * const mediaStream = getYourMediaStream()
@@ -1542,7 +1542,7 @@ declare module "@millicast/sdk" {
      *
      * //Create a new instance
      * const streamName = "Millicast Stream Name where i want to connect"
-     * const millicastView = new View(streamName, tokenGenerator, videoElement)
+     * const millicastView = new View(undefined, tokenGenerator, videoElement)
      *
      * //Start connection to broadcast
      * try {
@@ -1558,7 +1558,7 @@ declare module "@millicast/sdk" {
      *
      * //Create a new instance
      * const streamName = "Millicast Stream Name where i want to connect"
-     * const millicastView = new View(streamName, tokenGenerator)
+     * const millicastView = new View(undefined, tokenGenerator)
      *
      * //Set track event handler to receive streams from Publisher.
      * millicastView.on('track', (event) => {

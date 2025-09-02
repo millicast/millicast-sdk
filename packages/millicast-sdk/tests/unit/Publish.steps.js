@@ -151,7 +151,7 @@ defineFeature(feature, test => {
     })
 
     then('peer connection state is connected', async () => {
-      expect(publisher.webRTCPeer.updateBandwidthRestriction).toBeCalledTimes(1)
+      expect(publisher.webRTCPeer.updateBandwidthRestriction).toHaveBeenCalledTimes(1)
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
   })
