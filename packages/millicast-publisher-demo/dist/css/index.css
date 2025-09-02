@@ -1,0 +1,442 @@
+
+body, html, button, input, select, textarea {
+  font-family : "OpenSans", Helvetica, Verdana, Arial, sans-serif;
+}
+body{
+  background-color: #fbfbfb;
+}
+html{
+  overflow-x: hidden;
+}
+
+.fs-15px{
+  font-size: 15px;
+}
+
+#vidContainer {
+  position: fixed;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: #000;
+
+  text-align:center;
+  margin:0 auto;
+}
+
+
+#vidContainer video {
+  width: 100%;
+}
+
+#vidContainer video.vidWinBrowser {
+  height: 100%;
+}
+
+/*
+Black faded bars in control display for video.
+*/
+
+.blk-fade-top-bottom {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+}
+
+.blk-fade-bottom-top {
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8));
+}
+
+#controlDisplay .vid-fade {
+  width: 100%;
+  position: absolute;
+}
+
+#controlDisplay #topFade {
+  height: 100px;
+}
+#controlDisplay #btmFade {
+  height: 200px;
+}
+
+#shareSection .btn {
+  height: 50px;
+}
+
+.badges span {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+#controlDisplay #overlayLogo, #guides .guide-view {
+  position: absolute;
+  /* left: 20px; */
+  left: 0;
+  right: 0;
+  bottom: 90px;
+  margin: 0 auto;
+  text-align: center;
+}
+#controlDisplay #overlayLogo #coLogo {
+  width: 120px;
+  margin: auto;
+  padding: 6px 7px;
+}
+
+/* #guides #guide1 {
+  bottom: 200px;
+  width: 300px;
+} */
+
+#guides #guide2, #guides #guide1 {
+  bottom: 140px;
+  width: 280px;
+}
+
+#guides .guide-view {
+  font-size: 0.77rem; 
+  border: white 0.5px solid;/* #6c757d */
+  background: #000;/* #FFFAB8;  */
+  color: white;
+  border-radius: 10px;
+}
+
+#guides .guide-view p {
+  font-size: 12px;
+}
+
+
+/*
+    VIEWER LINK AND DISPLAY
+*/
+
+#shareView .btn-group {
+  height: 50px;
+}
+
+#vidCtrlView #viewerURL {
+  font-size: 0.76em; /* 13px; */
+  color: #4C4C4C;
+  border: none;
+  /* border-color: #BBB; */
+  background: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* max-width: 15rem; */
+
+}
+
+#vidCtrlView #viewerURL:active, 
+#controlDisplay #viewerURL:hover {
+  background-color: white;
+  border-color: #BBB;
+}
+
+#vidCtrlView #viewerURL:focus,
+#vidCtrlView #copyBtn:focus {
+  box-shadow: none;
+}
+
+#vidCtrlView #copyBtn {
+  /* background: #bbb; */
+  background: linear-gradient(rgb(207, 207, 207), rgb(162, 162, 162));
+  border: #BBB;
+  font-size: 16px;
+  color: #555;
+}
+
+/* #vidCtrlView {
+  margin-left: 1.5rem;
+  margin-right:1.5rem;
+} */
+#vidCtrlView {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgb(64, 48, 142, 0.6);
+}
+
+#camListBtn, #micListBtn {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#camListBtn p, #micListBtn p, #bandwidthMenuButton {
+  font-size: 0.77rem;
+}
+
+/* overage cover for lists (hack) */
+#vidCtrlView .boxCover {
+  height: 30px;
+  width: 30px;
+  background-color: white;
+  position: absolute;
+  right: 0;
+  top: 9px;
+}
+
+
+#vidCtrlView .dropdown-toggle {
+  position: relative;
+  height: 50px; 
+  border-color: #e6e6e6;/* dcdcdc; */
+}
+
+#vidCtrlView .dropdown-toggle::after {
+  position: absolute;
+  top: 20px;
+  right: 15px;
+}
+
+#vidCtrlView .dropdown-menu .dropdown-item,
+#publishView .dropdown-menu .dropdown-item,
+#vidCtrlView .dropdown-toggle { 
+  font-size: 0.77rem;
+  color: #4C4C4C;
+  background: white;
+  box-shadow: none;
+  outline: none;
+}
+
+/* make label small, does not allow button to size properly in group */
+#vidCtrlView .dropdown-toggle>p {
+  width: 10px;
+  margin: 0;
+}
+
+#vidCtrlView #micMuteBtn,
+#vidCtrlView #camMuteBtn {
+  width: 50px;
+}
+
+
+#vidCtrlView .dropdown-menu .dropdown-item.selected {
+  background: #ddd;
+}
+
+#vidCtrlView #publishBtn {
+  font-size: 0.85rem;
+  height: 50px;
+}
+
+#thanks{
+  padding-top: 15%;
+}
+
+#thanks #coLogo{
+  height: 15vh;
+}
+
+#thanks #signUpBtn{
+  font-size: 0.9rem;
+  min-height: 3.5em;
+  min-width: 9rem;
+}
+
+.btn-purp {
+  background: #40308e;
+  border: none;
+  color: white;
+}
+
+@media (max-height: 750px) {
+  /* #vidContainer {
+    max-height: none;
+    min-height: auto;
+    height: 75vh;
+  } */
+  #vidCtrlView {
+    margin-left: 0;
+    margin-right:0;
+  }
+}
+
+
+/* Settings */
+
+#controlDisplay #topFade {
+  z-index: 12;
+}
+
+#controlDisplay #btmFade {
+  z-index: 13;
+}
+
+.badges {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 16;
+}
+
+#controlDisplay #overlayLogo {
+  z-index: 17;
+}
+
+#vidCtrlView {
+  z-index: 18;
+}
+
+#guides {
+  z-index: 22;
+}
+
+/* MOUSE / CURSOR */
+.use-hand {
+  cursor: hand;
+}
+
+.ignore-mouse {
+  pointer-events: none;
+}
+
+/*Viewer Specific*/
+#logo{
+  position: fixed;
+  z-index: 20;
+  width: 120px;
+}
+video{
+  top: -75px;
+  height:100%;
+  z-index: -1;
+}
+
+/*video::-webkit-media-controls {
+  display: none;
+}*/
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  text-align: center;
+}
+
+.not-allowed{
+  cursor: not-allowed !important;
+}
+.nocursor{
+  cursor: none !important;
+}
+
+.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .25s linear;
+}
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s .5s, opacity .5s linear;
+}
+
+.btn.focus, .btn:focus{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.baseBtn:not(:disabled):not(.disabled).active:focus, .baseBtn:not(:disabled):not(.disabled):active:focus, .show>.baseBtn.dropdown-toggle:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+.baseBtn:not(:disabled):not(.disabled).active:focus, .baseBtn:not(:disabled):not(.disabled):active:focus, .show>.baseBtn.dropdown-toggle:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.baseBtn:hover {
+  color: rgb(180, 180, 180);
+  border-color: transparent;
+}
+
+.baseBtn:not(:disabled):not(.disabled).active, .baseBtn:not(:disabled):not(.disabled):active, .show>.baseBtn.dropdown-toggle {
+  color: rgb(180, 180, 180);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.baseBtn{
+  color: rgba(248, 249, 250, 0.51);
+  background-color: transparent;
+  background-image: none;
+  border-color: transparent;
+  font-size: 25px;
+  top: 0;
+  right: 0;
+  width: 75px;
+  height: 75px;
+}
+
+.btn-outline-light:not(:disabled):not(.disabled).active:focus, .btn-outline-light:not(:disabled):not(.disabled):active:focus, .show>.btn-outline-light.dropdown-toggle:focus {
+  box-shadow: none;
+}
+
+.btn-outline-light:hover {
+  color: #212529;
+  background-color: rgba(248, 249, 250, 0.51);
+  border-color: rgba(248, 249, 250, 0.51);
+}
+
+.btn-outline-light:not(:disabled):not(.disabled).active, .btn-outline-light:not(:disabled):not(.disabled):active, .show>.btn-outline-light.dropdown-toggle {
+  color: #212529;
+  background-color: rgba(248, 249, 250, 0.51);
+  border-color: rgba(248, 249, 250, 0.51);
+}
+
+.btn-outline-light {
+  color: #f8f9fa;
+  background-color: transparent;
+  background-image: none;
+  border-color: rgba(248, 249, 250, 0.51);
+}
+
+.btn-outline-light {
+  color: rgba(248, 249, 250, 0.51);
+  background-color: transparent;
+  background-image: none;
+  border-color: rgba(248, 249, 250, 0.51);
+}
+
+@media (min-width: 414px) {
+  video{
+    top: -50px;
+  }
+
+  .baseBtn{
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (min-width: 768px) {
+  video{
+    top: -75px;
+  }
+  .baseBtn{
+    width: 75px;
+    height: 75px;
+  }
+}
+
+/*Turn Device Notification*/
+.turnDeviceNotification {
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  height:100%;
+  width:100%;
+  z-index: 100;
+  display: none;
+  background-color: rgba(64, 48, 142, 0.3)
+}
+.notification-margin-top {
+  margin-top: -110px;
+}
+@media screen and (min-height: 411px) and (orientation: landscape) {
+  .notification-margin-top {
+    margin-top: -210px;
+  }
+}

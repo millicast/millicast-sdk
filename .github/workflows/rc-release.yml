@@ -39,13 +39,11 @@ jobs:
         run: npm ci
       - name: build
         run: npx lerna run build --scope=@millicast/sdk
-      - name: cache SDK build
-        id: cache-sdk-build
-        uses: actions/cache/save@v4
+      - name: Upload SDK build artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: |
-            packages/millicast-sdk/dist
-          key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
+          name: sdk-dist
+          path: packages/millicast-sdk/dist
 
   deploy-multiview-demo:
     name: Build and Deploy Multiview Demo
@@ -104,14 +102,13 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
+      - name: Download SDK build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sdk-dist
+          path: packages/millicast-sdk/
       - name: Install the dependencies 🧱
         run: npm ci
-      - name: Restore sdk build
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            packages/millicast-sdk/dist
-          key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
       - name: Login to npm

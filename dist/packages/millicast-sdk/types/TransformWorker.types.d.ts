@@ -1,0 +1,22 @@
+import { SEIUserUnregisteredData } from './View.types';
+import { VideoCodec } from './Codecs.types';
+
+export interface TransformWorkerSeiMetadata {
+    uuid: string;
+    timecode?: number;
+    payload: SEIUserUnregisteredData;
+}
+export interface TransformEvent {
+    transformer: {
+        options: {
+            name: string;
+            payloadTypeCodec: {
+                [key: number]: string;
+            };
+            codec: VideoCodec;
+            mid: string;
+        };
+        readable: ReadableStream;
+        writable: WritableStream;
+    };
+}
