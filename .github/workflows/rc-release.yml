@@ -36,7 +36,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: sdk-dist
-          path: packages/millicast-sdk/
+          path: packages/millicast-sdk/dist
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
       - name: Login to npm
