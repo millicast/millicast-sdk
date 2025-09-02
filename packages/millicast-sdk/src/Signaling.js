@@ -217,7 +217,7 @@ export default class Signaling extends EventEmitter {
     if (optionsParsed.abrConfiguration) {
       data.abr = {
         initialBitrate: optionsParsed.abrConfiguration.metadata?.bitrate,
-        strategy: data.abr.strategy
+        strategy: optionsParsed.abrConfiguration.strategy
       }
     }
 
