@@ -114,6 +114,9 @@ jobs:
           key: ${{ runner.os }}-cache-${{ github.run_id }}-${{ github.run_attempt }}-sdk-dist
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
+      - name: Login to npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
       - name: publish
         working-directory: './packages/millicast-sdk'
         env:
