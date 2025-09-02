@@ -1,7 +1,7 @@
 .vscode/
 node_modules
 coverage
-
+dist
 docs
 docs-translations
 .env

@@ -57,7 +57,7 @@ export default class View extends BaseWebRTC {
     this.eventQueue = []
     this.isMainStreamActive = false
     if (mediaElement) {
-      this.on(webRTCEvents.track, e => {
+      this.on(webRTCEvents.track, (e) => {
         mediaElement.srcObject = e.streams[0]
       })
       logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.')
@@ -84,21 +84,15 @@ export default class View extends BaseWebRTC {
      */
 
   /**
-     * @typedef {Object} AbrStrategyMetadata
-     * @property {number|undefined} bitrate - The initial bitrate, in bits per second. This value is nullable.
+     * Configuration options for ABR (Adaptive Bitrate) behavior.
      *
+     * @typedef {Object} AbrConfigurationOptions
+     * @property {AbrStrategy} [strategy] - The strategy for initial playback behavior.
+     *   - `"quality"` : Prioritizes highest quality first with high ABR aggressiveness.
+     *   - `"bandwidth"`: Conservative quality selection based on network estimates with medium ABR aggressiveness.
+     *   - `"performance"`: Prioritizes lowest quality first with conservative ABR aggressiveness.
+     * @property {number|undefined} bitrate - The initial bitrate, in bits per second. This value is nullable.
      */
-
-  /**
-      * Configuration options for ABR (Adaptive Bitrate) behavior.
-      *
-      * @typedef {Object} AbrConfigurationOptions
-      * @property {AbrStrategy} [strategy="quality"] - The strategy for initial playback behavior.
-      *   - `"quality"` (default): Prioritizes highest quality first with high ABR aggressiveness.
-      *   - `"bandwidth"`: Conservative quality selection based on network estimates with medium ABR aggressiveness.
-      *   - `"performance"`: Prioritizes lowest quality first with conservative ABR aggressiveness.
-      * @property {AbrStrategyMetadata} [metadata] - The metadata configuration for the initial playback strategy. This value is nullable.
-      */
 
   /**
      * Connects to an active stream as subscriber.
@@ -161,9 +155,9 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Select the simulcast encoding layer and svc layers for the main video track
-   * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
-   */
+     * Select the simulcast encoding layer and svc layers for the main video track
+     * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
+     */
   async select (layer = {}) {
     logger.debug('Viewer select layer values: ', layer)
     await this.signaling.cmd('select', { layer })
@@ -171,11 +165,11 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Add remote receiving track.
-   * @param {String} media - Media kind ('audio' | 'video').
-   * @param {Array<MediaStream>} streams - Streams the track will belong to.
-   * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
-   */
+     * Add remote receiving track.
+     * @param {String} media - Media kind ('audio' | 'video').
+     * @param {Array<MediaStream>} streams - Streams the track will belong to.
+     * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
+     */
   async addRemoteTrack (media, streams) {
     logger.info('Viewer adding remote track', media)
     const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
@@ -186,15 +180,15 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Start projecting source in selected media ids.
-   * @param {String | null} sourceId                   - Selected source id.
-   * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
-   * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
-   * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
-   * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
-   * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
-   * @param {Boolean} [mapping.promote]                - To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true.
-   */
+     * Start projecting source in selected media ids.
+     * @param {String | null} sourceId                   - Selected source id.
+     * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
+     * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
+     * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
+     * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
+     * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
+     * @param {Boolean} [mapping.promote]                - To remove all existing limitations from the source, such as restricted bitrate or resolution, set this to true.
+     */
   async project (sourceId, mapping) {
     for (const map of mapping) {
       if (!map.trackId && !map.media) {
@@ -203,7 +197,7 @@ export default class View extends BaseWebRTC {
       }
       const peer = this.webRTCPeer.getRTCPeer()
       // Check we have the mediaId in the transceivers
-      if (map.mediaId && !peer.getTransceivers().find(t => t.mid === map.mediaId.toString())) {
+      if (map.mediaId && !peer.getTransceivers().find((t) => t.mid === map.mediaId.toString())) {
         logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
         throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
       }
@@ -214,9 +208,9 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Stop projecting attached source in selected media ids.
-   * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
-   */
+     * Stop projecting attached source in selected media ids.
+     * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
+     */
   async unproject (mediaIds) {
     logger.debug('Viewer unproject mediaIds: ', mediaIds)
     await this.signaling.cmd('unproject', { mediaIds })
@@ -244,11 +238,8 @@ export default class View extends BaseWebRTC {
     this.stopReconnection = false
     let promises
     if (data.abrConfiguration) {
-      if (!data.abrConfiguration.abrStrategy) {
-        data.abrConfiguration.abrStrategy = 'quality'
-      }
-      if (data.abrConfiguration.metadata) {
-        const bitrate = data.abrConfiguration.metadata.bitrate
+      if (data.abrConfiguration.bitrate) {
+        const bitrate = data.abrConfiguration.bitrate
         if (bitrate) {
           if (bitrate < 0) {
             throw new Error(`Invalid bitrate ${bitrate} supplied for ABR. The value must be... TBD`)
@@ -301,7 +292,11 @@ export default class View extends BaseWebRTC {
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     // And start emitting from the new ones
-    this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track))
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(
+      webRTCPeerInstance,
+      this,
+      Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
+    )
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -332,16 +327,16 @@ export default class View extends BaseWebRTC {
             }
           }
           /**
-           * Emits when metadata have been extracted from the stream.
-           *
-           * @event View#metadata
-           * @type {Object}
-           * @property {String} mid - Media identifier that contains the metadata.
-           * @property {Object} track - Track object that contains the metadata.
-           * @property {String} uuid - UUID of the metadata.
-           * @property {Date} timecode - Timecode of when the metadata were generated.
-           * @property {Object} unregistered - Unregistered data.
-           */
+                     * Emits when metadata have been extracted from the stream.
+                     *
+                     * @event View#metadata
+                     * @type {Object}
+                     * @property {String} mid - Media identifier that contains the metadata.
+                     * @property {Object} track - Track object that contains the metadata.
+                     * @property {String} uuid - UUID of the metadata.
+                     * @property {Date} timecode - Timecode of when the metadata were generated.
+                     * @property {Object} unregistered - Unregistered data.
+                     */
           this.emit('metadata', metadata)
         }
       }
@@ -452,14 +447,17 @@ export default class View extends BaseWebRTC {
         })
       } else if (supportsInsertableStreams) {
         const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        this.worker.postMessage({
-          action: 'insertable-streams-receiver',
-          payloadTypeCodec: { ...this.payloadTypeCodec },
-          codec: this.options.metadata && 'h264',
-          mid: trackEvent.transceiver?.mid,
-          readable,
-          writable
-        }, [readable, writable])
+        this.worker.postMessage(
+          {
+            action: 'insertable-streams-receiver',
+            payloadTypeCodec: { ...this.payloadTypeCodec },
+            codec: this.options.metadata && 'h264',
+            mid: trackEvent.transceiver?.mid,
+            readable,
+            writable
+          },
+          [readable, writable]
+        )
       }
     }
     this.emit(webRTCEvents.track, trackEvent)
@@ -503,10 +501,10 @@ export default class View extends BaseWebRTC {
    */
 
   /**
-   * Configure DRM protected stream.
-   * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
-   * @param {DRMOptions} options - the options for DRM playback
-  */
+     * Configure DRM protected stream.
+     * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+     * @param {DRMOptions} options - the options for DRM playback
+     */
   configureDRM (options) {
     if (!options) {
       throw new Error('Required DRM options is not provided')
@@ -558,26 +556,26 @@ export default class View extends BaseWebRTC {
   }
 
   /**
-   * Remove DRM configuration for a mediaId
-   * @param {String} mediaId
-   */
+     * Remove DRM configuration for a mediaId
+     * @param {String} mediaId
+     */
   removeDRMConfiguration (mediaId) {
     this.drmOptionsMap?.delete(mediaId)
   }
 
   /**
-   * Check if there are any DRM protected Track
-   */
+     * Check if there are any DRM protected Track
+     */
   get isDRMOn () {
     return !!this.drmOptionsMap && this.drmOptionsMap.size > 0
   }
 
   /**
-   * Exchange the DRM configuration between two transceivers
-   * Both of the transceivers should be used for DRM protected streams
-   * @param {String} targetMediaId
-   * @param {String} sourceMediaId
-   */
+     * Exchange the DRM configuration between two transceivers
+     * Both of the transceivers should be used for DRM protected streams
+     * @param {String} targetMediaId
+     * @param {String} sourceMediaId
+     */
   exchangeDRMConfiguration (targetMediaId, sourceMediaId) {
     const targetDRMOptions = this.getDRMConfiguration(targetMediaId)
     const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId)

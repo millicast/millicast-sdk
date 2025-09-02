@@ -1115,28 +1115,20 @@ declare module "@millicast/sdk" {
      */
     export type AbrStrategy = "performance" | "quality" | "bandwidth"
 
-    export interface AbrStrategyMetadata {
-        /**
-         * The initial bitrate, in bits per second. This value is nullable.
-         */
-        bitrate: number | undefined
-    }
-
     export interface AbrConfigurationOptions {
         /**
          * The strategy for initial playback behavior.
          *
-         * - `"quality"` (default): Prioritizes highest quality first with high ABR aggressiveness.
+         * - `"quality"`: Prioritizes highest quality first with high ABR aggressiveness.
          * - `"bandwidth"`: Conservative quality selection based on network estimates with medium ABR aggressiveness.
          * - `"performance"`: Prioritizes lowest quality first with conservative ABR aggressiveness.
          *
-         * @default "quality"
          */
         strategy?: AbrStrategy
         /**
-         * The metadata configuration for the initial playback strategy. This value is nullable.
+         * The initial bitrate, in bits per second. This value is nullable.
          */
-        metadata?: AbrStrategyMetadata
+        bitrate: number | undefined
     }
 
     export type ViewConnectOptions = {
@@ -1237,392 +1229,390 @@ declare module "@millicast/sdk" {
          */
         forceSmooth?: boolean
 
-
         /**
          * The strategy for initial playback behavior.
          */
         abrConfiguration: AbrConfigurationOptions
     }
 
-  export type PublishConnectOptions = {
-    /**
-     * - Source unique id. Only avialable if stream is multisource.
-     */
-    sourceId?: string;
-    /**
-     * - True to modify SDP for support stereo. Otherwise False.
-     */
-    stereo?: boolean;
-    /**
-     * - True to modify SDP for supporting dtx in opus. Otherwise False.
-     */
-    dtx?: boolean;
-    /**
-     * - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-     */
-    absCaptureTime?: boolean;
-    /**
-     * - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
-     */
-    dependencyDescriptor?: boolean;
-    /**
-     * - MediaStream to offer in a stream. This object must have
-     * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
-     */
-    mediaStream: MediaStream | Array<MediaStreamTrack>;
-    /**
-     * - Broadcast bandwidth. 0 for unlimited.
-     */
-    bandwidth?: number;
-    /**
-     * - Enable metadata insertion. This feature is only supported with the H.264 codec.
-     */
-    metadata?: boolean;
-    /**
-     * - Disable the opportunity to send video stream.
-     */
-    disableVideo?: boolean;
-    /**
-     * - Disable the opportunity to send audio stream.
-     */
-    disableAudio?: boolean;
-    /**
-     * - Codec for publish stream.
-     */
-    codec?: VideoCodec;
-    /**
-     * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
-     */
-    simulcast?: boolean;
-    /**
-     * - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
-     * **Only available in Google Chrome.**
-     */
-    scalabilityMode?: string;
-    /**
-     * - Options to configure the new RTCPeerConnection.
-     */
-    peerConfig?: PeerConnectionConfig;
-    /**
-     * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
-     */
-    record?: boolean;
-    /**
-     * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
-     */
-    events?: Array<string>;
-    /**
-     * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
-     */
-    priority?: Number;
-  }
+    export type PublishConnectOptions = {
+        /**
+         * - Source unique id. Only avialable if stream is multisource.
+         */
+        sourceId?: string
+        /**
+         * - True to modify SDP for support stereo. Otherwise False.
+         */
+        stereo?: boolean
+        /**
+         * - True to modify SDP for supporting dtx in opus. Otherwise False.
+         */
+        dtx?: boolean
+        /**
+         * - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
+         */
+        absCaptureTime?: boolean
+        /**
+         * - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
+         */
+        dependencyDescriptor?: boolean
+        /**
+         * - MediaStream to offer in a stream. This object must have
+         * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
+         */
+        mediaStream: MediaStream | Array<MediaStreamTrack>
+        /**
+         * - Broadcast bandwidth. 0 for unlimited.
+         */
+        bandwidth?: number
+        /**
+         * - Enable metadata insertion. This feature is only supported with the H.264 codec.
+         */
+        metadata?: boolean
+        /**
+         * - Disable the opportunity to send video stream.
+         */
+        disableVideo?: boolean
+        /**
+         * - Disable the opportunity to send audio stream.
+         */
+        disableAudio?: boolean
+        /**
+         * - Codec for publish stream.
+         */
+        codec?: VideoCodec
+        /**
+         * - Enable simulcast. **Only available in Chromium based browsers with either the H.264 or VP8 video codec.**
+         */
+        simulcast?: boolean
+        /**
+         * - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
+         * **Only available in Google Chrome.**
+         */
+        scalabilityMode?: string
+        /**
+         * - Options to configure the new RTCPeerConnection.
+         */
+        peerConfig?: PeerConnectionConfig
+        /**
+         * - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
+         */
+        record?: boolean
+        /**
+         * - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
+         */
+        events?: Array<string>
+        /**
+         * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
+         */
+        priority?: Number
+    }
 
-  export interface PeerConnectionConfig extends RTCConfiguration {
-    /**
-     * - whether stats collection should be auto initialized. Defaults to `true`
-     */
-    autoInitStats: boolean;
+    export interface PeerConnectionConfig extends RTCConfiguration {
+        /**
+         * - whether stats collection should be auto initialized. Defaults to `true`
+         */
+        autoInitStats: boolean
 
-    /**
-     * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
-     */
-    statsIntervalMs: number;
-  }
+        /**
+         * The interval, in milliseconds, at which we poll stats. Defaults to 1s (1000ms)
+         */
+        statsIntervalMs: number
+    }
 
-  export type ViewProjectSourceMapping = {
-    /**
-     * - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
-     */
-    trackId?: string;
-    /**
-     * - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
-     */
-    mediaId?: string;
-    /**
-     * - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
-     */
-    media?: 'audio' | 'video';
-    /**
-     * - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
-     */
-    layer?: LayerInfo;
-  }
+    export type ViewProjectSourceMapping = {
+        /**
+         * - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
+         */
+        trackId?: string
+        /**
+         * - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
+         */
+        mediaId?: string
+        /**
+         * - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
+         */
+        media?: "audio" | "video"
+        /**
+         * - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
+         */
+        layer?: LayerInfo
+    }
 
-  export type TokenGeneratorCallback = () => Promise<MillicastDirectorResponse>
-  class BaseWebRTC extends events.EventEmitter {
-    constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean);
-    webRTCPeer?: PeerConnection;
-    signaling: Signaling;
-    streamName: string;
-    autoReconnect: boolean | undefined;
-    reconnectionInterval: number;
-    alreadyDisconnected: boolean;
-    firstReconnection: boolean;
-    stopReconnection: boolean;
-    tokenGenerator: TokenGeneratorCallback;
-    options: ViewConnectOptions | PublishConnectOptions;
+    export type TokenGeneratorCallback = () => Promise<MillicastDirectorResponse>
+    class BaseWebRTC extends events.EventEmitter {
+        constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, loggerInstance: Logger | any, autoReconnect?: boolean)
+        webRTCPeer?: PeerConnection
+        signaling: Signaling
+        streamName: string
+        autoReconnect: boolean | undefined
+        reconnectionInterval: number
+        alreadyDisconnected: boolean
+        firstReconnection: boolean
+        stopReconnection: boolean
+        tokenGenerator: TokenGeneratorCallback
+        options: ViewConnectOptions | PublishConnectOptions
+        /**
+         * Get current RTC peer connection.
+         * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
+         */
+        getRTCPeerConnection(): RTCPeerConnection
+        /**
+         * Stops connection.
+         */
+        stop(): void
+        /**
+         * Get if the current connection is active.
+         * @returns {Boolean} - True if connected, false if not.
+         */
+        isActive(): boolean
+        /**
+         * Sets reconnection if autoReconnect is enabled.
+         */
+        setReconnect(): void
+        /**
+         * Reconnects to last broadcast.
+         * @fires BaseWebRTC#reconnect
+         */
+        reconnect(): Promise<void>
+    }
     /**
-    * Get current RTC peer connection.
-    * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
-    */
-    getRTCPeerConnection(): RTCPeerConnection;
-    /**
-     * Stops connection.
-     */
-    stop(): void;
-    /**
-     * Get if the current connection is active.
-     * @returns {Boolean} - True if connected, false if not.
-     */
-    isActive(): boolean;
-    /**
-     * Sets reconnection if autoReconnect is enabled.
-     */
-    setReconnect(): void;
-    /**
-     * Reconnects to last broadcast.
-     * @fires BaseWebRTC#reconnect
-     */
-    reconnect(): Promise<void>;
-  }
-  /**
-   * @class Publish
-   * @extends BaseWebRTC
-   * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
-   * and establishes a WebRTC connection to broadcast a MediaStream.
-   *
-   * Before you can broadcast, you will need:
-   *
-   * - [MediaStream](https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API) which has at most one audio track and at most one video track. This will be used for stream the contained tracks.
-   *
-   * - A connection path that you can get from {@link Director} module or from your own implementation.
-   * @constructor
-   * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
-   * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
-   * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
-   */
-  export class Publish extends BaseWebRTC {
-    constructor(streamName: any, tokenGenerator: any, autoReconnect?: boolean);
-    /**
-     * Starts broadcast to an existing stream name.
+     * @class Publish
+     * @extends BaseWebRTC
+     * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
+     * and establishes a WebRTC connection to broadcast a MediaStream.
      *
-     * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
-     * @param {PublishConnectOptions} options - General broadcast options.
-     * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
-     * @fires PeerConnection#connectionStateChange
-     * @fires Signaling#broadcastEvent
-     * @example await publish.connect(options)
-     * @example
-     * import Publish from '@millicast/sdk'
+     * Before you can broadcast, you will need:
      *
-     * //Define callback for generate new token
-     * const tokenGenerator = () => getYourPublisherInformation(token, streamName)
+     * - [MediaStream](https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API) which has at most one audio track and at most one video track. This will be used for stream the contained tracks.
      *
-     * //Create a new instance
-     * const streamName = "My Millicast Stream Name"
-     * const millicastPublish = new Publish(undefined, tokenGenerator)
-     *
-     * //Get MediaStream
-     * const mediaStream = getYourMediaStream()
-     *
-     * //Options
-     * const broadcastOptions = {
-     *    mediaStream: mediaStream
-     *  }
-     *
-     * //Start broadcast
-     * try {
-     *  await millicastPublish.connect(broadcastOptions)
-     * } catch (e) {
-     *  console.log('Connection failed, handle error', e)
-     * }
+     * - A connection path that you can get from {@link Director} module or from your own implementation.
+     * @constructor
+     * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
+     * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
+     * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
      */
-    connect(options?: PublishConnectOptions): Promise<void>;
-    /**
-     * Initialize recording in an active stream and change the current record option.
-     */
-    record(): Promise<void>;
-    /**
-     * Finalize recording in an active stream and change the current record option.
-     */
-    unrecord(): Promise<void>;
-    /**
-     * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codecs.
-     * @param {String | Object} message The data to be sent as SEI user unregistered data.
-     * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
-     */
-    sendMetadata(message: String | Object, uuid: String): void;
-    webRTCPeer?: PeerConnection;
-  }
-
-  /**
-   * DRM encryption parameters
-   */
-  export type EncryptionParameters = {
-    /** 16-byte KeyID, in lowercase hexadecimal without separators */
-    keyId: string;
-
-    /** 16-byte initialization vector, in lowercase hexadecimal without separators */
-    iv: string;
-  }
-
-
-  /**
-   * The configuration for DRM playback
-   */
-  export type DRMOptions = {
-    /** The video element */
-    videoElement: HTMLVideoElement;
-
-    /** The video encryption parameters */
-    videoEncryptionParams: EncryptionParameters;
-
-    /** The video media ID of RTCRtpTransceiver */
-    videoMid: string;
-
-    /** The audio element */
-    audioElement: HTMLAudioElement;
-
-    /** The audio encryption parameters */
-    audioEncryptionParams?: EncryptionParameters;
-
-    /** The audio media ID of RTCRtpTransceiver */
-    audioMid?: string;
-
-    /** The average target latency, it can be set to 0, 
-     * enabling zero-buffering mode (which is not recommended as it affects video playback smoothness). 
-     * The default value is 100 ms, except when PlayReady or Widevine L1 on Windows are used - those 
-     * require at least 600 ms buffer for SW-secure decryption/playback and 1200 ms for HW-secure one */
-    mediaBufferMs?: number;
-  }
-
-  /**
-   * @class View
-   * @extends BaseWebRTC
-   * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
-   * and establishes a WebRTC connection to view a live stream.
-   *
-   * Before you can view an active broadcast, you will need:
-   *
-   * - A connection path that you can get from {@link Director} module or from your own implementation.
-   * @constructor
-   * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
-   * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
-   * @param {HTMLMediaElement} [mediaElement=null] - Deprecated. Please see our docs on how to use this going forward. 
-   * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
-   */
-  export class View extends BaseWebRTC {
-    constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, mediaElement?: HTMLVideoElement, autoReconnect?: boolean);
-    /**
-     * @typedef {Object} LayerInfo
-     * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
-     * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
-     * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
-     * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
-     * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
-     */
-    /**
-     * Connects to an active stream as subscriber.
-     *
-     * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
-     * @param {ViewConnectOptions} [options] - General subscriber options.
-     * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
-     * @fires PeerConnection#track
-     * @fires Signaling#broadcastEvent
-     * @fires PeerConnection#connectionStateChange
-     * @example await millicastView.connect(options)
-     * @example
-     * import View from '@millicast/sdk'
-     *
-     * // Create media element
-     * const videoElement = document.createElement("video")
-     *
-     * //Define callback for generate new token
-     * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
-     *
-     * //Create a new instance
-     * const streamName = "Millicast Stream Name where i want to connect"
-     * const millicastView = new View(undefined, tokenGenerator, videoElement)
-     *
-     * //Start connection to broadcast
-     * try {
-     *  await millicastView.connect()
-     * } catch (e) {
-     *  console.log('Connection failed, handle error', e)
-     * }
-     * @example
-     * import View from '@millicast/sdk'
-     *
-     * //Define callback for generate new token
-     * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
-     *
-     * //Create a new instance
-     * const streamName = "Millicast Stream Name where i want to connect"
-     * const millicastView = new View(undefined, tokenGenerator)
-     *
-     * //Set track event handler to receive streams from Publisher.
-     * millicastView.on('track', (event) => {
-     *   addStreamToYourVideoTag(event.streams[0])
-     * })
-     *
-     * //Start connection to broadcast
-     * try {
-     *  await millicastView.connect()
-     * } catch (e) {
-     *  console.log('Connection failed, handle error', e)
-     * }
-     */
-    connect(options?: ViewConnectOptions): Promise<void>;
-    /**
-     * Select the simulcast encoding layer and svc layers for the main video track
-     * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
-     */
-    select(layer?: LayerInfo): Promise<void>;
-    /**
-     * Add remote receiving track.
-     * @param {String} media - Media kind ('audio' | 'video').
-     * @param {Array<MediaStream>} streams - Streams the track will belong to.
-     * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
-     */
-    addRemoteTrack(media: 'audio' | 'video', streams: Array<MediaStream>): Promise<RTCRtpTransceiver>;
-    /**
-     * Start projecting source in selected media ids.
-     * @param {String} sourceId                          - Selected source id.
-     * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
-     * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
-     * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
-     * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
-     * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
-     */
-    project(sourceId: string, mapping: ViewProjectSourceMapping[]): Promise<void>;
-    /**
-     * Stop projecting attached source in selected media ids.
-     * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
-     */
-    unproject(mediaIds: Array<string>): Promise<void>;
+    export class Publish extends BaseWebRTC {
+        constructor(streamName: any, tokenGenerator: any, autoReconnect?: boolean)
+        /**
+         * Starts broadcast to an existing stream name.
+         *
+         * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
+         * @param {PublishConnectOptions} options - General broadcast options.
+         * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
+         * @fires PeerConnection#connectionStateChange
+         * @fires Signaling#broadcastEvent
+         * @example await publish.connect(options)
+         * @example
+         * import Publish from '@millicast/sdk'
+         *
+         * //Define callback for generate new token
+         * const tokenGenerator = () => getYourPublisherInformation(token, streamName)
+         *
+         * //Create a new instance
+         * const streamName = "My Millicast Stream Name"
+         * const millicastPublish = new Publish(undefined, tokenGenerator)
+         *
+         * //Get MediaStream
+         * const mediaStream = getYourMediaStream()
+         *
+         * //Options
+         * const broadcastOptions = {
+         *    mediaStream: mediaStream
+         *  }
+         *
+         * //Start broadcast
+         * try {
+         *  await millicastPublish.connect(broadcastOptions)
+         * } catch (e) {
+         *  console.log('Connection failed, handle error', e)
+         * }
+         */
+        connect(options?: PublishConnectOptions): Promise<void>
+        /**
+         * Initialize recording in an active stream and change the current record option.
+         */
+        record(): Promise<void>
+        /**
+         * Finalize recording in an active stream and change the current record option.
+         */
+        unrecord(): Promise<void>
+        /**
+         * Send SEI user unregistered data as part of the frame being streamed. Only available for H.264 codecs.
+         * @param {String | Object} message The data to be sent as SEI user unregistered data.
+         * @param {String} [uuid="d40e38ea-d419-4c62-94ed-20ac37b4e4fa"] String with UUID format as hex digit (XXXX-XX-XX-XX-XXXXXX).
+         */
+        sendMetadata(message: String | Object, uuid: String): void
+        webRTCPeer?: PeerConnection
+    }
 
     /**
-     * Configure DRM protected stream.
-     * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+     * DRM encryption parameters
      */
-    configureDRM(options: DRMOptions): void;
+    export type EncryptionParameters = {
+        /** 16-byte KeyID, in lowercase hexadecimal without separators */
+        keyId: string
+
+        /** 16-byte initialization vector, in lowercase hexadecimal without separators */
+        iv: string
+    }
 
     /**
-     * Remove DRM configuration for a mediaId
+     * The configuration for DRM playback
      */
-    removeDRMConfiguration(mediaId: string): void;
+    export type DRMOptions = {
+        /** The video element */
+        videoElement: HTMLVideoElement
+
+        /** The video encryption parameters */
+        videoEncryptionParams: EncryptionParameters
+
+        /** The video media ID of RTCRtpTransceiver */
+        videoMid: string
+
+        /** The audio element */
+        audioElement: HTMLAudioElement
+
+        /** The audio encryption parameters */
+        audioEncryptionParams?: EncryptionParameters
+
+        /** The audio media ID of RTCRtpTransceiver */
+        audioMid?: string
+
+        /** The average target latency, it can be set to 0,
+         * enabling zero-buffering mode (which is not recommended as it affects video playback smoothness).
+         * The default value is 100 ms, except when PlayReady or Widevine L1 on Windows are used - those
+         * require at least 600 ms buffer for SW-secure decryption/playback and 1200 ms for HW-secure one */
+        mediaBufferMs?: number
+    }
 
     /**
-     * Check if there are any DRM protected Track
+     * @class View
+     * @extends BaseWebRTC
+     * @classdesc Manages connection with a secure WebSocket path to signal the Millicast server
+     * and establishes a WebRTC connection to view a live stream.
+     *
+     * Before you can view an active broadcast, you will need:
+     *
+     * - A connection path that you can get from {@link Director} module or from your own implementation.
+     * @constructor
+     * @param {String} streamName - Deprecated: Millicast stream name to connect to. Use tokenGenerator instead. This field will be removed in a future version.
+     * @param {TokenGeneratorCallback} tokenGenerator - Callback function executed when a new token is needed.
+     * @param {HTMLMediaElement} [mediaElement=null] - Deprecated. Please see our docs on how to use this going forward.
+     * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
      */
-    get isDRMOn(): boolean;
+    export class View extends BaseWebRTC {
+        constructor(streamName: string, tokenGenerator: TokenGeneratorCallback, mediaElement?: HTMLVideoElement, autoReconnect?: boolean)
+        /**
+         * @typedef {Object} LayerInfo
+         * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
+         * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
+         * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
+         * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
+         * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+         */
+        /**
+         * Connects to an active stream as subscriber.
+         *
+         * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
+         * @param {ViewConnectOptions} [options] - General subscriber options.
+         * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
+         * @fires PeerConnection#track
+         * @fires Signaling#broadcastEvent
+         * @fires PeerConnection#connectionStateChange
+         * @example await millicastView.connect(options)
+         * @example
+         * import View from '@millicast/sdk'
+         *
+         * // Create media element
+         * const videoElement = document.createElement("video")
+         *
+         * //Define callback for generate new token
+         * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
+         *
+         * //Create a new instance
+         * const streamName = "Millicast Stream Name where i want to connect"
+         * const millicastView = new View(undefined, tokenGenerator, videoElement)
+         *
+         * //Start connection to broadcast
+         * try {
+         *  await millicastView.connect()
+         * } catch (e) {
+         *  console.log('Connection failed, handle error', e)
+         * }
+         * @example
+         * import View from '@millicast/sdk'
+         *
+         * //Define callback for generate new token
+         * const tokenGenerator = () => getYourSubscriberInformation(accountId, streamName)
+         *
+         * //Create a new instance
+         * const streamName = "Millicast Stream Name where i want to connect"
+         * const millicastView = new View(undefined, tokenGenerator)
+         *
+         * //Set track event handler to receive streams from Publisher.
+         * millicastView.on('track', (event) => {
+         *   addStreamToYourVideoTag(event.streams[0])
+         * })
+         *
+         * //Start connection to broadcast
+         * try {
+         *  await millicastView.connect()
+         * } catch (e) {
+         *  console.log('Connection failed, handle error', e)
+         * }
+         */
+        connect(options?: ViewConnectOptions): Promise<void>
+        /**
+         * Select the simulcast encoding layer and svc layers for the main video track
+         * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
+         */
+        select(layer?: LayerInfo): Promise<void>
+        /**
+         * Add remote receiving track.
+         * @param {String} media - Media kind ('audio' | 'video').
+         * @param {Array<MediaStream>} streams - Streams the track will belong to.
+         * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
+         */
+        addRemoteTrack(media: "audio" | "video", streams: Array<MediaStream>): Promise<RTCRtpTransceiver>
+        /**
+         * Start projecting source in selected media ids.
+         * @param {String} sourceId                          - Selected source id.
+         * @param {Array<Object>} mapping                    - Mapping of the source track ids to the receiver mids
+         * @param {String} [mapping.trackId]                 - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
+         * @param {String} [mapping.media]                   - Track kind of the source ('audio' | 'video'), if not set the trackId will be used instead.
+         * @param {String} [mapping.mediaId]                 - mid value of the rtp receiver in which the media is going to be projected. If no mediaId is defined, the first track from the main media stream with the same media type as the input source track will be used.
+         * @param {LayerInfo} [mapping.layer]                - Select the simulcast encoding layer and svc layers, only applicable to video tracks.
+         */
+        project(sourceId: string, mapping: ViewProjectSourceMapping[]): Promise<void>
+        /**
+         * Stop projecting attached source in selected media ids.
+         * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
+         */
+        unproject(mediaIds: Array<string>): Promise<void>
 
-    /** Exchange the DRM configuration between two transceivers
-     *  Make sure both of the transceivers have been used for DRM protected streams
-     */
-    exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string): void;
+        /**
+         * Configure DRM protected stream.
+         * When there are {@link EncryptionParameters} in the payload of 'active' broadcast event, this method should be called
+         */
+        configureDRM(options: DRMOptions): void
 
-    replaceConnection(): Promise<void>;
-    webRTCPeer?: PeerConnection;
-  }
+        /**
+         * Remove DRM configuration for a mediaId
+         */
+        removeDRMConfiguration(mediaId: string): void
+
+        /**
+         * Check if there are any DRM protected Track
+         */
+        get isDRMOn(): boolean
+
+        /** Exchange the DRM configuration between two transceivers
+         *  Make sure both of the transceivers have been used for DRM protected streams
+         */
+        exchangeDRMConfiguration(targetMediaId: string, sourceMediaId: string): void
+
+        replaceConnection(): Promise<void>
+        webRTCPeer?: PeerConnection
+    }
 }
