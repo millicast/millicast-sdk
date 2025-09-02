@@ -30,13 +30,13 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install the dependencies 🧱
+        run: npm ci
       - name: Download SDK build artifact
         uses: actions/download-artifact@v4
         with:
           name: sdk-dist
           path: packages/millicast-sdk/
-      - name: Install the dependencies 🧱
-        run: npm ci
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
       - name: Login to npm
