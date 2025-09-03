@@ -1,5 +1,11 @@
 # @millicast/sdk
 
+## 0.6.0
+
+### Minor Changes
+
+- 576652c: Added support for ABR strategy and iniital bitrate for the viewer.
+
 ## 0.5.0
 
 ### Minor Changes
