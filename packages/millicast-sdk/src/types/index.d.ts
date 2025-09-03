@@ -1128,7 +1128,7 @@ declare module "@millicast/sdk" {
         /**
          * The initial bitrate, in bits per second. This value is nullable.
          */
-        bitrate: number | undefined
+        bitrate?: number | undefined
     }
 
     export type ViewConnectOptions = {
@@ -1232,7 +1232,7 @@ declare module "@millicast/sdk" {
         /**
          * The strategy for initial playback behavior.
          */
-        abrConfiguration: AbrConfigurationOptions
+        abrConfiguration?: AbrConfigurationOptions
     }
 
     export type PublishConnectOptions = {
