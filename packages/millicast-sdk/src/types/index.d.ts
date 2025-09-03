@@ -1095,6 +1095,49 @@ declare module "@millicast/sdk" {
     }
     export type Event = "active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated" | "error"
 
+    /**
+     * ABR (Adaptive Bitrate) strategy options for initial playback behavior.
+     *
+     * @typedef {"performance" | "quality" | "bandwidth"} AbrStrategy
+     *
+     * - `"quality"`: Plays the highest quality first. This is the default strategy.
+     *   - ABR aggressiveness: High
+     *   - When increasing bandwidth, it will allow jumping up multiple quality layers at once.
+     *
+     * - `"bandwidth"`: Conservatively chooses the highest quality based on OS/browser network estimate
+     *   or a customer-provided estimate. If the estimate is unknown, defaults to the lowest layer.
+     *   - ABR aggressiveness: Medium
+     *   - When increasing bandwidth, always steps through layers one by one
+     *
+     * - `"performance"`: Lowest quality first to prioritize performance over visual quality.
+     *   - ABR aggressiveness: Conservative
+     *   - Moves down quality levels quickly, steps up conservatively
+     */
+    export type AbrStrategy = "performance" | "quality" | "bandwidth"
+
+    export interface AbrStrategyMetadata {
+        /**
+         * The initial bitrate, in bits per second. This value is nullable.
+         */
+        bitrate: number | undefined
+    }
+
+    export interface AbrConfigurationOptions {
+        /**
+         * The strategy for initial playback behavior.
+         *
+         * - `"quality"`: Prioritizes highest quality first with high ABR aggressiveness.
+         * - `"bandwidth"`: Conservative quality selection based on network estimates with medium ABR aggressiveness.
+         * - `"performance"`: Prioritizes lowest quality first with conservative ABR aggressiveness.
+         *
+         */
+        strategy?: AbrStrategy
+        /**
+         * The metadata configuration for the initial playback strategy. This value is nullable.
+         */
+        metadata?: AbrStrategyMetadata
+    }
+
     export type ViewConnectOptions = {
         /**
          * - True to modify SDP for supporting dtx in opus. Otherwise False.
@@ -1192,6 +1235,11 @@ declare module "@millicast/sdk" {
          * congestion and recovering quicker.
          */
         forceSmooth?: boolean
+
+        /**
+         * The strategy for initial playback behavior.
+         */
+        abrConfiguration?: AbrConfigurationOptions
     }
 
     export type PublishConnectOptions = {
