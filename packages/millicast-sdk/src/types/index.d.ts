@@ -1115,6 +1115,13 @@ declare module "@millicast/sdk" {
      */
     export type AbrStrategy = "performance" | "quality" | "bandwidth"
 
+    export interface AbrStrategyMetadata {
+        /**
+         * The initial bitrate, in bits per second. This value is nullable.
+         */
+        bitrate: number | undefined
+    }
+
     export interface AbrConfigurationOptions {
         /**
          * The strategy for initial playback behavior.
@@ -1126,9 +1133,9 @@ declare module "@millicast/sdk" {
          */
         strategy?: AbrStrategy
         /**
-         * The initial bitrate, in bits per second. This value is nullable.
+         * The metadata configuration for the initial playback strategy. This value is nullable.
          */
-        bitrate?: number | undefined
+        metadata?: AbrStrategyMetadata
     }
 
     export type ViewConnectOptions = {
