@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -52,7 +52,7 @@
     "type": "git",
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
-"dependencies": {
+  "dependencies": {
     "@dolbyio/webrtc-stats": "^1.0.4",
     "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
