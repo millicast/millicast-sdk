@@ -170,7 +170,7 @@ classDiagram
     +stopStats()
     +async getRTCLocalSDP(options) string
     +async setRTCRemoteSDP(sdp)
-    +updateBandwidthRestriction(sdp, bitrate) string
+    +updateBandwidthRestriction(bitrate) string
     +async updateBitrate(bitrate)
   }
   class Signaling {
@@ -199,10 +199,6 @@ classDiagram
   }
   class SdpParser {
     <<Singleton>>
-    +setStereo(sdp) string
-    +setDTX(sdp) string
-    +setVideoBitrate(sdp, bitrate) string
-    +setSimulcast(sdp, codec) string
   }
   class Logger {
     <<Singleton>>
