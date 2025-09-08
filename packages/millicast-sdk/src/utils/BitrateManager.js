@@ -1,4 +1,4 @@
-import Logger from './Logger'
+import Logger from '../Logger'
 
 const logger = Logger.get('BitrateManager')
 
