@@ -227,9 +227,6 @@ export default class PeerConnection extends EventEmitter {
 
     try {
       await this.peer.setRemoteDescription(answer)
-      if (this.options.dtx && !this.options.disableAudio) {
-        await configureDTX(this.peer, this.options.dtx, this.sessionDescription)
-      }
       logger.info('RTC Remote SDP was set successfully.')
       logger.debug('RTC Remote SDP new value: ', sdp)
     } catch (e) {
@@ -273,6 +270,9 @@ export default class PeerConnection extends EventEmitter {
         configureAudioCodec(this.peer, options.stereo)
       }
       await configureMultiOpus(this.peer, mediaStream)
+    }
+    if (this.options.dtx && !this.options.disableAudio) {
+      await configureDTX(this.peer, this.options.dtx, this.sessionDescription)
     }
 
     logger.info('Creating peer offer')
