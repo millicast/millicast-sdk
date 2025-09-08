@@ -323,6 +323,29 @@ const SdpParser = {
       codecMap[match[1]] = match[2]
     }
     return codecMap
+  },
+  parseSDP (sdpString) {
+    const lines = sdpString.split('\n')
+    const parsed = {
+      media: [],
+      attributes: {}
+    }
+
+    let currentMedia = null
+
+    lines.forEach((line) => {
+      if (line.startsWith('m=')) {
+        currentMedia = { type: line.split(' ')[0].substring(2), attributes: [] }
+        parsed.media.push(currentMedia)
+      } else if (line.startsWith('a=') && currentMedia) {
+        currentMedia.attributes.push(line)
+      } else if (line.startsWith('a=')) {
+        const [key, value] = line.substring(2).split('=')
+        parsed.attributes[key] = value
+      }
+    })
+
+    return parsed
   }
 }
 

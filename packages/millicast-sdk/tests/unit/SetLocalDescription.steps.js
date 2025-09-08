@@ -3,9 +3,10 @@ import PeerConnection from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
+import SdpParser from '../../src/utils/SdpParser'
 const feature = loadFeature('../features/SetLocalDescription.feature', { loadRelativePath: true, errors: true })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   afterEach(async () => {
     jest.restoreAllMocks()
     changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36')
@@ -73,7 +74,10 @@ defineFeature(feature, test => {
 
     given('I have a MediaStream with 1 audio track and 1 video track and I want support stereo', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
       mediaStream = new MediaStream(tracks)
       stereo = true
     })
@@ -85,6 +89,10 @@ defineFeature(feature, test => {
     then('returns the SDP', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
+      const parsedSdp = SdpParser.parsedSdp(sdp)
+      const audioMedia = parsedSdp.media.find((m) => m.type === 'audio')
+      expect(audioMedia).toBeDefined()
+      expect(audioMedia.attributes.some((attr) => attr.includes('stereo=1'))).toBe(true)
     })
   })
 
@@ -96,7 +104,10 @@ defineFeature(feature, test => {
 
     given('I have a MediaStream with 1 audio track and 1 video track', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
       mediaStream = new MediaStream(tracks)
       stereo = true
     })
@@ -119,7 +130,10 @@ defineFeature(feature, test => {
 
     given('I have a MediaStream with 1 audio track and 1 video track', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
       mediaStream = new MediaStream(tracks)
       stereo = true
     })
@@ -142,7 +156,10 @@ defineFeature(feature, test => {
 
     given('I have a MediaStream with 1 audio track and 1 video track and I want support simulcast', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
       mediaStream = new MediaStream(tracks)
       simulcast = true
     })
@@ -165,7 +182,10 @@ defineFeature(feature, test => {
 
     given('I have a MediaStream with 2 video tracks and no audio track', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'video', label: 'Video1' }, { id: 2, kind: 'video', label: 'Video2' }]
+      const tracks = [
+        { id: 1, kind: 'video', label: 'Video1' },
+        { id: 2, kind: 'video', label: 'Video2' }
+      ]
       mediaStream = new MediaStream(tracks)
       stereo = true
     })
@@ -190,7 +210,10 @@ defineFeature(feature, test => {
 
     given('I have a list of tracks with 1 audio track and 1 video track', async () => {
       await peerConnection.createRTCPeer()
-      tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
     })
 
     when('I want to get the RTC Local SDP', async () => {
@@ -210,8 +233,12 @@ defineFeature(feature, test => {
 
     given('I have a list of tracks with 3 audio tracks and 1 video track', async () => {
       await peerConnection.createRTCPeer()
-      tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' },
-        { id: 3, kind: 'audio', label: 'Audio2' }, { id: 4, kind: 'audio', label: 'Audio3' }]
+      tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' },
+        { id: 3, kind: 'audio', label: 'Audio2' },
+        { id: 4, kind: 'audio', label: 'Audio3' }
+      ]
     })
 
     when('I want to get the RTC Local SDP', async () => {
@@ -235,7 +262,10 @@ defineFeature(feature, test => {
 
     given('I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode', async () => {
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
       mediaStream = new MediaStream(tracks)
       scalabilityMode = 'L1T3'
     })
@@ -261,7 +291,10 @@ defineFeature(feature, test => {
     given('I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode', async () => {
       changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
       await peerConnection.createRTCPeer()
-      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      const tracks = [
+        { id: 1, kind: 'audio', label: 'Audio1' },
+        { id: 2, kind: 'video', label: 'Video1' }
+      ]
       mediaStream = new MediaStream(tracks)
       scalabilityMode = 'L1T3'
     })
