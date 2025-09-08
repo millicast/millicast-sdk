@@ -199,10 +199,6 @@ classDiagram
   }
   class SdpParser {
     <<Singleton>>
-    +setStereo(sdp) string
-    +setDTX(sdp) string
-    +setVideoBitrate(sdp, bitrate) string
-    +setSimulcast(sdp, codec) string
   }
   class Logger {
     <<Singleton>>
