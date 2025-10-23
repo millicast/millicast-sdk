@@ -1,5 +1,11 @@
 # @millicast/sdk
 
+## 0.6.1
+
+### Patch Changes
+
+- 4f37a56: Allowed overrides of director URL to persist
+
 ## 0.6.0
 
 ### Minor Changes
