@@ -132,7 +132,7 @@ const Director = {
     logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
     const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
-    const url = `${Director.getEndpoint()}/api/director/publish`
+    const url = `${getDirectorPath('publish')}`
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       let data = await response.json()
@@ -194,7 +194,7 @@ const Director = {
     if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
-    const url = `${Director.getEndpoint()}/api/director/subscribe`
+    const url = `${getDirectorPath('subscribe')}`
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
       let data = await response.json()
@@ -266,6 +266,20 @@ const parseIncomingDirectorResponse = (directorResponse) => {
     }
   }
   return directorResponse
+}
+
+const getDirectorPath = (mode = 'subscribe') => {
+  try {
+    const url = new URL(apiEndpoint)
+    // length > 1 because pathname is '/' when there is no path
+    if (url.pathname && url.pathname.length > 1) {
+      return url
+    }
+    return `${apiEndpoint}/api/director/${mode}`
+  } catch (e) {
+    console.error(`Director URL ${apiEndpoint} is invalid`)
+    return null
+  }
 }
 
 export default Director
