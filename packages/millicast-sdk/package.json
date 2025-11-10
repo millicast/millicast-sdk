@@ -21,13 +21,18 @@
   "scripts": {
     "build": "tsc --build && vite build --config vite.config.debug.mjs && vite build && rollup -c",
     "build:watch": "vite build --watch",
+    "build:ts": "tsc --build",
+    "build:ts:watch": "tsc --build --watch",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "npm run build && jest --testMatch \"**/unit/*.steps.js\"",
     "test-unit-coverage": "npm run build && jest --testMatch \"**/unit/*.steps.js\" --coverage",
     "test-e2e": "npm run build && jest --testMatch \"**/e2e/*.steps.js\" --verbose",
     "test-all": "npm run build && jest --testMatch \"**/*.steps.js\"",
-    "test": "npm run test-all"
+    "test": "npm run test-all",
+    "dev": "npm run type-check:watch"
   },
   "babel": {
     "env": {
@@ -54,7 +59,6 @@
   },
   "dependencies": {
     "@dolbyio/webrtc-stats": "^1.0.4",
-    "@types/node": "^18.11.10",
     "Base64": "^1.1.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
@@ -78,6 +82,9 @@
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
+    "@types/jwt-decode": "^2.2.1",
+    "@types/node": "^18.11.10",
+    "@types/ua-parser-js": "^0.7.39",
     "babel-jest": "^29.7.0",
     "clean-jsdoc-theme": "^4.2.17",
     "core-js": "^3.20.1",
