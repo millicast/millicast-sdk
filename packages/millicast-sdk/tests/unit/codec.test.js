@@ -1,5 +1,6 @@
 import { TextDecoder } from 'util'
 import { extractH26xMetadata } from '../../src/utils/Codecs'
+import { VideoCodec, AudioCodec, DOLBY_SEI_DATA_UUID, DOLBY_SEI_TIMESTAMP_UUID, DOLBY_SDK_TIMESTAMP_UUID } from '../../src/types/Codecs.types'
 import fs from 'fs'
 import path from 'path'
 
@@ -8,6 +9,27 @@ function bytes2HexStr (bytes) {
 }
 
 describe('Extract user unregistered data in SEI from H26x frame', () => {
+  describe('Constants', () => {
+    test('should export correct video codec constants', () => {
+      expect(VideoCodec.VP8).toBe('vp8')
+      expect(VideoCodec.VP9).toBe('vp9')
+      expect(VideoCodec.H264).toBe('h264')
+      expect(VideoCodec.AV1).toBe('av1')
+      expect(VideoCodec.H265).toBe('h265')
+    })
+
+    test('should export correct audio codec constants', () => {
+      expect(AudioCodec.OPUS).toBe('opus')
+      expect(AudioCodec.MULTIOPUS).toBe('multiopus')
+    })
+
+    test('should export correct UUID constants', () => {
+      expect(DOLBY_SEI_DATA_UUID).toBe('6e9cfd2a-5907-49ff-b363-8978a6e8340e')
+      expect(DOLBY_SEI_TIMESTAMP_UUID).toBe('9a21f3be-31f0-4b78-b0be-c7f7dbb97250')
+      expect(DOLBY_SDK_TIMESTAMP_UUID).toBe('d40e38ea-d419-4c62-94ed-20ac37b4e4fa')
+    })
+  })
+
   const targetUUID = 'dc45e9bde6d948b7962cd820d923eeef'
   const targetContent = 'x264 - core 164 r3095 baee400 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1,00:0,00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=12 lookahead_threads=2 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=2 keyint=300 keyint_min=30 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=cbr mbtree=1 bitrate=2048 ratetol=1,0 qcomp=0,60 qpmin=0 qpmax=69 qpstep=4 vbv_maxrate=2048 vbv_bufsize=1228 nal_hrd=none filler=0 ip_ratio=1,40 aq=1:1,00\0'
   it('should extract user uregistered data from H264/AVC frame', () => {
