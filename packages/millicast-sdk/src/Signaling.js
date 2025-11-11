@@ -2,7 +2,7 @@ import EventEmitter from 'events'
 import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
-import { VideoCodec } from './utils/Codecs'
+import { VideoCodec } from './types/Codecs.types'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
 

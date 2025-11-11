@@ -9,7 +9,7 @@ import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
-import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')

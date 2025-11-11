@@ -5,11 +5,12 @@ import * as v from 'valibot'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import { DOLBY_SDK_TIMESTAMP_UUID, VideoCodec } from './utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
 import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
+import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('Publish')
 

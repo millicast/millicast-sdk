@@ -1,35 +1,15 @@
 /* eslint-disable no-new-wrappers */
 /* eslint-disable camelcase */
+import {
+  AudioCodec,
+  PictureParameterSet,
+  SequenceParameterSet,
+  VUIParameters
+} from '../types/Codecs.types'
 import BitStreamReader from './BitStreamReader'
-/**
- * Enum of Millicast supported Video codecs
- * @readonly
- * @enum {String}
- * @property {String} VP8
- * @property {String} VP9
- * @property {String} H264
- * @property {String} AV1
- * @property {String} H265 - Only available in Safari
- */
-export const VideoCodec = {
-  VP8: 'vp8',
-  VP9: 'vp9',
-  H264: 'h264',
-  AV1: 'av1',
-  H265: 'h265'
-}
-
-/**
- * Enum of Millicast supported Audio codecs
- * @readonly
- * @enum {String}
- * @property {String} OPUS
- * @property {String} MULTIOPUS
- */
-export const AudioCodec = {
-  OPUS: 'opus',
-  MULTIOPUS: 'multiopus'
-}
+import { VideoCodec } from '../types/Codecs.types'
+import { SEIUserUnregisteredData } from '../types/View.types'
+import { TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 
 const NALUType = {
   SLICE_NON_IDR: 1,
@@ -63,34 +43,55 @@ export const DOLBY_SEI_TIMESTAMP_UUID = '9a21f3be-31f0-4b78-b0be-c7f7dbb97250'
 // When the SDK inserts its own timecode into the unregistered block, it uses this identifier
 export const DOLBY_SDK_TIMESTAMP_UUID = 'd40e38ea-d419-4c62-94ed-20ac37b4e4fa'
 
+export interface SeiMetadata {
+  seiPicTimingTimeCodeArray?: SeiPicTimingTimeCode[]
+  uuid?: Uint8Array
+  unregistered?: Uint8Array
+  timecode?: Uint8Array | number
+}
+
+interface SeiPicTimingTimeCode {
+  n_frames: number
+  seconds_value: number
+  minutes_value: number
+  hours_value: number
+  time_offset: number
+}
+
 class SPSState {
-  constructor (codec = 'H264') {
+  private sps: Map<number, SequenceParameterSet>
+  private pps: Map<number, PictureParameterSet>
+  codec: VideoCodec
+  activeSPS: SequenceParameterSet | null
+  constructor (codec = VideoCodec.H264) {
     this.sps = new Map()
     this.pps = new Map()
     this.activeSPS = null
     this.codec = codec
   }
 
-  collectPPS (rbsp) {
-    if (this.codec === 'H264') {
+  collectPPS (rbsp: Uint8Array) {
+    if (this.codec === VideoCodec.H264) {
       this.collectH264PPS(rbsp)
     } else {
       this.collectH265PPS(rbsp)
     }
   }
 
-  collectSPS (rbsp) {
-    if (this.codec === 'H264') {
+  collectSPS (rbsp: Uint8Array) {
+    if (this.codec === VideoCodec.H264) {
       this.collectH264SPS(rbsp)
     } else {
       this.collectH265SPS(rbsp)
     }
   }
 
-  collectH264SPS (rbsp) {
+  collectH264SPS (rbsp: Uint8Array) {
     const reader = new BitStreamReader(rbsp)
     const profile_idc = reader.readBits(8)
-    const supported_profiles = [100, 110, 122, 244, 44, 83, 86, 118, 128, 138, 139, 134, 135]
+    const supported_profiles = [
+      100, 110, 122, 244, 44, 83, 86, 118, 128, 138, 139, 134, 135
+    ]
     reader.skip(8) // skip 8bits constraint set flag and reserved_zero_2bits
     reader.skip(8) // level_idc
     const seq_parameter_set_id = reader.readExpGolombUnsigned()
@@ -108,10 +109,10 @@ class SPSState {
       const seq_scaling_matrix_present_flag = reader.readBits(1)
       if (seq_scaling_matrix_present_flag) {
         // parse scaling matrix, since we don't need the result, just read and skip it
-        const sizeOfScalingList = (chroma_format_idc !== 3) ? 8 : 12
+        const sizeOfScalingList = chroma_format_idc !== 3 ? 8 : 12
         for (let i = 0; i < sizeOfScalingList; i++) {
           if (reader.readBits(1)) {
-            const sizeOfScalingList = (i < 6) ? 16 : 64
+            const sizeOfScalingList = i < 6 ? 16 : 64
             let lastScale = 8
             let nextScale = 8
             for (let j = 0; j < sizeOfScalingList; j++) {
@@ -133,7 +134,8 @@ class SPSState {
       reader.skip(1) // delta_pic_order_always_zero_flag
       reader.readExpGolombSigned() // offset_for_non_ref_pic
       reader.readExpGolombSigned() // offset_for_top_to_bottom_field
-      const num_ref_frames_in_pic_order_cnt_cycle = reader.readExpGolombUnsigned()
+      const num_ref_frames_in_pic_order_cnt_cycle =
+        reader.readExpGolombUnsigned()
       for (let i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; i++) {
         // parse offset_for_ref_frame
         reader.readExpGolombSigned()
@@ -153,7 +155,7 @@ class SPSState {
       reader.readExpGolombUnsigned() // frame_crop_bottom_offset
     }
     // parse vui_parameters
-    let vui_parameters
+    let vui_parameters: VUIParameters | undefined
     if (reader.readBits(1)) {
       // aspect_ratio_info
       if (reader.readBits(1)) {
@@ -191,7 +193,7 @@ class SPSState {
           }
         : undefined
 
-      function parseHRDParameters (reader) {
+      const parseHRDParameters = (reader: BitStreamReader) => {
         const cpb_cnt_minus1 = reader.readExpGolombUnsigned()
         reader.skip(4) // bit_rate_scale
         reader.skip(4) // cpb_size_scale
@@ -211,8 +213,12 @@ class SPSState {
         }
       }
 
-      const nal_hrd_parameters = reader.readBits(1) ? parseHRDParameters(reader) : undefined
-      const vcl_hrd_parameters = reader.readBits(1) ? parseHRDParameters(reader) : undefined
+      const nal_hrd_parameters = reader.readBits(1)
+        ? parseHRDParameters(reader)
+        : undefined
+      const vcl_hrd_parameters = reader.readBits(1)
+        ? parseHRDParameters(reader)
+        : undefined
       if (nal_hrd_parameters || vcl_hrd_parameters) {
         reader.skip(1) // low_delay_hrd_flag
       }
@@ -229,11 +235,12 @@ class SPSState {
     })
   }
 
-  collectH265SPS (rbsp) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  collectH265SPS (rbsp: Uint8Array) {
     // TODO: parse H265 SPS
   }
 
-  collectH264PPS (rbsp) {
+  collectH264PPS (rbsp: Uint8Array) {
     const reader = new BitStreamReader(rbsp)
     const pic_parameter_set_id = reader.readExpGolombUnsigned()
     if (pic_parameter_set_id > 255 || pic_parameter_set_id < 0) {
@@ -245,11 +252,12 @@ class SPSState {
     })
   }
 
-  collectH265PPS (rbsp) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  collectH265PPS (rbsp: Uint8Array) {
     // TODO: parse H265 PPS
   }
 
-  findActiveSPS (rbsp) {
+  findActiveSPS (rbsp: Uint8Array) {
     // get the seq_parameter_set_id from the slice header
     const reader = new BitStreamReader(rbsp)
     reader.readExpGolombUnsigned() // first_mb_in_slice
@@ -269,11 +277,14 @@ class SPSState {
 
 const spsState = new SPSState()
 
-function findStartCodeIndex (frameBuffer, offset) {
+function findStartCodeIndex (frameBuffer: Uint8Array, offset: number) {
   while (offset < frameBuffer.byteLength - 4) {
-    if ((frameBuffer[offset] === 0x00 && frameBuffer[offset + 1] === 0x00) &&
-        (frameBuffer[offset + 2] === 0x01 ||
-        (frameBuffer[offset + 2] === 0x00 && frameBuffer[offset + 3] === 0x01))) {
+    if (
+      frameBuffer[offset] === 0x00 &&
+      frameBuffer[offset + 1] === 0x00 &&
+      (frameBuffer[offset + 2] === 0x01 ||
+        (frameBuffer[offset + 2] === 0x00 && frameBuffer[offset + 3] === 0x01))
+    ) {
       return offset
     } else {
       offset += 1
@@ -285,12 +296,20 @@ function findStartCodeIndex (frameBuffer, offset) {
 // EBSP (Encapsulate Byte Sequence Payload) is a sequence of bytes without start code and header in NAL unit
 // which is also aka ...RBSP (Raw Byte Sequence Payload) + 0x03 when there are [0x00, 0x00, <0x01 or 0x02 or 0x03>] in RBSP
 // so we need to remove 0x03 byte before we parse the payload data
-function removePreventionBytes (ebsp) {
+function removePreventionBytes (ebsp: Uint8Array) {
   const output = new Uint8Array(ebsp.byteLength)
   let outOffset = 0
   let ebspOffset = 0
-  for (let preventionByteIdx = 2; preventionByteIdx < ebsp.byteLength; preventionByteIdx++) {
-    if (ebsp[preventionByteIdx] === 0x03 && ebsp[preventionByteIdx - 1] === 0x00 && ebsp[preventionByteIdx - 2] === 0x00) {
+  for (
+    let preventionByteIdx = 2;
+    preventionByteIdx < ebsp.byteLength;
+    preventionByteIdx++
+  ) {
+    if (
+      ebsp[preventionByteIdx] === 0x03 &&
+      ebsp[preventionByteIdx - 1] === 0x00 &&
+      ebsp[preventionByteIdx - 2] === 0x00
+    ) {
       output.set(ebsp.subarray(ebspOffset, preventionByteIdx), outOffset)
       outOffset += preventionByteIdx - ebspOffset
       ebspOffset = preventionByteIdx + 1
@@ -302,9 +321,9 @@ function removePreventionBytes (ebsp) {
   return output
 }
 
-function getNalus (frameBuffer, codec) {
+function getNalus (frameBuffer: Uint8Array, codec: VideoCodec) {
   let offset = 0
-  const headerSize = codec === 'H264' ? 1 : 2
+  const headerSize = codec === VideoCodec.H264 ? 1 : 2
   const nalus = []
   while (offset < frameBuffer.byteLength - 4) {
     const startCodeIndex = findStartCodeIndex(frameBuffer, offset)
@@ -312,7 +331,10 @@ function getNalus (frameBuffer, codec) {
       // found the NAL unit start code
       const startCodeLength = frameBuffer[startCodeIndex + 2] === 0x01 ? 3 : 4
       // find the start index of next NAL unit
-      const nextStartCodeIndex = findStartCodeIndex(frameBuffer, startCodeIndex + startCodeLength + headerSize)
+      const nextStartCodeIndex = findStartCodeIndex(
+        frameBuffer,
+        startCodeIndex + startCodeLength + headerSize
+      )
       if (nextStartCodeIndex > startCodeIndex) {
         nalus.push(frameBuffer.subarray(startCodeIndex, nextStartCodeIndex))
         offset = nextStartCodeIndex
@@ -327,42 +349,57 @@ function getNalus (frameBuffer, codec) {
   return nalus
 }
 
-function getSeiNalus (frameBuffer, codec) {
+function getSeiNalus (frameBuffer: Uint8Array, codec: VideoCodec) {
   let shouldSearchActiveSPS = true
-  return getNalus(frameBuffer, codec).filter((nalu) => {
+  return getNalus(frameBuffer, codec).filter(nalu => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-    const headerLength = codec === 'H264' ? 1 : 2
+    const headerLength = codec === VideoCodec.H264 ? 1 : 2
     const header = nalu[startCodeLength]
-    const naluType = codec === 'H264' ? header & 0x1f : header >> 1 & 0x3f
+    const naluType =
+      codec === VideoCodec.H264 ? header & 0x1f : (header >> 1) & 0x3f
     if (shouldSearchActiveSPS) {
       switch (naluType) {
         case NALUType.PPS_H264:
         case NALUType.PPS_H265:
-          spsState.collectPPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
+          spsState.collectPPS(
+            removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
+          )
           break
         case NALUType.SPS_H264:
         case NALUType.SPS_H265:
-          spsState.collectSPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
+          spsState.collectSPS(
+            removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
+          )
           break
         case NALUType.SLICE_IDR:
         case NALUType.SLICE_NON_IDR:
         case NALUType.SLICE_PARTITION_A:
           try {
-            spsState.findActiveSPS(removePreventionBytes(nalu.subarray(startCodeLength + headerLength)))
+            spsState.findActiveSPS(
+              removePreventionBytes(
+                nalu.subarray(startCodeLength + headerLength)
+              )
+            )
             shouldSearchActiveSPS = false
           } catch (err) {
-            console.info('Failed to find active SPS. Will not be able to extract PIC timing metadata')
+            console.info(
+              'Failed to find active SPS. Will not be able to extract PIC timing metadata'
+            )
           }
           break
         default:
           break
       }
     }
-    return [NALUType.SEI_H264, NALUType.SEI_H265_PREFIX, NALUType.SEI_H265_SUFFIX].includes(naluType)
+    return [
+      NALUType.SEI_H264,
+      NALUType.SEI_H265_PREFIX,
+      NALUType.SEI_H265_SUFFIX
+    ].includes(naluType)
   })
 }
 
-function extractSEIPayload (rbsp) {
+function extractSEIPayload (rbsp: Uint8Array) {
   let payloadType = 0
   let idx = 0
   while (rbsp[idx] === 0xff) {
@@ -384,18 +421,24 @@ function extractSEIPayload (rbsp) {
   }
 }
 
-function resolveUnregisteredMessageType (uuid) {
+function resolveUnregisteredMessageType (uuid: Uint8Array) {
   const timecodeUuid = new Uint8Array(parseUUID(DOLBY_SEI_TIMESTAMP_UUID))
   const legacySdkUuid = new Uint8Array(parseUUID(DOLBY_SEI_DATA_UUID))
   const newSdkUuid = new Uint8Array(parseUUID(DOLBY_SDK_TIMESTAMP_UUID))
 
-  if (timecodeUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.TIMECODE
-  if (legacySdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.LEGACY
-  if (newSdkUuid.every((value, index) => value === uuid[index])) return UNREGISTERED_MESSAGE_TYPE.NEW
+  if (timecodeUuid.every((value, index) => value === uuid[index]))
+    return UNREGISTERED_MESSAGE_TYPE.TIMECODE
+  if (legacySdkUuid.every((value, index) => value === uuid[index]))
+    return UNREGISTERED_MESSAGE_TYPE.LEGACY
+  if (newSdkUuid.every((value, index) => value === uuid[index]))
+    return UNREGISTERED_MESSAGE_TYPE.NEW
   return UNREGISTERED_MESSAGE_TYPE.OTHER
 }
 
-function getSeiUserUnregisteredData (metadata, payloadContent) {
+function getSeiUserUnregisteredData (
+  metadata: SeiMetadata,
+  payloadContent: Uint8Array
+) {
   let idx = 0
   metadata.uuid = payloadContent.subarray(idx, idx + 16)
   idx += 16
@@ -429,26 +472,39 @@ function getSeiUserUnregisteredData (metadata, payloadContent) {
   }
 }
 
-function convertSEITimestamp (data) {
-  const timestampBigInt = data.reduce((acc, byte) => (acc << BigInt(8)) + BigInt(byte), BigInt(0))
+function convertSEITimestamp (data: Uint8Array) {
+  const timestampBigInt = data.reduce(
+    (acc, byte) => (acc << BigInt(8)) + BigInt(byte),
+    BigInt(0)
+  )
   const milliseconds = Number(timestampBigInt)
   const date = new Date(milliseconds)
   const dateEncoded = new TextEncoder().encode(date.toISOString())
   return dateEncoded
 }
 
-function getSeiPicTimingTimecode (metadata, payloadContent) {
+function getSeiPicTimingTimecode (
+  metadata: SeiMetadata,
+  payloadContent: Uint8Array
+) {
   if (!spsState.activeSPS) {
     console.warn('Cannot find the active SPS')
     return
   }
-  const hrdParameters = spsState.activeSPS.vui_parameters.nal_hrd_parameters ?? spsState.activeSPS.vui_parameters.vcl_hrd_parameters
+  const hrdParameters =
+    spsState.activeSPS.vui_parameters?.nal_hrd_parameters ??
+    spsState.activeSPS.vui_parameters?.vcl_hrd_parameters
   const options = {
     cpb_dpb_delays_present_flag: hrdParameters ? 1 : 0,
-    cpb_removal_delay_length_minus1: hrdParameters?.cpb_removal_delay_length_minus1 ?? 23,
-    dpb_output_delay_length_minus1: hrdParameters?.dpb_output_delay_length_minus1 ?? 23,
-    time_offset_length: hrdParameters ? hrdParameters.time_offset_length ?? 24 : undefined,
-    pic_struct_present_flag: spsState.activeSPS.vui_parameters.pic_struct_present_flag ?? 0
+    cpb_removal_delay_length_minus1:
+      hrdParameters?.cpb_removal_delay_length_minus1 ?? 23,
+    dpb_output_delay_length_minus1:
+      hrdParameters?.dpb_output_delay_length_minus1 ?? 23,
+    time_offset_length: hrdParameters
+      ? hrdParameters.time_offset_length ?? 24
+      : undefined,
+    pic_struct_present_flag:
+      spsState.activeSPS.vui_parameters?.pic_struct_present_flag ?? 0
   }
   if (!options.pic_struct_present_flag) {
     console.warn('pic_struct_present_flag is not present')
@@ -466,11 +522,17 @@ function getSeiPicTimingTimecode (metadata, payloadContent) {
     throw new Error('Invalid pic_struct')
   }
   const numClockTS = picStructNumClockTS[pic_struct]
-  const timecodes = []
+  const timecodes: SeiPicTimingTimeCode[] = []
   for (let i = 0; i < numClockTS; i++) {
     const clock_timestamp_flag = reader.readBits(1)
     if (clock_timestamp_flag) {
-      const timecode = {}
+      const timecode: SeiPicTimingTimeCode = {
+        n_frames: 0,
+        seconds_value: 0,
+        minutes_value: 0,
+        hours_value: 0,
+        time_offset: 0
+      }
       reader.skip(2) // ct_type
       reader.skip(1) // nuit_field_based_flag
       reader.skip(5) // counting_type
@@ -540,21 +602,26 @@ function getSeiPicTimingTimecode (metadata, payloadContent) {
  */
 
 /**
-* Extract user unregistered metadata from H26x Encoded Frame
-* @param { RTCEncodedFrame } encodedFrame
-* @param { 'H264' | 'H265' } codec
-* @returns { FrameMetaData }
-*/
-export function extractH26xMetadata (encodedFrame, codec) {
-  if (codec !== 'H264' && codec !== 'H265') {
+ * Extract user unregistered metadata from H26x Encoded Frame
+ * @param { RTCEncodedFrame } encodedFrame
+ * @param { 'H264' | 'H265' } codec
+ * @returns { FrameMetaData }
+ */
+export function extractH26xMetadata (
+  encodedFrame: RTCEncodedVideoFrame,
+  codec: VideoCodec
+) {
+  if (codec !== VideoCodec.H264 && codec !== VideoCodec.H265) {
     throw new Error(`Unsupported codec ${codec}`)
   }
-  const metadata = {}
-  spsState.codec = codec
-  getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach((nalu) => {
+  const metadata: SeiMetadata = { seiPicTimingTimeCodeArray: [] }
+  spsState.codec = codec as VideoCodec
+  getSeiNalus(new Uint8Array(encodedFrame.data), codec).forEach(nalu => {
     const startCodeLength = nalu[2] === 0x01 ? 3 : 4
-    const headerLength = codec === 'H264' ? 1 : 2
-    const rbsp = removePreventionBytes(nalu.subarray(startCodeLength + headerLength))
+    const headerLength = codec === VideoCodec.H264 ? 1 : 2
+    const rbsp = removePreventionBytes(
+      nalu.subarray(startCodeLength + headerLength)
+    )
     const payload = extractSEIPayload(rbsp)
     switch (payload.type) {
       case SEI_Payload_Type.PIC_TIMING:
@@ -570,46 +637,62 @@ export function extractH26xMetadata (encodedFrame, codec) {
   return metadata
 }
 
-function isValidUUID (uuid) {
-  const uuidRegEx = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+function isValidUUID (uuid: string) {
+  const uuidRegEx =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
   return uuidRegEx.test(uuid)
 }
 
-function parseUUID (uuid) {
-  return uuid.replace(/-/g, '')
-    .match(/.{1,2}/g)
-    .map(byte => parseInt(byte, 16))
+function parseUUID (uuid: string): number[] {
+  const bytes = uuid.replace(/-/g, '').match(/.{1,2}/g)
+
+  if (!bytes) {
+    throw new Error('Invalid UUID format')
+  }
+
+  return bytes.map((byte: string) => parseInt(byte, 16))
 }
 
-function createSEIMessageContent (uuid, payload, timecode) {
+function createSEIMessageContent (
+  uuid: string,
+  payload: SEIUserUnregisteredData,
+  timecode: number
+) {
   const uuidArray = new Uint8Array(parseUUID(uuid))
   const timecodeArray = numberToByteArray(timecode)
   const payloadArray = new TextEncoder().encode(JSON.stringify(payload))
-  const content = new Uint8Array(uuidArray.length + timecodeArray.length + payloadArray.length)
+  const content = new Uint8Array(
+    uuidArray.length + timecodeArray.length + payloadArray.length
+  )
   content.set(uuidArray)
   content.set(timecodeArray, uuidArray.length)
-  content.set(payloadArray, (timecodeArray.length + uuidArray.length))
+  content.set(payloadArray, timecodeArray.length + uuidArray.length)
 
   return content
 }
 
-function createSEITypeAndSize (content) {
-  const payloadSize = []
+function createSEITypeAndSize (content: Uint8Array) {
+  const payloadSize : number[] = []
   const ffBytes = Math.floor(content.byteLength / 255)
   const lastPayloadTypeByte = content.byteLength % 255
   for (let i = 0; i < ffBytes; i++) {
-    payloadSize.push(0xFF)
+    payloadSize.push(0xff)
   }
   payloadSize.push(lastPayloadTypeByte)
 
   return new Uint8Array([0x05, ...payloadSize])
 }
 
-function createSEIMessageContentWithPrevensionBytes (content) {
+function createSEIMessageContentWithPrevensionBytes (content: Uint8Array) {
   const preventionByteArray = []
 
   for (let i = 0; i < content.byteLength; i++) {
-    if (i + 2 < content.byteLength && [0x00, 0x01, 0x02, 0x03].includes(content[i + 2]) && content[i] === 0x00 && content[i + 1] === 0x00) {
+    if (
+      i + 2 < content.byteLength &&
+      [0x00, 0x01, 0x02, 0x03].includes(content[i + 2]) &&
+      content[i] === 0x00 &&
+      content[i + 1] === 0x00
+    ) {
       preventionByteArray.push(content[i])
       preventionByteArray.push(content[i + 1])
       i += 2
@@ -625,55 +708,84 @@ function createSEIMessageContentWithPrevensionBytes (content) {
   return new Uint8Array(preventionByteArray)
 }
 
-function numberToByteArray (num) {
-  const array = []
+function numberToByteArray (num: number) {
+  const array: number[] = []
   if (!isNaN(num)) {
     const bigint = BigInt(num)
-    for (let i = 0; i < Math.ceil(Math.floor(Math.log2(new Number(num)) + 1) / 8); i++) {
-      array.unshift(new Number((bigint >> BigInt(8 * i)) & BigInt(255)))
+    for (let i = 0; i < Math.ceil(Math.floor(Math.log2(num) + 1) / 8); i++) {
+      array.unshift(Number((bigint >> BigInt(8 * i)) & BigInt(255)))
     }
   }
   return new Uint8Array(array)
 }
 
-function createSEINalu ({ uuid, payload, timecode }) {
+function createSEINalu ({
+  uuid,
+  payload,
+  timecode = Date.now()
+}: TransformWorkerSeiMetadata) {
   const startCode = [0x00, 0x00, 0x00, 0x01]
   const header = [0x66] // 0b01100110
   const content = createSEIMessageContent(uuid, payload, timecode)
   const seiTypeAndSize = createSEITypeAndSize(content)
-  const contentWithPreventionBytes = createSEIMessageContentWithPrevensionBytes(content)
+  const contentWithPreventionBytes =
+    createSEIMessageContentWithPrevensionBytes(content)
 
-  const naluWithSEI = new Uint8Array(startCode.length + header.length + seiTypeAndSize.length + contentWithPreventionBytes.length)
+  const naluWithSEI = new Uint8Array(
+    startCode.length +
+      header.length +
+      seiTypeAndSize.length +
+      contentWithPreventionBytes.length
+  )
   naluWithSEI.set(startCode)
   naluWithSEI.set(header, startCode.length)
   naluWithSEI.set(seiTypeAndSize, startCode.length + header.length)
-  naluWithSEI.set(contentWithPreventionBytes, startCode.length + header.length + seiTypeAndSize.length)
+  naluWithSEI.set(
+    contentWithPreventionBytes,
+    startCode.length + header.length + seiTypeAndSize.length
+  )
 
   return naluWithSEI
 }
 
-export function addH26xSEI ({ uuid, payload, timecode }, encodedFrame) {
-  if (uuid === '' || payload === '') {
+export function addH26xSEI (
+  { uuid, payload, timecode }: TransformWorkerSeiMetadata,
+  encodedFrame: RTCEncodedVideoFrame
+) {
+  if (uuid === '' || !payload) {
     throw new Error('uuid and payload cannot be empty')
   }
-  if (!isValidUUID(uuid)) {
+  if (uuid && typeof uuid === 'string' && !isValidUUID(uuid)) {
     console.warn('Invalid UUID. Using default UUID.')
     uuid = DOLBY_SDK_TIMESTAMP_UUID
-    timecode = Date.now()
   }
+
   // Case of NALU H264 - User Unregistered Data
   const naluWithSEI = createSEINalu({ uuid, payload, timecode })
 
   const encodedFrameView = new DataView(encodedFrame.data)
-  const encodedFrameWithSEI = new ArrayBuffer(encodedFrame.data.byteLength + naluWithSEI.byteLength)
+  const encodedFrameWithSEI = new ArrayBuffer(
+    encodedFrame.data.byteLength + naluWithSEI.byteLength
+  )
   const encodedFrameWithSEIView = new DataView(encodedFrameWithSEI)
 
   for (let i = 0; i < encodedFrame.data.byteLength; i++) {
     encodedFrameWithSEIView.setUint8(i, encodedFrameView.getUint8(i))
   }
   for (let i = 0; i < naluWithSEI.byteLength; i++) {
-    encodedFrameWithSEIView.setUint8(encodedFrame.data.byteLength + i, naluWithSEI[i])
+    encodedFrameWithSEIView.setUint8(
+      encodedFrame.data.byteLength + i,
+      naluWithSEI[i]
+    )
   }
 
   encodedFrame.data = encodedFrameWithSEI
+}
+
+export function isVideoCodec (value: string): value is VideoCodec {
+  return Object.values(VideoCodec).includes(value as VideoCodec)
+}
+
+export function isAudioCodec (value: string): value is AudioCodec {
+  return Object.values(AudioCodec).includes(value as AudioCodec)
 }
