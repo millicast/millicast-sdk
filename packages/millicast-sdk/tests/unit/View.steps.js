@@ -29,25 +29,6 @@ const mockTokenGenerator = jest.fn(() => {
   }
 })
 
-jest.mock('../../src/Logger.ts', () => {
-  return {
-    __esModule: true,
-    default: class {
-      static get = jest.fn(() => {
-        return {
-          error: jest.fn(),
-          warn: jest.fn(),
-          info: jest.fn(),
-          debug: jest.fn(),
-          log: jest.fn(),
-          trace: jest.fn(),
-          setLevel: jest.fn()
-        }
-      })
-    }
-  }
-})
-
 defineFeature(feature, (test) => {
   beforeEach(() => {
     jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
