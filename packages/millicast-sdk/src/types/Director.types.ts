@@ -61,3 +61,11 @@ export interface DRMProfile {
 }
 
 export type TokenGeneratorCallback = () => Promise<DirectorResponse>
+
+export interface DRMObject {
+  fairPlayCertUrl: string // URL of the FairPlay certificate server
+  fairPlayUrl: string // URL of the FairPlay license server
+  widevineUrl: string // URL of the Widevine license server
+}
+
+

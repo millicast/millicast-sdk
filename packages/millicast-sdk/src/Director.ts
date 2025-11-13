@@ -1,11 +1,18 @@
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
+import {
+  DirectorPublisherOptions,
+  DirectorResponse,
+  DirectorSubscriberOptions,
+  DRMObject,
+  MillicastDirectorResponse
+} from './types/Director.types'
 
 const logger = Logger.get('Director')
-const streamTypes = {
-  WEBRTC: 'WebRtc',
-  RTMP: 'Rtmp'
+enum StreamTypes {
+  WEBRTC = 'WebRtc',
+  RTMP = 'Rtmp'
 }
 
 let liveWebsocketDomain = ''
@@ -61,7 +68,7 @@ const Director = {
    * @param {String} url - New Director API endpoint
    * @returns {void}
    */
-  setEndpoint: (url) => {
+  setEndpoint: (url: string): void => {
     apiEndpoint = url.replace(/\/$/, '')
   },
 
@@ -71,7 +78,7 @@ const Director = {
    * @description Get current Director API endpoint where requests will be sent. Default endpoint is 'https://director.millicast.com'.
    * @returns {String} API base url
    */
-  getEndpoint: () => {
+  getEndpoint: (): string => {
     return apiEndpoint
   },
 
@@ -82,8 +89,8 @@ const Director = {
    * If it is set to empty, it will not parse the response.
    * @param {String} domain - New Websocket Live domain
    * @returns {void}
-  */
-  setLiveDomain: (domain) => {
+   */
+  setLiveDomain: (domain: string): void => {
     liveWebsocketDomain = domain.replace(/\/$/, '')
   },
 
@@ -93,19 +100,12 @@ const Director = {
    * @description Get current Websocket Live domain.
    * By default is empty which corresponds to not parse the Director response.
    * @returns {String} Websocket Live domain
-  */
-  getLiveDomain: () => {
+   */
+  getLiveDomain: (): string => {
     return liveWebsocketDomain
   },
 
   /**
-   * @function
-   * @name getPublisher
-   * @description Get publisher connection data.
-   * @param {DirectorPublisherOptions} options - Millicast options.
-   * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the publishing connection path.
-   * @example const response = await Director.getPublisher(options)
-   * @example
    * import { Publish, Director } from '@millicast/sdk'
    *
    * //Define getPublisher as callback for Publish
@@ -127,14 +127,30 @@ const Director = {
    * //Start broadcast
    * await millicastPublish.connect(broadcastOptions)
    */
-  getPublisher: async (options, streamName = null, streamType = streamTypes.WEBRTC) => {
-    const optionsParsed = getPublisherOptions(options, streamName, streamType)
-    logger.info('Getting publisher connection path for stream name: ', optionsParsed.streamName)
-    const payload = { streamName: optionsParsed.streamName, streamType: optionsParsed.streamType }
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${optionsParsed.token}` }
-    const url = `${getDirectorPath('publish')}`
+  getPublisher: async (
+    options: DirectorPublisherOptions,
+    streamName: string | null = null,
+    streamType: StreamTypes = StreamTypes.WEBRTC
+  ): Promise<MillicastDirectorResponse> => {
+    logger.info(
+      'Getting publisher connection path for stream name: ',
+      options.streamName
+    )
+    const payload = {
+      streamName: options.streamName,
+      streamType: options.streamType
+    }
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${options.token}`
+    }
+    const url = `${Director.getEndpoint()}/api/director/publish`
     try {
-      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      })
       let data = await response.json()
       if (data.status === 'fail') {
         const error = new FetchError(data.data.message, response.status)
@@ -152,13 +168,6 @@ const Director = {
   },
 
   /**
-   * @function
-   * @name getSubscriber
-   * @description Get subscriber connection data.
-   * @param {DirectorSubscriberOptions} options - Millicast options.
-   * @returns {Promise<MillicastDirectorResponse>} Promise object which represents the result of getting the subscribe connection data.
-   * @example const response = await Director.getSubscriber(options)
-   * @example
    * import { View, Director } from '@millicast/sdk'
    *
    * //Define getSubscriber as callback for Subscribe
@@ -184,19 +193,36 @@ const Director = {
    * await millicastView.connect(options)
    */
 
-  getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
-    const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
-    Diagnostics.initAccountId(optionsParsed.streamAccountId)
-    logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
+  getSubscriber: async (
+    options: DirectorSubscriberOptions,
+    streamAccountId: string | null = null,
+    subscriberToken: string | null = null
+  ) => {
 
-    const payload = { streamAccountId: optionsParsed.streamAccountId, streamName: optionsParsed.streamName }
-    let headers = { 'Content-Type': 'application/json' }
-    if (optionsParsed.subscriberToken) {
-      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+    Diagnostics.initAccountId(options.streamAccountId)
+
+    logger.info(
+      `Getting subscriber connection data for stream name: ${options.streamName} and account id: ${options.streamAccountId}`
+    )
+
+    const payload = {
+      streamAccountId: options.streamAccountId,
+      streamName: options.streamName
     }
+    let headers: { 'Content-Type': string; Authorization?: string } = {
+      'Content-Type': 'application/json'
+    }
+    if (subscriberToken) {
+      headers = { ...headers, Authorization: `Bearer ${subscriberToken}` }
+    }
+
     const url = `${getDirectorPath('subscribe')}`
     try {
-      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      })
       let data = await response.json()
       if (data.status === 'fail') {
         const error = new FetchError(data.data.message, response.status)
@@ -204,7 +230,8 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
-      if (optionsParsed.subscriberToken) data.data.subscriberToken = optionsParsed.subscriberToken
+      if (options.subscriberToken)
+        data.data.subscriberToken = options.subscriberToken
       return data.data
     } catch (e) {
       logger.error('Error while getting subscriber connection path. ', e)
@@ -213,35 +240,18 @@ const Director = {
   }
 }
 
-const getPublisherOptions = (options, legacyStreamName, legacyStreamType) => {
-  let parsedOptions = (typeof options === 'object') ? options : {}
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      token: options,
-      streamName: legacyStreamName,
-      streamType: legacyStreamType
-    }
-  }
-  return parsedOptions
-}
 
-const getSubscriberOptions = (options, legacyStreamAccountId, legacySubscriberToken) => {
-  let parsedOptions = (typeof options === 'object') ? options : {}
-  if (Object.keys(parsedOptions).length === 0) {
-    parsedOptions = {
-      streamName: options,
-      streamAccountId: legacyStreamAccountId,
-      subscriberToken: legacySubscriberToken
-    }
-  }
-  return parsedOptions
-}
-
-const parseIncomingDirectorResponse = (directorResponse) => {
+const parseIncomingDirectorResponse = (directorResponse: {
+  data: DirectorResponse
+}) => {
   if (Director.getLiveDomain()) {
     const domainRegex = /\/\/(.*?)\//
     const urlsParsed = directorResponse.data.urls.map(url => {
       const matched = domainRegex.exec(url)
+      if (!matched) {
+        logger.warn('Unable to parse incoming director response')
+        return url
+      }
       return url.replace(matched[1], Director.getLiveDomain())
     })
     directorResponse.data.urls = urlsParsed
@@ -268,12 +278,13 @@ const parseIncomingDirectorResponse = (directorResponse) => {
   return directorResponse
 }
 
-const getDirectorPath = (mode = 'subscribe') => {
+
+const getDirectorPath = (mode = 'subscribe') : string | null => {
   try {
     const url = new URL(apiEndpoint)
     // length > 1 because pathname is '/' when there is no path
     if (url.pathname && url.pathname.length > 1) {
-      return url
+      return url.toString()
     }
     return `${apiEndpoint}/api/director/${mode}`
   } catch (e) {
