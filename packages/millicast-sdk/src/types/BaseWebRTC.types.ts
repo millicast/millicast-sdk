@@ -4,7 +4,7 @@ export type ViewServerEvent = 'active' | 'inactive' | 'updated' | 'layers' | 'va
 
 export type PublishServerEvent = 'active' | 'inactive' | 'viewercount'
 
-export type DecodedJWT = { 
+export type DecodedJWT = {
   [key: string]: {
     streamName: string
     record: boolean

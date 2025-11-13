@@ -209,7 +209,6 @@ export interface ActiveEvent extends BroadcastEvent {
   data: ActiveEventPayload
 }
 
-
 /**
  * Inactive Event
  */
@@ -223,7 +222,6 @@ export interface InactiveEvent extends BroadcastEvent {
   data: InactiveEventPayload
 }
 
-
 /**
  * ViewerCount Event
  */
@@ -235,7 +233,6 @@ export interface ViewerCountEvent extends BroadcastEvent {
   name: Extract<BroadcastEventName, 'viewercount'>
   data: ViewerCountEventPayload
 }
-
 
 /**
  * Layers Event

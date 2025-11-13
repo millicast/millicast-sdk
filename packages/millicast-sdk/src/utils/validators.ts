@@ -25,17 +25,19 @@ const isObject = (value: unknown) =>
 const isSupporedVideoCodec = (value: unknown): value is VideoCodec =>
   Object.values(VideoCodec).includes(value as VideoCodec)
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validatePublishConnectOptions (obj: any): {
   error?: ValidationError
   value: PublishConnectOptions
 } {
+
   const errorMessages: string[] = []
   let error: ValidationError | undefined
 
   if (!isObject(obj)) {
     return {
       error: new ValidationError([
-        `Publish Connection Options must be an object`
+        'Publish Connection Options must be an object'
       ]),
       value: obj
     }
@@ -111,5 +113,5 @@ export function validatePublishConnectOptions (obj: any): {
   if (errorMessages.length) {
     error = new ValidationError(errorMessages)
   }
-  return { error: error, value: obj }
+  return { error, value: obj }
 }

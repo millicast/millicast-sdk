@@ -381,6 +381,7 @@ function getSeiNalus (frameBuffer: Uint8Array, codec: VideoCodec) {
               )
             )
             shouldSearchActiveSPS = false
+            //eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (err) {
             console.info(
               'Failed to find active SPS. Will not be able to extract PIC timing metadata'
@@ -426,12 +427,9 @@ function resolveUnregisteredMessageType (uuid: Uint8Array) {
   const legacySdkUuid = new Uint8Array(parseUUID(DOLBY_SEI_DATA_UUID))
   const newSdkUuid = new Uint8Array(parseUUID(DOLBY_SDK_TIMESTAMP_UUID))
 
-  if (timecodeUuid.every((value, index) => value === uuid[index]))
-    return UNREGISTERED_MESSAGE_TYPE.TIMECODE
-  if (legacySdkUuid.every((value, index) => value === uuid[index]))
-    return UNREGISTERED_MESSAGE_TYPE.LEGACY
-  if (newSdkUuid.every((value, index) => value === uuid[index]))
-    return UNREGISTERED_MESSAGE_TYPE.NEW
+  if (timecodeUuid.every((value, index) => value === uuid[index])) { return UNREGISTERED_MESSAGE_TYPE.TIMECODE }
+  if (legacySdkUuid.every((value, index) => value === uuid[index])) { return UNREGISTERED_MESSAGE_TYPE.LEGACY }
+  if (newSdkUuid.every((value, index) => value === uuid[index])) { return UNREGISTERED_MESSAGE_TYPE.NEW }
   return UNREGISTERED_MESSAGE_TYPE.OTHER
 }
 

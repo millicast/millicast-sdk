@@ -147,9 +147,6 @@ export default class PeerConnection extends EventEmitter {
       }
       this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream)
     }
-    if (!options.disableVideo && options.simulcast) {
-      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp, options.codec)
-    }
     if (options.absCaptureTime) {
       this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp)
     }
