@@ -1,26 +1,28 @@
 import UserAgent from '../../src/utils/UserAgent'
 
-// Create shared mock functions
 const mockGetUA = jest.fn()
 const mockGetBrowser = jest.fn()
 const mockGetOS = jest.fn()
 
-// Mock UAParser while preserving the class structure for inheritance
 jest.mock('ua-parser-js', () => {
   // Create a proper class that can be extended
   class MockUAParser {
     constructor (userAgent) {
       this.userAgent = userAgent
-      this.getUA = mockGetUA
-      this.getBrowser = mockGetBrowser
-      this.getOS = mockGetOS
+    }
+
+    getUA () {
+      return mockGetUA()
+    }
+
+    getBrowser () {
+      return mockGetBrowser()
+    }
+
+    getOS () {
+      return mockGetOS()
     }
   }
-
-  // Add methods to prototype as well
-  MockUAParser.prototype.getUA = mockGetUA
-  MockUAParser.prototype.getBrowser = mockGetBrowser
-  MockUAParser.prototype.getOS = mockGetOS
 
   return MockUAParser
 })
