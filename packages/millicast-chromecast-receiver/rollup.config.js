@@ -1,18 +1,18 @@
-import { nodeResolve } from '@rollup/plugin-node-resolve'
+import {nodeResolve} from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import injectProcessEnv from 'rollup-plugin-inject-process-env'
-import { terser } from 'rollup-plugin-terser'
-import { babel } from '@rollup/plugin-babel'
+import {terser} from '@rollup/plugin-terser'
+import {babel} from '@rollup/plugin-babel'
 import cleanup from 'rollup-plugin-cleanup'
 import serve from 'rollup-plugin-serve'
 
 import getEnvironment from './env'
 
-const environment = getEnvironment()
+const environment=getEnvironment()
 
-let watchPlugins = []
+let watchPlugins=[]
 if (process.env.ROLLUP_WATCH) {
-  watchPlugins = [
+  watchPlugins=[
     serve({
       open: true,
       contentBase: 'dist',
@@ -33,7 +33,7 @@ export default [
       }
     },
     plugins: [
-      nodeResolve({ preferBuiltins: false }),
+      nodeResolve({preferBuiltins: false}),
       commonjs({
         include: [/node_modules/, /src/],
         transformMixedEsModules: true

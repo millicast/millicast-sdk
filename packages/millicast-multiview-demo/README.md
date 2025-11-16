@@ -55,9 +55,3 @@ This demo application allows the user to set some URL parameters for configuring
 | **disableVideo** | Set to disable video from the stream                | `false`
 | **disableAudio** | Set to disable audio from the stream                | `false`
 
-## Introducing updates
-After introducing any changes to the `public` directory, use the following command:
-```
-npm run prepare
-```
-

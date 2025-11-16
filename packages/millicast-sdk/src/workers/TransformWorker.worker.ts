@@ -1,14 +1,7 @@
 import Logger from 'js-logger'
-import {
-  DOLBY_SDK_TIMESTAMP_UUID,
-  addH26xSEI,
-  extractH26xMetadata
-} from '../utils/Codecs'
+import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 import { VideoCodec } from '../types/Codecs.types'
-import {
-  TransformEvent,
-  TransformWorkerSeiMetadata
-} from '../types/TransformWorker.types'
+import { TransformEvent, TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 const logger = Logger.get('TransformWorker')
 logger.setLevel(Logger.DEBUG)
 
@@ -16,7 +9,6 @@ const DROPPED_SOURCE_TIMEOUT = 2000
 const metadata: TransformWorkerSeiMetadata[] = []
 let codec = ''
 let payloadTypeCodec: { [key: number]: string } = {}
-
 // When simulcast is enabled, each resolution (height and width) frame has a different syncronization source (ssrc).
 // This object keeps track of the last timestamp each ssrc frame came in, so if that resolution stoped from been sent, after a timeout, it will be not taken into account for sending metadata.
 const synchronizationSources: { [key: string]: number } = {}
@@ -34,41 +26,30 @@ function createReceiverTransform (mid: string) {
       // eslint-disable-next-line no-undef
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const payloadType = encodedFrame.getMetadata().payloadType
-        const frameCodec = payloadType
-          ? payloadTypeCodec[payloadType].toLowerCase()
-          : codec
+        const frameCodec = payloadType ? payloadTypeCodec[payloadType].toLowerCase() : codec
         if (frameCodec === VideoCodec.H264) {
-          const metadata = extractH26xMetadata(
-            encodedFrame,
-            frameCodec as VideoCodec
-          )
+          const metadata = extractH26xMetadata(encodedFrame, frameCodec as VideoCodec)
           if (
             metadata.timecode ||
             metadata.unregistered ||
-            (metadata.seiPicTimingTimeCodeArray &&
-              metadata.seiPicTimingTimeCodeArray?.length > 0)
+            (metadata.seiPicTimingTimeCodeArray && metadata.seiPicTimingTimeCodeArray?.length > 0)
           ) {
             self.postMessage({ event: 'metadata', mid, metadata })
           }
         }
         self.postMessage({
           event: 'complete',
-          frame: {
-            type: encodedFrame.type,
-            timestamp: encodedFrame.timestamp,
-            data: encodedFrame.data
-          }
+          frame: { type: encodedFrame.type, timestamp: encodedFrame.timestamp, data: encodedFrame.data },
         })
       }
       controller.enqueue(encodedFrame)
-    }
+    },
   })
 }
 
 function clearMetadata () {
   if (
-    Object.keys(synchronizationSources).sort().join() ===
-    synchronizationSourcesWithMetadata.sort().join()
+    Object.keys(synchronizationSources).sort().join() === synchronizationSourcesWithMetadata.sort().join()
   ) {
     metadata.shift()
     synchronizationSourcesWithMetadata = []
@@ -106,16 +87,11 @@ function createSenderTransform (): TransformStream {
 
         refreshSynchronizationSources(newSyncSource)
 
-        if (
-          !synchronizationSourcesWithMetadata.includes(newSyncSource) &&
-          metadata.length
-        ) {
+        if (!synchronizationSourcesWithMetadata.includes(newSyncSource) && metadata.length) {
           try {
             // Add h265 regex when ready
             if (!/(h26[4])/.test(codec)) {
-              throw new Error(
-                'Sending metadata is not supported with any other codec other than H.264'
-              )
+              throw new Error('Sending metadata is not supported with any other codec other than H.264')
             }
             if (metadata[0].uuid === DOLBY_SDK_TIMESTAMP_UUID) {
               metadata[0].timecode = Date.now()
@@ -130,15 +106,12 @@ function createSenderTransform (): TransformStream {
         }
       }
       controller.enqueue(encodedFrame)
-    }
+    },
   })
 }
 
 function setupPipe (
-  {
-    readable,
-    writable
-  }: { readable: ReadableStream; writable: WritableStream },
+  { readable, writable }: { readable: ReadableStream; writable: WritableStream },
   transform: TransformStream
 ) {
   readable.pipeThrough(transform).pipeTo(writable)
@@ -176,7 +149,7 @@ addEventListener('message', event => {
     case 'metadata-sei-user-data-unregistered':
       metadata.push({
         uuid: event.data.uuid,
-        payload: event.data.payload
+        payload: event.data.payload,
       })
       break
     default:

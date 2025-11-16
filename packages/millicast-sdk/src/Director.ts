@@ -2,10 +2,8 @@ import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
 import {
-  DirectorPublisherOptions,
   DirectorResponse,
   DirectorSubscriberOptions,
-  DRMObject,
   MillicastDirectorResponse
 } from './types/Director.types'
 
@@ -128,21 +126,21 @@ const Director = {
    * await millicastPublish.connect(broadcastOptions)
    */
   getPublisher: async (
-    options: DirectorPublisherOptions,
+    token: string,
     streamName: string | null = null,
     streamType: StreamTypes = StreamTypes.WEBRTC
   ): Promise<MillicastDirectorResponse> => {
     logger.info(
       'Getting publisher connection path for stream name: ',
-      options.streamName
+      streamName
     )
     const payload = {
-      streamName: options.streamName,
-      streamType: options.streamType
+      streamName: streamName,
+      streamType: streamType
     }
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${options.token}`
+      Authorization: `Bearer ${token}`
     }
     const url = `${Director.getEndpoint()}/api/director/publish`
     try {
@@ -195,6 +193,7 @@ const Director = {
 
   getSubscriber: async (
     options: DirectorSubscriberOptions,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     streamAccountId: string | null = null,
     subscriberToken: string | null = null
   ) => {

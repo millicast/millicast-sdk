@@ -9,7 +9,6 @@ import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
-import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('View')
@@ -302,7 +301,7 @@ export default class View extends BaseWebRTC {
 
     if (this.options.metadata) {
       if (!this.worker) {
-        this.worker = new TransformWorker()
+        this.worker = new Worker(new URL('./workers/TransformWorker.worker.js', import.meta.url))
       }
       this.worker.onmessage = (message) => {
         if (message.data.event === 'metadata') {
@@ -429,7 +428,7 @@ export default class View extends BaseWebRTC {
         this.emit('error', new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error))
       }
       if (!this.worker) {
-        this.worker = new TransformWorker()
+        this.worker = new Worker(new URL('./workers/TransformWorker.worker.js', import.meta.url))
       }
       this.worker.addEventListener('message', (message) => {
         if (message.data.event === 'complete') {

@@ -4,14 +4,13 @@ import { Director, Logger } from "@millicast/sdk"
 window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
-
-if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.VITE_MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.VITE_MILLICAST_DIRECTOR_ENDPOINT)
 }
 
-const streamName = import.meta.env.MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
-const accountId = import.meta.env.MILLICAST_ACCOUNT_ID
-const publishToken = import.meta.env.MILLICAST_PUBLISH_TOKEN
+const streamName = import.meta.env.VITE_MILLICAST_STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime();
+const accountId = import.meta.env.VITE_MILLICAST_ACCOUNT_ID
+const publishToken = import.meta.env.VITE_MILLICAST_PUBLISH_TOKEN
 const disableVideo = false
 const disableAudio = false
 const disableStereo = false

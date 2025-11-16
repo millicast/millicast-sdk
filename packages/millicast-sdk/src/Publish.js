@@ -1,6 +1,6 @@
 import jwtDecode from 'jwt-decode'
 import reemit from 're-emitter'
-import { atob } from 'Base64'
+import { atob } from 'js-base64'
 import * as v from 'valibot'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
@@ -9,7 +9,6 @@ import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
 import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 import { VideoCodec } from './types/Codecs.types'
 
 const logger = Logger.get('Publish')
@@ -224,7 +223,7 @@ export default class Publish extends BaseWebRTC {
 
     if (this.options.metadata) {
       if (!this.worker) {
-        this.worker = new TransformWorker()
+        this.worker = new Worker(new URL('./workers/TransformWorker.worker.js', import.meta.url))
       }
 
       const senders = this.getRTCPeerConnection().getSenders()

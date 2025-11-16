@@ -39,6 +39,75 @@ const headerExtensionIdUppperRange = Array.from(
  * @description Simplify SDP parser.
  */
 const SdpParser = {
+
+  /**
+   * @function
+   * @name setSimulcast
+   * @description Parse SDP for support simulcast.
+   * **Only available in Chromium based browsers.**
+   * @param {String} sdp - Current SDP.
+   * @param {String} codec - Codec.
+   * @returns {String} SDP parsed with simulcast support.
+   * @example SdpParser.setSimulcast(sdp, 'h264')
+   */
+  setSimulcast (sdp: string, codec: string) {
+    logger.info('Setting simulcast. Codec: ', codec)
+    const browserData = new UserAgent()
+    if (!browserData.isChromium()) {
+      logger.warn('Your browser does not appear to support Simulcast. For a better experience, use a Chromium based browser.')
+      return sdp
+    }
+    if (codec !== 'h264' && codec !== 'vp8') {
+      logger.warn(`Your selected codec ${codec} does not appear to support Simulcast.  To broadcast using simulcast, please use H.264 or VP8.`)
+      return sdp
+    }
+    // Check if there is video available to set simulcast
+    if (!/m=video/.test(sdp)) {
+      logger.warn('There is no available video for simulcast to be enabled.')
+      return sdp
+    }
+
+    try {
+      const reg1 = /m=video.*?a=ssrc:(\d*) cname:(.+?)\r\n/s
+      const reg2 = /m=video.*?a=ssrc:(\d*) msid:(.+?)\r\n/s
+      // Get ssrc and cname and msid
+      const res = reg1.exec(sdp)
+      if(!res || res.length < 3) {
+        throw new Error("Invalid SDP response returned from server")
+      }
+
+      const ssrc = res[1]
+      const cname = res[2]
+      const msid = reg2.exec(sdp)?.[2]
+      // Add simulcasts ssrcs
+      const num = 2
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ssrcs :  (string | number)[] = [ssrc]
+      for (let i = 0; i < num; ++i) {
+        // Create new ssrcs
+        const ssrc = 100 + i * 2
+        const rtx = ssrc + 1
+        // Add to ssrc list
+        ssrcs.push(ssrc)
+        // Add sdp stuff
+        sdp += 'a=ssrc-group:FID ' + ssrc + ' ' + rtx + '\r\n' +
+            'a=ssrc:' + ssrc + ' cname:' + cname + '\r\n' +
+            'a=ssrc:' + ssrc + ' msid:' + msid + '\r\n' +
+            'a=ssrc:' + rtx + ' cname:' + cname + '\r\n' +
+            'a=ssrc:' + rtx + ' msid:' + msid + '\r\n'
+      }
+      // Add SIM group
+      sdp += 'a=ssrc-group:SIM ' + ssrcs.join(' ') + '\r\n'
+
+      logger.info('Simulcast setted')
+      logger.debug('Simulcast SDP: ', sdp)
+      return sdp
+    } catch (e) {
+      logger.error('Error setting SDP for simulcast: ', e)
+      throw e
+    }
+  },
+
   /**
    * @function
    * @name setStereo
