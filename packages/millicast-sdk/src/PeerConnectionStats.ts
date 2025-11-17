@@ -3,7 +3,7 @@ import Diagnostics from './utils/Diagnostics'
 import { OnStats, WebRTCStats } from '@dolbyio/webrtc-stats'
 import { PeerConnectionConfig } from './types/PeerConnection.types'
 import { ConnectionStats } from './types/stats.types'
-import {MillicastEventEmitter} from './EventEmitter'
+import { MillicastEventEmitter } from './EventEmitter'
 
 const logger = Logger.get('PeerConnectionStats')
 
@@ -198,6 +198,17 @@ export default class PeerConnectionStats extends MillicastEventEmitter<PeerConne
     } catch (e) {
       logger.error(e)
     }
+  }
+
+  /**
+   * Parse incoming RTCPeerConnection stats.
+   * @deprecated since version 0.1.45 - will be removed in future releases.
+   * @param {RTCStatsReport} rawStats - RTCPeerConnection stats.
+   * @returns {null} Method deprecated and no longer returns meaningful data.
+   */
+  parseStats (rawStats: RTCStatsReport): null {
+    logger.warn('The parseStats method is deprecated and will be removed in future releases.')
+    return null
   }
 
   /**

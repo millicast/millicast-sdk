@@ -27,10 +27,10 @@
     "build": "tsc -p tsconfig.json && rollup -c",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
-    "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
-    "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
-    "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js' --verbose",
-    "test-all": "npm run build && jest --testMatch '**/*.(test|steps).[jt]s'",
+    "test-unit": "npm run build && jest --config jest.config.js --testMatch '**/unit/*.steps.js'",
+    "test-unit-coverage": "npm run build && jest --config jest.config.js --testMatch '**/unit/*.steps.js' --coverage",
+    "test-e2e": "npm run build && jest --config jest.config.js --testMatch '**/e2e/*.steps.js' --verbose",
+    "test-all": "npm run build && jest --config jest.config.js --testMatch '**/*.(test|steps).[jt]s'",
     "test": "npm run test-all"
   },
   "babel": {
@@ -56,5 +56,7 @@
     "type": "git",
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-plugin-transform-import-meta": "^2.3.3"
+  }
 }

@@ -50,6 +50,7 @@
         "@babel/runtime": "^7.13.10",
         "@eslint/eslintrc": "^3.1.0",
         "@eslint/js": "^9.8.0",
+        "@jest/globals": "^30.2.0",
         "@maslick/radiaslider": "^1.9.8",
         "@nx/eslint": "19.5.3",
         "@nx/eslint-plugin": "^22.0.3",
