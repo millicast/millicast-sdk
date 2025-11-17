@@ -23,7 +23,10 @@ defineFeature(feature, test => {
 
   test('Load example page with Puppeteer', ({ given, when, then }) => {
     given('i have a browser opened', async () => {
-      browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox']
+      })
     })
 
     when('i open a new page and go to the example web', async () => {
@@ -40,7 +43,12 @@ defineFeature(feature, test => {
     let millicastModule = null
 
     given('i have a browser opened and an example page with the Millicast SDK', async () => {
-      browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+      browser = await puppeteer.launch(
+        {
+          headless: 'new',
+          args: ['--no-sandbox']
+        }
+      )
       page = await browser.newPage()
       await page.goto(pageLocation)
     })

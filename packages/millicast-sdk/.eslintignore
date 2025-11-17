@@ -1,2 +1,5 @@
 /src/drm/*
 package.json
+dist/**
+*.config.js
+*.steps.js

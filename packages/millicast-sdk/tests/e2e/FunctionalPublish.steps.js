@@ -33,6 +33,7 @@ afterEach(async () => {
 
 beforeEach(async () => {
   browser = await puppeteer.launch({
+    headless: 'new',
     // executablePath: process.env.CHROME_LOCATION,
     args: [
       '--no-sandbox',

@@ -14,11 +14,13 @@ export default {
     'transaction-manager',
     'jwt-decode',
     'Base64',
+    'js-base64',
     'valibot',
     'js-logger',
     '@dolbyio/webrtc-stats',
     'ua-parser-js',
-    'semantic-sdp'
+    'semantic-sdp',
+    './drm/rtc-drm-transform.js' 
   ],
   plugins: [
     webWorkerLoader({
