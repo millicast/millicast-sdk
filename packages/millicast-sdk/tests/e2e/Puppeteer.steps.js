@@ -34,8 +34,8 @@ defineFeature(feature, test => {
       await page.goto(pageLocation)
     })
 
-    then('the web page title says "PuppeteerJest"', async () => {
-      await expect(page.title()).resolves.toMatch('PuppeteerJest')
+    then('the web page title says "Millicast SDK E2E Tests"', async () => {
+      await expect(page.title()).resolves.toMatch('Millicast SDK E2E Tests')
     })
   }, 100000)
 

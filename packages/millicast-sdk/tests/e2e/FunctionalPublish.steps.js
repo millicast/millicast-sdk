@@ -1,7 +1,7 @@
 const {defineFeature, loadFeature}=require('jest-cucumber');
 const puppeteer=require('puppeteer');
 
-const feature=loadFeature('./tests/e2e/FunctionalPublish.feature');
+const feature=loadFeature('./tests/features/FunctionalPublish.feature');
 
 defineFeature(feature, test => {
   let browser;
