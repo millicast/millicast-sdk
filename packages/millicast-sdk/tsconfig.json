@@ -19,7 +19,6 @@
       "typeRoots": ["./types", "./node_modules/@types"],
       "composite": true
     },
-    "files": [],
     "include": ["src/**/*", "types/**/*", "package.json"],
     "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "**/*.test.js", "**/*.spec.js", "dist", "node_modules"],
     "references": [
