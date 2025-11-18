@@ -1,5 +1,4 @@
 /* eslint-disable */
-import {resolve} from 'path';
 
 export default {
   displayName: 'millicast-sdk',
@@ -16,6 +15,7 @@ export default {
   transformIgnorePatterns: [
     'node_modules/(?!(jest-cucumber|@cucumber|uuid)/)'
   ],
+  maxWorkers: 1,
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   globals: {
     'import.meta': {

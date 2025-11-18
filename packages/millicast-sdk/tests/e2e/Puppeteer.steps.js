@@ -4,57 +4,73 @@
 
 import path from 'path'
 import puppeteer from 'puppeteer'
-import { loadFeature, defineFeature } from 'jest-cucumber'
-const feature = loadFeature('../features/Puppeteer.feature', { loadRelativePath: true, errors: true })
+import {loadFeature, defineFeature} from 'jest-cucumber'
+const feature=loadFeature('../features/Puppeteer.feature', {loadRelativePath: true, errors: true})
 
 // Variables used for testing
-const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
-let browser = null
-let page = null
+const pageLocation=`file:${path.join(__dirname, './PuppeteerJest.html')}`
+let browser=null
+let page=null
 
 defineFeature(feature, test => {
   afterEach(async () => {
     if (browser) {
       await browser.close()
     }
-    browser = null
-    page = null
+    browser=null
+    page=null
   })
 
-  test('Load example page with Puppeteer', ({ given, when, then }) => {
+  test('Load example page with Puppeteer', ({given, when, then}) => {
     given('i have a browser opened', async () => {
-      browser = await puppeteer.launch({
+      
+      browser=await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox']
+        args: [
+          '--no-sandbox',
+          '--use-fake-device-for-media-stream',
+          '--use-fake-ui-for-media-stream',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu'
+
+        ]
       })
     })
 
     when('i open a new page and go to the example web', async () => {
-      page = await browser.newPage()
+      page=await browser.newPage()
       await page.goto(pageLocation)
     })
 
-    then('the web page title says "Millicast SDK E2E Tests"', async () => {
-      await expect(page.title()).resolves.toMatch('Millicast SDK E2E Tests')
+    then('the web page title says "PuppeteerJest"', async () => {
+      await expect(page.title()).resolves.toMatch('PuppeteerJest')
     })
   }, 100000)
 
-  test('SDK loaded', ({ given, when, then }) => {
-    let millicastModule = null
+  test('SDK loaded', ({given, when, then}) => {
+    let millicastModule=null
 
     given('i have a browser opened and an example page with the Millicast SDK', async () => {
-      browser = await puppeteer.launch(
-        {
-          headless: 'new',
-          args: ['--no-sandbox']
-        }
+      browser=await puppeteer.launch({
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--use-fake-device-for-media-stream',
+          '--use-fake-ui-for-media-stream',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu'
+
+        ]
+      }
       )
-      page = await browser.newPage()
+      page=await browser.newPage()
       await page.goto(pageLocation)
     })
 
     when('i ask the "millicast" module', async () => {
-      millicastModule = await page.evaluate('millicast')
+      millicastModule=await page.evaluate('millicast')
     })
 
     then('returns an instance of "millicast"', () => {

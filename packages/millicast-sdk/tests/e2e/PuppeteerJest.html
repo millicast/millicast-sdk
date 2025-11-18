@@ -1,76 +1,63 @@
-<!DOCTYPE html>
 <html>
 
 <head>
-   <title>Millicast SDK E2E Tests</title>
+   <title>PuppeteerJest</title>
+   <script src="../../dist/millicast.umd.js"></script>
+   <script>
+      const startPublisher=async (publishToken, streamName, options) => {
+         const millicast=window.millicast
+         millicast.Logger.setLevel(millicast.Logger.DEBUG)
+         const tokenGenerator=() => millicast.Director.getPublisher(publishToken, streamName)
+         const publish=new millicast.Publish(undefined, tokenGenerator)
+         const mediaStream=await navigator.mediaDevices.getUserMedia({audio: true, video: true})
+         document.getElementById('my-video').srcObject=mediaStream
+         await publish.connect({
+            ...options,
+            mediaStream
+         })
+         window.publish=publish
+      }
+
+      const startViewer=(streamName, accountId) => {
+         return new Promise(resolve => {
+            const millicast=window.millicast
+            const video=document.getElementById('my-video')
+            millicast.Logger.setLevel(millicast.Logger.DEBUG)
+            const tokenGenerator=() => millicast.Director.getSubscriber(streamName, accountId)
+            const view=new millicast.View(undefined, tokenGenerator)
+            video.addEventListener('timeupdate', () => {
+               if (video.currentTime>1) {
+                  resolve()
+               }
+            })
+            view.on('track', (event) => {
+               video.srcObject=event.streams[0]
+            })
+            view.connect()
+         })
+      }
+
+      const getVideoPixelSums=() => {
+         const canvas=document.createElement('canvas')
+         const id=document.getElementById('my-video')
+         const ctx=canvas.getContext('2d')
+         ctx.drawImage(id, 0, 0, id.videoHeight-1, id.videoWidth-1)
+         const imageData=ctx.getImageData(0, 0, id.videoHeight-1, id.videoWidth-1).data
+         const sum=imageData.reduce((total, current) => total+current)
+         if (sum===255*(Math.pow(id.videoHeight-1, (id.videoWidth-1)*(id.videoWidth-1)))) {
+            return 0
+         }
+         return sum
+      }
+   </script>
 </head>
 
 <body>
-   <div id="test-container">
-      <h1>Millicast SDK E2E Test Page</h1>
-      <div id="status">Loading...</div>
-   </div>
-
-   <script type="module">
-      console.log('Module script starting...');
-
-      // Initialize SDK ready flag
-      window.sdkReady=false;
-
-      try {
-         // Import the SDK using dynamic import with proper path
-         const millicast=await import('../../dist/millicast.umd.js');
-         console.log('SDK imported successfully:', Object.keys(millicast));
-
-         // Make it globally available
-         window.millicast=millicast;
-
-         // Set SDK ready flag
-         window.sdkReady=true;
-
-         // Update status
-         const statusElement=document.getElementById('status');
-         if (statusElement) {
-            statusElement.textContent='SDK Ready';
-         }
-
-         console.log('Millicast SDK loaded successfully');
-
-      } catch (error) {
-         console.error('Error importing SDK:', error);
-
-         window.sdkReady=false;
-         window.sdkError=error;
-
-         const statusElement=document.getElementById('status');
-         if (statusElement) {
-            statusElement.textContent='SDK Load Failed: '+error.message;
-         }
-      }
-   </script>
-
-   <script>
-      // Helper functions for tests (Keep these outside the module)
-      async function startPublisher() {
-         console.log('startPublisher called from HTML');
-         // Implementation here
-      }
-
-      // Global error handler
-      window.addEventListener('error', (event) => {
-         console.error('Global error:', event.error);
-         window.globalError=event.error;
-      });
-
-      // Unhandled promise rejection handler
-      window.addEventListener('unhandledrejection', (event) => {
-         console.error('Unhandled promise rejection:', event.reason);
-         window.rejectionError=event.reason;
-      });
-
-      // Initialize flags
-      window.sdkReady=false;
-   </script>
+   <h1>PuppeteerJest</h1>
+   <br />
+   <h3>Run 'npm test' for test with Jest!</h3>
+   <br />
+   <video id='my-video' muted autoplay controls width='640' height='480' style='display: block;margin: 0 auto;'></video>
 </body>
 
 </html>
