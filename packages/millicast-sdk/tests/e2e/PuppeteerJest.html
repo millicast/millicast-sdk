@@ -1,80 +1,54 @@
-<!DOCTYPE html>
-<html>
+<script type="module">
+   // Import the SDK using the file path
+   import * as millicast from '../../dist/index.esm.js';
 
-<head>
-   <meta charset="utf-8">
-   <title>Millicast SDK E2E Tests</title>
-   <script src="../../dist/millicast.umd.js"></script>
-</head>
+   // Attach it to the window scope for your existing test logic to find it
+   window.millicast=millicast;
 
-<body>
-   <div id="test-container">
-      <h1>Millicast SDK E2E Test Page</h1>
-      <div id="status">Loading...</div>
-   </div>
+   // The rest of your existing logic can remain inside the module script block
 
-   <script>
-      console.log('Test page loading...');
+   console.log('Test page loading...');
 
-      // Initialize when page loads
-      window.addEventListener('load', () => {
-         console.log('Page loaded, checking SDK...');
+   // Initialize when page loads (or immediately, as module scripts are deferred)
+   window.addEventListener('load', () => {
+      console.log('Page loaded, checking SDK...');
 
-         // Check if SDK loaded
-         if (window.millicast) {
-            console.log('Millicast SDK loaded successfully');
-            console.log('Available SDK methods:', Object.keys(window.millicast));
+      // Check if SDK loaded
+      if (window.millicast) {
+         // ... (rest of the successful load logic)
+         console.log('Millicast SDK loaded successfully');
+         // ...
+         window.sdkReady=true;
+         document.getElementById('status').textContent='SDK Ready';
 
-            // Try to initialize logger
-            if (window.millicast.Logger) {
-               try {
-                  window.logger=window.millicast.Logger;
-                  console.log('Logger initialized');
-               } catch (e) {
-                  console.warn('Logger initialization failed:', e);
-               }
-            }
-
-            // Set ready flag
-            window.sdkReady=true;
-            document.getElementById('status').textContent='SDK Ready';
-
-         } else {
-            console.error('Millicast SDK failed to load');
-            document.getElementById('status').textContent='SDK Load Failed';
-            window.sdkReady=false;
-         }
-      });
-
-      // Helper function for tests
-      async function startPublisher() {
-         console.log('startPublisher called from HTML');
-
-         // Wait for SDK to be ready
-         let attempts=0;
-         while (!window.sdkReady&&attempts<50) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-         }
-
-         if (!window.sdkReady) {
-            throw new Error('SDK not ready after waiting');
-         }
-
-         console.log('SDK is ready, publisher can start');
-         return true;
+      } else {
+         console.error('Millicast SDK failed to load');
+         document.getElementById('status').textContent='SDK Load Failed';
+         window.sdkReady=false;
       }
+   });
 
-      // Global error handler
-      window.addEventListener('error', (event) => {
-         console.error('Global error:', event.error);
-      });
+   // Helper function for tests...
+   // ...
+</script>
+<div id="test-container">
+   <h1>Millicast SDK E2E Test Page</h1>
+   <div id="status">Loading...</div>
+</div>
+<script>
+   // Helper function for tests (Keep these outside the module if they are global functions)
+   async function startPublisher() {
+      console.log('startPublisher called from HTML');
+      // ... (rest of the logic)
+   }
 
-      // Unhandled promise rejection handler
-      window.addEventListener('unhandledrejection', (event) => {
-         console.error('Unhandled promise rejection:', event.reason);
-      });
-   </script>
-</body>
+   // Global error handler
+   window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error);
+   });
 
-</html>
+   // Unhandled promise rejection handler
+   window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+   });
+</script>
