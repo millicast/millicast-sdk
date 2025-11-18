@@ -35,7 +35,6 @@ defineFeature(feature, test => {
     broadcasterPage=await browser.newPage();
     viewerPage=await browser.newPage();
 
-    // NOTE: Console and page error listeners removed for a cleaner test output
   });
 
   afterEach(async () => {

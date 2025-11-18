@@ -1,14 +1,14 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import typescript from '@rollup/plugin-typescript';
 
-// Define the common plugins array
 const plugins=[
   json(),
+  typescript(),
   resolve({
-    extensions: ['.js']
+    extensions: ['.js', '.ts']
   }),
-  // Converts CommonJS dependencies to ES Modules for bundling
   commonjs()
 ];
 
@@ -29,12 +29,12 @@ const externalModules=[
 ];
 
 export default [
-  // ES Module build (The modern standard)
   {
-    input: 'dist/index.js',
+    input: 'src/index.ts',
     output: {
       file: 'dist/index.esm.js',
-      format: 'es' // 'es' or 'esm'
+      format: 'es',
+      sourcemap: true
     },
     external: externalModules,
     plugins: plugins

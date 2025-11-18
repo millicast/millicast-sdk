@@ -24,7 +24,8 @@
     "scripts"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && rollup -c",
+    "build": "rollup -c",
+    "types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
     "test-unit": "npm run build && jest --config jest.config.js --testMatch '**/unit/*.steps.js'",
