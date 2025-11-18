@@ -12,7 +12,18 @@ const plugins=[
   commonjs()
 ];
 
-// Define external modules once
+// For UMD, we want to bundle most dependencies
+const umdPlugins=[
+  json(),
+  typescript(),
+  resolve({
+    extensions: ['.js', '.ts'],
+    browser: true, // Use browser-friendly versions
+    preferBuiltins: false // Don't prefer Node.js built-ins
+  }),
+  commonjs()
+];
+
 const externalModules=[
   'events',
   'eventemitter3',
@@ -28,7 +39,13 @@ const externalModules=[
   'semantic-sdp'
 ];
 
+const umdExternalModules=[
+  // Only include modules that you expect to be loaded globally
+  // Remove most of these unless they're definitely available as global scripts
+];
+
 export default [
+  // ES Module build
   {
     input: 'src/index.ts',
     output: {
@@ -38,5 +55,17 @@ export default [
     },
     external: externalModules,
     plugins: plugins
+  },
+  // UMD build - bundles dependencies
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/millicast.umd.js',
+      format: 'umd',
+      name: 'millicast', 
+      sourcemap: true
+    },
+    external: umdExternalModules,
+    plugins: umdPlugins
   }
 ];

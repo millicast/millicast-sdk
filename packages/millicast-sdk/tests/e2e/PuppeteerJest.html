@@ -1,54 +1,76 @@
-<script type="module">
-   // Import the SDK using the file path
-   import * as millicast from '../../dist/index.esm.js';
+<!DOCTYPE html>
+<html>
 
-   // Attach it to the window scope for your existing test logic to find it
-   window.millicast=millicast;
+<head>
+   <title>Millicast SDK E2E Tests</title>
+</head>
 
-   // The rest of your existing logic can remain inside the module script block
+<body>
+   <div id="test-container">
+      <h1>Millicast SDK E2E Test Page</h1>
+      <div id="status">Loading...</div>
+   </div>
 
-   console.log('Test page loading...');
+   <script type="module">
+      console.log('Module script starting...');
 
-   // Initialize when page loads (or immediately, as module scripts are deferred)
-   window.addEventListener('load', () => {
-      console.log('Page loaded, checking SDK...');
+      // Initialize SDK ready flag
+      window.sdkReady=false;
 
-      // Check if SDK loaded
-      if (window.millicast) {
-         // ... (rest of the successful load logic)
-         console.log('Millicast SDK loaded successfully');
-         // ...
+      try {
+         // Import the SDK using dynamic import with proper path
+         const millicast=await import('../../dist/millicast.umd.js');
+         console.log('SDK imported successfully:', Object.keys(millicast));
+
+         // Make it globally available
+         window.millicast=millicast;
+
+         // Set SDK ready flag
          window.sdkReady=true;
-         document.getElementById('status').textContent='SDK Ready';
 
-      } else {
-         console.error('Millicast SDK failed to load');
-         document.getElementById('status').textContent='SDK Load Failed';
+         // Update status
+         const statusElement=document.getElementById('status');
+         if (statusElement) {
+            statusElement.textContent='SDK Ready';
+         }
+
+         console.log('Millicast SDK loaded successfully');
+
+      } catch (error) {
+         console.error('Error importing SDK:', error);
+
          window.sdkReady=false;
+         window.sdkError=error;
+
+         const statusElement=document.getElementById('status');
+         if (statusElement) {
+            statusElement.textContent='SDK Load Failed: '+error.message;
+         }
       }
-   });
+   </script>
 
-   // Helper function for tests...
-   // ...
-</script>
-<div id="test-container">
-   <h1>Millicast SDK E2E Test Page</h1>
-   <div id="status">Loading...</div>
-</div>
-<script>
-   // Helper function for tests (Keep these outside the module if they are global functions)
-   async function startPublisher() {
-      console.log('startPublisher called from HTML');
-      // ... (rest of the logic)
-   }
+   <script>
+      // Helper functions for tests (Keep these outside the module)
+      async function startPublisher() {
+         console.log('startPublisher called from HTML');
+         // Implementation here
+      }
 
-   // Global error handler
-   window.addEventListener('error', (event) => {
-      console.error('Global error:', event.error);
-   });
+      // Global error handler
+      window.addEventListener('error', (event) => {
+         console.error('Global error:', event.error);
+         window.globalError=event.error;
+      });
 
-   // Unhandled promise rejection handler
-   window.addEventListener('unhandledrejection', (event) => {
-      console.error('Unhandled promise rejection:', event.reason);
-   });
-</script>
+      // Unhandled promise rejection handler
+      window.addEventListener('unhandledrejection', (event) => {
+         console.error('Unhandled promise rejection:', event.reason);
+         window.rejectionError=event.reason;
+      });
+
+      // Initialize flags
+      window.sdkReady=false;
+   </script>
+</body>
+
+</html>

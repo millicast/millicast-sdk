@@ -10,7 +10,7 @@ defineFeature(feature, test => {
 
   beforeAll(async () => {
     browser=await puppeteer.launch({
-      headless: true,
+      headless: "new",
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -35,6 +35,12 @@ defineFeature(feature, test => {
     broadcasterPage=await browser.newPage();
     viewerPage=await browser.newPage();
 
+    broadcasterPage.on('console', msg => console.log('BROADCASTER:', msg.text()));
+    broadcasterPage.on('pageerror', error => console.log('BROADCASTER ERROR:', error.message));
+
+    viewerPage.on('console', msg => console.log('VIEWER:', msg.text()));
+    viewerPage.on('pageerror', error => console.log('VIEWER ERROR:', error.message));
+
   });
 
   afterEach(async () => {
@@ -50,12 +56,34 @@ defineFeature(feature, test => {
 
     given(/^a page with view options and a page with broadcaster options and codec (.*)$/, async (codec) => {
       // Load broadcaster page
-      await broadcasterPage.goto(`file://${__dirname}/PuppeteerJest.html`);
+
+      const htmlPath=path.resolve(__dirname, './PuppeteerJest.html');
+      console.log('Loading HTML from:', htmlPath);
+
+      await broadcasterPage.goto(`file://${htmlPath}`);
       await broadcasterPage.waitForLoadState?.('networkidle')||await broadcasterPage.waitForTimeout(1000);
 
       // Load viewer page
-      await viewerPage.goto(`file://${__dirname}/PuppeteerJest.html`);
+      await viewerPage.goto(`file://${htmlPath}`);
       await viewerPage.waitForLoadState?.('networkidle')||await viewerPage.waitForTimeout(1000);
+
+      const broadcasterDebug=await broadcasterPage.evaluate(() => ({
+        title: document.title,
+        sdkReady: window.sdkReady,
+        hasMillicast: typeof window.millicast!=='undefined',
+        statusText: document.getElementById('status')?.textContent,
+        error: window.sdkError?.message||window.globalError?.message
+      }));
+      console.log('Broadcaster debug:', broadcasterDebug);
+
+      const viewerDebug=await viewerPage.evaluate(() => ({
+        title: document.title,
+        sdkReady: window.sdkReady,
+        hasMillicast: typeof window.millicast!=='undefined',
+        statusText: document.getElementById('status')?.textContent,
+        error: window.sdkError?.message||window.globalError?.message
+      }));
+      console.log('Viewer debug:', viewerDebug);
 
       // Wait for SDK to be ready on both pages (Relies on window.sdkReady from PuppeteerJest.html)
       await Promise.all([
