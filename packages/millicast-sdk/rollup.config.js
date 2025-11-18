@@ -1,7 +1,5 @@
-import webWorkerLoader from 'rollup-plugin-web-worker-loader'
-import json from '@rollup/plugin-json'
-
 export default [
+  // ES Module build
   {
     input: 'dist/index.js',
     output: {
@@ -22,15 +20,9 @@ export default [
       'ua-parser-js',
       'semantic-sdp'
     ],
-    plugins: [
-      webWorkerLoader({
-        targetPlatform: 'browser',
-        inline: true,
-        preserveSource: false
-      }),
-      json()
-    ]
+    plugins: []
   },
+  // UMD build
   {
     input: 'dist/index.js',
     output: {
@@ -52,13 +44,6 @@ export default [
       'ua-parser-js',
       'semantic-sdp'
     ],
-    plugins: [
-      webWorkerLoader({
-        targetPlatform: 'browser',
-        inline: true,
-        preserveSource: false
-      }),
-      json()
-    ]
+    plugins: []
   }
 ]
