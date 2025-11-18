@@ -1,9 +1,10 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 
 // Define the common plugins array
 const plugins=[
-  // Resolves local and node modules, necessary to find './drm/rtc-drm-transform'
+  json(),
   resolve({
     extensions: ['.js']
   }),
