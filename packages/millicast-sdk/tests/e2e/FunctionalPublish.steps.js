@@ -31,18 +31,6 @@ afterEach(async () => {
   browser=null
 })
 
-beforeEach(async () => {
-  browser=await puppeteer.launch({
-    // executablePath: process.env.CHROME_LOCATION,
-    headless: 'new',
-    args: [
-      '--no-sandbox',
-      '--use-fake-device-for-media-stream',
-      '--use-fake-ui-for-media-stream'
-    ]
-  })
-})
-
 defineFeature(feature, test => {
   test('Broadcasting stream', ({given, when, then}) => {
     let broadcastPage
@@ -54,6 +42,20 @@ defineFeature(feature, test => {
 
     given(/^a page with view options and a page with broadcaster options and codec (.*)$/, async (codec) => {
       try {
+        if (!browser) {
+          browser=await puppeteer.launch({
+            // executablePath: process.env.CHROME_LOCATION,
+            headless: 'new',
+            args: [
+              '--no-sandbox',
+              '--disable-setuid-sandbox',
+              '--disable-dev-shm-usage',
+              '--disable-gpu',
+              '--use-fake-ui-for-media-stream',
+              '--use-fake-device-for-media-stream'
+            ]
+          })
+        }
         broadcastPage=await browser.newPage()
         viewerPage=await browser.newPage()
 
@@ -87,9 +89,9 @@ defineFeature(feature, test => {
             return startPublisher(publishToken, streamName, options);
           }, {
             options,
-            publishToken: process.env.PUBLISH_TOKEN,  
+            publishToken: process.env.PUBLISH_TOKEN,
             streamName,
-            accountId: process.env.ACCOUNT_ID         
+            accountId: process.env.ACCOUNT_ID
           });
 
           await viewerPage.evaluate(({streamName, accountId}) => {
