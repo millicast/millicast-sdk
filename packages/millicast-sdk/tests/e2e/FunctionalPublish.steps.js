@@ -54,8 +54,25 @@ defineFeature(feature, test => {
 
     given(/^a page with view options and a page with broadcaster options and codec (.*)$/, async (codec) => {
       try {
+
+        console.log('🔍 Debug Info:');
+        console.log('- ACCOUNT_ID:', process.env.ACCOUNT_ID||'MISSING');
+        console.log('- PUBLISH_TOKEN:', process.env.PUBLISH_TOKEN? 'SET (length: '+process.env.PUBLISH_TOKEN.length+')':'MISSING');
+        console.log('- STREAM_NAME:', streamName);
+        console.log('- Codec:', codec);
+
+
         broadcastPage=await browser.newPage()
         viewerPage=await browser.newPage()
+
+        await broadcastPage.evaluate(() => {
+          console.log('Available env:', {
+            importMeta: typeof import.meta,
+            importMetaEnv: typeof import.meta?.env,
+            processEnv: typeof process?.env,
+            windowEnv: typeof window?.ENV
+          });
+        });
 
         // Add page error listeners
         broadcastPage.on('pageerror', err => console.error('Broadcast page error:', err.message))
