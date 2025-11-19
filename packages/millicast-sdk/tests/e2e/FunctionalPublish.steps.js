@@ -74,57 +74,54 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream and connect to stream as viewer', async () => {
-      try {
-        console.log('🔍 Debug Info:');
-        console.log('- ACCOUNT_ID:', process.env.ACCOUNT_ID||'MISSING');
-        console.log('- PUBLISH_TOKEN:', process.env.PUBLISH_TOKEN? 'SET (length: '+process.env.PUBLISH_TOKEN.length+')':'MISSING');
-        console.log('- STREAM_NAME:', streamName);
-        console.log('- Options:', options);
+      when('I broadcast a stream and connect to stream as viewer', async () => {
+        try {
+          await broadcastPage.evaluate(({options, publishToken, streamName, accountId}) => {
+            // Make env vars available to your SDK in browser
+            window.ENV={
+              PUBLISH_TOKEN: publishToken,
+              STREAM_NAME: streamName,
+              ACCOUNT_ID: accountId
+            };
 
-        // Pass environment variables TO the browser context
-        await broadcastPage.evaluate(({options, publishToken, streamName, accountId}) => {
-          // NOW we're in browser context where window exists
-          window.ENV={
-            PUBLISH_TOKEN: publishToken,
-            STREAM_NAME: streamName,
-            ACCOUNT_ID: accountId
-          };
+            return startPublisher(publishToken, streamName, options);
+          }, {
+            options,
+            publishToken: process.env.PUBLISH_TOKEN,  
+            streamName,
+            accountId: process.env.ACCOUNT_ID         
+          });
 
-          return startPublisher(publishToken, streamName, options);
-        }, {
-          options,
-          publishToken,  // From Node.js process.env
-          streamName,
-          accountId      // From Node.js process.env
-        });
+          await viewerPage.evaluate(({streamName, accountId}) => {
+            window.ENV={
+              STREAM_NAME: streamName,
+              ACCOUNT_ID: accountId
+            };
 
-        await viewerPage.evaluate(({streamName, accountId}) => {
-          // Set env vars in viewer page too if needed
-          window.ENV={
-            STREAM_NAME: streamName,
-            ACCOUNT_ID: accountId
-          };
+            return startViewer(streamName, accountId);
+          }, {
+            streamName,
+            accountId: process.env.ACCOUNT_ID
+          });
 
-          return startViewer(streamName, accountId);
-        }, {streamName, accountId});
+          // Wait for connection
+          await sleep(3000);
 
-        // Wait for connection
-        await sleep(3000);
+          isActive=await broadcastPage.evaluate('window.publish.isActive()');
+          videoFrame1=await viewerPage.evaluate('getVideoPixelSums()');
+          await sleep(500);
+          videoFrame2=await viewerPage.evaluate('getVideoPixelSums()');
 
-        isActive=await broadcastPage.evaluate('window.publish.isActive()');
-        videoFrame1=await viewerPage.evaluate('getVideoPixelSums()');
-        await sleep(500);
-        videoFrame2=await viewerPage.evaluate('getVideoPixelSums()');
+        } catch (error) {
+          console.error('Failed to setup streaming:', error.message);
 
-      } catch (error) {
-        console.error('Failed to setup streaming:', error.message);
+          // Take debug screenshots
+          await broadcastPage.screenshot({path: `debug-broadcast-${Date.now()}.png`});
+          await viewerPage.screenshot({path: `debug-viewer-${Date.now()}.png`});
 
-        // Take debug screenshots
-        await broadcastPage.screenshot({path: `debug-broadcast-${Date.now()}.png`});
-        await viewerPage.screenshot({path: `debug-viewer-${Date.now()}.png`});
-
-        throw error;
-      }
+          throw error;
+        }
+      });
     })
     then('broadcast is active and Viewer receive video data', async () => {
       try {
