@@ -54,25 +54,8 @@ defineFeature(feature, test => {
 
     given(/^a page with view options and a page with broadcaster options and codec (.*)$/, async (codec) => {
       try {
-
-        console.log('🔍 Debug Info:');
-        console.log('- ACCOUNT_ID:', process.env.ACCOUNT_ID||'MISSING');
-        console.log('- PUBLISH_TOKEN:', process.env.PUBLISH_TOKEN? 'SET (length: '+process.env.PUBLISH_TOKEN.length+')':'MISSING');
-        console.log('- STREAM_NAME:', streamName);
-        console.log('- Codec:', codec);
-
-
         broadcastPage=await browser.newPage()
         viewerPage=await browser.newPage()
-
-        await broadcastPage.evaluate(() => {
-          console.log('Available env:', {
-            importMeta: typeof import.meta,
-            importMetaEnv: typeof import.meta?.env,
-            processEnv: typeof process?.env,
-            windowEnv: typeof window?.ENV
-          });
-        });
 
         // Add page error listeners
         broadcastPage.on('pageerror', err => console.error('Broadcast page error:', err.message))
@@ -92,6 +75,19 @@ defineFeature(feature, test => {
 
     when('I broadcast a stream and connect to stream as viewer', async () => {
       try {
+        window.ENV={
+          PUBLISH_TOKEN: publishToken,
+          STREAM_NAME: streamName,
+          ACCOUNT_ID: accountId
+        };
+
+        console.log('🔍 Debug Info:');
+        console.log('- ACCOUNT_ID:', process.env.ACCOUNT_ID||'MISSING');
+        console.log('- PUBLISH_TOKEN:', process.env.PUBLISH_TOKEN? 'SET (length: '+process.env.PUBLISH_TOKEN.length+')':'MISSING');
+        console.log('- STREAM_NAME:', streamName);
+        console.log('- Codec:', codec);
+
+        
         await broadcastPage.evaluate(({options, publishToken, streamName}) => startPublisher(publishToken, streamName, options), {options, publishToken, streamName})
         await viewerPage.evaluate(({streamName, accountId}) => startViewer(streamName, accountId), {streamName, accountId})
 
