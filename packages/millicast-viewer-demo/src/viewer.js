@@ -4,8 +4,8 @@ window.Logger = Logger
 
 Logger.setLevel(Logger.DEBUG);
 
-if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.VITE_MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.VITE_MILLICAST_DIRECTOR_ENDPOINT)
 }
 
 //Get our url
@@ -16,13 +16,13 @@ const url = !!href.searchParams.get("url")
   : "wss://turn.millicast.com/millisock";
 const streamName = !!href.searchParams.get("streamName")
   ? href.searchParams.get("streamName")
-  : import.meta.env.MILLICAST_STREAM_NAME;
+  : import.meta.env.VITE_MILLICAST_STREAM_NAME;
 const accountId = !!href.searchParams.get("accountId")
   ? href.searchParams.get("accountId")
-  : import.meta.env.MILLICAST_ACCOUNT_ID;
+  :import.meta.env.VITE_MILLICAST_ACCOUNT_ID;
 
 // this is required for DRM streams, otherwise Director API will return errors
-const subscriberToken = href.searchParams.get("token") || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN;
+const subscriberToken = href.searchParams.get("token") || import.meta.env.VITE_MILLICAST_SUBSCRIBER_TOKEN;
 
 const metadata = href.searchParams.get("metadata") === "true";
 const enableDRM = href.searchParams.get("drm") === 'true';
