@@ -108,32 +108,32 @@ export default class Signaling extends EventEmitter {
         logger.info('WebSocket opened')
         this.transactionManager.on('event', (evt) => {
           /**
-                     * Passthrough of available Millicast broadcast events.
-                     *
-                     * Active - Fires when the live stream is, or has started broadcasting.
-                     *
-                     * Inactive - Fires when the stream has stopped broadcasting, but is still available.
-                     *
-                     * Stopped - Fires when the stream has stopped for a given reason.
-                     *
-                     * Vad - Fires when using multiplexed tracks for audio.
-                     *
-                     * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
-                     *
-                     * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
-                     *
-                     * Viewercount - Fires when the viewer count changes.
-                     *
-                     * Updated - when an active stream's tracks are updated
-                     *
-                     * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
-                     *
-                     * @event Signaling#broadcastEvent
-                     * @type {Object}
-                     * @property {String} type - In this case the type of this message is "event".
-                     * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
-                     * @property {Object} data - Custom event data.
-                     */
+           * Passthrough of available Millicast broadcast events.
+           *
+           * Active - Fires when the live stream is, or has started broadcasting.
+           *
+           * Inactive - Fires when the stream has stopped broadcasting, but is still available.
+           *
+           * Stopped - Fires when the stream has stopped for a given reason.
+           *
+           * Vad - Fires when using multiplexed tracks for audio.
+           *
+           * Layers - Fires when there is an update of the state of the layers in a stream (when broadcasting with simulcast).
+           *
+           * Migrate - Fires when the server is having problems, is shutting down or when viewers need to move for load balancing purposes.
+           *
+           * Viewercount - Fires when the viewer count changes.
+           *
+           * Updated - when an active stream's tracks are updated
+           *
+           * More information here: {@link https://docs.dolby.io/streaming-apis/docs/web#broadcast-events}
+           *
+           * @event Signaling#broadcastEvent
+           * @type {Object}
+           * @property {String} type - In this case the type of this message is "event".
+           * @property {("active" | "inactive" | "stopped" | "vad" | "layers" | "migrate" | "viewercount" | "updated")} name - Event name.
+           * @property {Object} data - Custom event data.
+           */
           this.emit(signalingEvents.broadcastEvent, evt)
         })
         logger.info('Connected to server: ', this.webSocket.url)
@@ -150,12 +150,12 @@ export default class Signaling extends EventEmitter {
       this.webSocket.onerror = () => {
         logger.error('WebSocket not connected: ', this.webSocket.url)
         /**
-                 * WebSocket connection failed with signaling server.
-                 * Returns url of WebSocket
-                 *
-                 * @event Signaling#wsConnectionError
-                 * @type {String}
-                 */
+         * WebSocket connection failed with signaling server.
+         * Returns url of WebSocket
+         *
+         * @event Signaling#wsConnectionError
+         * @type {String}
+         */
         this.emit(signalingEvents.connectionError, this.webSocket.url)
         reject(this.webSocket.url)
       }
@@ -164,31 +164,31 @@ export default class Signaling extends EventEmitter {
         this.transactionManager = null
         logger.info('Connection closed with Signaling Server.')
         /**
-                 * WebSocket connection with signaling server was successfully closed.
-                 *
-                 * @event Signaling#wsConnectionClose
-                 */
+         * WebSocket connection with signaling server was successfully closed.
+         *
+         * @event Signaling#wsConnectionClose
+         */
         this.emit(signalingEvents.connectionClose)
       }
     })
   }
 
   /**
-     * Close WebSocket connection with Millicast server.
-     * @example millicastSignaling.close()
-     */
+   * Close WebSocket connection with Millicast server.
+   * @example millicastSignaling.close()
+   */
   close () {
     logger.info('Closing connection with Signaling Server.')
     this.webSocket?.close()
   }
 
   /**
-     * Establish WebRTC connection with Millicast Server as Subscriber role.
-     * @param {String} sdp - The SDP information created by your offer.
-     * @param {SignalingSubscribeOptions} options - Signaling Subscribe Options.
-     * @example const response = await millicastSignaling.subscribe(sdp)
-     * @return {Promise<String>} Promise object which represents the SDP command response.
-     */
+   * Establish WebRTC connection with Millicast Server as Subscriber role.
+   * @param {String} sdp - The SDP information created by your offer.
+   * @param {SignalingSubscribeOptions} options - Signaling Subscribe Options.
+   * @example const response = await millicastSignaling.subscribe(sdp)
+   * @return {Promise<String>} Promise object which represents the SDP command response.
+   */
   async subscribe (sdp, options, pinnedSourceId = null, excludedSourceIds = null) {
     logger.info('Starting subscription to streamName: ', this.streamName)
     logger.debug('Subcription local description: ', sdp)
@@ -263,12 +263,12 @@ export default class Signaling extends EventEmitter {
   }
 
   /**
-     * Establish WebRTC connection with Millicast Server as Publisher role.
-     * @param {String} sdp - The SDP information created by your offer.
-     * @param {SignalingPublishOptions} options - Signaling Publish Options.
-     * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
-     * @return {Promise<String>} Promise object which represents the SDP command response.
-     */
+   * Establish WebRTC connection with Millicast Server as Publisher role.
+   * @param {String} sdp - The SDP information created by your offer.
+   * @param {SignalingPublishOptions} options - Signaling Publish Options.
+   * @example const response = await millicastSignaling.publish(sdp, {codec: 'h264'})
+   * @return {Promise<String>} Promise object which represents the SDP command response.
+   */
   async publish (sdp, options, record = null, sourceId = null) {
     const optionsParsed = getPublishOptions(options, record, sourceId)
 
@@ -345,11 +345,11 @@ export default class Signaling extends EventEmitter {
   }
 
   /**
-     * Send command to the server.
-     * @param {String} cmd - Command name.
-     * @param {Object} [data] - Command parameters.
-     * @return {Promise<Object>} Promise object which represents the command response.
-     */
+   * Send command to the server.
+   * @param {String} cmd - Command name.
+   * @param {Object} [data] - Command parameters.
+   * @return {Promise<Object>} Promise object which represents the command response.
+   */
   async cmd (cmd, data) {
     logger.info(`Sending cmd: ${cmd}`)
 
