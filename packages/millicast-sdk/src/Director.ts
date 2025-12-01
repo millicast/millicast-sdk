@@ -204,21 +204,21 @@ const Director = {
   ) => {
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
 
-    Diagnostics.initAccountId(options.streamAccountId)
+    Diagnostics.initAccountId(optionsParsed.streamAccountId)
 
     logger.info(
-      `Getting subscriber connection data for stream name: ${options.streamName} and account id: ${options.streamAccountId}`
+      `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
     )
 
     const payload = {
-      streamAccountId: options.streamAccountId,
-      streamName: options.streamName
+      streamAccountId: optionsParsed.streamAccountId,
+      streamName: optionsParsed.streamName
     }
     let headers: { 'Content-Type': string; Authorization?: string } = {
       'Content-Type': 'application/json'
     }
     if (subscriberToken) {
-      headers = { ...headers, Authorization: `Bearer ${subscriberToken}` }
+      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
 
     const url = `${getDirectorPath('subscribe')}`
@@ -235,8 +235,10 @@ const Director = {
       }
       data = parseIncomingDirectorResponse(data)
       logger.debug('Getting subscriber response: ', data)
-      if (options.subscriberToken)
+      
+      if (options.subscriberToken){
         data.data.subscriberToken = options.subscriberToken
+      }
       return data.data
     } catch (e) {
       logger.error('Error while getting subscriber connection path. ', e)
