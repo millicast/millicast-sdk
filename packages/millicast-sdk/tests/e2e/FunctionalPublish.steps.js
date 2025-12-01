@@ -26,6 +26,8 @@ const sleep=ms => new Promise(function (resolve) {setTimeout(resolve, ms)})
 
 afterEach(async () => {
   if (browser) {
+    const pages=await browser.pages();
+    await Promise.all(pages.map(page => page.close()));
     await browser.close()
   }
   browser=null
@@ -76,51 +78,50 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream and connect to stream as viewer', async () => {
-      when('I broadcast a stream and connect to stream as viewer', async () => {
-        try {
-          await broadcastPage.evaluate(({options, publishToken, streamName, accountId}) => {
-            window.ENV={
-              PUBLISH_TOKEN: publishToken,
-              STREAM_NAME: streamName,
-              ACCOUNT_ID: accountId
-            };
 
-            return startPublisher(publishToken, streamName, options);
-          }, {
-            options,
-            publishToken: process.env.PUBLISH_TOKEN,
-            streamName,
-            accountId: process.env.ACCOUNT_ID
-          });
+      try {
+        await broadcastPage.evaluate(({options, publishToken, streamName, accountId}) => {
+          window.ENV={
+            PUBLISH_TOKEN: publishToken,
+            STREAM_NAME: streamName,
+            ACCOUNT_ID: accountId
+          };
 
-          await viewerPage.evaluate(({streamName, accountId}) => {
-            window.ENV={
-              STREAM_NAME: streamName,
-              ACCOUNT_ID: accountId
-            };
+          return startPublisher(publishToken, streamName, options);
+        }, {
+          options,
+          publishToken: process.env.PUBLISH_TOKEN,
+          streamName,
+          accountId: process.env.ACCOUNT_ID
+        });
 
-            return startViewer(streamName, accountId);
-          }, {
-            streamName,
-            accountId: process.env.ACCOUNT_ID
-          });
+        await viewerPage.evaluate(({streamName, accountId}) => {
+          window.ENV={
+            STREAM_NAME: streamName,
+            ACCOUNT_ID: accountId
+          };
 
-          await sleep(3000);
+          return startViewer(streamName, accountId);
+        }, {
+          streamName,
+          accountId: process.env.ACCOUNT_ID
+        });
 
-          isActive=await broadcastPage.evaluate('window.publish.isActive()');
-          videoFrame1=await viewerPage.evaluate('getVideoPixelSums()');
-          await sleep(500);
-          videoFrame2=await viewerPage.evaluate('getVideoPixelSums()');
+        await sleep(3000);
 
-        } catch (error) {
-          console.error('Failed to setup streaming:', error.message);
+        isActive=await broadcastPage.evaluate('window.publish.isActive()');
+        videoFrame1=await viewerPage.evaluate('getVideoPixelSums()');
+        await sleep(500);
+        videoFrame2=await viewerPage.evaluate('getVideoPixelSums()');
 
-          await broadcastPage.screenshot({path: `debug-broadcast-${Date.now()}.png`});
-          await viewerPage.screenshot({path: `debug-viewer-${Date.now()}.png`});
+      } catch (error) {
+        console.error('Failed to setup streaming:', error.message);
 
-          throw error;
-        }
-      });
+        await broadcastPage.screenshot({path: `debug-broadcast-${Date.now()}.png`});
+        await viewerPage.screenshot({path: `debug-viewer-${Date.now()}.png`});
+
+        throw error;
+      }
     })
     then('broadcast is active and Viewer receive video data', async () => {
       try {
