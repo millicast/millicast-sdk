@@ -79,7 +79,6 @@ defineFeature(feature, test => {
       when('I broadcast a stream and connect to stream as viewer', async () => {
         try {
           await broadcastPage.evaluate(({options, publishToken, streamName, accountId}) => {
-            // Make env vars available to your SDK in browser
             window.ENV={
               PUBLISH_TOKEN: publishToken,
               STREAM_NAME: streamName,
@@ -106,7 +105,6 @@ defineFeature(feature, test => {
             accountId: process.env.ACCOUNT_ID
           });
 
-          // Wait for connection
           await sleep(3000);
 
           isActive=await broadcastPage.evaluate('window.publish.isActive()');
@@ -117,7 +115,6 @@ defineFeature(feature, test => {
         } catch (error) {
           console.error('Failed to setup streaming:', error.message);
 
-          // Take debug screenshots
           await broadcastPage.screenshot({path: `debug-broadcast-${Date.now()}.png`});
           await viewerPage.screenshot({path: `debug-viewer-${Date.now()}.png`});
 
