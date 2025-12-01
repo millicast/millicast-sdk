@@ -2,6 +2,7 @@ import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
 import {
+  DirectorPublisherOptions,
   DirectorResponse,
   DirectorSubscriberOptions,
   MillicastDirectorResponse
@@ -126,21 +127,25 @@ const Director = {
    * await millicastPublish.connect(broadcastOptions)
    */
   getPublisher: async (
-    token: string,
+    options: DirectorPublisherOptions | string,
     streamName: string | null = null,
     streamType: StreamTypes = StreamTypes.WEBRTC
   ): Promise<MillicastDirectorResponse> => {
+
+    const optionsParsed = getPublisherOptions(options, streamName, streamType)
+
+
     logger.info(
       'Getting publisher connection path for stream name: ',
-      streamName
+      optionsParsed.streamName
     )
     const payload = {
-      streamName: streamName,
-      streamType: streamType
+      streamName: optionsParsed.streamName,
+      streamType: optionsParsed.streamType
     }
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${optionsParsed.token}`
     }
     const url = `${Director.getEndpoint()}/api/director/publish`
     try {
@@ -197,6 +202,7 @@ const Director = {
     streamAccountId: string | null = null,
     subscriberToken: string | null = null
   ) => {
+    const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
 
     Diagnostics.initAccountId(options.streamAccountId)
 
@@ -238,6 +244,45 @@ const Director = {
     }
   }
 }
+
+const getPublisherOptions = (
+  options: string | DirectorPublisherOptions,
+  legacyStreamName: string | null,
+  legacyStreamType: 'WebRtc' | 'Rtmp' = StreamTypes.WEBRTC
+): DirectorPublisherOptions => {
+  let parsedOptions: DirectorPublisherOptions | Record<string, never> =
+    typeof options === 'object' ? options : {}
+
+  if (Object.keys(parsedOptions).length === 0) {
+    parsedOptions = {
+      token: options as string,
+      streamName: legacyStreamName!,
+      streamType: legacyStreamType,
+    }
+  }
+
+  return parsedOptions as DirectorPublisherOptions
+}
+
+const getSubscriberOptions = (
+  options: string | DirectorSubscriberOptions,
+  legacyStreamAccountId: string | null,
+  legacySubscriberToken: string | null
+): DirectorSubscriberOptions => {
+  let parsedOptions: DirectorSubscriberOptions | Record<string, never> =
+    typeof options === 'object' ? options : {}
+
+  if (Object.keys(parsedOptions).length === 0) {
+    parsedOptions = {
+      streamName: options as string,
+      streamAccountId: legacyStreamAccountId!,
+      subscriberToken: legacySubscriberToken,
+    }
+  }
+
+  return parsedOptions as DirectorSubscriberOptions
+}
+
 
 
 const parseIncomingDirectorResponse = (directorResponse: {
