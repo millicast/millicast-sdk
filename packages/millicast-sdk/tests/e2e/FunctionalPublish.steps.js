@@ -86,7 +86,11 @@ defineFeature(feature, test => {
             STREAM_NAME: streamName,
             ACCOUNT_ID: accountId
           };
-
+          console.log('Environment check:', {
+            publishToken: publishToken? 'SET':'MISSING',
+            accountId: accountId? 'SET':'MISSING',
+            streamName
+          });
           return startPublisher(publishToken, streamName, options);
         }, {
           options,
@@ -100,7 +104,10 @@ defineFeature(feature, test => {
             STREAM_NAME: streamName,
             ACCOUNT_ID: accountId
           };
-
+          console.log('Environment check:', {
+            accountId: accountId? 'SET':'MISSING',
+            streamName
+          });
           return startViewer(streamName, accountId);
         }, {
           streamName,

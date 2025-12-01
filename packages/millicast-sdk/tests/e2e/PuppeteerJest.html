@@ -23,7 +23,10 @@
             const millicast=window.millicast
             const video=document.getElementById('my-video')
             millicast.Logger.setLevel(millicast.Logger.DEBUG)
-            const tokenGenerator=() => millicast.Director.getSubscriber(streamName, accountId)
+            const tokenGenerator=() => millicast.Director.getSubscriber({
+               streamName: streamName,
+               streamAccountId: accountId
+            })
             const view=new millicast.View(undefined, tokenGenerator)
             video.addEventListener('timeupdate', () => {
                if (video.currentTime>1) {
