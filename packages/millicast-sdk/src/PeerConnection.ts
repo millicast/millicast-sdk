@@ -12,6 +12,12 @@ const logger = Logger.get('PeerConnection')
 interface RTCRtpEncodingParametersExtended extends RTCRtpEncodingParameters {
   scalabilityMode?: string
 }
+type RTCRtpCodecCapability = RTCRtpCapabilities['codecs'][number]
+
+interface RTCRtpCodecCapabilityExtended extends RTCRtpCodecCapability {
+  scalabilityModes?: string[]
+  sdpFmtpLine?: string
+}
 
 
 interface LocalSDPOptions {
@@ -249,17 +255,17 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
       const matches = codec.mimeType.match(regex)
       if (matches) {
         const codecName = matches[1].toLowerCase()
-        
+
         codecs[codecName] = { 
           ...codecs[codecName], 
           mimeType: codec.mimeType 
         }
-        // TODO fix and remove any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((codec as any).scalabilityModes) {
+
+        // Cast to extended type to access scalabilityModes
+        const extendedCodec = codec as RTCRtpCodecCapabilityExtended
+        if (extendedCodec.scalabilityModes) {
           let modes = (codecs[codecName].scalabilityModes as string[]) || []
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          modes = [...modes, ...(codec as any).scalabilityModes]
+          modes = [...modes, ...extendedCodec.scalabilityModes]
           codecs[codecName].scalabilityModes = [...new Set(modes)]
         }
         if (codec.channels) {
@@ -267,15 +273,21 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
         }
       }
     }
-    // TODO fix and remove any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (browserCapabilities as any).codecs = Object.keys(codecs).map((key) => {
-      return { codec: key, ...codecs[key] }
-    })
+
+    // Create a properly typed result
+    const result: RTCRtpCapabilities = {
+      ...browserCapabilities,
+      codecs: Object.keys(codecs).map((key) => {
+        return { codec: key, ...codecs[key] } as MillicastCodec
+      }) as unknown as RTCRtpCodecCapability[]
+    }
+
+    return result
   }
 
   return browserCapabilities
 }
+
 
   getTracks (): (MediaStreamTrack | null)[] | undefined {
     return this.peer?.getSenders()?.map(sender => sender.track)
@@ -425,14 +437,18 @@ const addReceiveTransceivers = (peer: RTCPeerConnection, options: LocalSDPOption
       direction: 'recvonly',
     })
     if (browserData.isOpera()) {
-      transceiver.setCodecPreferences(
-        RTCRtpReceiver.getCapabilities('video')!.codecs.filter(
-          codec =>
-            // TODO fix and remove any
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            codec.mimeType !== 'video/H264' || (codec as any).sdpFmtpLine.includes('profile-level-id=4')
+      const videoCapabilities = RTCRtpReceiver.getCapabilities('video')
+      if (videoCapabilities) {
+        transceiver.setCodecPreferences(
+          videoCapabilities.codecs.filter(codec => {
+            const extendedCodec = codec as RTCRtpCodecCapabilityExtended
+            return (
+              codec.mimeType !== 'video/H264' ||
+              (extendedCodec.sdpFmtpLine?.includes('profile-level-id=4') ?? false)
+            )
+          })
         )
-      )
+      }
     }
   }
   if (!options.disableAudio) {
@@ -446,6 +462,7 @@ const addReceiveTransceivers = (peer: RTCPeerConnection, options: LocalSDPOption
     })
   }
 }
+
 
 const getConnectionState = (peer: RTCPeerConnection): RTCPeerConnectionState | RTCIceConnectionState => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState
