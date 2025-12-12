@@ -1,4 +1,3 @@
-export {}
 
 declare global {
   interface RTCRtpSender {
@@ -14,3 +13,4 @@ declare global {
     }
   }
 }
+export {}

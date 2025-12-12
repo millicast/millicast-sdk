@@ -3,7 +3,8 @@ import jwtDecode from 'jwt-decode'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
-import PeerConnection, { webRTCEvents } from './PeerConnection'
+import PeerConnection from './PeerConnection'
+import { webRTCEvents } from './types/PeerConnection.types'
 import { hexToUint8Array } from './utils/StringUtils'
 import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
@@ -45,7 +46,7 @@ export default class View extends BaseWebRTC {
     if (streamName) {
       logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
     }
-    super(null, tokenGenerator, logger, autoReconnect)
+    super(tokenGenerator, logger, autoReconnect)
     // States what payload type is associated with each codec from the SDP answer.
     this.payloadTypeCodec = {}
     // Follows the media id values of each transceiver's track from the 'track' events.

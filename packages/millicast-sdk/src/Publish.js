@@ -6,7 +6,8 @@ import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
-import PeerConnection, { webRTCEvents, ConnectionType } from './PeerConnection'
+import PeerConnection from './PeerConnection'
+import { ConnectionType, webRTCEvents } from './types/PeerConnection.types'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import { VideoCodec } from './types/Codecs.types'
@@ -49,7 +50,7 @@ export default class Publish extends BaseWebRTC {
     if (streamName) {
       logger.warn('The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator')
     }
-    super(null, tokenGenerator, logger, autoReconnect)
+    super(tokenGenerator, logger, autoReconnect)
   }
 
   /**

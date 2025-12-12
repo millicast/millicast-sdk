@@ -16,10 +16,11 @@
       "noPropertyAccessFromIndexSignature": true,
       "noImplicitReturns": true,
       "noFallthroughCasesInSwitch": true,
+      "types": ["node"],
       "typeRoots": ["./types", "./node_modules/@types"],
       "composite": true
     },
-    "include": ["src/**/*", "types/**/*", "package.json"],
+    "include": ["src/**/*", "types/**/*", "package.json", "global.d.ts"],
     "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "**/*.test.js", "**/*.spec.js", "dist", "node_modules"],
     "references": [
         {

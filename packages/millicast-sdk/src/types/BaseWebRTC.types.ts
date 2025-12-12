@@ -1,6 +1,6 @@
 export type Media = 'audio' | 'video'
 
-export type ViewServerEvent = 'active' | 'inactive' | 'updated' | 'layers' | 'vad' | 'viewercount'
+export type ViewServerEvent = 'active' | 'inactive' | 'updated' | 'layers' | 'vad' | 'viewercount' | 'migrate'| 'stopped'
 
 export type PublishServerEvent = 'active' | 'inactive' | 'viewercount'
 

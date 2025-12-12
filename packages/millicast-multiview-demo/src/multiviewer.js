@@ -102,6 +102,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 addStreamToVideoElement(event.streams[0], event.transceiver.mid)
             }
         })
+        viewer.webRTCPeer.on('stats', (event) => {
+            console.log("Stats event incoming", event)
+        });
         await viewer.connect(connectOptions)
     } catch (e) {
         console.error(e)
