@@ -118,6 +118,7 @@ export default class Signaling extends EventEmitter {
 
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.transactionManager!.on('event', (evt: any) => {
           this.emit(signalingEvents.broadcastEvent, evt as BroadcastEvent)
         })

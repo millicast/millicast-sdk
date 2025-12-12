@@ -241,7 +241,7 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
       regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i')
 
       if (browserData.isChrome()) {
-        codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 }  // Fixed line
+        codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 } 
       }
     }
 
@@ -249,9 +249,16 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
       const matches = codec.mimeType.match(regex)
       if (matches) {
         const codecName = matches[1].toLowerCase()
-        codecs[codecName] = { ...codecs[codecName], mimeType: codec.mimeType }
+        
+        codecs[codecName] = { 
+          ...codecs[codecName], 
+          mimeType: codec.mimeType 
+        }
+        // TODO fix and remove any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((codec as any).scalabilityModes) {
           let modes = (codecs[codecName].scalabilityModes as string[]) || []
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           modes = [...modes, ...(codec as any).scalabilityModes]
           codecs[codecName].scalabilityModes = [...new Set(modes)]
         }
@@ -260,7 +267,8 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
         }
       }
     }
-
+    // TODO fix and remove any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (browserCapabilities as any).codecs = Object.keys(codecs).map((key) => {
       return { codec: key, ...codecs[key] }
     })
@@ -352,18 +360,18 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection): 
   }
 
   if (peer.connectionState) {
-    peer.onconnectionstatechange = (event: Event) => {
+    peer.onconnectionstatechange = (/*event: Event*/ ) => {
       logger.info('Peer connection state change: ', peer.connectionState)
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState)
     }
   } else {
-    peer.oniceconnectionstatechange = (event: Event) => {
+    peer.oniceconnectionstatechange = (/*event: Event*/) => {
       logger.info('Peer ICE connection state change: ', peer.iceConnectionState)
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.iceConnectionState)
     }
   }
 
-  peer.onnegotiationneeded = async (event: Event) => {
+  peer.onnegotiationneeded = async (/*event: Event*/) => {
     if (!peer.remoteDescription) return
     logger.info('Peer onnegotiationneeded, updating local description')
     const offer = await peer.createOffer()
@@ -420,6 +428,8 @@ const addReceiveTransceivers = (peer: RTCPeerConnection, options: LocalSDPOption
       transceiver.setCodecPreferences(
         RTCRtpReceiver.getCapabilities('video')!.codecs.filter(
           codec =>
+            // TODO fix and remove any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             codec.mimeType !== 'video/H264' || (codec as any).sdpFmtpLine.includes('profile-level-id=4')
         )
       )
