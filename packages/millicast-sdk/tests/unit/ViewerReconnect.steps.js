@@ -1,8 +1,9 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { webRTCEvents } from '../../src/PeerConnection'
-import { signalingEvents } from '../../src/Signaling'
+import { webRTCEvents } from '../../src/types/PeerConnection.types'
+import {signalingEvents} from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
+
 
 const feature = loadFeature('../features/ViewerReconnection.feature', { loadRelativePath: true, errors: true })
 let View

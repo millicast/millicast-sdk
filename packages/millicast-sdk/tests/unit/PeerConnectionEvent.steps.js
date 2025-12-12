@@ -1,8 +1,9 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection, { webRTCEvents } from '../../src/PeerConnection'
+import PeerConnection from '../../src/PeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import MockRTCPeerConnectionNoConnectionState from './__mocks__/MockRTCPeerConnectionNoConnectionState'
+import {webRTCEvents} from '../../src/types/PeerConnection.types'
 const feature = loadFeature('../features/PeerConnectionEvent.feature', { loadRelativePath: true, errors: true })
 
 defineFeature(feature, test => {

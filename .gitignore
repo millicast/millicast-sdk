@@ -11,4 +11,4 @@ test-environment.js
 **/src/TransformWorker.worker.ts
 vite.config.*.timestamp-*
 .nx/
-**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo

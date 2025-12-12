@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { webRTCEvents } from '../../src/PeerConnection'
+import { webRTCEvents } from '../../src/types/PeerConnection.types'
 import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
