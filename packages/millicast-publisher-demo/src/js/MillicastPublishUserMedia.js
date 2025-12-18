@@ -3,7 +3,7 @@ import MillicastMedia from "./MillicastMedia"
 
 export default class MillicastPublishUserMedia extends Publish {
   constructor(options, tokenGenerator, autoReconnect) {
-    super(options.streamName, tokenGenerator, autoReconnect);
+    super(undefined, tokenGenerator, autoReconnect);
     this.mediaManager = new MillicastMedia(options);
   }
 

@@ -171,6 +171,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         simulcast,
         disableVideo,
         disableAudio,
+        scalabilityMode: 'L3T3',
+        degradationPreference: 'balanced',
         peerConfig : {
           autoInitStats: true,
           statsIntervalMs : 5000

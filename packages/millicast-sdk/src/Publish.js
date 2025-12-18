@@ -261,6 +261,8 @@ export default class Publish extends BaseWebRTC {
 
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
 
+    await webRTCPeerInstance.applyDegradationPreference(this.options.degradationPreference)
+
     logger.info('Broadcasting to streamName: ', this.streamName)
 
     let oldWebRTCPeer = this.webRTCPeer

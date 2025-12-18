@@ -144,4 +144,190 @@ defineFeature(feature, test => {
       expect(handler).toHaveBeenCalledWith('connected')
     })
   })
+
+  // New tests for degradation preference
+  test('Apply degradation preference successfully', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    let result
+
+    given('I have a peer connected with video track', async () => {
+      await peerConnection.createRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+
+      // Mock video sender
+      const mockVideoTrack = { kind: 'video' }
+      const mockSender = {
+        track: mockVideoTrack,
+        getParameters: jest.fn(() => ({ degradationPreference: 'balanced' })),
+        setParameters: jest.fn(() => Promise.resolve())
+      }
+      peerConnection.peer.getSenders = jest.fn(() => [mockSender])
+    })
+
+    when('I apply maintain-resolution degradation preference', async () => {
+      result = await peerConnection.applyDegradationPreference('maintain-resolution')
+    })
+
+    then('degradation preference is set successfully', () => {
+      const sender = peerConnection.peer.getSenders()[0]
+      expect(sender.setParameters).toHaveBeenCalledWith(
+        expect.objectContaining({ degradationPreference: 'maintain-resolution' })
+      )
+      expect(result).toBeUndefined() // Method returns void on success
+    })
+  })
+
+  test('Apply degradation preference with invalid option', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    let result
+
+    given('I have a peer connected with video track', async () => {
+      await peerConnection.createRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+
+      const mockVideoTrack = { kind: 'video' }
+      const mockSender = {
+        track: mockVideoTrack,
+        getParameters: jest.fn(() => ({ degradationPreference: 'balanced' })),
+        setParameters: jest.fn(() => Promise.resolve())
+      }
+      peerConnection.peer.getSenders = jest.fn(() => [mockSender])
+    })
+
+    when('I apply invalid degradation preference', async () => {
+      result = await peerConnection.applyDegradationPreference('invalid-option')
+    })
+
+    then('degradation preference is not applied', () => {
+      const sender = peerConnection.peer.getSenders()[0]
+      expect(sender.setParameters).not.toHaveBeenCalled()
+      expect(result).toBeUndefined()
+    })
+  })
+
+  test('Apply degradation preference without video track', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    let result
+
+    given('I have a peer connected without video track', async () => {
+      await peerConnection.createRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+
+      // Mock only audio sender
+      const mockAudioTrack = { kind: 'audio' }
+      const mockSender = {
+        track: mockAudioTrack,
+        getParameters: jest.fn(() => ({})),
+        setParameters: jest.fn(() => Promise.resolve())
+      }
+      peerConnection.peer.getSenders = jest.fn(() => [mockSender])
+    })
+
+    when('I apply degradation preference', async () => {
+      result = await peerConnection.applyDegradationPreference('maintain-resolution')
+    })
+
+    then('degradation preference is not applied', () => {
+      const sender = peerConnection.peer.getSenders()[0]
+      expect(sender.setParameters).not.toHaveBeenCalled()
+      expect(result).toBeUndefined()
+    })
+  })
+
+  test('Apply degradation preference with undefined value', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    let result
+
+    given('I have a peer connected with video track', async () => {
+      await peerConnection.createRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+
+      const mockVideoTrack = { kind: 'video' }
+      const mockSender = {
+        track: mockVideoTrack,
+        getParameters: jest.fn(() => ({ degradationPreference: 'balanced' })),
+        setParameters: jest.fn(() => Promise.resolve())
+      }
+      peerConnection.peer.getSenders = jest.fn(() => [mockSender])
+    })
+
+    when('I apply undefined degradation preference', async () => {
+      result = await peerConnection.applyDegradationPreference(undefined)
+    })
+
+    then('degradation preference is not applied', () => {
+      const sender = peerConnection.peer.getSenders()[0]
+      expect(sender.setParameters).not.toHaveBeenCalled()
+      expect(result).toBeUndefined()
+    })
+  })
+
+  test('Apply degradation preference fails with error', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    let error
+
+    given('I have a peer connected with video track', async () => {
+      await peerConnection.createRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+
+      const mockVideoTrack = { kind: 'video' }
+      const mockSender = {
+        track: mockVideoTrack,
+        getParameters: jest.fn(() => ({ degradationPreference: 'balanced' })),
+        setParameters: jest.fn(() => Promise.reject(new Error('setParameters failed')))
+      }
+      peerConnection.peer.getSenders = jest.fn(() => [mockSender])
+    })
+
+    when('I apply degradation preference and it fails', async () => {
+      try {
+        await peerConnection.applyDegradationPreference('maintain-resolution')
+      } catch (e) {
+        error = e
+      }
+    })
+
+    then('error is thrown', () => {
+      expect(error).toBeDefined()
+      expect(error.message).toBe('setParameters failed')
+    })
+  })
+
+  test('Apply all valid degradation preferences', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const sdp = 'My default SDP'
+    const validOptions = ['balanced', 'maintain-framerate', 'maintain-resolution']
+    const results = []
+
+    given('I have a peer connected with video track', async () => {
+      await peerConnection.createRTCPeer()
+      await peerConnection.setRTCRemoteSDP(sdp)
+
+      const mockVideoTrack = { kind: 'video' }
+      const mockSender = {
+        track: mockVideoTrack,
+        getParameters: jest.fn(() => ({ degradationPreference: 'balanced' })),
+        setParameters: jest.fn(() => Promise.resolve())
+      }
+      peerConnection.peer.getSenders = jest.fn(() => [mockSender])
+    })
+
+    when('I apply each valid degradation preference', async () => {
+      for (const option of validOptions) {
+        await peerConnection.applyDegradationPreference(option)
+        results.push(option)
+      }
+    })
+
+    then('all degradation preferences are applied successfully', () => {
+      const sender = peerConnection.peer.getSenders()[0]
+      expect(sender.setParameters).toHaveBeenCalledTimes(3)
+      expect(results).toEqual(validOptions)
+    })
+  })
 })
