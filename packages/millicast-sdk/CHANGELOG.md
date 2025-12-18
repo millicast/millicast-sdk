@@ -1,5 +1,11 @@
 # @millicast/sdk
 
+## 0.7.0
+
+### Minor Changes
+
+- d681907: Add DegradationPreference to PublishOptions
+
 ## 0.6.1
 
 ### Patch Changes
