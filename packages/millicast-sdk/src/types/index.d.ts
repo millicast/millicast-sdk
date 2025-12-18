@@ -1369,7 +1369,7 @@ declare module '@millicast/sdk' {
 
     /**
      * Specifies the preferred way the WebRTC layer should handle optimizing bandwidth against quality in constrained-bandwidth situations.
-     * The possible values are "maintain-framerate", "maintain-resolution", or "balanced". 
+     * The possible values are "maintain-framerate", "maintain-resolution", or "balanced".
      * The default value is balanced.
      */
     degradationPreference?: RTCDegradationPreference
