@@ -259,6 +259,48 @@ export default class PeerConnection extends EventEmitter {
   }
 
   /**
+   * Configures the strategy used to manage bandwidth constraints for video tracks.
+   * This determines whether the browser should sacrifice frame rate or resolution
+   * when network conditions degrade.
+   * @async
+   * @param {RTCDegradationPreference} degradationPreference - The strategy to apply.
+   * Valid values:
+   * - 'maintain-framerate': Lowers resolution to keep FPS steady (ideal for talking heads).
+   * - 'maintain-resolution': Lowers FPS to keep image crisp (ideal for screen sharing/text).
+   * - 'balanced': Automatically balances FPS and resolution.
+   * @returns {Promise<void>} Resolves when the parameters are successfully applied.
+   * @throws {Error} If setParameters fails due to invalid state or browser limitations.
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/setParameters#degradationpreference|MDN: degradationPreference}
+   */
+  async applyDegradationPreference (degradationPreference) {
+    if (!degradationPreference) return
+
+    const validOptions = ['balanced', 'maintain-framerate', 'maintain-resolution']
+    if (!validOptions.includes(degradationPreference)) {
+      logger.warn(`Invalid option [${degradationPreference}] provided. Valid options: ${validOptions.join(', ')}`)
+      return
+    }
+
+    const videoSender = this.peer.getSenders().find(s => s.track && s.track.kind === 'video')
+
+    if (!videoSender) {
+      logger.warn('No active video sender found to apply degradation preference.')
+      return
+    }
+
+    try {
+      const parameters = videoSender.getParameters()
+      parameters.degradationPreference = degradationPreference
+
+      await videoSender.setParameters(parameters)
+      logger.info(`Successfully set degradation preference to: ${degradationPreference}`)
+    } catch (error) {
+      logger.error('Failed to set degradation preference:', error)
+      throw error
+    }
+  }
+
+  /**
    * @typedef {Object} MillicastCapability
    * @property {Array<Object>} codecs
    * @property {String} codecs.codec - Audio or video codec name.
