@@ -5,7 +5,9 @@ import typescript from '@rollup/plugin-typescript';
 
 const plugins=[
   json(),
-  typescript(),
+  typescript({
+    outputToFilesystem: true
+  }),
   resolve({
     extensions: ['.js', '.ts']
   }),
