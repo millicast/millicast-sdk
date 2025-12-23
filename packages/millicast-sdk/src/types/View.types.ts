@@ -1,6 +1,7 @@
 import { Media, ViewServerEvent } from './BaseWebRTC.types'
 import { VideoCodec } from './Codecs.types'
 import { PeerConnectionConfig } from './PeerConnection.types'
+import { AbrConfigurationOptions } from './Signaling.types'
 
 export type ViewConnectOptions = {
   /**
@@ -67,6 +68,14 @@ export type ViewConnectOptions = {
    * - Codec for View stream.
    */
   codec?: VideoCodec
+  /**
+   * - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to what the server determines.
+   */
+  forceSmooth?: boolean
+  /**
+   * - The strategy for initial playback behavior.
+   */
+  abrConfiguration?: AbrConfigurationOptions
 }
 
 export type ViewProjectSourceMapping = {
@@ -283,9 +292,9 @@ export type MetadataEvent = MetadataObject
  * Events declaration of Viewers that user could listen to
  */
 export interface ViewerEvents {
-  'broadcastEvent'?: BroadcastEvent
-  'track'?: RTCTrackEvent
-  'metadata'?: MetadataEvent
+  broadcastEvent?: BroadcastEvent
+  track?: RTCTrackEvent
+  metadata?: MetadataEvent
   // TODO: elaborate error type
-  'error'?: Error
+  error?: Error
 }

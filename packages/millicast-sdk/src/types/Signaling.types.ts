@@ -9,7 +9,7 @@ interface AbrStrategyMetadata {
   bitrate: number|undefined
 }
 
-type AbrConfigurationOptions = {
+export type AbrConfigurationOptions = {
   /**
 
    * The strategy for initial playback behavior.
