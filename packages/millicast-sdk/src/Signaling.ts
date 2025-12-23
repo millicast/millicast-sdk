@@ -43,11 +43,11 @@ type ConnectionSuccessEvent = {
   tm: TransactionManager
 }
 
-type BroadcastEvent = {
-  type: string
-  name: BroadcastEventName
-  data: Record<string, unknown>
-}
+// type BroadcastEvent = {
+//   type: string
+//   name: BroadcastEventName
+//   data: Record<string, unknown>
+// }
 
 type InternalSubscribeOptions = SignalingSubscribeOptions & {
   customKeys?: Record<string, unknown>

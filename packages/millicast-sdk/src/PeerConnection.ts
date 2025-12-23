@@ -68,17 +68,17 @@ interface MillicastCodec {
  */
 export default class PeerConnection extends EventEmitter {
   mode: ConnectionTypeValue | null
-  sessionDescription: RTCSessionDescriptionInit | null
+  sessionDescription: RTCSessionDescriptionInit | undefined
   peer: RTCPeerConnection | null
-  peerConnectionStats: PeerConnectionStats | null
+  peerConnectionStats: PeerConnectionStats | undefined
   transceiverMap: Map<RTCRtpTransceiver, (value: RTCRtpTransceiver) => void>
 
   constructor () {
     super()
     this.mode = null
-    this.sessionDescription = null
+    this.sessionDescription = undefined
     this.peer = null
-    this.peerConnectionStats = null
+    this.peerConnectionStats = undefined
     this.transceiverMap = new Map()
   }
 
@@ -308,7 +308,7 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
 
   stopStats (): void {
     this.peerConnectionStats?.stop()
-    this.peerConnectionStats = null
+    this.peerConnectionStats = undefined
   }
 }
 
