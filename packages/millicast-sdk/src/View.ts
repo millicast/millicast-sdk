@@ -77,7 +77,10 @@ export default class View extends BaseWebRTC {
   private events: { [K in keyof ViewerEvents]: Array<(payload: ViewerEvents[K]) => void> } = {}
   protected override options: ViewConnectOptions | null = null
 
-  constructor (tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
+  constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
+    if(streamName) {
+      logger.warn('The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.')
+    }
     super(tokenGenerator, logger, autoReconnect)
   }
 
@@ -297,7 +300,7 @@ export default class View extends BaseWebRTC {
       }
     } catch (error) {
       // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
-      logger.error('Error generating token.')
+      logger.error('Error generating token.', error)
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
