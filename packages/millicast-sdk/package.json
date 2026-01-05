@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -9,14 +9,15 @@
     "realtime",
     "streaming"
   ],
-  "main": "./dist/index.esm.js",
-  "module": "./dist/index.esm.js",
-  "typings": "./dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/millicast.umd.js",
+  "module": "./dist/millicast.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.esm.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/millicast.mjs",
+      "require": "./dist/millicast.umd.js"
     }
   },
   "files": [
@@ -24,15 +25,13 @@
     "scripts"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "types": "tsc -p tsconfig.json --emitDeclarationOnly",
+    "build": "nx build @millicast/sdk",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
     "start-docs": "npm run build-docs && serve docs",
-    "test-unit": "npm run build && jest --config jest.config.js --testMatch '**/unit/*.steps.js'",
-    "test-unit-coverage": "npm run build && jest --config jest.config.js --testMatch '**/unit/*.steps.js' --coverage",
-    "test-e2e": "npm run build && jest --config jest.config.js --testMatch '**/e2e/*.steps.js' --verbose",
-    "test-all": "npm run build && jest --config jest.config.js --testMatch '**/*.(test|steps).[jt]s'",
-    "test": "npm run test-all"
+    "test": "nx test @millicast/sdk",
+    "test-unit": "nx test @millicast/sdk --testFile='unit'",
+    "test-e2e": "nx test @millicast/sdk --testFile='e2e'",
+    "test-all": "nx test @millicast/sdk"
   },
   "babel": {
     "env": {

@@ -30,6 +30,7 @@ import { DRMProfile } from './types/Director.types'
 import { DecodedJWT, Media } from './types/BaseWebRTC.types'
 import { VideoCodec } from './types/Codecs.types'
 import { webRTCEvents } from './types/PeerConnection.types'
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 
 const logger = Logger.get('View')
 logger.setLevel(Logger.DEBUG)
@@ -78,8 +79,10 @@ export default class View extends BaseWebRTC {
   protected override options: ViewConnectOptions | null = null
 
   constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
-    if(streamName) {
-      logger.warn('The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.')
+    if (streamName) {
+      logger.warn(
+        'The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.'
+      )
     }
     super(tokenGenerator, logger, autoReconnect)
   }
@@ -343,9 +346,7 @@ export default class View extends BaseWebRTC {
 
     if (this.options?.metadata) {
       if (!this.worker) {
-        this.worker = new Worker(new URL('./workers/TransformWorker.worker.ts', import.meta.url), {
-          type: 'module',
-        })
+        this.worker = new TransformWorker();
       }
       this.worker.onmessage = message => {
         if (message.data.event === 'metadata') {
@@ -483,9 +484,7 @@ export default class View extends BaseWebRTC {
             )
           }
           if (!this.worker) {
-            this.worker = new Worker(new URL('./workers/TransformWorker.worker.ts', import.meta.url), {
-              type: 'module',
-            })
+            this.worker = new TransformWorker();
           }
           this.worker.addEventListener('message', message => {
             if (message.data.event === 'complete') {
@@ -509,19 +508,20 @@ export default class View extends BaseWebRTC {
           mid: trackEvent.transceiver?.mid,
         })
       } else if (supportsInsertableStreams) {
-        // @ts-expect-error supportsInserableStream checks if createEncodedStreams is defined
-        const { readable, writable } = trackEvent.receiver.createEncodedStreams()
-        this.worker?.postMessage(
-          {
-            action: 'insertable-streams-receiver',
-            payloadTypeCodec: { ...this.payloadTypeCodec },
-            codec: this.options.metadata && VideoCodec.H264,
-            mid: trackEvent.transceiver?.mid,
-            readable,
-            writable,
-          },
-          [readable, writable]
-        )
+        if (trackEvent.receiver.createEncodedStreams !== undefined) {
+          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+          this.worker?.postMessage(
+            {
+              action: 'insertable-streams-receiver',
+              payloadTypeCodec: { ...this.payloadTypeCodec },
+              codec: this.options.metadata && VideoCodec.H264,
+              mid: trackEvent.transceiver?.mid,
+              readable,
+              writable,
+            },
+            [readable, writable]
+          )
+        }
       }
     }
     this.emit('track', trackEvent)

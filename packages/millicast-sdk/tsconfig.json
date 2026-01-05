@@ -1,30 +1,37 @@
 {
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-      "rootDir": "./src",
-      "outDir": "./dist",
-      "declaration": true,
-      "declarationMap": true,
-      "module": "esnext",
-      "target": "ES2020",
-      "allowJs": true,
-      "resolveJsonModule": true,
-      "esModuleInterop": true,
-      "forceConsistentCasingInFileNames": true,
-      "strict": true,
-      "noImplicitOverride": true,
-      "noPropertyAccessFromIndexSignature": true,
-      "noImplicitReturns": true,
-      "noFallthroughCasesInSwitch": true,
-      "types": ["node"],
-      "typeRoots": ["./types", "./node_modules/@types"],
-      "composite": true
-    },
-    "include": ["src/**/*", "types/**/*", "package.json", "global.d.ts"],
-    "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "**/*.test.js", "**/*.spec.js", "dist", "node_modules"],
-    "references": [
-        {
-            "path": "./tsconfig.spec.json"
-        }
-    ]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "module": "esnext",
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "downlevelIteration": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node", "vite/client"],
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
+    "composite": true
+  },
+  "include": ["src/**/*", "types/**/*", "src/global.d.ts"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "package.json",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "**/*.test.js",
+    "**/*.spec.js"
+  ],
 }

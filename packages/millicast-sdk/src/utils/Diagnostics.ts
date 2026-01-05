@@ -1,4 +1,3 @@
-import { version } from '../../package.json'
 import {
   ConnectionStats,
   DiagnosticsObject,
@@ -8,6 +7,8 @@ import {
   OutboundVideoStats,
   OutboundAudioStats
 } from '../types/stats.types'
+import pkg from '../../package.json'
+
 
 const MAX_STATS_HISTORY_SIZE = 60
 
@@ -21,6 +22,9 @@ let _connection = ''
 let _cluster = ''
 let _connectionTime = 0
 const _stats: ConnectionStats[] = []
+const version = pkg.version || 'unknown'
+
+
 
 function transformWebRTCStatsToCMCD (diagnostics: DiagnosticsObject): CMCDDiagnostics {
   // Helper function to map individual stat objects to CMCD-like structure

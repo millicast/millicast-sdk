@@ -16,9 +16,9 @@ import { TokenGeneratorCallback } from './types/Director.types'
 import { ReconnectData, DecodedJWT } from './types/BaseWebRTC.types'
 import { SignalingPublishOptions } from './types/Signaling.types'
 import { SEIUserUnregisteredData } from './types/View.types'
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 
 const logger = Logger.get('Publish')
-
 
 const connectOptions: PublishConnectOptions = {
   mediaStream: null,
@@ -68,7 +68,6 @@ export default class Publish extends BaseWebRTC {
       throw new Error('Token generator is required for the construction of this module')
     }
     super(tokenGenerator, logger, autoReconnect)
-    
   }
 
   /**
@@ -257,7 +256,7 @@ export default class Publish extends BaseWebRTC {
 
     if (this.options.metadata) {
       if (!this.worker) {
-        this.worker = new Worker(new URL('./workers/TransformWorker.worker.js', import.meta.url))
+        this.worker = new TransformWorker
       }
 
       const senders = this.getRTCPeerConnection()?.getSenders()
@@ -270,17 +269,18 @@ export default class Publish extends BaseWebRTC {
             codec: this.options.codec,
           })
         } else if (supportsInsertableStreams) {
-          // @ts-expect-error supportsInserableStream checks if createEncodedStreams is defined
-          const { readable, writable } = sender.createEncodedStreams()
-          this.worker?.postMessage(
-            {
-              action: 'insertable-streams-sender',
-              codec: this.options.codec,
-              readable,
-              writable,
-            },
-            [readable, writable]
-          )
+          if (sender.createEncodedStreams) {
+            const { readable, writable } = sender.createEncodedStreams!()
+            this.worker?.postMessage(
+              {
+                action: 'insertable-streams-sender',
+                codec: this.options.codec,
+                readable,
+                writable,
+              },
+              [readable, writable]
+            )
+          }
         }
       })
     }
@@ -386,5 +386,3 @@ const validateConnectOptions = (options: PublishConnectOptions): void => {
   const { success, issues } = v.safeParse(connectOptionsSchema, options)
   if (!success) logger.warn(new v.ValiError(issues), options)
 }
-
-

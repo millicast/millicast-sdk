@@ -1,13 +1,25 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "importHelpers": true,
-        "allowJs": true,
-        "target": "ESNext",
-        "esModuleInterop": true,
-        "outDir": "../dist/",
-        "module": "commonjs",
-        "types": ["jest", "node"]
-    },
-    "include": ["jest.config.ts", "src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.d.ts", "src/**/*.steps.ts", "global.d.ts"]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "esModuleInterop": true,
+    "outDir": "../../dist/out-tsc",
+    "types": ["jest", "node", "vite/client"]
+  },
+  "include": [
+    "jest.config.ts",
+    "src/**/*.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts",
+    "src/global.d.ts",
+    "tests/**/*.steps.js",
+    "tests/**/*.steps.ts"
+  ],
+  "exclude": []
 }

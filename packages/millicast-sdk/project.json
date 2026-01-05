@@ -1,0 +1,22 @@
+{
+    "name": "@millicast/sdk",
+    "targets": {
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+                "{workspaceRoot}/coverage/packages/millicast-sdk"
+            ],
+            "options": {
+                "jestConfig": "packages/millicast-sdk/jest.config.ts",
+                "passWithNoTests": true
+            }
+        },
+        "build": {
+            "executor": "@nx/vite:build",
+            "options": {
+                "outputPath": "packages/millicast-sdk/dist",
+                "configFile": "packages/millicast-sdk/vite.config.ts"
+            }
+        }
+    }
+}

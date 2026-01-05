@@ -1,5 +1,9 @@
+/// <reference types="vite/client" />
+
+import 'vite/client'
 
 declare global {
+  // Fixes the 'createEncodedStreams' errors
   interface RTCRtpSender {
     createEncodedStreams?: () => {
       readable: ReadableStream
@@ -12,5 +16,15 @@ declare global {
       writable: WritableStream
     }
   }
+
+  // Fixes the 'env' does not exist on 'ImportMeta'
+  interface ImportMetaEnv {
+    readonly PACKAGE_VERSION: string
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
 }
+
 export {}
