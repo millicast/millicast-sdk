@@ -38,6 +38,19 @@
         ]
     },
     "targetDefaults": {
+        "build": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "outputs": [
+                "{projectRoot}/dist"
+            ]
+        },
         "@nx/vite:build": {
             "cache": true,
             "dependsOn": [
@@ -46,66 +59,21 @@
             "inputs": [
                 "production",
                 "^production"
+            ],
+            "outputs": [
+                "{projectRoot}/dist"
             ]
         },
         "test": {
+            "cache": true,
             "dependsOn": [
-                "^test"
+                "^build"
             ],
             "inputs": [
-                "{projectRoot}/**/*",
-                "!{projectRoot}/**/*.md"
-            ],
-            "cache": true
-        },
-        "prepare": {
-            "dependsOn": [
-                "^prepare"
-            ],
-            "cache": true
-        },
-        "preview": {
-            "dependsOn": [
-                "^preview"
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
             ]
-        },
-        "build:watch": {
-            "dependsOn": [
-                "^build:watch"
-            ]
-        },
-        "build": {
-            "outputs": [
-                "{projectRoot}//**/dist/*"
-            ],
-            "cache": true,
-            "dependsOn": []
-        },
-        "start": {
-            "dependsOn": []
-        },
-        "build-docs": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "start-docs": {
-            "dependsOn": []
-        },
-        "test-unit": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "test-unit-coverage": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "test-e2e": {
-            "cache": true,
-            "dependsOn": []
-        },
-        "test-all": {
-            "cache": true,
-            "dependsOn": []
         }
     },
     "plugins": [

@@ -20,7 +20,6 @@
     "noImplicitReturns": true,
     "downlevelIteration": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "vite/client"],
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "composite": true
   },

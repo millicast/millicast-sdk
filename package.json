@@ -17,7 +17,7 @@
     ],
     "scripts": {
         "prepare": "nx reset",
-        "build": "nx run-many -t build",
+        "build": "nx run-many -t build --exclude=@nx-millicast/source",
         "build:sdk": "nx build @millicast/sdk --watch",
         "start:projects": "nx run-many -t start --projects=millicast-publisher-demo,millicast-viewer-demo --parallel",
         "start": "nx run-many -t start --projects=@millicast/sdk,millicast-publisher-demo,millicast-viewer-demo --parallel",

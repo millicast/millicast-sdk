@@ -42,8 +42,11 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'millicast',
-      fileName: format => `millicast.${format === 'es' ? 'esm' : format}.js`,
       formats: ['es', 'umd'],
+      fileName: format => {
+        if (format === 'es') return 'millicast.mjs'
+        return 'millicast.umd.js'
+      },
     },
     rollupOptions: {
       external: [

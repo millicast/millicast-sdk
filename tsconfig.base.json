@@ -15,11 +15,12 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "types": ["node"],
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      /* Ensure this key matches your actual package.json name */
-      "@millicast/sdk": ["packages/millicast-sdk/src/index.ts"]
+      "@millicast/sdk": ["packages/millicast-sdk/src/index.ts"],
+      "vite/client": ["node_modules/vite/client.d.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -2,55 +2,56 @@ name: Check tests
 
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
   pull_request:
-    branches:
-      - main
-
-  workflow_dispatch:
+    branches: [main]
 
 jobs:
-  eslint:
+  quality-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: Check Linter and Build 📑
-        run: |
-          npm run build
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+        with:
+          fetch-depth: 0
+      
+      # This identifies the "base" and "head" commits for Nx
+      - name: Derive appropriate SHAs for base and head for affected commands
+        uses: nrwl/nx-set-shas@v4
 
-  unit-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: Unit Testing 🧪
-        working-directory: './packages/millicast-sdk'
-        run: npm run test-unit
+      - name: Setup Node.js & Cache 🧱
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-  e2e-test:
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Nx Affected Checks 🚀
+        # Added --base and --head to ensure pinpoint accuracy
+        run: npx nx affected -t lint test build build-docs --parallel=3
+
+  e2e-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
+        with:
+          fetch-depth: 0
+      
+      - name: Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+      
+      - name: Setup Node.js & Cache 🧱
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
         run: npm ci
-      - name: End-2-End Testing
-        working-directory: './packages/millicast-sdk'
-        run: npm run test-e2e
+
+      - name: Run E2E
+        run: npx nx affected -t test-e2e
         env:
-          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
-          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
-
-  build-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: build docs
-        run: npm run build-docs
+          ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}
