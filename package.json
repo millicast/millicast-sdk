@@ -23,6 +23,7 @@
         "start": "nx run-many -t serve --parallel --maxParallel=100",
         "start-docs": "nx start-docs @millicast/sdk",
         "test": "nx test @millicast/sdk",
+        "test-unit": "nx test @millicast/sdk --testPathPattern='unit'",
         "test-e2e": "nx run-many --target=test-e2e --all --parallel --output-style=stream"
     },
     "dependencies": {
