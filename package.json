@@ -16,15 +16,21 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "nx build @millicast/sdk",
-        "build-docs": "nx build-docs @millicast/sdk",
-        "lint": "nx run @millicast/sdk:lint",
-        "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-        "start": "nx run-many -t serve --parallel --maxParallel=100",
-        "start-docs": "nx start-docs @millicast/sdk",
-        "test": "nx test @millicast/sdk",
+        "prepare": "nx reset",
+        "build": "nx run-many -t build",
+        "build:sdk": "nx build @millicast/sdk --watch",
+        "start:projects": "nx run-many -t start --projects=millicast-publisher-demo,millicast-viewer-demo --parallel",
+        "start": "nx run-many -t start --projects=@millicast/sdk,millicast-publisher-demo,millicast-viewer-demo --parallel",
+        "start-all": "nx run-many -t start --all --parallel",
+        "test": "nx run-many -t test",
         "test-unit": "nx test @millicast/sdk --testPathPattern='unit'",
-        "test-e2e": "nx run-many --target=test-e2e --all --parallel --output-style=stream"
+        "test-e2e": "nx run-many -t test-e2e",
+        "build-docs": "nx run-many -t build-docs",
+        "start-docs": "nx run-many -t start-docs",
+        "publish": "nx release",
+        "lint": "nx lint @millicast/sdk",
+        "lint-fix": "nx lint @millicast/sdk --fix",
+        "lint-all": "nx run-many -t lint"
     },
     "dependencies": {
         "@dolbyio/webrtc-stats": "^1.0.4",
