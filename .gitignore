@@ -12,3 +12,4 @@ test-environment.js
 vite.config.*.timestamp-*
 .nx/
 **/*.tsbuildinfo
+.cache/puppeteer

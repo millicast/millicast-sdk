@@ -46,6 +46,7 @@ defineFeature(feature, test => {
           browser = await puppeteer.launch({
             // executablePath: process.env.CHROME_LOCATION,
             headless: true,
+            executablePath: puppeteer.executablePath(),
             args: [
               '--no-sandbox',
               '--disable-setuid-sandbox',

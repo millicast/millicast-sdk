@@ -25,6 +25,7 @@ defineFeature(feature, test => {
     given('i have a browser opened', async () => {
       browser = await puppeteer.launch({
         headless: true,
+        executablePath: puppeteer.executablePath(),
         args: [
           '--no-sandbox',
           '--use-fake-device-for-media-stream',
@@ -53,6 +54,7 @@ defineFeature(feature, test => {
     given('i have a browser opened and an example page with the Millicast SDK', async () => {
       browser = await puppeteer.launch({
         headless: true,
+        executablePath: puppeteer.executablePath(),
         args: [
           '--no-sandbox',
           '--use-fake-device-for-media-stream',
