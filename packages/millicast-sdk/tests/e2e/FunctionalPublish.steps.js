@@ -10,6 +10,10 @@ const feature = loadFeature('../features/FunctionalPublish.feature', { loadRelat
 jest.setTimeout(50000)
 const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 const streamName = process.env.STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
+
+const startPublisher = () => null
+const startViewer = () => null
+
 const defaultOptions = {
   bandwidth: 0,
   disableVideo: false,
@@ -30,6 +34,7 @@ afterEach(async () => {
 })
 
 defineFeature(feature, test => {
+  // --- EXISTING TEST (RESTORED TO ORIGINAL STYLE) ---
   test('Broadcasting stream', ({ given, when, then }) => {
     let broadcastPage
     let viewerPage
@@ -65,12 +70,11 @@ defineFeature(feature, test => {
 
     when('I broadcast a stream and connect to stream as viewer', async () => {
       await broadcastPage.evaluate(({ options, publishToken, streamName }) => {
-        // Use window prefix to satisfy linter and ensure browser global scope
-        return window.startPublisher(publishToken, streamName, options)
+        return startPublisher(publishToken, streamName, options)
       }, { options, publishToken: process.env.PUBLISH_TOKEN, streamName })
 
       await viewerPage.evaluate(({ streamName, accountId }) => {
-        return window.startViewer(streamName, accountId)
+        return startViewer(streamName, accountId)
       }, { streamName, accountId: process.env.ACCOUNT_ID })
 
       await sleep(3000)
@@ -88,7 +92,6 @@ defineFeature(feature, test => {
     })
   })
 
-  // --- STATS TEST ---
   test('Stats events arrive periodically', ({ given, then }) => {
     let broadcastPage, viewerPage
     given('a broadcaster and a viewer session', async () => {
@@ -98,8 +101,8 @@ defineFeature(feature, test => {
       await broadcastPage.goto(pageLocation)
       await viewerPage.goto(pageLocation)
 
-      await broadcastPage.evaluate(({ token, streamName }) => window.startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
-      await viewerPage.evaluate(({ accountId, streamName }) => window.startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
+      await broadcastPage.evaluate(({ token, streamName }) => startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
+      await viewerPage.evaluate(({ accountId, streamName }) => startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
       await sleep(5000)
     })
 
@@ -111,7 +114,6 @@ defineFeature(feature, test => {
     })
   })
 
-  // --- METADATA TEST ---
   test('Metadata works for h264', ({ given, when, then }) => {
     let broadcastPage, viewerPage
     const testData = 'test-metadata-sei'
@@ -122,8 +124,8 @@ defineFeature(feature, test => {
       viewerPage = await browser.newPage()
       await broadcastPage.goto(pageLocation)
       await viewerPage.goto(pageLocation)
-      await broadcastPage.evaluate(({ token, streamName }) => window.startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
-      await viewerPage.evaluate(({ accountId, streamName }) => window.startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
+      await broadcastPage.evaluate(({ token, streamName }) => startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
+      await viewerPage.evaluate(({ accountId, streamName }) => startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
       await sleep(3000)
     })
 
@@ -138,7 +140,6 @@ defineFeature(feature, test => {
     })
   })
 
-  // --- SIMULCAST TEST ---
   test('Simulcast layer generation', ({ given, when, then }) => {
     let broadcastPage
     given(/^a broadcaster with simulcast enabled and codec (.*)$/, async (codec) => {
@@ -146,7 +147,7 @@ defineFeature(feature, test => {
       broadcastPage = await browser.newPage()
       await broadcastPage.goto(pageLocation)
       await broadcastPage.evaluate(({ token, streamName, codec }) => {
-        return window.startPublisher(token, streamName, { codec, simulcast: true })
+        return startPublisher(token, streamName, { codec, simulcast: true })
       }, { token: process.env.PUBLISH_TOKEN, streamName, codec })
     })
 
