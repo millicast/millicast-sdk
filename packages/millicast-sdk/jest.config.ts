@@ -13,7 +13,11 @@ export default {
     '^.+\\.jsx?$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  testMatch: ['<rootDir>/tests/unit/**/*.steps.js', '<rootDir>/src/**/*.test.ts'],
+  testMatch: [
+    '<rootDir>/tests/unit/**/*.steps.js', 
+    '<rootDir>/src/**/*.test.ts',
+    '<rootDir>/tests/e2e/**/*.steps.js',
+  ],
   resolver: '<rootDir>/../../jest_resolver.cjs',
   coverageDirectory: '../../coverage/packages/millicast-sdk',
 }

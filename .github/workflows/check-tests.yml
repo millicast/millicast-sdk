@@ -36,7 +36,12 @@ jobs:
 
 
       - name: Build affected projects
-        run: npx nx affected -t build build-docs --parallel=3
+        run: npx nx affected -t build --parallel=3
+        timeout-minutes: 10
+        
+      - name: Build documentation
+        run: npx nx affected -t build-docs
+        timeout-minutes: 5
 
 
       - name: Cache dependencies and build artifacts
