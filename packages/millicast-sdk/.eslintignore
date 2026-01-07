@@ -3,3 +3,5 @@ package.json
 dist/**
 *.config.js
 *.steps.js
+docs/**
+docs-translations/**

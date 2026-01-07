@@ -10,8 +10,6 @@ const feature = loadFeature('../features/FunctionalPublish.feature', { loadRelat
 jest.setTimeout(50000)
 const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
 const streamName = process.env.STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
-const startPublisher = () => null
-const startViewer = () => null
 const defaultOptions = {
   bandwidth: 0,
   disableVideo: false,
@@ -41,104 +39,129 @@ defineFeature(feature, test => {
     let options
 
     given(/^a page with view options and a page with broadcaster options and codec (.*)$/, async (codec) => {
-      try {
-        if (!browser) {
-          browser = await puppeteer.launch({
-            // executablePath: process.env.CHROME_LOCATION,
-            headless: true,
-            executablePath: puppeteer.executablePath(),
-            args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',
-              '--disable-gpu',
-              '--use-fake-ui-for-media-stream',
-              '--use-fake-device-for-media-stream',
-              '--allow-file-access-from-files'
-            ]
-          })
-        }
-        broadcastPage = await browser.newPage()
-        viewerPage = await browser.newPage()
-
-        // Add page error listeners
-        broadcastPage.on('pageerror', err => console.error('Broadcast page error:', err.message))
-        viewerPage.on('pageerror', err => console.error('Viewer page error:', err.message))
-
-        await broadcastPage.goto(pageLocation)
-        await viewerPage.goto(pageLocation)
-        options = {
-          ...defaultOptions,
-          codec
-        }
-      } catch (error) {
-        console.error(`Failed to setup pages for codec ${codec}:`, error.message)
-        throw error
+      if (!browser) {
+        browser = await puppeteer.launch({
+          headless: true,
+          executablePath: puppeteer.executablePath(),
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            '--allow-file-access-from-files'
+          ]
+        })
       }
+      broadcastPage = await browser.newPage()
+      viewerPage = await browser.newPage()
+      broadcastPage.on('pageerror', err => console.error('Broadcast page error:', err.message))
+      viewerPage.on('pageerror', err => console.error('Viewer page error:', err.message))
+      await broadcastPage.goto(pageLocation)
+      await viewerPage.goto(pageLocation)
+      options = { ...defaultOptions, codec }
     })
 
     when('I broadcast a stream and connect to stream as viewer', async () => {
-      try {
-        await broadcastPage.evaluate(({ options, publishToken, streamName, accountId }) => {
-          window.ENV = {
-            PUBLISH_TOKEN: publishToken,
-            STREAM_NAME: streamName,
-            ACCOUNT_ID: accountId
-          }
-          console.log('Environment check:', {
-            publishToken: publishToken ? 'SET' : 'MISSING',
-            accountId: accountId ? 'SET' : 'MISSING',
-            streamName
-          })
-          return startPublisher(publishToken, streamName, options)
-        }, {
-          options,
-          publishToken: process.env.PUBLISH_TOKEN,
-          streamName,
-          accountId: process.env.ACCOUNT_ID
-        })
+      await broadcastPage.evaluate(({ options, publishToken, streamName }) => {
+        // Use window prefix to satisfy linter and ensure browser global scope
+        return window.startPublisher(publishToken, streamName, options)
+      }, { options, publishToken: process.env.PUBLISH_TOKEN, streamName })
 
-        await viewerPage.evaluate(({ streamName, accountId }) => {
-          window.ENV = {
-            STREAM_NAME: streamName,
-            ACCOUNT_ID: accountId
-          }
-          console.log('Environment check:', {
-            accountId: accountId ? 'SET' : 'MISSING',
-            streamName
-          })
-          return startViewer(streamName, accountId)
-        }, {
-          streamName,
-          accountId: process.env.ACCOUNT_ID
-        })
+      await viewerPage.evaluate(({ streamName, accountId }) => {
+        return window.startViewer(streamName, accountId)
+      }, { streamName, accountId: process.env.ACCOUNT_ID })
 
-        await sleep(3000)
-
-        isActive = await broadcastPage.evaluate('window.publish.isActive()')
-        videoFrame1 = await viewerPage.evaluate('getVideoPixelSums()')
-        await sleep(500)
-        videoFrame2 = await viewerPage.evaluate('getVideoPixelSums()')
-      } catch (error) {
-        console.error('Failed to setup streaming:', error.message)
-
-        await broadcastPage.screenshot({ path: `debug-broadcast-${Date.now()}.png` })
-        await viewerPage.screenshot({ path: `debug-viewer-${Date.now()}.png` })
-
-        throw error
-      }
+      await sleep(3000)
+      isActive = await broadcastPage.evaluate('window.publish.isActive()')
+      videoFrame1 = await viewerPage.evaluate('getVideoPixelSums()')
+      await sleep(500)
+      videoFrame2 = await viewerPage.evaluate('getVideoPixelSums()')
     })
+
     then('broadcast is active and Viewer receive video data', async () => {
-      try {
-        expect(isActive).toBeTruthy()
-        expect(videoFrame1).not.toBe(0)
-        expect(videoFrame2).not.toBe(0)
-        expect(videoFrame1).not.toEqual(videoFrame2)
-      } catch (error) {
-        console.error('Stream verification failed:', error.message)
-        console.log('Debug info:', { isActive, videoFrame1, videoFrame2 })
-        throw error
-      }
+      expect(isActive).toBeTruthy()
+      expect(videoFrame1).not.toBe(0)
+      expect(videoFrame2).not.toBe(0)
+      expect(videoFrame1).not.toEqual(videoFrame2)
+    })
+  })
+
+  // --- STATS TEST ---
+  test('Stats events arrive periodically', ({ given, then }) => {
+    let broadcastPage, viewerPage
+    given('a broadcaster and a viewer session', async () => {
+      if (!browser) browser = await puppeteer.launch({ headless: true, executablePath: puppeteer.executablePath(), args: ['--no-sandbox', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--allow-file-access-from-files'] })
+      broadcastPage = await browser.newPage()
+      viewerPage = await browser.newPage()
+      await broadcastPage.goto(pageLocation)
+      await viewerPage.goto(pageLocation)
+
+      await broadcastPage.evaluate(({ token, streamName }) => window.startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
+      await viewerPage.evaluate(({ accountId, streamName }) => window.startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
+      await sleep(5000)
+    })
+
+    then('both clients receive stats events from the SDK', async () => {
+      const pubStats = await broadcastPage.evaluate('window.pubStatsCount')
+      const viewStats = await viewerPage.evaluate('window.viewStatsCount')
+      expect(pubStats).toBeGreaterThan(0)
+      expect(viewStats).toBeGreaterThan(0)
+    })
+  })
+
+  // --- METADATA TEST ---
+  test('Metadata works for h264', ({ given, when, then }) => {
+    let broadcastPage, viewerPage
+    const testData = 'test-metadata-sei'
+
+    given('a broadcaster using h264 and a viewer', async () => {
+      if (!browser) browser = await puppeteer.launch({ headless: true, executablePath: puppeteer.executablePath(), args: ['--no-sandbox', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--allow-file-access-from-files'] })
+      broadcastPage = await browser.newPage()
+      viewerPage = await browser.newPage()
+      await broadcastPage.goto(pageLocation)
+      await viewerPage.goto(pageLocation)
+      await broadcastPage.evaluate(({ token, streamName }) => window.startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
+      await viewerPage.evaluate(({ accountId, streamName }) => window.startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
+      await sleep(3000)
+    })
+
+    when('the publisher sends a metadata payload', async () => {
+      await broadcastPage.evaluate((data) => window.publish.sendMetadata(data), testData)
+      await sleep(2000)
+    })
+
+    then('the viewer receives the matching metadata event', async () => {
+      const received = await viewerPage.evaluate('window.lastReceivedMetadata')
+      expect(received).toBeTruthy()
+    })
+  })
+
+  // --- SIMULCAST TEST ---
+  test('Simulcast layer generation', ({ given, when, then }) => {
+    let broadcastPage
+    given(/^a broadcaster with simulcast enabled and codec (.*)$/, async (codec) => {
+      if (!browser) browser = await puppeteer.launch({ headless: true, executablePath: puppeteer.executablePath(), args: ['--no-sandbox', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--allow-file-access-from-files'] })
+      broadcastPage = await browser.newPage()
+      await broadcastPage.goto(pageLocation)
+      await broadcastPage.evaluate(({ token, streamName, codec }) => {
+        return window.startPublisher(token, streamName, { codec, simulcast: true })
+      }, { token: process.env.PUBLISH_TOKEN, streamName, codec })
+    })
+
+    when('the stream is active', async () => {
+      await sleep(6000)
+    })
+
+    then('the publisher reports multiple active simulcast layers', async () => {
+      const layers = await broadcastPage.evaluate(async () => {
+        const stats = await window.publish.getRTCPeerConnection().getStats()
+        let count = 0
+        stats.forEach(r => { if (r.type === 'outbound-rtp' && r.kind === 'video') count++ })
+        return count
+      })
+      expect(layers).toBeGreaterThan(1)
     })
   })
 })
