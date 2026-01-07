@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { nodePolyfills } from 'vite-plugin-node-polyfills' 
 import { resolve } from 'path'
 import pkg from './package.json'
 
@@ -11,6 +12,9 @@ export default defineConfig({
   },
 
   plugins: [
+    nodePolyfills({
+      include: ['events'],
+    }),
     dts({
       tsconfigPath: resolve(__dirname, 'tsconfig.json'),
       outDir: './dist',
@@ -49,31 +53,9 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: [
-        'events',
-        're-emitter',
-        'transaction-manager',
-        'jwt-decode',
-        'js-base64',
-        'valibot',
-        'js-logger',
-        '@dolbyio/webrtc-stats',
-        'ua-parser-js',
-        'semantic-sdp',
-      ],
+      external: [],
       output: {
-        globals: {
-          events: 'events',
-          're-emitter': 'reemit',
-          'transaction-manager': 'TransactionManager',
-          'jwt-decode': 'jwtDecode',
-          'js-base64': 'jsBase64',
-          valibot: 'v',
-          'js-logger': 'Logger',
-          '@dolbyio/webrtc-stats': 'WebRTCStats',
-          'ua-parser-js': 'UAParser',
-          'semantic-sdp': 'semanticSdp',
-        },
+        globals: {},
       },
     },
   },

@@ -3,6 +3,9 @@
     "targets": {
         "test": {
             "executor": "@nx/jest:jest",
+            "dependsOn": [
+                "build"
+            ],
             "outputs": [
                 "{workspaceRoot}/coverage/packages/millicast-sdk"
             ],
@@ -13,6 +16,9 @@
         },
         "build": {
             "executor": "@nx/vite:build",
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
                 "outputPath": "packages/millicast-sdk/dist",
                 "configFile": "packages/millicast-sdk/vite.config.ts"

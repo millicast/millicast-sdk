@@ -9,7 +9,7 @@
     "importHelpers": true,
     "esModuleInterop": true,
     "outDir": "../../dist/out-tsc",
-    "types": ["jest", "node", "vite/client"]
+    "types": ["jest", "node", "vite/client", "puppeteer"]
   },
   "include": [
     "jest.config.ts",
