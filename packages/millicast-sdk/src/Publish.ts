@@ -65,7 +65,7 @@ export default class Publish extends BaseWebRTC {
       )
     }
     if (!tokenGenerator) {
-      throw new Error('Token generator is required for the construction of this module')
+      throw new Error('Token generator is required to construct this module.')
     }
     super(tokenGenerator, logger, autoReconnect)
   }
@@ -357,6 +357,11 @@ let connectOptionsSchema:
   | undefined
 
 const validateConnectOptions = (options: PublishConnectOptions): void => {
+  // Define safe references to prevent ReferenceErrors in Node environment
+  const SafeMediaStream = typeof MediaStream !== 'undefined' ? v.instance(MediaStream) : v.any()
+  const SafeMediaStreamTrack =
+    typeof MediaStreamTrack !== 'undefined' ? v.instance(MediaStreamTrack) : v.any()
+
   connectOptionsSchema =
     connectOptionsSchema ||
     v.looseObject({
@@ -365,7 +370,7 @@ const validateConnectOptions = (options: PublishConnectOptions): void => {
       dtx: v.optional(v.boolean()),
       absCaptureTime: v.optional(v.boolean()),
       dependencyDescriptor: v.optional(v.boolean()),
-      mediaStream: v.union([v.instance(MediaStream), v.array(v.instance(MediaStreamTrack)), v.null()]),
+      mediaStream: v.union([SafeMediaStream, v.array(SafeMediaStreamTrack), v.null()]),
       bandwidth: v.optional(v.number()),
       metadata: v.optional(v.boolean()),
       disableVideo: v.optional(v.boolean()),
@@ -383,6 +388,8 @@ const validateConnectOptions = (options: PublishConnectOptions): void => {
       events: v.optional(v.array(v.picklist(['active', 'inactive', 'viewercount']))),
       priority: v.optional(v.number()),
     })
+
   const { success, issues } = v.safeParse(connectOptionsSchema, options)
   if (!success) logger.warn(new v.ValiError(issues), options)
 }
+

@@ -13,4 +13,3 @@ packages/millicast-multiview-demo
 /**/rtc-drm-transform.js
 /**/rtc-drm-transform.min.js
 packages/millicast-sdk/rollup.config.js
-**/*.steps.js

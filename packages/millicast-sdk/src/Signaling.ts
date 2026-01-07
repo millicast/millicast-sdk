@@ -3,7 +3,6 @@ import TransactionManager from 'transaction-manager'
 import Logger from './Logger'
 import SdpParser from './utils/SdpParser'
 import { VideoCodec } from './types/Codecs.types'
-import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
 import {
   SignalingSubscribeOptions,
@@ -13,6 +12,7 @@ import {
   PublishCmd,
   PublishResponse,
 } from './types/Signaling.types'
+import { extractSupportedVideoCodecs } from './utils/RTCCodec'
 
 const logger = Logger.get('Signaling')
 
@@ -286,77 +286,101 @@ export default class Signaling extends EventEmitter {
 
     logger.info(`Starting publishing to streamName: ${this.streamName}, codec: ${optionsParsed.codec}`)
     logger.debug('Publishing local description: ', sdp)
-    // @ts-expect-error - PeerConnection not yet migrated to TS
-    const supportedVideoCodecs = PeerConnection.getCapabilities?.('video')?.codecs?.map((cdc: { codec: VideoCodec }) => cdc.codec) ?? []
 
-    const videoCodecs = Object.values(VideoCodec)
-    if (videoCodecs.indexOf(optionsParsed.codec) === -1) {
-      logger.error(`Invalid codec ${optionsParsed.codec}. Possible values are: `, videoCodecs)
-      throw new Error(`Invalid codec ${optionsParsed.codec}. Possible values are: ${videoCodecs}`)
-    }
+    // Validate codec
+    this.validateCodec(optionsParsed.codec)
 
-    if (supportedVideoCodecs.length > 0 && supportedVideoCodecs.indexOf(optionsParsed.codec) === -1) {
-      logger.error(`Unsupported codec ${optionsParsed.codec}. Possible values are: `, supportedVideoCodecs)
-      throw new Error(
-        `Unsupported codec ${optionsParsed.codec}. Possible values are: ${supportedVideoCodecs}`
-      )
-    }
-
-    // Signaling server only recognizes 'AV1' and not 'AV1X'
-    if (optionsParsed.codec === VideoCodec.AV1) {
-      sdp = SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
-    }
+    // Handle AV1/AV1X conversion for signaling server
+    const processedSdp = this.handleAV1Codec(sdp, optionsParsed.codec)
 
     const data: PublishCmd = {
       ...optionsParsed,
-      sdp,
+      sdp: processedSdp,
     }
 
-    if (optionsParsed.priority !== undefined) {
-      if (
-        Number.isInteger(optionsParsed.priority) &&
-        optionsParsed.priority >= -2147483648 &&
-        optionsParsed.priority <= 2147483647
-      ) {
-        data.priority = optionsParsed.priority
+    this.validatePriority(optionsParsed.priority, data)
+
+    try {
+      if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
+        throw new Error('Not attempting to connect as video and audio are disabled')
+      }
+
+      await this.connect()
+      logger.info('Sending publish command')
+      const result = (await this.transactionManager!.cmd('publish', data)) as PublishResponse
+
+      // Convert response SDP back to AV1X if browser supports it
+      result.sdp = this.handleAV1Response(result.sdp, optionsParsed.codec)
+
+      logger.info('Command sent, publisherId: ', result.publisherId)
+      logger.debug('Command result: ', result)
+
+      this.updateServerInfo(result)
+      this.updateDiagnostics(result)
+
+      return result.sdp
+    } catch (e) {
+      logger.error('Error sending publish command, error: ', e)
+      throw e
+    }
+  }
+
+  private validateCodec (codec: VideoCodec): void {
+    const videoCodecs = Object.values(VideoCodec)
+    if (!videoCodecs.includes(codec)) {
+      logger.error(`Invalid codec ${codec}. Possible values are: `, videoCodecs)
+      throw new Error(`Invalid codec ${codec}. Possible values are: ${videoCodecs}`)
+    }
+
+    const supportedVideoCodecs = extractSupportedVideoCodecs(RTCRtpSender.getCapabilities?.('video'))
+
+    if (supportedVideoCodecs.length > 0 && !supportedVideoCodecs.includes(codec)) {
+      logger.error(`Unsupported codec ${codec}. Possible values are: `, supportedVideoCodecs)
+      throw new Error(`Unsupported codec ${codec}. Possible values are: ${supportedVideoCodecs}`)
+    }
+  }
+
+  private handleAV1Codec (sdp: string, codec: VideoCodec): string {
+    // Signaling server only recognizes 'AV1' and not 'AV1X'
+    if (codec === VideoCodec.AV1) {
+      return SdpParser.adaptCodecName(sdp, 'AV1X', VideoCodec.AV1)
+    }
+    return sdp
+  }
+
+  private handleAV1Response (sdp: string, codec: VideoCodec): string {
+    if (codec === VideoCodec.AV1) {
+      // If browser supports AV1X, we change from AV1 to AV1X
+      const supportsAV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.some(
+        codec => codec.mimeType === 'video/AV1X'
+      )
+      return supportsAV1X ? SdpParser.adaptCodecName(sdp, VideoCodec.AV1, 'AV1X') : sdp
+    }
+    return sdp
+  }
+
+  private validatePriority (priority: number | undefined, data: PublishCmd): void {
+    if (priority !== undefined) {
+      if (Number.isInteger(priority) && priority >= -2147483648 && priority <= 2147483647) {
+        data.priority = priority
       } else {
         throw new Error(
           'Invalid value for priority option. It should be a decimal integer between the range [-2^31, +2^31 - 1]'
         )
       }
     }
+  }
 
-    try {
-      if (optionsParsed.disableVideo && optionsParsed.disableAudio) {
-        throw new Error('Not attempting to connect as video and audio are disabled')
-      }
-      await this.connect()
-      logger.info('Sending publish command')
-      const result = (await this.transactionManager!.cmd('publish', data)) as PublishResponse
+  private updateServerInfo (result: PublishResponse): void {
+    this.serverId = result.publisherId
+    this.clusterId = result.clusterId
+  }
 
-      if (optionsParsed.codec === VideoCodec.AV1) {
-        // If browser supports AV1X, we change from AV1 to AV1X
-        const AV1X = RTCRtpSender.getCapabilities?.('video')?.codecs?.find?.(
-          codec => codec.mimeType === 'video/AV1X'
-        )
-        result.sdp = AV1X ? SdpParser.adaptCodecName(result.sdp, VideoCodec.AV1, 'AV1X') : result.sdp
-      }
-
-      logger.info('Command sent, publisherId: ', result.publisherId)
-      logger.debug('Command result: ', result)
-      this.serverId = result.publisherId
-      this.clusterId = result.clusterId
-
-      // Save for diagnostics
-      Diagnostics.initStreamName(this.streamName ?? "Not defined")
-      Diagnostics.initSubscriberId(this.serverId)
-      Diagnostics.initFeedId(result.feedId)
-      Diagnostics.setClusterId(this.clusterId)
-      return result.sdp
-    } catch (e) {
-      logger.error('Error sending publish command, error: ', e)
-      throw e
-    }
+  private updateDiagnostics (result: PublishResponse): void {
+    Diagnostics.initStreamName(this.streamName ?? 'Not defined')
+    Diagnostics.initSubscriberId(this.serverId ?? 'unknown')
+    Diagnostics.initFeedId(result.feedId ?? 'unknown')
+    Diagnostics.setClusterId(this.clusterId ?? 'unknown')
   }
 
   /**

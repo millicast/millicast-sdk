@@ -319,6 +319,7 @@ export default class View extends BaseWebRTC {
       logger.error('Error while subscribing. Subscriber data required')
       throw new Error('Subscriber data required')
     }
+
     const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT
     this.streamName = decodedJWT['millicast'].streamName
     const signalingInstance = new Signaling({
@@ -346,7 +347,7 @@ export default class View extends BaseWebRTC {
 
     if (this.options?.metadata) {
       if (!this.worker) {
-        this.worker = new TransformWorker();
+        this.worker = new TransformWorker()
       }
       this.worker.onmessage = message => {
         if (message.data.event === 'metadata') {
@@ -484,7 +485,7 @@ export default class View extends BaseWebRTC {
             )
           }
           if (!this.worker) {
-            this.worker = new TransformWorker();
+            this.worker = new TransformWorker()
           }
           this.worker.addEventListener('message', message => {
             if (message.data.event === 'complete') {
