@@ -115,7 +115,9 @@ jobs:
             .nx/cache
           key: ${{ runner.os }}-build-${{ github.sha }}
 
-
+      - name: Install Puppeteer Chrome
+        run: npx -y puppeteer browsers install chrome
+        
       - name: Run E2E Tests
         run: npm run test-e2e
         env:
