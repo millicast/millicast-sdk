@@ -7,16 +7,18 @@ on:
     branches: [main]
 
 jobs:
-  quality-checks:
+  install-and-build:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      # This identifies the "base" and "head" commits for Nx
+
+
       - name: Derive appropriate SHAs for base and head for affected commands
         uses: nrwl/nx-set-shas@v4
+
 
       - name: Setup Node.js & Cache 🧱
         uses: actions/setup-node@v4
@@ -24,35 +26,92 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Build and Tests
-        run: npx nx affected -t test build build-docs --parallel=3
 
       - name: Lint SDK Only
         run: npx nx lint @millicast/sdk
 
-  e2e-tests:
+
+      - name: Build affected projects
+        run: npx nx affected -t build build-docs --parallel=3
+
+
+      - name: Cache dependencies and build artifacts
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            node_modules
+            dist
+            .nx/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+  unit-tests:
+    needs: install-and-build
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
+
       - name: Derive appropriate SHAs
         uses: nrwl/nx-set-shas@v4
-      
-      - name: Setup Node.js & Cache 🧱
+
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
 
-      - name: Run E2E
+      - name: Restore dependencies and build artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            node_modules
+            dist
+            .nx/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+
+      - name: Run Unit Tests
+        run: npx nx affected -t test --parallel=3
+
+  e2e-tests:
+    needs: install-and-build
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+
+      - name: Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+
+      - name: Restore dependencies and build artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            node_modules
+            dist
+            .nx/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+
+      - name: Run E2E Tests
         run: npx nx affected -t test-e2e
         env:
           ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
