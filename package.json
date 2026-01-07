@@ -24,7 +24,7 @@
         "start-all": "nx run-many -t start --all --parallel",
         "test": "nx run-many -t test",
         "test-unit": "nx test @millicast/sdk --testPathPattern='unit'",
-        "test-e2e": "nx test @millicast/sdk --testPathPattern='e2e'",
+        "test-e2e": "nx test @millicast/sdk --testPathPattern='e2e' --skip-nx-cache",
         "build-docs": "nx run @millicast/sdk:build-docs",
         "start-docs": "nx run-many -t start-docs",
         "publish": "nx release",
