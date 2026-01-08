@@ -19,7 +19,10 @@
          const mediaStream=await navigator.mediaDevices.getUserMedia({audio: true, video: true});
          document.getElementById('my-video').srcObject=mediaStream;
 
-         await publish.connect({...options, mediaStream});
+         await publish.connect({
+            ...options,
+            mediaStream
+         });
          window.publish=publish;
       }
 
@@ -40,7 +43,13 @@
                if (video.currentTime>1) resolve();
             });
             view.on('track', (event) => {video.srcObject=event.streams[0];});
-            view.connect({metadata: true});
+            view.connect({
+               metadata: true, metadata: true,
+               peerConfig: {
+                  autoInitStats: true,
+                  statsIntervalMs: 1000,
+               },
+            });
             window.view=view;
          })
       }

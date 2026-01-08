@@ -34,7 +34,6 @@ afterEach(async () => {
 })
 
 defineFeature(feature, test => {
-  // --- EXISTING TEST (RESTORED TO ORIGINAL STYLE) ---
   test('Broadcasting stream', ({ given, when, then }) => {
     let broadcastPage
     let viewerPage
@@ -95,15 +94,35 @@ defineFeature(feature, test => {
   test('Stats events arrive periodically', ({ given, then }) => {
     let broadcastPage, viewerPage
     given('a broadcaster and a viewer session', async () => {
-      if (!browser) browser = await puppeteer.launch({ headless: true, executablePath: puppeteer.executablePath(), args: ['--no-sandbox', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--allow-file-access-from-files'] })
+      if (!browser) {
+        browser = await puppeteer.launch({
+          headless: true,
+          executablePath: puppeteer.executablePath(),
+          args: [
+            '--no-sandbox',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            '--allow-file-access-from-files'
+          ]
+        })
+      }
       broadcastPage = await browser.newPage()
       viewerPage = await browser.newPage()
       await broadcastPage.goto(pageLocation)
       await viewerPage.goto(pageLocation)
 
-      await broadcastPage.evaluate(({ token, streamName }) => startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
+      await broadcastPage.evaluate(({ token, streamName }) => startPublisher(token, streamName, {
+        codec: 'h264',
+        metadata: true,
+        simulcast: true,
+        peerConfig: {
+          autoInitStats: true,
+          statsIntervalMs: 1000
+        }
+      }
+      ), { token: process.env.PUBLISH_TOKEN, streamName })
       await viewerPage.evaluate(({ accountId, streamName }) => startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
-      await sleep(5000)
+      await sleep(8000)
     })
 
     then('both clients receive stats events from the SDK', async () => {
@@ -119,19 +138,38 @@ defineFeature(feature, test => {
     const testData = 'test-metadata-sei'
 
     given('a broadcaster using h264 and a viewer', async () => {
-      if (!browser) browser = await puppeteer.launch({ headless: true, executablePath: puppeteer.executablePath(), args: ['--no-sandbox', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--allow-file-access-from-files'] })
+      if (!browser) {
+        browser = await puppeteer.launch({
+          headless: true,
+          executablePath: puppeteer.executablePath(),
+          args: [
+            '--no-sandbox',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            '--allow-file-access-from-files'
+          ]
+        })
+      }
       broadcastPage = await browser.newPage()
       viewerPage = await browser.newPage()
       await broadcastPage.goto(pageLocation)
       await viewerPage.goto(pageLocation)
-      await broadcastPage.evaluate(({ token, streamName }) => startPublisher(token, streamName, { codec: 'h264' }), { token: process.env.PUBLISH_TOKEN, streamName })
+      await broadcastPage.evaluate(({ token, streamName }) => startPublisher(token, streamName, {
+        codec: 'h264',
+        metadata: true,
+        simulcast: true,
+        peerConfig: {
+          autoInitStats: true,
+          statsIntervalMs: 1000
+        }
+      }), { token: process.env.PUBLISH_TOKEN, streamName })
       await viewerPage.evaluate(({ accountId, streamName }) => startViewer(streamName, accountId), { accountId: process.env.ACCOUNT_ID, streamName })
       await sleep(3000)
     })
 
     when('the publisher sends a metadata payload', async () => {
       await broadcastPage.evaluate((data) => window.publish.sendMetadata(data), testData)
-      await sleep(2000)
+      await sleep(4000)
     })
 
     then('the viewer receives the matching metadata event', async () => {
