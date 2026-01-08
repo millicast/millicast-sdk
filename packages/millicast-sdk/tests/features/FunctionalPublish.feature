@@ -30,4 +30,3 @@ Feature: As a developer I want to publish a stream so i can ensure its working c
     | Codec |
     | h264  |
     | vp8   |
-    | vp9   |

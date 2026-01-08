@@ -193,6 +193,7 @@ defineFeature(feature, test => {
   test('Simulcast layer generation', ({ given, when, then }) => {
     let broadcastPage
     given(/^a broadcaster with simulcast enabled and codec (.*)$/, async (codec) => {
+      console.log('Running simulcast layer generation test for ', codec)
       if (!browser) {
         browser = await puppeteer.launch({
           headless: true,
