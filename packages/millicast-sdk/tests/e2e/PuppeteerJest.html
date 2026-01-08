@@ -14,9 +14,17 @@
          const tokenGenerator=() => millicast.Director.getPublisher(publishToken, streamName);
          const publish=new millicast.Publish(undefined, tokenGenerator);
 
-         publish.on('stats', () => {window.pubStatsCount++;});
+         publish.webRTCPeer.on('stats', () => {window.pubStatsCount++;});
 
-         const mediaStream=await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+         const mediaStream=await navigator.mediaDevices.getUserMedia(
+            {
+               audio: true,
+               video: {
+                  width: {ideal: 1280},
+                  height: {ideal: 720}
+               }
+            }
+         );
          document.getElementById('my-video').srcObject=mediaStream;
 
          await publish.connect({
@@ -27,31 +35,60 @@
       }
 
       const startViewer=(streamName, accountId) => {
-         return new Promise(resolve => {
+         return new Promise((resolve, reject) => {
             const millicast=window.millicast;
             const video=document.getElementById('my-video');
-            const tokenGenerator=() => millicast.Director.getSubscriber({
-               streamName: streamName,
-               streamAccountId: accountId
-            });
-            const view=new millicast.View(undefined, tokenGenerator);
+            const tokenGenerator=() => millicast.Director.getSubscriber(streamName, accountId);
 
-            view.on('stats', () => {window.viewStatsCount++;});
-            view.on('metadata', (data) => {window.lastReceivedMetadata=data;});
+            const view=new millicast.View(streamName, tokenGenerator);
+            window.view=view;
 
-            video.addEventListener('timeupdate', () => {
-               if (video.currentTime>1) resolve();
+            view.webRTCPeer.on('stats', () => {
+               window.viewStatsCount++;
             });
-            view.on('track', (event) => {video.srcObject=event.streams[0];});
+
+            view.on('metadata', (data) => {
+               window.lastReceivedMetadata=data;
+            });
+
+            view.on("broadcastEvent", async (event) => {
+               const {name, data}=event;
+               if (name==="active") {
+                  const tracksMapping = data.tracks.map(track => ({
+                        ...track,
+                        mediaId: track.media === "video" ? "0" : "1"
+                     }
+                  ));
+                  try {
+                     await view.project(data.sourceId, tracksMapping);
+                  } catch (e) {
+                     console.error("Project failed", e);
+                  }
+               }
+            });
+
+            view.on("track", (event) => {
+               if (event.track.kind==="video") {
+                  video.srcObject=event.streams[0];
+
+                  video.onplaying=() => {
+                     console.log("Video is playing, resolving promise");
+                     resolve();
+                  };
+               }
+            });
+
+            // Set a timeout so the test doesn't hang forever if projection fails
+            setTimeout(() => reject(new Error("Viewer connection timeout")), 15000);
+
             view.connect({
-               metadata: true, metadata: true,
+               metadata: true,
                peerConfig: {
                   autoInitStats: true,
-                  statsIntervalMs: 1000,
-               },
-            });
-            window.view=view;
-         })
+                  statsIntervalMs: 1000
+               }
+            }).catch(reject);
+         });
       }
 
       const getVideoPixelSums=() => {

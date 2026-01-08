@@ -24,6 +24,18 @@ const defaultOptions = {
 let browser = null
 const sleep = ms => new Promise(function (resolve) { setTimeout(resolve, ms) })
 
+const waitForCondition = async (page, expression, timeout = 15000) => {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    const result = await page.evaluate(expression)
+    if (result) {
+      return result
+    }
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
+  return await page.evaluate(expression)
+}
+
 afterEach(async () => {
   if (browser) {
     const pages = await browser.pages()
@@ -76,13 +88,11 @@ defineFeature(feature, test => {
         return startViewer(streamName, accountId)
       }, { streamName, accountId: process.env.ACCOUNT_ID })
 
-      await sleep(3000)
       isActive = await broadcastPage.evaluate('window.publish.isActive()')
       videoFrame1 = await viewerPage.evaluate('getVideoPixelSums()')
-      await sleep(500)
+      await sleep(1000)
       videoFrame2 = await viewerPage.evaluate('getVideoPixelSums()')
     })
-
     then('broadcast is active and Viewer receive video data', async () => {
       expect(isActive).toBeTruthy()
       expect(videoFrame1).not.toBe(0)
@@ -146,7 +156,9 @@ defineFeature(feature, test => {
             '--no-sandbox',
             '--use-fake-ui-for-media-stream',
             '--use-fake-device-for-media-stream',
-            '--allow-file-access-from-files'
+            '--allow-file-access-from-files',
+            '--disable-dev-shm-usage',
+            '--autoplay-policy=no-user-gesture-required'
           ]
         })
       }
@@ -181,26 +193,53 @@ defineFeature(feature, test => {
   test('Simulcast layer generation', ({ given, when, then }) => {
     let broadcastPage
     given(/^a broadcaster with simulcast enabled and codec (.*)$/, async (codec) => {
-      if (!browser) browser = await puppeteer.launch({ headless: true, executablePath: puppeteer.executablePath(), args: ['--no-sandbox', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--allow-file-access-from-files'] })
+      if (!browser) {
+        browser = await puppeteer.launch({
+          headless: true,
+          executablePath: puppeteer.executablePath(),
+          args: [
+            '--no-sandbox',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            '--allow-file-access-from-files',
+            '--disable-dev-shm-usage',
+            '--autoplay-policy=no-user-gesture-required'
+          ]
+        })
+      }
       broadcastPage = await browser.newPage()
       await broadcastPage.goto(pageLocation)
       await broadcastPage.evaluate(({ token, streamName, codec }) => {
-        return startPublisher(token, streamName, { codec, simulcast: true })
+        return startPublisher(token, streamName, {
+          codec,
+          simulcast: true,
+          metadata: true
+        })
       }, { token: process.env.PUBLISH_TOKEN, streamName, codec })
     })
 
     when('the stream is active', async () => {
-      await sleep(6000)
+      await waitForCondition(broadcastPage, 'window.publish.isActive()')
     })
 
     then('the publisher reports multiple active simulcast layers', async () => {
-      const layers = await broadcastPage.evaluate(async () => {
-        const stats = await window.publish.getRTCPeerConnection().getStats()
-        let count = 0
-        stats.forEach(r => { if (r.type === 'outbound-rtp' && r.kind === 'video') count++ })
-        return count
-      })
-      expect(layers).toBeGreaterThan(1)
+      const layersFound = await waitForCondition(broadcastPage, `
+        (async () => {
+          const pc = window.publish?.getRTCPeerConnection();
+          if (!pc) return false;          
+          const stats = await pc.getStats();
+          let count = 0;
+          stats.forEach(r => { 
+            // We check for outbound-rtp video. count > 1 means simulcast is working.
+            if (r.type === 'outbound-rtp' && r.kind === 'video' && r.bytesSent > 0) {
+                count++;
+            }
+          });
+          return count > 1 ? count : false;
+        })()
+  `.trim(), 30000) // Give CI 30 seconds to initialize the layers
+
+      expect(layersFound).toBeGreaterThan(1)
     })
   })
 })
