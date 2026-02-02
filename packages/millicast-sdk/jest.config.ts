@@ -3,6 +3,7 @@ export default {
   displayName: 'millicast-sdk',
   preset: '../../jest.preset.js',
   testEnvironment: 'jsdom',
+  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|steps).[jt]s?(x)'],
   clearMocks: true,
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],

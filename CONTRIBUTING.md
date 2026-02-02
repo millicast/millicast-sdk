@@ -168,9 +168,15 @@ If you only want to run E2E tests, in the command line run:
 npm run test-e2e
 ```
 
+NOTE: on Windows, the `--testMatch` param that is used to isolate tests down to a directory will not work. Instead run all tests:
+
+```sh
+npm run test
+```
+
 ### Building docs
 
-The SDK documentation is written with [JSDcos](https://jsdoc.app/). To build the HTML documentation, run:
+The SDK documentation is written with [JSDocs](https://jsdoc.app/). To build the HTML documentation, run:
 
 ```sh
 npx lerna run build-docs

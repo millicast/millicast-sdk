@@ -23,7 +23,7 @@
     "test-unit": "npm run build && jest --testMatch '**/unit/*.steps.js'",
     "test-unit-coverage": "npm run build && jest --testMatch '**/unit/*.steps.js' --coverage",
     "test-e2e": "npm run build && jest --testMatch '**/e2e/*.steps.js'",
-    "test-all": "npm run build && jest --testMatch '**/*.steps.js'",
+    "test-all": "npm run build && jest",
     "test": "npm run test-all"
   },
   "babel": {
@@ -49,5 +49,7 @@
     "type": "git",
     "url": "git+https://github.com/millicast/millicast-sdk.git"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
 }
