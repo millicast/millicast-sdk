@@ -29,10 +29,10 @@
     "build-docs": "nx run @millicast/sdk:build-docs",
     "start-docs": "nx run-many -t start-docs",
     "publish": "nx release",
-    "lint": "nx lint @millicast/sdk",
-    "lint-fix": "nx lint @millicast/sdk --fix",
-    "lint-all": "nx run-many -t lint"
-  },
+    "lint": "ESLINT_USE_FLAT_CONFIG=false nx lint @millicast/sdk",
+    "lint-fix": "ESLINT_USE_FLAT_CONFIG=false nx lint @millicast/sdk --fix",
+    "lint-all": "ESLINT_USE_FLAT_CONFIG=false nx run-many -t lint"
+    },
   "dependencies": {
     "@dolbyio/webrtc-stats": "^1.0.4",
     "@types/ua-parser-js": "^0.7.39",

@@ -4,8 +4,7 @@ interface EventMap {
   [key: string]: any
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export class MillicastEventEmitter<T extends EventMap = {}> {
+export class MillicastEventEmitter<T extends EventMap = object> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private events: { [K in keyof T]: Array<(payload: T[K]) => void> } = {} as any
 
