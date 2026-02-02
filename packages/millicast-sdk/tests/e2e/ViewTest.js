@@ -49,7 +49,7 @@ class MillicastViewTest {
         this.loadStatsInTable(stats)
       })
     } catch (error) {
-      console.log('There was an error while trying to connect with the publisher')
+      console.log('There was an error while trying to connect with the publisher', error)
       this.millicastView.reconnect()
     }
   }

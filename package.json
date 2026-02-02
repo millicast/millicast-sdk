@@ -32,7 +32,7 @@
     "lint": "ESLINT_USE_FLAT_CONFIG=false nx lint @millicast/sdk",
     "lint-fix": "ESLINT_USE_FLAT_CONFIG=false nx lint @millicast/sdk --fix",
     "lint-all": "ESLINT_USE_FLAT_CONFIG=false nx run-many -t lint"
-    },
+  },
   "dependencies": {
     "@dolbyio/webrtc-stats": "^1.0.4",
     "@types/ua-parser-js": "^0.7.39",
@@ -86,7 +86,6 @@
     "core-js": "^3.48.0",
     "dotenv": "^8.6.0",
     "eslint": "^9.39.2",
-    "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest": "^29.12.1",
     "eslint-plugin-n": "^17.23.2",
