@@ -28,7 +28,7 @@ jobs:
 
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
 
 
       - name: Lint SDK Only
@@ -40,12 +40,13 @@ jobs:
         timeout-minutes: 10
 
       - name: Build documentation
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: npx nx affected -t build-docs
         timeout-minutes: 5
 
 
       - name: Cache dependencies and build artifacts
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: |
             node_modules
@@ -74,13 +75,21 @@ jobs:
 
 
       - name: Restore dependencies and build artifacts
-        uses: actions/cache/restore@v3
+        id: cache-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             node_modules
             dist
             .nx/cache
           key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+
+      - name: Install dependencies (if cache miss)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
 
 
       - name: Run Unit Tests
@@ -89,8 +98,13 @@ jobs:
   e2e-tests:
     needs: install-and-build
     runs-on: ubuntu-latest
-    steps:
+    strategy:
+      matrix:
+        test-file: 
 
+          - 'FunctionalPublish.steps.js'
+          - 'Puppeteer.steps.js'
+    steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -107,19 +121,33 @@ jobs:
 
 
       - name: Restore dependencies and build artifacts
-        uses: actions/cache/restore@v3
+        id: cache-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             node_modules
             dist
             .nx/cache
           key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Install dependencies (if cache miss)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Cache Puppeteer Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: ${{ runner.os }}-puppeteer-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-puppeteer-
 
       - name: Install Puppeteer Chrome
         run: npx -y puppeteer browsers install chrome
-        
       - name: Run E2E Tests
-        run: npm run test-e2e
+        run: npm run test-e2e -- --testPathPattern=${{ matrix.test-file }}
         env:
           ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
           PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}
