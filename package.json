@@ -115,8 +115,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "underscore": "^1.13.7",
-    "vite": "^5.4.21",
-    "vite-plugin-dts": "~3.9.1",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
     "vite-plugin-node-polyfills": "^0.25.0",
     "vite-plugin-static-copy": "^3.2.0",
     "vitest": "^1.6.1"
