@@ -1,4 +1,4 @@
-import jwtDecode from 'jwt-decode'
+import {jwtDecode} from 'jwt-decode'
 import reemit from 're-emitter'
 import { atob } from 'js-base64'
 import * as v from 'valibot'

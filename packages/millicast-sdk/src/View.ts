@@ -1,5 +1,5 @@
 import reemit from 're-emitter'
-import jwtDecode from 'jwt-decode'
+import {jwtDecode} from 'jwt-decode'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'

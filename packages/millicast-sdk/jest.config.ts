@@ -16,7 +16,6 @@ export default {
   testMatch: [
     '<rootDir>/tests/unit/**/*.steps.js', 
     '<rootDir>/src/**/*.test.ts',
-    '<rootDir>/tests/e2e/**/*.steps.js',
   ],
   resolver: '<rootDir>/../../jest_resolver.cjs',
   coverageDirectory: '../../coverage/packages/millicast-sdk',

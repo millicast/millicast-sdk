@@ -11,11 +11,10 @@ export default defineConfig({
       fileName: format => `index.${format === 'es' ? 'esm' : format}.js`,
     },
     rollupOptions: {
-      external: ['re-emitter', 'jwt-decode', 'events', 'ua-parser-js', '@dolbyio/webrtc-stats'],
+      external: ['re-emitter', 'events', 'ua-parser-js', '@dolbyio/webrtc-stats'],
       output: {
         globals: {
           're-emitter': 'reemit',
-          'jwt-decode': 'jwtDecode',
           events: 'events',
           'ua-parser-js': 'UAParser',
           '@dolbyio/webrtc-stats': 'WebRTCStats',
