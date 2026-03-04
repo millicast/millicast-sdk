@@ -101,7 +101,7 @@
     "jest-websocket-mock": "^2.5.0",
     "jsdoc": "^4.0.5",
     "jsdoc-export-default-interop": "^0.3.1",
-    "jsdom": "~22.1.0",
+    "jsdom": "^28.1.0",
     "lint-staged": "^16.3.2",
     "mock-socket": "^9.3.1",
     "netlify-cli": "^23.14.0",
