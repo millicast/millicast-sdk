@@ -5,6 +5,7 @@ import Signaling from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
+import './__mocks__/jwt-decode'
 
 const feature = loadFeature('../features/Publish.feature', { loadRelativePath: true, errors: true })
 

@@ -4,7 +4,7 @@ module.exports = class Worker {
     this.onerror = null
   }
 
-  postMessage (msg) {
+  postMessage (_msg) {
     // Mock implementation
   }
 
@@ -12,11 +12,11 @@ module.exports = class Worker {
     // Mock implementation
   }
 
-  addEventListener (event, handler) {
+  addEventListener (_event, _handler) {
     // Mock implementation
   }
 
-  removeEventListener (event, handler) {
+  removeEventListener (_event, _handler) {
     // Mock implementation
   }
 }
