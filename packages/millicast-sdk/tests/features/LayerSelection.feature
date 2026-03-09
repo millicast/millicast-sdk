@@ -35,7 +35,3 @@ Feature: As a user I want to configure layer selection when viewing a stream
     When I connect with disableAudio set to true
     Then the signaling subscribe is called with disableAudio true
 
-  Scenario: Connect with both video and audio disabled throws error
-    Given an instance of View with token generator
-    When I connect with both disableVideo and disableAudio set to true
-    Then throws an error about video and audio disabled

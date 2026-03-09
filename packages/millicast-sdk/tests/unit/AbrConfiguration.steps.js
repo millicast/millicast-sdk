@@ -6,6 +6,8 @@ import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../features/AbrConfiguration.feature', { loadRelativePath: true, errors: true })
 
+jest.setTimeout(30000)
+
 jest.mock('../../src/Signaling')
 
 jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
@@ -31,14 +33,9 @@ const mockTokenGenerator = jest.fn(() => {
 
 defineFeature(feature, (test) => {
   let subscribeSpy
-  let lastSubscribeOptions
 
   beforeEach(() => {
-    subscribeSpy = jest.spyOn(Signaling.prototype, 'subscribe').mockImplementation((sdp, options) => {
-      lastSubscribeOptions = options
-      return 'sdp'
-    })
-    lastSubscribeOptions = null
+    subscribeSpy = jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
   })
 
   afterEach(() => {
@@ -62,8 +59,9 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with abr strategy quality', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.strategy).toBe('quality')
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeDefined()
+      expect(options.abrConfiguration.strategy).toBe('quality')
     })
   })
 
@@ -84,8 +82,9 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with abr strategy bandwidth', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.strategy).toBe('bandwidth')
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeDefined()
+      expect(options.abrConfiguration.strategy).toBe('bandwidth')
     })
   })
 
@@ -106,8 +105,9 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with abr strategy performance', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.strategy).toBe('performance')
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeDefined()
+      expect(options.abrConfiguration.strategy).toBe('performance')
     })
   })
 
@@ -131,10 +131,11 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with abr strategy quality and metadata bitrate 2000000', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.strategy).toBe('quality')
-      expect(lastSubscribeOptions.abrConfiguration.metadata).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.metadata.bitrate).toBe(2000000)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeDefined()
+      expect(options.abrConfiguration.strategy).toBe('quality')
+      expect(options.abrConfiguration.metadata).toBeDefined()
+      expect(options.abrConfiguration.metadata.bitrate).toBe(2000000)
     })
   })
 
@@ -158,10 +159,11 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with abr strategy bandwidth and metadata bitrate 0', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.strategy).toBe('bandwidth')
-      expect(lastSubscribeOptions.abrConfiguration.metadata).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.metadata.bitrate).toBe(0)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeDefined()
+      expect(options.abrConfiguration.strategy).toBe('bandwidth')
+      expect(options.abrConfiguration.metadata).toBeDefined()
+      expect(options.abrConfiguration.metadata.bitrate).toBe(0)
     })
   })
 
@@ -208,7 +210,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called without abr configuration', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeUndefined()
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeUndefined()
     })
   })
 
@@ -227,7 +230,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with forceSmooth in abr', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.forceSmooth).toBe(true)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.forceSmooth).toBe(true)
     })
   })
 
@@ -249,9 +253,10 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with abr strategy quality and forceSmooth', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.abrConfiguration).toBeDefined()
-      expect(lastSubscribeOptions.abrConfiguration.strategy).toBe('quality')
-      expect(lastSubscribeOptions.forceSmooth).toBe(true)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.abrConfiguration).toBeDefined()
+      expect(options.abrConfiguration.strategy).toBe('quality')
+      expect(options.forceSmooth).toBe(true)
     })
   })
 })

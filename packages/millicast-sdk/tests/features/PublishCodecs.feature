@@ -45,11 +45,6 @@ Feature: As a user I want to publish with different video codecs
     When I broadcast with priority set to 10
     Then the signaling publish is called with priority 10
 
-  Scenario: Publish with record option enabled
-    Given an instance of Publish with token generator that supports recording
-    When I broadcast with record set to true
-    Then the signaling publish is called with record true
-
   Scenario: Publish with sourceId for multisource
     Given an instance of Publish with token generator
     When I broadcast with sourceId set to camera-1

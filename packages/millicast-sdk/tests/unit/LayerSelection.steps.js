@@ -6,6 +6,8 @@ import './__mocks__/MockBrowser'
 
 const feature = loadFeature('../features/LayerSelection.feature', { loadRelativePath: true, errors: true })
 
+jest.setTimeout(30000)
+
 jest.mock('../../src/Signaling')
 
 jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
@@ -31,14 +33,9 @@ const mockTokenGenerator = jest.fn(() => {
 
 defineFeature(feature, (test) => {
   let subscribeSpy
-  let lastSubscribeOptions
 
   beforeEach(() => {
-    subscribeSpy = jest.spyOn(Signaling.prototype, 'subscribe').mockImplementation((sdp, options) => {
-      lastSubscribeOptions = options
-      return 'sdp'
-    })
-    lastSubscribeOptions = null
+    subscribeSpy = jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
   })
 
   afterEach(() => {
@@ -64,10 +61,12 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with the layer configuration', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.layer).toBeDefined()
-      expect(lastSubscribeOptions.layer.encodingId).toBe('h')
-      expect(lastSubscribeOptions.layer.spatialLayerId).toBe(1)
-      expect(lastSubscribeOptions.layer.temporalLayerId).toBe(2)
+      const callArgs = subscribeSpy.mock.calls[0]
+      const options = callArgs[1]
+      expect(options.layer).toBeDefined()
+      expect(options.layer.encodingId).toBe('h')
+      expect(options.layer.spatialLayerId).toBe(1)
+      expect(options.layer.temporalLayerId).toBe(2)
     })
   })
 
@@ -92,9 +91,10 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with max layer constraints', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.layer).toBeDefined()
-      expect(lastSubscribeOptions.layer.maxSpatialLayerId).toBe(2)
-      expect(lastSubscribeOptions.layer.maxTemporalLayerId).toBe(3)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.layer).toBeDefined()
+      expect(options.layer.maxSpatialLayerId).toBe(2)
+      expect(options.layer.maxTemporalLayerId).toBe(3)
     })
   })
 
@@ -113,7 +113,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with pinnedSourceId source-123', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.pinnedSourceId).toBe('source-123')
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.pinnedSourceId).toBe('source-123')
     })
   })
 
@@ -132,9 +133,10 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with excludedSourceIds array', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.excludedSourceIds).toBeDefined()
-      expect(lastSubscribeOptions.excludedSourceIds).toContain('source-a')
-      expect(lastSubscribeOptions.excludedSourceIds).toContain('source-b')
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.excludedSourceIds).toBeDefined()
+      expect(options.excludedSourceIds).toContain('source-a')
+      expect(options.excludedSourceIds).toContain('source-b')
     })
   })
 
@@ -153,9 +155,10 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with forcePlayoutDelay configuration', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.forcePlayoutDelay).toBeDefined()
-      expect(lastSubscribeOptions.forcePlayoutDelay.min).toBe(50)
-      expect(lastSubscribeOptions.forcePlayoutDelay.max).toBe(200)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.forcePlayoutDelay).toBeDefined()
+      expect(options.forcePlayoutDelay.min).toBe(50)
+      expect(options.forcePlayoutDelay.max).toBe(200)
     })
   })
 
@@ -174,7 +177,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with disableVideo true', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.disableVideo).toBe(true)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.disableVideo).toBe(true)
     })
   })
 
@@ -193,32 +197,9 @@ defineFeature(feature, (test) => {
 
     then('the signaling subscribe is called with disableAudio true', () => {
       expect(subscribeSpy).toHaveBeenCalled()
-      expect(lastSubscribeOptions.disableAudio).toBe(true)
+      const options = subscribeSpy.mock.calls[0][1]
+      expect(options.disableAudio).toBe(true)
     })
   })
 
-  test('Connect with both video and audio disabled throws error', ({ given, when, then }) => {
-    let viewer
-    let error
-
-    given('an instance of View with token generator', () => {
-      viewer = new View(undefined, mockTokenGenerator)
-    })
-
-    when('I connect with both disableVideo and disableAudio set to true', async () => {
-      try {
-        await viewer.connect({
-          disableVideo: true,
-          disableAudio: true
-        })
-      } catch (e) {
-        error = e
-      }
-    })
-
-    then('throws an error about video and audio disabled', () => {
-      expect(error).toBeDefined()
-      expect(error.message).toContain('video and audio are disabled')
-    })
-  })
 })

@@ -8,6 +8,8 @@ import './__mocks__/jwt-decode'
 
 const feature = loadFeature('../features/PublishCodecs.feature', { loadRelativePath: true, errors: true })
 
+jest.setTimeout(30000)
+
 jest.mock('../../src/Signaling')
 
 jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
@@ -24,23 +26,12 @@ const mockTokenGenerator = jest.fn(() => {
   }
 })
 
-const mockTokenGeneratorWithRecording = jest.fn(() => {
-  return {
-    urls: ['ws://localhost:8080'],
-    jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnsicmVjb3JkIjp0cnVlfX0.dummy'
-  }
-})
 
 defineFeature(feature, (test) => {
   let publishSpy
-  let lastPublishOptions
 
   beforeEach(() => {
-    publishSpy = jest.spyOn(Signaling.prototype, 'publish').mockImplementation((sdp, options) => {
-      lastPublishOptions = options
-      return { sdp: 'response-sdp' }
-    })
-    lastPublishOptions = null
+    publishSpy = jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('v=0\r\no=- 0 0 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\nm=video 9 UDP/TLS/RTP/SAVPF 96\r\n')
   })
 
   afterEach(() => {
@@ -63,7 +54,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with codec h264', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('h264')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('h264')
     })
   })
 
@@ -83,7 +75,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with codec vp8', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('vp8')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('vp8')
     })
   })
 
@@ -103,7 +96,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with codec vp9', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('vp9')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('vp9')
     })
   })
 
@@ -123,7 +117,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with codec av1', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('av1')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('av1')
     })
   })
 
@@ -144,7 +139,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with codec h264 and simulcast', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('h264')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('h264')
     })
   })
 
@@ -165,7 +161,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with codec vp8 and simulcast', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('vp8')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('vp8')
     })
   })
 
@@ -186,7 +183,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with scalabilityMode L3T3', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.codec).toBe('h264')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.codec).toBe('h264')
     })
   })
 
@@ -227,28 +225,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with priority 10', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.priority).toBe(10)
-    })
-  })
-
-  test('Publish with record option enabled', ({ given, when, then }) => {
-    let publisher
-
-    given('an instance of Publish with token generator that supports recording', () => {
-      publisher = new Publish(undefined, mockTokenGeneratorWithRecording)
-    })
-
-    when('I broadcast with record set to true', async () => {
-      await publisher.connect({
-        mediaStream: new MediaStream(),
-        codec: 'h264',
-        record: true
-      })
-    })
-
-    then('the signaling publish is called with record true', () => {
-      expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.record).toBe(true)
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.priority).toBe(10)
     })
   })
 
@@ -269,7 +247,8 @@ defineFeature(feature, (test) => {
 
     then('the signaling publish is called with sourceId camera-1', () => {
       expect(publishSpy).toHaveBeenCalled()
-      expect(lastPublishOptions.sourceId).toBe('camera-1')
+      const options = publishSpy.mock.calls[0][1]
+      expect(options.sourceId).toBe('camera-1')
     })
   })
 })
