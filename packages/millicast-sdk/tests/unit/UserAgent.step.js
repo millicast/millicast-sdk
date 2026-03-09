@@ -24,7 +24,7 @@ jest.mock('ua-parser-js', () => {
     }
   }
 
-  return MockUAParser
+  return { UAParser: MockUAParser }
 })
 
 describe('UserAgent', () => {
