@@ -108,6 +108,7 @@ jobs:
           - 'FunctionalPublish.steps.js'
           - 'Puppeteer.steps.js'
           - 'AbrStrategies.steps.js'
+          - 'ViewerCodecs.steps.js'
     steps:
       - uses: actions/checkout@v4
         with:

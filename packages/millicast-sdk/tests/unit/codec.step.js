@@ -122,7 +122,7 @@ describe('Extract user unregistered data in SEI from H26x frame', () => {
     const payloadSize = uuidBytes.length + contentBytes.length
     
     const frameBuffer = Buffer.concat([
-      Buffer.from([0, 0, 0, 1]),           // 4-byte start code
+      Buffer.from([0, 0, 0, 1]),            // 4-byte start code
       Buffer.from([0x06]),                  // NAL unit type 6 = SEI for H264
       Buffer.from([0x05]),                  // SEI payload type 5 = user_data_unregistered
       Buffer.from([payloadSize]),           // payload size (< 255)
