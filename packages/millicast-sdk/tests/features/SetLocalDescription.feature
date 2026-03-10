@@ -50,6 +50,26 @@ Feature: As a user I want to set my local session description so I can broadcast
     When I want to get the RTC Local SDP
     Then throw invalid MediaStream error
 
+  Scenario: Get RTC Local SDP with simulcast h264 on Chromium sets sendEncodings
+    Given I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with h264
+    When I want to get the RTC Local SDP with simulcast
+    Then addTransceiver is called with sendEncodings containing 3 rid layers
+
+  Scenario: Get RTC Local SDP with simulcast vp8 on Chromium sets sendEncodings
+    Given I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with vp8
+    When I want to get the RTC Local SDP with simulcast
+    Then addTransceiver is called with sendEncodings containing 3 rid layers
+
+  Scenario: Get RTC Local SDP with simulcast and unsupported codec does not set sendEncodings
+    Given I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with vp9
+    When I want to get the RTC Local SDP with simulcast
+    Then addTransceiver is called without simulcast sendEncodings
+
+  Scenario: Get RTC Local SDP with simulcast on Firefox does not set sendEncodings
+    Given I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with h264
+    When I want to get the RTC Local SDP with simulcast
+    Then addTransceiver is called without simulcast sendEncodings
+
   Scenario: Get RTC Local SDP with scalability mode, valid MediaStream and using Chrome
     Given I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode
     When I want to get the RTC Local SDP

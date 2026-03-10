@@ -227,6 +227,113 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Get RTC Local SDP with simulcast h264 on Chromium sets sendEncodings', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let mediaStream
+    let addTransceiverSpy
+
+    given('I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with h264', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+    })
+
+    when('I want to get the RTC Local SDP with simulcast', async () => {
+      addTransceiverSpy = jest.spyOn(peerConnection.peer, 'addTransceiver')
+      await peerConnection.getRTCLocalSDP({ mediaStream, simulcast: true, codec: 'h264', disableVideo: false })
+    })
+
+    then('addTransceiver is called with sendEncodings containing 3 rid layers', () => {
+      const videoCall = addTransceiverSpy.mock.calls.find(call => call[0]?.kind === 'video' || call[0] === 'video')
+      expect(videoCall).toBeDefined()
+      const options = videoCall[1]
+      expect(options.sendEncodings).toBeDefined()
+      expect(options.sendEncodings).toHaveLength(3)
+      expect(options.sendEncodings[0]).toEqual(expect.objectContaining({ rid: 'f' }))
+      expect(options.sendEncodings[1]).toEqual(expect.objectContaining({ rid: 'h' }))
+      expect(options.sendEncodings[2]).toEqual(expect.objectContaining({ rid: 'q' }))
+    })
+  })
+
+  test('Get RTC Local SDP with simulcast vp8 on Chromium sets sendEncodings', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let mediaStream
+    let addTransceiverSpy
+
+    given('I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with vp8', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+    })
+
+    when('I want to get the RTC Local SDP with simulcast', async () => {
+      addTransceiverSpy = jest.spyOn(peerConnection.peer, 'addTransceiver')
+      await peerConnection.getRTCLocalSDP({ mediaStream, simulcast: true, codec: 'vp8', disableVideo: false })
+    })
+
+    then('addTransceiver is called with sendEncodings containing 3 rid layers', () => {
+      const videoCall = addTransceiverSpy.mock.calls.find(call => call[0]?.kind === 'video' || call[0] === 'video')
+      expect(videoCall).toBeDefined()
+      const options = videoCall[1]
+      expect(options.sendEncodings).toBeDefined()
+      expect(options.sendEncodings).toHaveLength(3)
+      expect(options.sendEncodings[0]).toEqual(expect.objectContaining({ rid: 'f' }))
+      expect(options.sendEncodings[1]).toEqual(expect.objectContaining({ rid: 'h' }))
+      expect(options.sendEncodings[2]).toEqual(expect.objectContaining({ rid: 'q' }))
+    })
+  })
+
+  test('Get RTC Local SDP with simulcast and unsupported codec does not set sendEncodings', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let mediaStream
+    let addTransceiverSpy
+
+    given('I am using Chrome and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with vp9', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+    })
+
+    when('I want to get the RTC Local SDP with simulcast', async () => {
+      addTransceiverSpy = jest.spyOn(peerConnection.peer, 'addTransceiver')
+      await peerConnection.getRTCLocalSDP({ mediaStream, simulcast: true, codec: 'vp9', disableVideo: false })
+    })
+
+    then('addTransceiver is called without simulcast sendEncodings', () => {
+      const videoCall = addTransceiverSpy.mock.calls.find(call => call[0]?.kind === 'video' || call[0] === 'video')
+      expect(videoCall).toBeDefined()
+      const options = videoCall[1]
+      const hasSimulcastEncodings = options.sendEncodings?.some(e => e.rid !== undefined)
+      expect(hasSimulcastEncodings).toBeFalsy()
+    })
+  })
+
+  test('Get RTC Local SDP with simulcast on Firefox does not set sendEncodings', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let mediaStream
+    let addTransceiverSpy
+
+    given('I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and simulcast enabled with h264', async () => {
+      changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1' }]
+      mediaStream = new MediaStream(tracks)
+    })
+
+    when('I want to get the RTC Local SDP with simulcast', async () => {
+      addTransceiverSpy = jest.spyOn(peerConnection.peer, 'addTransceiver')
+      await peerConnection.getRTCLocalSDP({ mediaStream, simulcast: true, codec: 'h264', disableVideo: false })
+    })
+
+    then('addTransceiver is called without simulcast sendEncodings', () => {
+      const videoCall = addTransceiverSpy.mock.calls.find(call => call[0]?.kind === 'video' || call[0] === 'video')
+      expect(videoCall).toBeDefined()
+      const options = videoCall[1]
+      const hasSimulcastEncodings = options.sendEncodings?.some(e => e.rid !== undefined)
+      expect(hasSimulcastEncodings).toBeFalsy()
+    })
+  })
+
   test('Get RTC Local SDP with scalability mode, valid MediaStream and using Chrome', ({ given, when, then }) => {
     const peerConnection = new PeerConnection()
     let sdp

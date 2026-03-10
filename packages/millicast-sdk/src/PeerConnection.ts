@@ -149,9 +149,6 @@ export default class PeerConnection extends EventEmitter {
       }
       this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp!, mediaStream)
     }
-    if (!options.disableVideo && options.simulcast) {
-      this.sessionDescription.sdp = SdpParser.setSimulcast(this.sessionDescription.sdp!, options.codec!)
-    }
     if (options.absCaptureTime) {
       this.sessionDescription.sdp = SdpParser.setAbsoluteCaptureTime(this.sessionDescription.sdp!)
     }
@@ -403,6 +400,7 @@ const addMediaStreamToPeer = (
   options: LocalSDPOptions
 ): void => {
   logger.info('Adding mediaStream tracks to RTCPeerConnection')
+  const userAgent = new UserAgent();
   for (const track of mediaStream.getTracks()) {
     const initOptions: RTCRtpTransceiverInit = {
       streams: [mediaStream],
@@ -415,13 +413,29 @@ const addMediaStreamToPeer = (
     if (track.kind === 'video') {
       initOptions.direction = !options.disableVideo ? 'sendonly' : 'inactive'
 
-      if (options.scalabilityMode && new UserAgent().isChrome()) {
+      if (options.scalabilityMode && userAgent.isChrome()) {
         logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
         initOptions.sendEncodings = [
           { scalabilityMode: options.scalabilityMode } as RTCRtpEncodingParametersExtended,
         ]
       } else if (options.scalabilityMode) {
         logger.warn('SVC is only supported in Google Chrome')
+      }
+
+      if(options.simulcast && !options.disableVideo) {
+        const isSupportedCodec = options.codec && [VideoCodec.H264, VideoCodec.VP8].includes(options.codec);
+        if(!isSupportedCodec) {
+          logger.warn('Simulcast is only supported for H.264 and VP8 codecs')
+        } else if(!userAgent.isChromium()) {
+          logger.warn('Simulcast is only supported in Chromium based browsers')
+        } else {
+        logger.debug('Enabling simulcast for video track')
+        initOptions.sendEncodings = [
+          ...initOptions.sendEncodings || [],
+          { rid: 'f', scaleResolutionDownBy: 1.0 },
+          { rid: 'h', scaleResolutionDownBy: 2.0 },
+          { rid: 'q', scaleResolutionDownBy: 4.0 }
+        ]}
       }
     }
 
