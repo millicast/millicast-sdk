@@ -1,10 +1,10 @@
-# Millicast SDK for JavaScript
+# Dolby OptiView RealTime Streaming SDK for JavaScript
 
 [![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)](https://www.npmjs.com/package/@millicast/sdk)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)](https://github.com/millicast/millicast-sdk/releases)
 [![Check tests](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml/badge.svg?branch=main)](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml)
 
-This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
+This Software Development Kit (SDK) for JavaScript allows developers to simplify Dolby OptiView RealTime streaming services integration into their own web apps.
 
 ## Table of Contents
 
@@ -37,7 +37,7 @@ npm i --save @millicast/sdk
 
 The following examples demonstrate how to broadcast with the Publisher app capturing the user's camera and microphone. You can then view the stream using the Viewer app.
 
-You will need to use a [Dolby Millicast account](https://streaming.dolby.io/) with a valid publishing token.
+You will need to use a [Dolby OptiView RealTime streaming account](https://streaming.dolby.io/) with a valid publishing token.
 
 ### Publisher app
 
@@ -136,7 +136,7 @@ In vanilla JavaScript:
 
 ## Documentation
 
-The [Documentation](https://docs.optiview.dolby.com/millicast/) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.optiview.dolby.com/millicast/getting-started/) guide as a quick start.
+The [Documentation](https://docs.optiview.dolby.com/millicast/) provides an overview of the Dolby OptiView RealTime streaming services. This includes a [Getting Started](https://docs.optiview.dolby.com/millicast/getting-started/) guide as a quick start.
 
 The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development. 
 
@@ -148,6 +148,7 @@ There are several packages that implement a publisher and viewer. These samples 
 * [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
 * [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
 * [millicast-multiview-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-multiview-demo#readme)
+* [millicast-chromecast-receiver](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-chromecast-receiver#readme)
 
 ## JS Frameworks
 

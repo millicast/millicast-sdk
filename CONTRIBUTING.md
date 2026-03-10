@@ -1,17 +1,19 @@
-# Develop in Millicast SDK
+# Develop in Dolby OptiView RealTime Streaming SDK
 
 ## Packages
 
-This project is built with [Lerna](https://lerna.js.org/) and contains the following packages:
+This project is built with [NX](https://nx.dev/) and contains the following packages:
 
 - `millicast-sdk`: The SDK itself.
 - `millicast-publisher-demo`: Publisher demo page using SDK. You can try this demo [here](https://demo.millicast.com/?codec=h264&nosimulcast).
 - `millicast-viewer-demo`: Viewer demo page using SDK.
+- `millicast-multiview-demo`: Multiview demo page using SDK.
+- `millicast-webaudio-delay-demo`: WebAudio delay demo page using SDK.
 - `millicast-chromecast-receiver`: Example of Google Cast receiver for demo.
 
 ## Development
 
-Asumming that you have Node 12.10.x or newer and `npm` installed, install the required dependencies running:
+Assuming that you have Node 18.x or newer and `npm` installed, install the required dependencies running:
 
 ```sh
 npm ci
@@ -23,21 +25,15 @@ Whenever you are working on a new feature, fix or change, make sure you create a
 
 ### Building packages
 
-As the project is built using [Lerna](https://lerna.js.org/), we can rely on it to manage our packages dependencies, so you just need to run at project's root directory
-
-```sh
-npm run prepare
-```
-
 You will need to add a `.env` file in all demo packages (`packages/millicast-publisher-demo`, `packages/millicast-viewer-demo`, `packages/millicast-chromecast-receiver`, `packages/millicast-multiview-demo` & `packages/millicast-webaudio-delay-demo`). You can simply copy the `.env.sample` to get started:
 
-> note : The `.env` is typically not added to git. When you clone the repo, you will not find this file and will have to create one yourself. The `.env.example` app can be used as a template with basic keys. Rename the file to `.env` and insert your tokens to get the file up and running.
+> note : The `.env` is typically not added to git. When you clone the repo, you will not find this file and will have to create one yourself. The `.env.sample` file can be used as a template with basic keys. Rename the file to `.env` and insert your tokens to get the file up and running.
 
 ```sh
 # Make a .env file with the following vars
-MILLICAST_STREAM_NAME=test
-MILLICAST_ACCOUNT_ID=test
-MILLICAST_PUBLISH_TOKEN=test
+VITE_MILLICAST_STREAM_NAME=yourStreamName
+VITE_MILLICAST_ACCOUNT_ID=yourAccountId
+VITE_MILLICAST_PUBLISH_TOKEN=yourPublishToken
 ```
 
 These tokens can be found in your [Dolby.io dashboard](https://streaming.dolby.io/#/tokens).
@@ -50,7 +46,7 @@ Then, build all packages:
 npm run build
 ```
 
-Optionally you can run other Lerna commands using `$ npx lerna [command]`.
+Optionally you can run other NX commands using `$ npx nx [command]`.
 
 ### Running demo
 
@@ -77,7 +73,6 @@ npm run start
 This command opens the following demo apps in your browser:
 - millicast-publisher-demo
 - millicast-viewer-demo
-- millicast-sdk
 
 It keeps watching for changes in these packages. You only need to refresh both pages if you modify the code.
 
@@ -90,9 +85,8 @@ npm run test
 > Note: There are some requirements to take into account before running E2E tests. Make sure to take a look at [those](#e2e-testing).
 
 #### Unit testing
-If you want to run only unit tests, navigate to the `millicast-sdk` package. 
+If you want to run only unit tests, run:
 ```sh
-cd packages/millicast-sdk
 npm run test-unit
 ```
 
@@ -131,16 +125,16 @@ npm run test-e2e
 The SDK documentation is written with [JSDocs](https://jsdoc.app/). To build the HTML documentation, run:
 
 ```sh
-npx lerna run build-docs
+npm run build-docs
 ```
 
 Or if you want to navigate to the docs on your local machine, run:
 
 ```sh
-npx lerna run start-docs --stream
+npm run start-docs
 ```
 
-In the logs you find the link where you can access to docs. By default, the logs run on http://localhost:5000.
+In the logs you find the link where you can access to docs. By default, the docs are served on http://localhost:3000.
 
 ### SDK Components
 
