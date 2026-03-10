@@ -58,7 +58,7 @@ export default class Publish extends BaseWebRTC {
   private stopReemitingSignalingInstanceEvents?: () => void
   protected override options: PublishConnectOptions = connectOptions
   private streamName: string | undefined
-  constructor (streamName?: string, tokenGenerator?: TokenGeneratorCallback, autoReconnect: boolean = true) {
+  constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect: boolean = true) {
     if (streamName) {
       logger.warn(
         'The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator'

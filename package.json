@@ -18,9 +18,9 @@
   "scripts": {
     "build": "nx run-many -t build --exclude=@nx-millicast/source",
     "build:sdk": "nx build @millicast/sdk --watch",
-    "start:projects": "nx run-many -t start --projects=millicast-publisher-demo,millicast-viewer-demo --parallel",
-    "start": "nx run-many -t start --projects=@millicast/sdk,millicast-publisher-demo,millicast-viewer-demo --parallel",
-    "start-all": "nx run-many -t start --all --parallel",
+    "start:projects": "nx run-many -t serve --projects=millicast-publisher-demo,millicast-viewer-demo --parallel",
+    "start": "nx run-many -t serve --projects=millicast-publisher-demo,millicast-viewer-demo --parallel",
+    "start-all": "nx run-many -t serve --all --parallel",
     "test": "nx run-many -t test",
     "test-unit": "npm run test-unit --workspace=@millicast/sdk",
     "test-e2e": "npm run test-e2e --workspace=@millicast/sdk",

@@ -7,7 +7,8 @@ import './__mocks__/MockMediaStream'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
 import Publish from '../../src/Publish'
 import Diagnostics from '../../src/utils/Diagnostics'
-import { version } from '../../package.json' with { type: 'json' }
+import packageJson from '../../package.json'
+const { version } = packageJson
 
 const feature = loadFeature('../features/LoggerDiagnose.feature', { loadRelativePath: true, errors: true })
 
@@ -70,7 +71,7 @@ defineFeature(feature, test => {
 
     given('connection has failed', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      viewer = new View(undefined, mockErrorTokenGenerator)
+      viewer = new View(undefined, mockErrorTokenGenerator, undefined, true)
 
       expectedError = expect(() => viewer.connect())
       expectedError.rejects.toThrow(Error)
@@ -90,7 +91,7 @@ defineFeature(feature, test => {
     let diagnose
 
     given('connection to a stream', async () => {
-      viewer = new View(undefined, mockViewTokenGenerator)
+      viewer = new View(undefined, mockViewTokenGenerator, undefined, true)
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })
@@ -109,7 +110,7 @@ defineFeature(feature, test => {
     let diagnose
 
     given('connection to a stream and stats enabled', async () => {
-      viewer = new View(undefined, mockViewTokenGenerator)
+      viewer = new View(undefined, mockViewTokenGenerator, undefined, true)
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
       viewer.webRTCPeer.initStats()
@@ -178,7 +179,7 @@ defineFeature(feature, test => {
     given('I am in Firefox and start a connection to a stream', async () => {
       changeBrowserMock('Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
 
-      viewer = new View(undefined, mockViewTokenGenerator)
+      viewer = new View(undefined, mockViewTokenGenerator, undefined, true)
       await viewer.connect()
       expect(viewer.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
     })

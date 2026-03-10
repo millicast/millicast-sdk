@@ -39,7 +39,7 @@ export type DirectorSubscriberOptions = {
   /**
    * - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
    */
-  subscriberToken: string | null
+  subscriberToken?: string | null
 }
 
 export type DirectorResponse = {

@@ -74,17 +74,29 @@ export default class View extends BaseWebRTC {
   private isMainStreamActive = false
   private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
-  private stopReemitingSignalingInstanceEvents: (() => void) | null = null
   private events: { [K in keyof ViewerEvents]: Array<(payload: ViewerEvents[K]) => void> } = {}
   protected override options: ViewConnectOptions | null = null
 
-  constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
+  constructor (
+    streamName: string | undefined, 
+    tokenGenerator: TokenGeneratorCallback, 
+    mediaElement : HTMLMediaElement | undefined = undefined, 
+    autoReconnect : boolean = true) {
     if (streamName) {
       logger.warn(
         'The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.'
       )
     }
     super(tokenGenerator, logger, autoReconnect)
+    
+    if (mediaElement) {
+      this.on(webRTCEvents.track, (e) => {
+        if(e) {
+          mediaElement.srcObject = e.streams[0]
+        }
+      })
+      logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.')
+    }
   }
 
   override on<K extends keyof ViewerEvents> (
@@ -113,11 +125,13 @@ export default class View extends BaseWebRTC {
   }
 
   override emit<K extends keyof ViewerEvents> (eventName: K, payload: ViewerEvents[K]): boolean {
+    let handled = false
     if (this.events[eventName]) {
       this.events[eventName].forEach(listener => listener(payload))
-      return true
+      handled = true
     }
-    return false
+    // Also emit to EventEmitter for BaseWebRTC events (reconnect, connectionStateChange, etc.)
+    return super.emit(eventName as string, payload) || handled
   }
 
   /**
@@ -157,7 +171,7 @@ export default class View extends BaseWebRTC {
    *
    * //Create a new instance
    * const streamName = "Millicast Stream Name where i want to connect"
-   * const millicastView = new View(tokenGenerator)
+   * const millicastView = new View(undefined, tokenGenerator)
    *
    * //Set track event handler to receive streams from Publisher.
    * millicastView.on('track', (event) => {
@@ -175,11 +189,14 @@ export default class View extends BaseWebRTC {
    *  console.log('Connection failed, handle error', e)
    * }
    */
-  override async connect (options: ViewConnectOptions = defaultConnectOptions): Promise<void> {
+  override async connect (options: ViewConnectOptions | null = defaultConnectOptions): Promise<void> {
     this.options = {
       ...defaultConnectOptions,
       ...options,
-      peerConfig: { ...defaultConnectOptions.peerConfig, ...options.peerConfig },
+      peerConfig: { 
+        ...defaultConnectOptions.peerConfig, 
+        ...options?.peerConfig 
+      },
       setSDPToPeer: false,
     }
     this.eventQueue.length = 0

@@ -60,7 +60,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -78,7 +78,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -96,7 +96,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -117,7 +117,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -140,7 +140,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection disabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, false)
+      viewer = new View(undefined, mockTokenGenerator, undefined, false)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -158,7 +158,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -181,7 +181,7 @@ defineFeature(feature, test => {
     const errorMessage = 'Error has ocurred'
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
@@ -216,7 +216,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       await viewer.connect()
     })
 
@@ -234,7 +234,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       await viewer.connect()
     })
 
