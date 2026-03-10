@@ -1,6 +1,43 @@
 import { View, Director, Logger } from "@millicast/sdk";
-import { DirectorSubscriberOptions } from "packages/millicast-sdk/src/types/Director.types";
-import { ActiveEvent, DRMOptions } from "packages/millicast-sdk/src/types/View.types";
+
+// Type declarations for Chromecast SDK
+declare const cast: {
+  framework: {
+    CastContextEventType: { CAST_STATE_CHANGED: string }
+    CastContext: { getInstance(): CastContext }
+    CastState: { NOT_CONNECTED: string; CONNECTED: string }
+  }
+}
+
+interface CastContext {
+  setOptions(options: { autoJoinPolicy: unknown; receiverApplicationId: string }): void
+  addEventListener(event: string, callback: (e: { castState: string }) => void): void
+  getCurrentSession(): { loadMedia(request: unknown): Promise<void> }
+}
+
+declare const chrome: {
+  cast: {
+    AutoJoinPolicy: { ORIGIN_SCOPED: unknown }
+    media: {
+      MediaInfo: new (name: string, type: string) => MediaInfo
+      StreamType: { LIVE: string }
+      LoadRequest: new (mediaInfo: MediaInfo) => unknown
+    }
+  }
+}
+
+interface MediaInfo {
+  customData: unknown
+  streamType: string
+}
+
+declare global {
+  interface Window {
+    Logger: typeof Logger
+    millicastView: View | null
+    __onGCastApiAvailable: (isAvailable: boolean) => boolean | void
+  }
+}
 
 window.Logger = Logger
 
@@ -53,17 +90,30 @@ let video = document.querySelector("video") as HTMLVideoElement;
 // MillicastView object
 let millicastView = null
 
+interface ActiveEventData {
+  encryption?: { keyId: string; iv: string }
+  tracks: Array<{ media: string; trackId: string }>
+}
+
+interface DRMOptionsLocal {
+  videoElement: HTMLVideoElement | null
+  audioElement: HTMLAudioElement | null
+  videoEncryptionParams: { keyId: string; iv: string }
+  videoMid: string
+  audioMid?: string
+}
+
 const newViewer = () => {
-  const options: DirectorSubscriberOptions = { streamName, streamAccountId: accountId, subscriberToken }
+  const options = { streamName, streamAccountId: accountId, subscriberToken }
   const tokenGenerator = () => Director.getSubscriber(options);
-  const millicastView = new View(tokenGenerator, autoReconnect)
+  const millicastView = new View(undefined, tokenGenerator, undefined, autoReconnect)
   millicastView.on("broadcastEvent", (event) => {
     if (!autoReconnect) return;
     if (event.name === "active") {
-      const _event = event as ActiveEvent
+      const _event = event as { name: string; data: ActiveEventData }
       const encryption = _event.data.encryption
       if (encryption && enableDRM) {
-        const drmOptions: DRMOptions = {
+        const drmOptions: DRMOptionsLocal = {
           videoElement: document.querySelector("video"),
           audioElement: document.querySelector("audio"),
           videoEncryptionParams: encryption,
@@ -73,7 +123,7 @@ const newViewer = () => {
         if (audioTrackInfo) {
           drmOptions.audioMid = audioTrackInfo.trackId;
         }
-        millicastView.configureDRM(drmOptions)
+        millicastView.configureDRM(drmOptions as Parameters<typeof millicastView.configureDRM>[0])
       }
     }
   });

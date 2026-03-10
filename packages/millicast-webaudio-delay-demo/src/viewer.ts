@@ -1,7 +1,14 @@
 import { View, Director, Logger } from '@millicast/sdk'
 import CircularSlider from '@maslick/radiaslider/src/slider-circular'
-import { DirectorSubscriberOptions } from 'packages/millicast-sdk/src/types/Director.types'
 console.log(CircularSlider)
+
+declare global {
+  interface Window {
+    Logger: typeof Logger
+    millicastView: View | null
+    stream: MediaStream
+  }
+}
 
 window.Logger = Logger
 
@@ -22,14 +29,15 @@ const streamAccountId = href.searchParams.get('streamAccountId')
   : import.meta.env.VITE_ACCOUNT_ID
 
 // MillicastView object
-let millicastView = null
+let millicastView: View | null = null
 
-let delayNode
+let delayNode: DelayNode | null = null
 const MaxDelay = 30
 
 document.body.onclick = async () => {
-  document.getElementById('slider').removeChild(document.getElementById('play'))
-  document.getElementById('myCanvas').style.display = 'inherit'
+  document.getElementById('slider')?.removeChild(document.getElementById('play')!)
+  const canvas = document.getElementById('myCanvas') as HTMLElement
+  canvas.style.display = 'inherit'
 
   const slider = new CircularSlider({
     canvasId: 'myCanvas',
@@ -45,24 +53,27 @@ document.body.onclick = async () => {
     max: 30,
     step: 5,
     color: '#104b63',
-    changed: function (v) {
+    changed: (v: any) => {
       if (!delayNode) {
-        return false
+        return
       }
       const delay = (MaxDelay * v.deg) / 360
       // Set it
       delayNode.delayTime.value = delay
       // UPdate delay
-      document.getElementById('value').innerHTML = 'Delay: ' + delay.toFixed(3) + 's'
+      const valueEl = document.getElementById('value')
+      if (valueEl) valueEl.innerHTML = 'Delay: ' + delay.toFixed(3) + 's'
     },
   })
 
   // Create audio context
   const audioContext = new window.AudioContext({ sampleRate: 48000 })
-  const options: DirectorSubscriberOptions = { streamName, streamAccountId }
+  const options = { streamName, streamAccountId, subscriberToken: null }
   const tokenGenerator = () => Director.getSubscriber(options)
-  window.millicastView = millicastView = new View(tokenGenerator, true)
-  millicastView.on('track', ({ track }) => {
+  window.millicastView = millicastView = new View(undefined, tokenGenerator, undefined, true)
+  millicastView.on('track', (event) => {
+    if (!event) return
+    const track = event.track as MediaStreamTrack
     // Ignore non audio tracks
     if (track.kind !== 'audio') {
       return
@@ -84,11 +95,13 @@ document.body.onclick = async () => {
     // Creat primary graph, connect webrtc with the delay node and play it in the default destination
     source.connect(delayNode).connect(audioContext.destination)
     // UPdate delay
-    document.getElementById('value').innerHTML = 'Delay: 0s'
+    const valueEl = document.getElementById('value')
+    if (valueEl) valueEl.innerHTML = 'Delay: 0s'
     // Enable pointer events
-    document.getElementById('myCanvas').style['pointer-events'] = 'auto'
+    canvas.style.pointerEvents = 'auto'
   })
   // UPdate delay
-  document.getElementById('value').innerHTML = '...connecting...'
+  const connectingEl = document.getElementById('value')
+  if (connectingEl) connectingEl.innerHTML = '...connecting...'
   await millicastView.connect()
 }

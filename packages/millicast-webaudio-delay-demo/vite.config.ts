@@ -1,12 +1,20 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/packages/millicast-webaudio-delay-demo',
-
+  define: {
+    global: 'globalThis',
+  },
+  resolve: {
+    alias: {
+      '@millicast/sdk': resolve(__dirname, '../millicast-sdk/src/index.ts')
+    }
+  },
   server: {
     port: 10003,
     host: 'localhost',

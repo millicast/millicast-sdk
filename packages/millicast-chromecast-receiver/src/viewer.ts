@@ -1,30 +1,63 @@
+/// <reference types="vite/client" />
 import {View, Director, Logger} from '@millicast/sdk'
-import {DirectorSubscriberOptions} from 'packages/millicast-sdk/src/types/Director.types'
+
+declare global {
+  interface Window {
+    Logger: typeof Logger
+  }
+  const cast: {
+    framework: {
+      CastReceiverContext: {
+        getInstance(): {
+          getPlayerManager(): {
+            setMediaElement(el: Element | null): void
+            setMessageInterceptor(type: unknown, handler: (data: LoadRequestData) => LoadRequestData): void
+          }
+          start(): void
+        }
+      }
+      messages: {
+        MessageType: {
+          LOAD: unknown
+        }
+      }
+    }
+  }
+  interface LoadRequestData {
+    media: {
+      customData: { streamName: string; streamAccountId: string }
+      contentUrl: string
+      contentType: string
+    }
+  }
+}
 
 window.Logger=Logger
 
-if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env?.MILLICAST_DIRECTOR_ENDPOINT) {
+  Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT as string)
 }
 
-const addStream=(stream) => {
-  const video=document.querySelector('#player')
-  // Create new video element
-  video.srcObject=stream
+const addStream=(stream: MediaStream) => {
+  const video=document.querySelector('#player') as HTMLVideoElement | null
+  if (video) {
+    video.srcObject=stream
+  }
 }
 
 const removeStream=() => {
-  const video=document.querySelector('#player')
-  // Create new video element
-  video.srcObject=null
+  const video=document.querySelector('#player') as HTMLVideoElement | null
+  if (video) {
+    video.srcObject=null
+  }
 }
 
-const subscribe=async (streamName, streamAccountId) => {
-  const options: DirectorSubscriberOptions={streamName, streamAccountId}
-  const tokenGenerator=() => Director.getSubscriber(options)
-  const millicastView=new View(tokenGenerator)
+const subscribe=async (streamName: string, streamAccountId: string) => {
+  const tokenGenerator=() => Director.getSubscriber({streamName, streamAccountId, subscriberToken: ''})
+  const millicastView=new View(undefined, tokenGenerator)
   millicastView.on('broadcastEvent', (event) => {
-    const layers=event.data.layers!==null? event.data.layers:{}
+    if (!event) return
+    const layers=(event as { data?: { layers?: Record<string, unknown> } }).data?.layers ?? {}
     if (event.name==='layers'&&Object.keys(layers).length<=0) {
       // call play logic or being reconnect interval
       close().then(() => {
@@ -34,13 +67,15 @@ const subscribe=async (streamName, streamAccountId) => {
     }
   })
 
-  millicastView.on('newTrack', (event) => {
-    addStream(event.streams[0])
+  millicastView.on('track', (event) => {
+    if (event) {
+      addStream(event.streams[0])
+    }
   })
 
   const close=() => {
     removeStream()
-    millicastView.millicastSignaling?.close()
+    millicastView.stop()
     return Promise.resolve({})
   }
 
