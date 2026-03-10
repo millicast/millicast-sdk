@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events'
 import reemit from 're-emitter'
 import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnectionStats'
-import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './types/Codecs.types'
@@ -395,7 +394,7 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection): 
     const offer = await peer.createOffer()
     logger.info('Peer onnegotiationneeded, got local offer', offer.sdp)
     await peer.setLocalDescription(offer)
-    const sdp = SdpParser.renegotiate(offer.sdp!, peer.remoteDescription.sdp!)
+    const sdp = renegotiateRemoteSdp(offer.sdp!, peer.remoteDescription.sdp!)
     logger.info('Peer onnegotiationneeded, updating remote description', sdp)
     await peer.setRemoteDescription({ type: 'answer', sdp })
     logger.info('Peer onnegotiationneeded, renegotiation done')
@@ -427,6 +426,66 @@ function syncVideoExtensions (peer: RTCPeerConnection): void {
       logger.warn(`Failed to sync video extensions for transceiver ${videoTransceivers[i].mid}:`, error)
     }
   }
+}
+
+function renegotiateRemoteSdp (localOffer: string, remoteAnswer: string): string {
+  const splitSdp = (sdp: string) => {
+    const idx = sdp.indexOf('\r\nm=')
+    if (idx === -1) return { session: sdp, sections: [] as string[] }
+    const session = sdp.substring(0, idx + 2)
+    const rest = sdp.substring(idx + 2)
+    return { session, sections: rest.split(/(?=m=)/).filter(s => s.length > 0) }
+  }
+
+  const getMid = (s: string) => s.match(/a=mid:(\S+)/)?.[1] ?? null
+  const getType = (s: string) => s.match(/^m=(\w+)/)?.[1] ?? null
+  const getDir = (s: string) => {
+    if (s.includes('a=sendonly')) return 'sendonly'
+    if (s.includes('a=recvonly')) return 'recvonly'
+    if (s.includes('a=inactive')) return 'inactive'
+    return 'sendrecv'
+  }
+  const reverseDir = (d: string) => {
+    if (d === 'sendonly') return 'recvonly'
+    if (d === 'recvonly') return 'sendonly'
+    return d
+  }
+
+  const offer = splitSdp(localOffer)
+  const answer = splitSdp(remoteAnswer)
+
+  const answerByMid = new Map<string, string>()
+  const templateByType = new Map<string, string>()
+  for (const section of answer.sections) {
+    const mid = getMid(section)
+    if (mid) answerByMid.set(mid, section)
+    const type = getType(section)
+    if (type && !templateByType.has(type)) templateByType.set(type, section)
+  }
+
+  const result: string[] = []
+  for (const offerSection of offer.sections) {
+    const mid = getMid(offerSection)
+    if (!mid) continue
+
+    if (answerByMid.has(mid)) {
+      result.push(answerByMid.get(mid)!)
+    } else {
+      const type = getType(offerSection)
+      const template = type ? templateByType.get(type) : null
+      if (template) {
+        const templateDir = getDir(template)
+        const answerDir = reverseDir(getDir(offerSection))
+        let cloned = template.replace(/a=mid:\S+/, `a=mid:${mid}`)
+        if (templateDir !== answerDir) {
+          cloned = cloned.replace(`a=${templateDir}`, `a=${answerDir}`)
+        }
+        result.push(cloned)
+      }
+    }
+  }
+
+  return answer.session + result.join('')
 }
 
 async function configureDTX (peerConnection: RTCPeerConnection, enabled: boolean): Promise<void> {

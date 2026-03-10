@@ -44,7 +44,6 @@
     "jwt-decode": "^4.0.0",
     "re-emitter": "^1.1.4",
     "recast": "^0.23.11",
-    "semantic-sdp": "^3.31.1",
     "transaction-manager": "^2.1.7",
     "tslib": "^2.8.1",
     "ua-parser-js": "^2.0.9",
