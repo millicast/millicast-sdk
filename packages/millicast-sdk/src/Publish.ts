@@ -189,7 +189,7 @@ export default class Publish extends BaseWebRTC {
   async initConnection (data: { migrate: boolean }) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
-    let promises
+    
     if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
@@ -249,10 +249,8 @@ export default class Publish extends BaseWebRTC {
       signalingEvents.broadcastEvent,
     ])
 
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.options)
-    const signalingConnectPromise = signalingInstance.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
+    const localSdp = await webRTCPeerInstance.getRTCLocalSDP(this.options)
+    await signalingInstance.connect()
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -292,14 +290,14 @@ export default class Publish extends BaseWebRTC {
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
       webRTCPeerInstance.sessionDescription
     )
-    promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
+    const promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
 
-    if (!this.options.disableVideo && this.options.bandwidth && this.options.bandwidth > 0) {
-      remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
-    }
-
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
+
+    if (!this.options.disableVideo && this.options.bandwidth && this.options.bandwidth > 0) {
+      await webRTCPeerInstance.updateBandwidthRestriction(this.options.bandwidth)
+    }
 
     logger.info('Broadcasting to streamName: ', this.streamName)
 

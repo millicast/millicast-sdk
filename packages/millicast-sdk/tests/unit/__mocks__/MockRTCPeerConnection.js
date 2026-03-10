@@ -69,6 +69,7 @@ export default class MockRTCPeerConnection {
     this.currentLocalDescription = null
     this.connectionState = 'new'
     this.senders = []
+    this.transceivers = []
   }
 
   getConfiguration () {
@@ -124,17 +125,43 @@ export default class MockRTCPeerConnection {
     }
   }
 
-  addTransceiver (track, _options) {
-    this.senders.push({
-      track,
+  addTransceiver (track, options) {
+    const sender = {
+      track: typeof track === 'string' ? { kind: track, label: track, id: Math.random().toString() } : track,
+      getParameters: () => ({
+        codecs: [
+          { mimeType: 'audio/opus', clockRate: 48000, channels: 2, payloadType: 111 },
+          { mimeType: 'video/H264', clockRate: 90000, payloadType: 102 }
+        ],
+        encodings: options?.sendEncodings || [{}],
+        headerExtensions: [],
+        rtcp: {}
+      }),
+      setParameters: jest.fn().mockResolvedValue(undefined),
       replaceTrack: (newTrack) => {
-        for (const sender of this.senders) {
-          if (sender.track.kind === newTrack.kind) {
-            sender.track = newTrack
+        for (const s of this.senders) {
+          if (s.track?.kind === newTrack.kind) {
+            s.track = newTrack
           }
         }
       }
-    })
+    }
+    const transceiver = {
+      sender,
+      receiver: { track },
+      direction: options?.direction || 'sendrecv',
+      mid: String(this.transceivers.length),
+      setCodecPreferences: jest.fn(),
+      setHeaderExtensionsToNegotiate: jest.fn(),
+      getHeaderExtensionsToNegotiate: jest.fn().mockReturnValue([])
+    }
+    this.senders.push(sender)
+    this.transceivers.push(transceiver)
+    return transceiver
+  }
+
+  getTransceivers () {
+    return this.transceivers
   }
 
   restartIce () {}
@@ -163,3 +190,36 @@ export default class MockRTCPeerConnection {
 }
 
 global.RTCPeerConnection = MockRTCPeerConnection
+
+class MockRTCRtpSender {
+  static getCapabilities (kind) {
+    if (kind === 'video') {
+      return {
+        codecs: [
+          { mimeType: 'video/H264', clockRate: 90000 },
+          { mimeType: 'video/VP8', clockRate: 90000 },
+          { mimeType: 'video/VP9', clockRate: 90000 }
+        ],
+        headerExtensions: []
+      }
+    }
+    if (kind === 'audio') {
+      return {
+        codecs: [
+          { mimeType: 'audio/opus', clockRate: 48000, channels: 2 }
+        ],
+        headerExtensions: []
+      }
+    }
+    return null
+  }
+}
+
+class MockRTCRtpReceiver {
+  static getCapabilities (kind) {
+    return MockRTCRtpSender.getCapabilities(kind)
+  }
+}
+
+global.RTCRtpSender = MockRTCRtpSender
+global.RTCRtpReceiver = MockRTCRtpReceiver

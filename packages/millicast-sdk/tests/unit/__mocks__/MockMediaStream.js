@@ -30,9 +30,16 @@ export default class MockMediaStream {
   }
 }
 
-const getSettings = () => {
+const getSettings = function () {
+  if (this.kind === 'video') {
+    return {
+      width: 1280,
+      height: 720,
+      frameRate: 30
+    }
+  }
   return {
-    channelCount: 0
+    channelCount: 2
   }
 }
 
