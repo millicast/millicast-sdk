@@ -206,7 +206,7 @@ class MockRTCRtpSender {
     if (kind === 'audio') {
       return {
         codecs: [
-          { mimeType: 'audio/opus', clockRate: 48000, channels: 2 }
+          { mimeType: 'audio/opus', clockRate: 48000, channels: 2, sdpFmtpLine: 'minptime=10;useinbandfec=1' }
         ],
         headerExtensions: []
       }

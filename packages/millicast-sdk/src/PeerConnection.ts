@@ -6,8 +6,10 @@ import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './types/Codecs.types'
 import {ConnectionType, ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types'
 import BitrateManager from './utils/BitrateManager'
+import SdpParser from './utils/SdpParser'
 
 const logger = Logger.get('PeerConnection')
+const userAgent = new UserAgent()
 
 interface RTCRtpEncodingParametersExtended extends RTCRtpEncodingParameters {
   scalabilityMode?: string
@@ -18,11 +20,6 @@ interface RTCRtpCodecCapabilityExtended extends RTCRtpCodecCapability {
   scalabilityModes?: string[]
   sdpFmtpLine?: string
 }
-
-interface RTCRtpCodecParametersExtended extends RTCRtpCodecParameters {
-  parameters?: Record<string, string>
-}
-
 
 interface LocalSDPOptions {
   stereo?: boolean
@@ -143,16 +140,6 @@ export default class PeerConnection extends EventEmitter {
       addReceiveTransceivers(this.peer!, options)
     }
 
-    if (!options.disableAudio) {
-      if (options.stereo) {
-        await configureAudioCodec(this.peer!, options.stereo)
-      }
-      await configureMultiOpus(this.peer!, mediaStream)
-    }
-    if (this.options.dtx && !this.options.disableAudio) {
-      await configureDTX(this.peer!, this.options.dtx)
-    }
-
     logger.info('Creating peer offer')
     const response = await this.peer!.createOffer()
 
@@ -160,6 +147,20 @@ export default class PeerConnection extends EventEmitter {
     logger.debug('Peer offer response: ', response.sdp)
 
     this.sessionDescription = response
+
+    // Apply Opus codec parameters via SDP munging (after createOffer, before setLocalDescription).
+    // This is required because no browser API supports modifying Opus fmtp parameters at runtime.
+    // See: https://issues.webrtc.org/issues/443612840
+    if (!options.disableAudio && this.sessionDescription.sdp) {
+      if (options.stereo) {
+        this.sessionDescription.sdp = SdpParser.setStereo(this.sessionDescription.sdp)
+        logger.info('Applied stereo to SDP via munging')
+      }
+      if (options.dtx) {
+        this.sessionDescription.sdp = SdpParser.setDTX(this.sessionDescription.sdp)
+        logger.info('Applied DTX to SDP via munging')
+      }
+    }
 
     if (options.setSDPToPeer) {
       await this.peer!.setLocalDescription(this.sessionDescription)
@@ -240,7 +241,6 @@ export default class PeerConnection extends EventEmitter {
   }
 
 static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
-  const browserData = new UserAgent()
   const browserCapabilities = RTCRtpSender.getCapabilities(kind)
 
   if (browserCapabilities) {
@@ -250,7 +250,7 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
     if (kind === 'audio') {
       regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i')
 
-      if (browserData.isChrome()) {
+      if (userAgent.isChrome()) {
         codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 } 
       }
     }
@@ -488,80 +488,6 @@ function renegotiateRemoteSdp (localOffer: string, remoteAnswer: string): string
   return answer.session + result.join('')
 }
 
-async function configureDTX (peerConnection: RTCPeerConnection, enabled: boolean): Promise<void> {
-  const transceivers = peerConnection.getTransceivers()
-  for (const transceiver of transceivers) {
-    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
-      const params = transceiver.sender.getParameters()
-      const opusCodec = (params.codecs as RTCRtpCodecParametersExtended[])?.find(
-        (codec) => codec.mimeType.toLowerCase() === 'audio/opus'
-      )
-      if (opusCodec) {
-        opusCodec.parameters = {
-          ...opusCodec.parameters,
-          dtx: enabled ? '1' : '0',
-        }
-        logger.debug('Setting dtx to ', enabled)
-        await transceiver.sender.setParameters(params)
-      }
-    }
-  }
-}
-
-async function configureMultiOpus (peerConnection: RTCPeerConnection, mediaStream: MediaStream | null): Promise<void> {
-  if (!mediaStream) return
-
-  const audioTracks = mediaStream.getAudioTracks()
-  const transceivers = peerConnection.getTransceivers()
-
-  for (let i = 0; i < transceivers.length; i++) {
-    const transceiver = transceivers[i]
-
-    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
-      const params = transceiver.sender.getParameters()
-      const opusCodec = (params.codecs as RTCRtpCodecParametersExtended[])?.find(
-        (codec) => codec.mimeType.toLowerCase() === 'audio/opus'
-      )
-
-      if (opusCodec && audioTracks[i]) {
-        opusCodec.parameters = {
-          ...opusCodec.parameters,
-          maxaveragebitrate: '128000',
-          useinbandfec: '1',
-        }
-
-        await transceiver.sender.setParameters(params)
-      }
-    }
-  }
-}
-
-async function configureAudioCodec (peerConnection: RTCPeerConnection, stereo: boolean = true): Promise<void> {
-  const transceivers = peerConnection.getTransceivers()
-
-  for (const transceiver of transceivers) {
-    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
-      const params = transceiver.sender.getParameters()
-
-      // Find Opus codec
-      const opusCodec = (params.codecs as RTCRtpCodecParametersExtended[])?.find(
-        (codec) => codec.mimeType.toLowerCase() === 'audio/opus'
-      )
-
-      if (opusCodec) {
-        // Set stereo parameters
-        opusCodec.parameters = {
-          ...opusCodec.parameters,
-          stereo: stereo ? '1' : '0',
-          'sprop-stereo': stereo ? '1' : '0',
-        }
-
-        await transceiver.sender.setParameters(params)
-      }
-    }
-  }
-}
-
 const configureRtpExtensions = async (peer: RTCPeerConnection, options: LocalSDPOptions): Promise<void> => {
   const transceivers = peer.getTransceivers()
 
@@ -577,19 +503,27 @@ const configureRtpExtensions = async (peer: RTCPeerConnection, options: LocalSDP
 
     const isVideo = transceiver.sender.track?.kind === 'video'
 
-    // Add dependency descriptor for video if requested and not already present
-    if (options.dependencyDescriptor && isVideo) {
+    // Add dependency descriptor for video if requested.
+    // DD only makes sense with simulcast or SVC (scalabilityMode) — it describes layer dependencies.
+    if (options.dependencyDescriptor && isVideo && (options.simulcast || options.scalabilityMode)) {
       const uri = 'https://aomediacodec.github.io/av1-rtp-spec/#dependency-descriptor-rtp-header-extension'
-      if (!extensionsToNegotiate.some((ext: { uri: string }) => ext.uri === uri)) {
+      const existing = extensionsToNegotiate.find((ext: { uri: string }) => ext.uri === uri)
+      if (existing) {
+        existing.direction = transceiver.direction
+      } else {
         extensionsToNegotiate.push({ uri, direction: transceiver.direction })
       }
     }
 
-    // Add absolute capture time if requested and not already present
+    // Enable absolute capture time if requested.
+    // The extension may already exist with direction 'stopped' — change it to 'sendrecv'.
     if (options.absCaptureTime) {
       const uri = 'http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time'
-      if (!extensionsToNegotiate.some((ext: { uri: string }) => ext.uri === uri)) {
-        extensionsToNegotiate.push({ uri, direction: 'sendonly' })
+      const existing = extensionsToNegotiate.find((ext: { uri: string }) => ext.uri === uri)
+      if (existing) {
+        existing.direction = 'sendrecv'
+      } else {
+        extensionsToNegotiate.push({ uri, direction: 'sendrecv' })
       }
     }
 
@@ -623,8 +557,7 @@ const addMediaStreamToPeer = async (
     if (track.kind === 'video') {
       initOptions.direction = !options.disableVideo ? 'sendonly' : 'inactive'
       if (options.simulcast && !options.disableVideo) {
-        const browserData = new UserAgent()
-        if (browserData.isChromium()) {
+        if (userAgent.isChromium()) {
           logger.debug('Enabling simulcast')
 
           const settings = track.getSettings()
@@ -637,7 +570,7 @@ const addMediaStreamToPeer = async (
         } else {
           logger.warn('Simulcast not supported in this browser')
         }
-      } else if (options.scalabilityMode && new UserAgent().isChrome()) {
+      } else if (options.scalabilityMode && userAgent.isChrome()) {
         logger.debug(`Video track with scalability mode: ${options.scalabilityMode}.`)
         initOptions.sendEncodings = [
           { scalabilityMode: options.scalabilityMode } as RTCRtpEncodingParametersExtended,
@@ -656,12 +589,11 @@ const addMediaStreamToPeer = async (
 }
 
 const addReceiveTransceivers = (peer: RTCPeerConnection, options: LocalSDPOptions): void => {
-  const browserData = new UserAgent()
   if (!options.disableVideo) {
     const transceiver = peer.addTransceiver('video', {
       direction: 'recvonly',
     })
-    if (browserData.isOpera()) {
+    if (userAgent.isOpera()) {
       const videoCapabilities = RTCRtpReceiver.getCapabilities('video')
       if (videoCapabilities) {
         transceiver.setCodecPreferences(

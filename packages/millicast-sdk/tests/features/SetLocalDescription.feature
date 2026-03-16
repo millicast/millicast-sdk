@@ -63,12 +63,12 @@ Feature: As a user I want to set my local session description so I can broadcast
   Scenario: Get RTC Local SDP with DTX enabled
     Given I have a MediaStream with 1 audio track and 1 video track and DTX enabled
     When I want to get the RTC Local SDP
-    Then returns the SDP with DTX configured via browser API
+    Then returns the SDP with DTX configured via SDP munging
 
   Scenario: Get RTC Local SDP with stereo configured via browser API
     Given I have a MediaStream with 1 audio track and 1 video track and stereo enabled
     When I want to get the RTC Local SDP
-    Then returns the SDP with stereo configured via browser API
+    Then returns the SDP with stereo configured via SDP munging
 
   Scenario: Get RTC Local SDP with multi-opus configured via browser API
     Given I have a MediaStream with 1 audio track and 1 video track for multi-opus

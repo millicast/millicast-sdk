@@ -5,7 +5,8 @@ import { AbrConfigurationOptions } from './Signaling.types'
 
 export type ViewConnectOptions = {
   /**
-   * - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * - True to enable Discontinuous Transmission (DTX) in Opus. Otherwise False.
+   * DTX reduces audio bandwidth when a participant is silent.
    */
   dtx?: boolean
   /**
