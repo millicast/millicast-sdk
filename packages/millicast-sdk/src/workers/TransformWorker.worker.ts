@@ -1,17 +1,17 @@
 import Logger from 'js-logger'
 import { DOLBY_SDK_TIMESTAMP_UUID, addH26xSEI, extractH26xMetadata } from '../utils/Codecs'
 import { VideoCodec } from '../types/Codecs.types'
-import { TransformEvent, TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
+import { type TransformEvent, type TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 const logger = Logger.get('TransformWorker')
 logger.setLevel(Logger.DEBUG)
 
 const DROPPED_SOURCE_TIMEOUT = 2000
 const metadata: TransformWorkerSeiMetadata[] = []
 let codec = ''
-let payloadTypeCodec: { [key: number]: string } = {}
+let payloadTypeCodec: Record<number, string> = {}
 // When simulcast is enabled, each resolution (height and width) frame has a different syncronization source (ssrc).
 // This object keeps track of the last timestamp each ssrc frame came in, so if that resolution stoped from been sent, after a timeout, it will be not taken into account for sending metadata.
-const synchronizationSources: { [key: string]: number } = {}
+const synchronizationSources: Record<string, number> = {}
 let synchronizationSourcesWithMetadata: number[] = []
 
 function createReceiverTransform (mid: string) {
@@ -23,7 +23,7 @@ function createReceiverTransform (mid: string) {
       // This function is intentionally left empty
     },
     async transform (encodedFrame: RTCEncodedVideoFrame, controller) {
-      // eslint-disable-next-line no-undef
+       
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const payloadType = encodedFrame.getMetadata().payloadType
         const frameCodec = payloadType ? payloadTypeCodec[payloadType].toLowerCase() : codec
@@ -80,7 +80,7 @@ function createSenderTransform (): TransformStream {
       // This function is intentionally left empty
     },
     async transform (encodedFrame: RTCEncodedVideoFrame, controller) {
-      // eslint-disable-next-line no-undef
+       
       if (encodedFrame instanceof RTCEncodedVideoFrame) {
         const frameMetadata = encodedFrame.getMetadata()
         const newSyncSource = frameMetadata.synchronizationSource as number
@@ -99,7 +99,7 @@ function createSenderTransform (): TransformStream {
             addH26xSEI(metadata[0], encodedFrame)
             synchronizationSourcesWithMetadata.push(newSyncSource)
           } catch (error) {
-            console.error(error)
+            logger.error(error)
           } finally {
             clearMetadata()
           }
@@ -117,7 +117,7 @@ function setupPipe (
   readable.pipeThrough(transform).pipeTo(writable)
 }
 
-// eslint-disable-next-line no-undef
+ 
 addEventListener('rtctransform', (event: unknown) => {
   const transformEvent = event as TransformEvent
   let transform: TransformStream

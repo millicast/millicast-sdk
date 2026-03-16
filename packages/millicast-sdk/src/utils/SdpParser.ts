@@ -24,7 +24,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with stereo support.
    * @example SdpParser.setStereo(sdp)
    */
-  setStereo (sdp : string = ''): string {
+  setStereo (sdp  = ''): string {
     sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1;stereo=1;sprop-stereo=1')
     return sdp
   },
@@ -39,7 +39,7 @@ const SdpParser = {
    * @returns {String} SDP parsed with DTX support.
    * @example SdpParser.setDTX(sdp)
    */
-  setDTX (sdp: string = ''): string {
+  setDTX (sdp = ''): string {
     sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1;usedtx=1')
     return sdp
   },
@@ -53,7 +53,7 @@ const SdpParser = {
    * @param {String} newCodecName - New codec name to replace.
    * @returns {String} SDP updated with new codec name.
    */
-  adaptCodecName (sdp: string = '', codec: string = '', newCodecName: string = ''): string {
+  adaptCodecName (sdp = '', codec = '', newCodecName = ''): string {
     if (!sdp) {
       return sdp
     }
@@ -69,10 +69,10 @@ const SdpParser = {
    * @param {String} sdp - Current SDP.
    * @returns {Object} Map of payload type to codec name.
    */
-  getCodecPayloadType (sdp: string = ''): {[key: string]: string} {
+  getCodecPayloadType (sdp = ''): Record<string, string> {
     const reg = new RegExp('a=rtpmap:(\\d+) (\\w+)/\\d+', 'g')
     const matches = sdp.matchAll(reg)
-    const codecMap: {[key: string]: string} = {}
+    const codecMap: Record<string, string> = {}
 
     for (const match of matches) {
       codecMap[match[1]] = match[2]

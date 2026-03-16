@@ -4,13 +4,17 @@ export type ViewServerEvent = 'active' | 'inactive' | 'updated' | 'layers' | 'va
 
 export type PublishServerEvent = 'active' | 'inactive' | 'viewercount'
 
-export type DecodedJWT = {
-  [key: string]: {
+export type DecodedJWT = Record<string, {
     streamName: string
     record: boolean
-  }
-}
+  }>;
 
-export type ReconnectData = {
+/**
+ * @deprecated Use ReconnectEvent from Events.types.ts instead
+ */
+export interface ReconnectData {
   error: Error
 }
+
+// Re-export event types for convenience
+export type { ReconnectEvent, BaseWebRTCEvents } from './Events.types'

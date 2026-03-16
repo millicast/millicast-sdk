@@ -4,7 +4,7 @@ import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnection
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './types/Codecs.types'
-import {ConnectionType, ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types'
+import {ConnectionType, type ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types'
 import BitrateManager from './utils/BitrateManager'
 import SdpParser from './utils/SdpParser'
 
@@ -200,7 +200,7 @@ export default class PeerConnection extends EventEmitter {
     await this.bitrateManager!.updateVideoBitrate(bitrate)
   }
 
-  async updateBitrate (bitrate: number = 0): Promise<void> {
+  async updateBitrate (bitrate = 0): Promise<void> {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')

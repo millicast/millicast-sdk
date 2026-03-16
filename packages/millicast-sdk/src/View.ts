@@ -13,21 +13,21 @@ import {
   rtcDrmOnTrack,
   rtcDrmEnvironments,
   rtcDrmFeedFrame,
-  DrmConfig,
+  type DrmConfig,
 } from './drm/rtc-drm-transform.min.js'
 import SdpParser from './utils/SdpParser'
-import { TokenGeneratorCallback } from './types/Director.types'
+import { type TokenGeneratorCallback } from './types/Director.types'
 import {
-  ViewConnectOptions,
-  LayerInfo,
-  ViewProjectSourceMapping,
-  DRMOptions,
-  MetadataObject,
-  SEIUserUnregisteredData,
-  ViewerEvents,
+  type ViewConnectOptions,
+  type LayerInfo,
+  type ViewProjectSourceMapping,
+  type DRMOptions,
+  type MetadataObject,
+  type SEIUserUnregisteredData,
 } from './types/View.types.js'
-import { DRMProfile } from './types/Director.types'
-import { DecodedJWT, Media } from './types/BaseWebRTC.types'
+import { type ViewerEvents } from './types/Events.types'
+import { type DRMProfile } from './types/Director.types'
+import { type DecodedJWT, type Media } from './types/BaseWebRTC.types'
 import { VideoCodec } from './types/Codecs.types'
 import { webRTCEvents } from './types/PeerConnection.types'
 import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
@@ -62,9 +62,9 @@ const defaultConnectOptions: ViewConnectOptions = {
  */
 export default class View extends BaseWebRTC {
   // States what payload type is associated with each codec from the SDP answer.
-  private payloadTypeCodec: { [key: number]: string } = {}
+  private payloadTypeCodec: Record<number, string> = {}
   // Follows the media id values of each transceiver's track from the 'track' events.
-  private tracksMidValues: { [key: string]: MediaStreamTrack } = {}
+  private tracksMidValues: Record<string, MediaStreamTrack> = {}
   // mapping media ID of RTCRtcTransceiver to DRM Options
   private drmOptionsMap: Map<string, DrmConfig> | null = null
   private streamName = ''
@@ -74,14 +74,14 @@ export default class View extends BaseWebRTC {
   private isMainStreamActive = false
   private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
-  private events: { [K in keyof ViewerEvents]: Array<(payload: ViewerEvents[K]) => void> } = {}
+  private events: Partial<{ [K in keyof ViewerEvents]: ((payload: ViewerEvents[K]) => void)[] }> = {}
   protected override options: ViewConnectOptions | null = null
 
   constructor (
     streamName: string | undefined, 
     tokenGenerator: TokenGeneratorCallback, 
     mediaElement : HTMLMediaElement | undefined = undefined, 
-    autoReconnect : boolean = true) {
+    autoReconnect  = true) {
     if (streamName) {
       logger.warn(
         'The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.'
@@ -221,7 +221,7 @@ export default class View extends BaseWebRTC {
    * @param {Array<MediaStream>} streams - Streams the track will belong to.
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
-  async addRemoteTrack (media: Media, streams: Array<MediaStream>): Promise<RTCRtpTransceiver> {
+  async addRemoteTrack (media: Media, streams: MediaStream[]): Promise<RTCRtpTransceiver> {
     logger.info('Viewer adding remote track', media)
     const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
     for (const stream of streams) {
@@ -267,7 +267,7 @@ export default class View extends BaseWebRTC {
    * Stop projecting attached source in selected media ids.
    * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
    */
-  async unproject (mediaIds: Array<string>): Promise<void> {
+  async unproject (mediaIds: string[]): Promise<void> {
     logger.debug('Viewer unproject mediaIds: ', mediaIds)
     await this.signaling?.cmd('unproject', { mediaIds })
     logger.info('Unprojection done')

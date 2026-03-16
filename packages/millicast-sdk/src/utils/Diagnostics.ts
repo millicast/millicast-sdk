@@ -1,11 +1,11 @@
 import {
-  ConnectionStats,
-  DiagnosticsObject,
-  CMCDDiagnostics,
-  InboundStats,
-  CMCDStats,
-  OutboundVideoStats,
-  OutboundAudioStats
+  type ConnectionStats,
+  type DiagnosticsObject,
+  type CMCDDiagnostics,
+  type InboundStats,
+  type CMCDStats,
+  type OutboundVideoStats,
+  type OutboundAudioStats
 } from '../types/stats.types'
 import pkg from '../../package.json'
 

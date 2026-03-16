@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 export default {
   displayName: '@millicast/sdk',
   preset: '../../jest.preset.js',

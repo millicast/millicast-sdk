@@ -5,12 +5,12 @@ import SdpParser from './utils/SdpParser'
 import { VideoCodec } from './types/Codecs.types'
 import Diagnostics from './utils/Diagnostics'
 import {
-  SignalingSubscribeOptions,
-  SignalingPublishOptions,
-  ViewCmd,
-  ViewResponse,
-  PublishCmd,
-  PublishResponse,
+  type SignalingSubscribeOptions,
+  type SignalingPublishOptions,
+  type ViewCmd,
+  type ViewResponse,
+  type PublishCmd,
+  type PublishResponse,
 } from './types/Signaling.types'
 import { extractSupportedVideoCodecs } from './utils/RTCCodec'
 
@@ -33,12 +33,12 @@ type BroadcastEventName =
   | 'viewercount'
   | 'updated'
 
-type SignalingOptions = {
+interface SignalingOptions {
   streamName: string | null
   url: string
 }
 
-type ConnectionSuccessEvent = {
+interface ConnectionSuccessEvent {
   ws: WebSocket
   tm: TransactionManager
 }

@@ -2,10 +2,10 @@ import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
 import {
-  DirectorPublisherOptions,
-  DirectorResponse,
-  DirectorSubscriberOptions,
-  MillicastDirectorResponse
+  type DirectorPublisherOptions,
+  type DirectorResponse,
+  type DirectorSubscriberOptions,
+  type MillicastDirectorResponse
 } from './types/Director.types'
 
 const logger = Logger.get('Director')
@@ -198,7 +198,7 @@ const Director = {
 
   getSubscriber: async (
     options: DirectorSubscriberOptions,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     streamAccountId: string | null = null,
     subscriberToken: string | null = null
   ) => {
@@ -334,7 +334,7 @@ const getDirectorPath = (mode = 'subscribe') : string | null => {
     }
     return `${apiEndpoint}/api/director/${mode}`
   } catch (e) {
-    console.error(`Director URL ${apiEndpoint} is invalid`, e)
+    logger.error(`Director URL ${apiEndpoint} is invalid`, e)
     return null
   }
 }
