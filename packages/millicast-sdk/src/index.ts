@@ -1,24 +1,40 @@
-// Core modules
+/**
+ * Millicast SDK Exports
+ *
+ * This file defines the public API of the SDK.
+ * All exports here are part of the public contract and should maintain backwards compatibility.
+ */
+
+// =============================================================================
+// CORE MODULES
+// These are the primary classes users interact with
+// =============================================================================
 export { default as Director } from './Director'
 export { default as Logger } from './Logger'
-export { default as PeerConnectionStats } from './PeerConnectionStats'
 export { default as PeerConnection } from './PeerConnection.js'
 export { default as Signaling } from './Signaling.js'
 export { default as Publish } from './Publish.js'
 export { default as View } from './View.js'
 
-// Named exports from core modules
-export { default as FetchError } from './utils/FetchError'
+// =============================================================================
+// NAMED EXPORTS 
+// =============================================================================
 export { defaultApiEndpoint } from './Director'
 export { signalingEvents } from './Signaling.js'
+export { ConnectionType, webRTCEvents } from './types/PeerConnection.types'
+export { VideoCodec, AudioCodec } from './types/Codecs.types'
+
+export { default as PeerConnectionStats } from './PeerConnectionStats'
 export { peerConnectionStatsEvents } from './PeerConnectionStats'
+export { default as FetchError } from './utils/FetchError'
 export { MillicastEventEmitter } from './EventEmitter'
+
+// =============================================================================
+// TYPE EXPORTS
+// =============================================================================
 
 // Logger types
 export type { LogLevel } from './Logger'
-
-// Codec enums and types
-export { VideoCodec, AudioCodec } from './types/Codecs.types'
 
 // Director types
 export type {
@@ -32,11 +48,6 @@ export type {
 } from './types/Director.types'
 
 // PeerConnection types
-export {
-  ConnectionType,
-  webRTCEvents,
-} from './types/PeerConnection.types'
-
 export type {
   ConnectionTypeValue,
   PeerConnectionConfig,
@@ -80,8 +91,20 @@ export type {
   Layer,
   LayersEvent,
   MetadataEvent,
-  ViewerEvents,
 } from './types/View.types'
+
+// Event types for event handling
+export type {
+  ViewerEvents,
+  PublisherEvents,
+  PeerConnectionEvents,
+  PeerConnectionStatsEvents,
+  SignalingEvents,
+  SignalingConnectionSuccessEvent,
+  ReconnectEvent,
+  ConnectionState,
+  BaseWebRTCEvents,
+} from './types/Events.types'
 
 // BaseWebRTC types
 export type {
@@ -89,19 +112,7 @@ export type {
   ViewServerEvent,
   PublishServerEvent,
   ReconnectData,
-  ReconnectEvent,
-  BaseWebRTCEvents,
 } from './types/BaseWebRTC.types'
-
-// Event types for type-safe event handling
-export type {
-  ConnectionState,
-  SignalingConnectionSuccessEvent,
-  SignalingEvents,
-  PeerConnectionEvents,
-  PeerConnectionStatsEvents,
-  PublisherEvents,
-} from './types/Events.types'
 
 // Stats types
 export type {
