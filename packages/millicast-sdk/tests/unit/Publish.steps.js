@@ -139,7 +139,7 @@ defineFeature(feature, (test) => {
     let publisher
 
     given('an instance of Publish', async () => {
-      jest.spyOn(PeerConnection.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
+      jest.spyOn(PeerConnection.prototype, 'updateBandwidthRestriction').mockResolvedValue(undefined)
       publisher = new Publish(undefined, mockTokenGenerator)
     })
 

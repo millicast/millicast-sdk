@@ -59,3 +59,38 @@ Feature: As a user I want to set my local session description so I can broadcast
     Given I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode
     When I want to get the RTC Local SDP
     Then returns the SDP without scalability mode
+
+  Scenario: Get RTC Local SDP with DTX enabled
+    Given I have a MediaStream with 1 audio track and 1 video track and DTX enabled
+    When I want to get the RTC Local SDP
+    Then returns the SDP with DTX configured via SDP munging
+
+  Scenario: Get RTC Local SDP with stereo configured via browser API
+    Given I have a MediaStream with 1 audio track and 1 video track and stereo enabled
+    When I want to get the RTC Local SDP
+    Then returns the SDP with stereo configured via SDP munging
+
+  Scenario: Get RTC Local SDP with multi-opus configured via browser API
+    Given I have a MediaStream with 1 audio track and 1 video track for multi-opus
+    When I want to get the RTC Local SDP
+    Then returns the SDP with multi-opus configured via browser API
+
+  Scenario: Get RTC Local SDP with absCaptureTime header extension
+    Given I have a MediaStream with 1 audio track and 1 video track and absCaptureTime enabled
+    When I want to get the RTC Local SDP
+    Then returns the SDP with absCaptureTime header extension configured
+
+  Scenario: Get RTC Local SDP with dependencyDescriptor header extension
+    Given I have a MediaStream with 1 audio track and 1 video track and dependencyDescriptor enabled
+    When I want to get the RTC Local SDP
+    Then returns the SDP with dependencyDescriptor header extension configured
+
+  Scenario: Get RTC Local SDP with simulcast configures multiple sendEncodings layers
+    Given I have a MediaStream with 1 audio track and 1 video track for simulcast encoding verification
+    When I want to get the RTC Local SDP
+    Then returns the SDP with simulcast sendEncodings layers configured
+
+  Scenario: Renegotiation syncs video header extensions to new transceivers
+    Given I have an established peer connection with a video transceiver with header extensions
+    When a new video transceiver is added and renegotiation is triggered
+    Then the new video transceiver has the same header extensions as the first

@@ -8,11 +8,12 @@ export interface PublishConnectOptions {
    */
   sourceId?: string | null
   /**
-   * - True to modify SDP for support stereo. Otherwise False.
+   * - True to enable stereo audio. Otherwise False.
    */
   stereo?: boolean
   /**
-   * - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * - True to enable Discontinuous Transmission (DTX) in Opus. Otherwise False.
+   * DTX reduces audio bandwidth when a participant is silent.
    */
   dtx?: boolean
   /**
@@ -20,7 +21,9 @@ export interface PublishConnectOptions {
    */
   absCaptureTime?: boolean
   /**
-   * - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
+   * - True to enable the AOM dependency descriptor RTP header extension. Otherwise False.
+   * Only takes effect when `simulcast` or `scalabilityMode` is also set, as DD describes
+   * layer dependencies. **Only available in Chromium-based browsers** via `setHeaderExtensionsToNegotiate()`.
    */
   dependencyDescriptor?: boolean
   /**

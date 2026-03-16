@@ -1,46 +1,27 @@
-import { UAParser } from 'ua-parser-js'
-
-const chromeExcludedOS = ['iOS']
-
 export default class UserAgent {
-  private parser: UAParser
-
-  constructor () {
-    // Check for window to avoid SSR/Node errors during testing
-    const ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
-    this.parser = new UAParser(ua)
+  private get ua (): string {
+    // Read live UA at call time so test mocks and dynamic changes are respected
+    return typeof window !== 'undefined' ? window.navigator.userAgent : ''
   }
 
   isChromium () {
-    const browserData = this.parser.getUA()
-    return !!browserData.match(/Chrome/i)
+    return /Chrome/i.test(this.ua)
   }
 
   isChrome () {
-    const browserData = this.parser.getBrowser()
-    if (!browserData.name) {
-      return false
-    }
-    const osData = this.parser.getOS()
-
-    const regex = new RegExp(chromeExcludedOS.join('|'), 'i')
-    const osAllowed = !regex.test(osData.name || '')
-
-    return !!browserData.name.match(/Chrome/i) && osAllowed
+    // Must contain Chrome but not be on iOS (CriOS is Chrome on iOS but behaves as Safari)
+    return /Chrome/i.test(this.ua) && !/iOS|iPhone|iPad|iPod/i.test(this.ua)
   }
 
   isFirefox () {
-    const browserData = this.parser.getBrowser()
-    return !!browserData.name?.match(/Firefox/i)
+    return /Firefox/i.test(this.ua)
   }
 
   isOpera () {
-    const browserData = this.parser.getBrowser()
-    return !!browserData.name?.match(/Opera/i)
+    return /Opera|OPR\//i.test(this.ua)
   }
 
   isSafari () {
-    const browserData = this.parser.getBrowser()
-    return !!browserData.name?.match(/Safari/i)
+    return /Safari/i.test(this.ua) && !/Chrome/i.test(this.ua)
   }
 }

@@ -140,7 +140,6 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
   const events = ['viewercount']
-  let counter = 0;
 
   const onVideoFrameReceived = (now, _) => {
     const date = new Date(0)
@@ -170,6 +169,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         simulcast,
         disableVideo,
         disableAudio,
+        stereo,
+        dtx,
+        setSDPToPeer: true,
         peerConfig : {
           autoInitStats: true,
           statsIntervalMs : 5000
