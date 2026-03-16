@@ -1,4 +1,4 @@
-import { AudioCodec, VideoCodec } from './Codecs.types'
+import { type AudioCodec, type VideoCodec } from './Codecs.types'
 
 export const ConnectionType = {
   Publisher: 'Publisher',
@@ -32,7 +32,7 @@ export interface PeerConnectionConfig extends RTCConfiguration {
 export interface SdpOptions {
   stereo?: boolean
   dtx?: boolean
-  mediaStream?: MediaStream | Array<MediaStreamTrack>
+  mediaStream?: MediaStream | MediaStreamTrack[]
   codec?: VideoCodec
   simulcast?: boolean
   scalabilityMode?: string | null
@@ -47,11 +47,11 @@ export interface SdpOptions {
 export interface ICodecs {
   codec?: VideoCodec | AudioCodec
   mimeType?: string
-  scalabilityModes?: Array<string>
+  scalabilityModes?: string[]
   channels?: number
 }
 
 export interface MillicastCapability {
   codecs: ICodecs[]
-  headerExtensions: Array<RTCRtpHeaderExtensionCapability>
+  headerExtensions: RTCRtpHeaderExtensionCapability[]
 }

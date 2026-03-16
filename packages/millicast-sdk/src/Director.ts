@@ -2,10 +2,10 @@ import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
 import {
-  DirectorPublisherOptions,
-  DirectorResponse,
-  DirectorSubscriberOptions,
-  MillicastDirectorResponse
+  type DirectorPublisherOptions,
+  type DirectorResponse,
+  type DirectorSubscriberOptions,
+  type MillicastDirectorResponse
 } from './types/Director.types'
 
 const logger = Logger.get('Director')

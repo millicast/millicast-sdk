@@ -1,7 +1,7 @@
-import jsLogger, { ILogLevel, ILogHandler, ILogger } from 'js-logger'
+import jsLogger, { type ILogLevel, type ILogHandler, type ILogger } from 'js-logger'
 import { version } from '../package.json'
 import Diagnostics from './utils/Diagnostics'
-import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/stats.types'
+import { type CMCDDiagnostics, type DiagnosticsObject, type DiagnosticsOptions } from './types/stats.types'
 
 /**
  * @module Logger
@@ -36,7 +36,7 @@ import { CMCDDiagnostics, DiagnosticsObject, DiagnosticsOptions } from './types/
  * // Timer name: 35282.997802734375 ms
  */
 
-export type LogLevel={
+export interface LogLevel {
   /**
    * - The numerical representation of the level.
    */
@@ -94,9 +94,7 @@ const DEFAULT_LOG_HISTORY_SIZE = 10000
 let maxLogHistorySize = DEFAULT_LOG_HISTORY_SIZE
 let history: string[] = []
 let loggerLevel = jsLogger.OFF
-const namedLoggerLevels: {
-  [key: string]: LogLevel
-} = {}
+const namedLoggerLevels: Record<string, LogLevel> = {}
 const customHandlers: {handler: ILogHandler; level: LogLevel}[] = []
 
 /**

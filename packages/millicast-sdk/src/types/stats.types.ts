@@ -1,6 +1,6 @@
-import { InputAudio, InputVideo, OutputAudio, OutputVideo } from '@dolbyio/webrtc-stats'
+import { type InputAudio, type InputVideo, type OutputAudio, type OutputVideo } from '@dolbyio/webrtc-stats'
 
-export type ConnectionStats = {
+export interface ConnectionStats {
   /**
    * - All RTCPeerConnection stats without parsing. Reference {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport}.
    */
@@ -33,7 +33,7 @@ export type ConnectionStats = {
   currentRoundTripTime?: number
 }
 
-export type AudioReport = {
+export interface AudioReport {
   /**
    * - Parsed information of each inbound-rtp.
    */
@@ -44,7 +44,7 @@ export type AudioReport = {
   outbounds: OutboundAudioStats[]
 }
 
-export type VideoReport = {
+export interface VideoReport {
   /**
    * - Parsed information of each inbound-rtp.
    */
@@ -112,7 +112,7 @@ export type OutboundVideoStats = OutputVideo & {
   bitrateBitsPerSecond: number
 }
 
-export type DiagnosticsObject = {
+export interface DiagnosticsObject {
   client: string
   version: string
   timestamp: string
@@ -129,7 +129,7 @@ export type DiagnosticsObject = {
   history?: string[]
 }
 
-export type DiagnosticsOptions = {
+export interface DiagnosticsOptions {
   statsCount: number,
   historySize: number,
   minLogLevel: string,
@@ -140,7 +140,7 @@ export type CMCDDiagnostics = Omit<DiagnosticsObject, 'stats'> & {
   stats: CMCDStats[]
 }
 
-export type CMCDStats = {
+export interface CMCDStats {
   ts: string | number
   ot: string
   bl: number

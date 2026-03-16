@@ -11,11 +11,11 @@ import { ConnectionType, webRTCEvents } from './types/PeerConnection.types'
 import FetchError from './utils/FetchError'
 import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
 import { VideoCodec } from './types/Codecs.types'
-import { PublishConnectOptions } from './types/Publish.types'
-import { TokenGeneratorCallback } from './types/Director.types'
-import { ReconnectData, DecodedJWT } from './types/BaseWebRTC.types'
-import { SignalingPublishOptions } from './types/Signaling.types'
-import { SEIUserUnregisteredData } from './types/View.types'
+import { type PublishConnectOptions } from './types/Publish.types'
+import { type TokenGeneratorCallback } from './types/Director.types'
+import { type ReconnectData, type DecodedJWT } from './types/BaseWebRTC.types'
+import { type SignalingPublishOptions } from './types/Signaling.types'
+import { type SEIUserUnregisteredData } from './types/View.types'
 import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
 
 const logger = Logger.get('Publish')
@@ -53,12 +53,12 @@ const connectOptions: PublishConnectOptions = {
  */
 export default class Publish extends BaseWebRTC {
   private worker: Worker | null = null
-  private recordingAvailable: boolean = false
+  private recordingAvailable = false
   private stopReemitingWebRTCPeerInstanceEvents?: () => void
   private stopReemitingSignalingInstanceEvents?: () => void
   protected override options: PublishConnectOptions = connectOptions
   private streamName: string | undefined
-  constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect: boolean = true) {
+  constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
     if (streamName) {
       logger.warn(
         'The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator'

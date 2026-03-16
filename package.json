@@ -113,6 +113,8 @@
     "swc-loader": "0.2.7",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.0",
+    "typedoc-plugin-markdown": "^4.6.0",
     "typescript": "^5.9.3",
     "underscore": "^1.13.7",
     "vite": "^7.3.1",

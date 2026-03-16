@@ -1,8 +1,8 @@
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
-import { OnStats, WebRTCStats } from '@dolbyio/webrtc-stats'
-import { PeerConnectionConfig } from './types/PeerConnection.types'
-import { ConnectionStats } from './types/stats.types'
+import { type OnStats, WebRTCStats } from '@dolbyio/webrtc-stats'
+import { type PeerConnectionConfig } from './types/PeerConnection.types'
+import { type ConnectionStats } from './types/stats.types'
 import { MillicastEventEmitter } from './EventEmitter'
 
 const logger = Logger.get('PeerConnectionStats')

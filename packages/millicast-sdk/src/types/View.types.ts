@@ -1,9 +1,9 @@
-import { Media, ViewServerEvent } from './BaseWebRTC.types'
-import { VideoCodec } from './Codecs.types'
-import { PeerConnectionConfig } from './PeerConnection.types'
-import { AbrConfigurationOptions } from './Signaling.types'
+import { type Media, type ViewServerEvent } from './BaseWebRTC.types'
+import { type VideoCodec } from './Codecs.types'
+import { type PeerConnectionConfig } from './PeerConnection.types'
+import { type AbrConfigurationOptions } from './Signaling.types'
 
-export type ViewConnectOptions = {
+export interface ViewConnectOptions {
   /**
    * - True to modify SDP for supporting dtx in opus. Otherwise False.
    */
@@ -39,7 +39,7 @@ export type ViewConnectOptions = {
   /**
    * - Do not receive media from the these source ids.
    */
-  excludedSourceIds?: Array<string> | null
+  excludedSourceIds?: string[] | null
   /**
    * - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
    */
@@ -78,7 +78,7 @@ export type ViewConnectOptions = {
   abrConfiguration?: AbrConfigurationOptions
 }
 
-export type ViewProjectSourceMapping = {
+export interface ViewProjectSourceMapping {
   /**
    * - Track id from the source (received on the "active" event), if not set the media kind will be used instead.
    */
@@ -97,7 +97,7 @@ export type ViewProjectSourceMapping = {
   layer?: LayerInfo
 }
 
-export type LayerInfo = {
+export interface LayerInfo {
   /**
    * - rid value of the simulcast encoding of the track  (default: automatic selection)
    */
@@ -123,7 +123,7 @@ export type LayerInfo = {
 /**
  * The configuration for DRM playback
  */
-export type DRMOptions = {
+export interface DRMOptions {
   /** The video element */
   videoElement: HTMLVideoElement
 
@@ -171,7 +171,7 @@ export type DRMOptions = {
 /**
  * DRM encryption parameters
  */
-export type EncryptionParameters = {
+export interface EncryptionParameters {
   /** 16-byte KeyID, in lowercase hexadecimal without separators */
   keyId: string
 
@@ -250,14 +250,12 @@ export interface LayersEventPayload {
   medias: LayersMediaCollection
 }
 
-export interface LayersMediaCollection {
-  [key: string]: LayerMedia
-}
+export type LayersMediaCollection = Record<string, LayerMedia>;
 
 export interface LayerMedia {
-  active: Array<LayerMediaInfo>
-  inactive: Array<LayerMediaInfo>
-  layers: Array<Layer>
+  active: LayerMediaInfo[]
+  inactive: LayerMediaInfo[]
+  layers: Layer[]
 }
 
 export interface LayerMediaInfo {
@@ -269,7 +267,7 @@ export interface LayerMediaInfo {
   totalBitrate: number
   width: number
   height: number
-  layers: Array<Layer>
+  layers: Layer[]
 }
 
 export interface Layer extends Omit<LayerMediaInfo, 'id' | 'layers'> {

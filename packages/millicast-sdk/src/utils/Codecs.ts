@@ -2,14 +2,14 @@
 /* eslint-disable camelcase */
 import {
   AudioCodec,
-  PictureParameterSet,
-  SequenceParameterSet,
-  VUIParameters
+  type PictureParameterSet,
+  type SequenceParameterSet,
+  type VUIParameters
 } from '../types/Codecs.types'
 import BitStreamReader from './BitStreamReader'
 import { VideoCodec } from '../types/Codecs.types'
-import { SEIUserUnregisteredData } from '../types/View.types'
-import { TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
+import { type SEIUserUnregisteredData } from '../types/View.types'
+import { type TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
 
 const NALUType = {
   SLICE_NON_IDR: 1,

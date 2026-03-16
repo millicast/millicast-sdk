@@ -5,7 +5,7 @@ import SdpParser from './utils/SdpParser'
 import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './types/Codecs.types'
-import {ConnectionType, ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types'
+import {ConnectionType, type ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types'
 
 const logger = Logger.get('PeerConnection')
 
@@ -192,7 +192,7 @@ export default class PeerConnection extends EventEmitter {
     return SdpParser.setVideoBitrate(sdp, bitrate)
   }
 
-  async updateBitrate (bitrate: number = 0): Promise<void> {
+  async updateBitrate (bitrate = 0): Promise<void> {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed')
       throw new Error('It is not possible for a viewer to update the bitrate.')
@@ -397,11 +397,11 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection): 
   }
 }
 
-const addMediaStreamToPeer = (
+const addMediaStreamToPeer = async (
   peer: RTCPeerConnection,
   mediaStream: MediaStream,
   options: LocalSDPOptions
-): void => {
+): Promise<void> => {
   logger.info('Adding mediaStream tracks to RTCPeerConnection')
   for (const track of mediaStream.getTracks()) {
     const initOptions: RTCRtpTransceiverInit = {

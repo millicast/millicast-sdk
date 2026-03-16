@@ -17,6 +17,6 @@ export function swapPropertyValues<
   }
 }
 
-export function typedKeys<T extends object> (obj: T): Array<keyof T> {
-  return Object.keys(obj) as Array<keyof T>
+export function typedKeys<T extends object> (obj: T): (keyof T)[] {
+  return Object.keys(obj) as (keyof T)[]
 }

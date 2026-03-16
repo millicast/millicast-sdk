@@ -1,6 +1,6 @@
-import { PublishServerEvent } from './BaseWebRTC.types'
-import { VideoCodec } from './Codecs.types'
-import { PeerConnectionConfig } from './PeerConnection.types'
+import { type PublishServerEvent } from './BaseWebRTC.types'
+import { type VideoCodec } from './Codecs.types'
+import { type PeerConnectionConfig } from './PeerConnection.types'
 
 export interface PublishConnectOptions {
   /**
@@ -27,7 +27,7 @@ export interface PublishConnectOptions {
    * - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    */
-  mediaStream: MediaStream | Array<MediaStreamTrack> | null
+  mediaStream: MediaStream | MediaStreamTrack[] | null
   /**
    * - Broadcast bandwidth. 0 for unlimited.
    */

@@ -1,13 +1,12 @@
-/* eslint-disable */
-
 // Insertable streams for `MediaStreamTrack` is supported.
+// Uses global type augmentation from global.d.ts for createEncodedStreams
 export const supportsInsertableStreams: boolean =
-  window.RTCRtpSender &&
-  !!(window.RTCRtpSender.prototype as any)['createEncodedStreams'] &&
-  typeof (window.RTCRtpSender.prototype as any)['createEncodedStreams'] === 'function' &&
-  window.RTCRtpReceiver &&
-  !!(window.RTCRtpReceiver.prototype as any)['createEncodedStreams']
+  typeof window !== 'undefined' &&
+  !!window.RTCRtpSender &&
+  typeof window.RTCRtpSender.prototype.createEncodedStreams === 'function' &&
+  !!window.RTCRtpReceiver &&
+  typeof window.RTCRtpReceiver.prototype.createEncodedStreams === 'function'
 
 
 // WebRTC RTP Script Transform is supported
-export const supportsRTCRtpScriptTransform = 'RTCRtpScriptTransform' in window
+export const supportsRTCRtpScriptTransform = typeof window !== 'undefined' && 'RTCRtpScriptTransform' in window

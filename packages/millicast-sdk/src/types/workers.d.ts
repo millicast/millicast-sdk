@@ -1,6 +1,4 @@
 declare module '*?worker&inline' {
-  const WorkerFactory: {
-    new (): Worker
-  }
+  const WorkerFactory: new () => Worker
   export default WorkerFactory
 }

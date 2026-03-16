@@ -19,7 +19,8 @@ module.exports={
       },
       extends: [
         'eslint:recommended',
-        'plugin:@typescript-eslint/recommended'
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/stylistic'
       ],
       rules: {
         '@typescript-eslint/no-empty-object-type': [
@@ -27,7 +28,15 @@ module.exports={
           {
             allowObjectTypes: 'always'
           }
-        ]
+        ],
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          {
+            prefer: 'type-imports',
+            fixStyle: 'inline-type-imports'
+          }
+        ],
+        '@typescript-eslint/no-explicit-any': 'error'
       }
     },
     {
@@ -54,7 +63,7 @@ module.exports={
   ],
   settings: {
     jest: {
-      version: 24
+      version: 30
     }
   }
 }

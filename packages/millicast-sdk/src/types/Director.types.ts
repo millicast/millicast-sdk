@@ -1,8 +1,8 @@
-export type MillicastDirectorResponse = {
+export interface MillicastDirectorResponse {
   /**
    * - WebSocket available URLs.
    */
-  urls: Array<string>
+  urls: string[]
   /**
    * - Access token for signaling initialization.
    */
@@ -10,10 +10,10 @@ export type MillicastDirectorResponse = {
   /**
    * - Object which represents a list of Ice servers.
    */
-  iceServers: Array<RTCIceServer>
+  iceServers: RTCIceServer[]
 }
 
-export type DirectorPublisherOptions = {
+export interface DirectorPublisherOptions {
   /**
    * - Millicast Publishing Token.
    */
@@ -27,7 +27,7 @@ export type DirectorPublisherOptions = {
    */
   streamType?: 'WebRtc' | 'Rtmp'
 }
-export type DirectorSubscriberOptions = {
+export interface DirectorSubscriberOptions {
   /**
    * - Millicast publisher Stream Name.
    */
@@ -42,7 +42,7 @@ export type DirectorSubscriberOptions = {
   subscriberToken?: string | null
 }
 
-export type DirectorResponse = {
+export interface DirectorResponse {
   urls: string[]
   jwt: string
   iceServers: RTCIceServer[]

@@ -1,6 +1,6 @@
-import { PublishServerEvent, ViewServerEvent } from './BaseWebRTC.types'
-import { VideoCodec } from './Codecs.types'
-import { LayerInfo } from './View.types'
+import { type PublishServerEvent, type ViewServerEvent } from './BaseWebRTC.types'
+import { type VideoCodec } from './Codecs.types'
+import { type LayerInfo } from './View.types'
 
 
 type AbrStrategy = 'quality' | 'bandwidth' | 'performance'
@@ -9,7 +9,7 @@ interface AbrStrategyMetadata {
   bitrate: number|undefined
 }
 
-export type AbrConfigurationOptions = {
+export interface AbrConfigurationOptions {
   /**
 
    * The strategy for initial playback behavior.
@@ -26,7 +26,7 @@ export type AbrConfigurationOptions = {
   metadata?: AbrStrategyMetadata | null
 }
 
-export type SignalingSubscribeOptions = {
+export interface SignalingSubscribeOptions {
   streamId?: string | null
   vad?: boolean
   pinnedSourceId?: string | null
@@ -40,7 +40,7 @@ export type SignalingSubscribeOptions = {
   abrConfiguration? : AbrConfigurationOptions
 }
 
-export type SignalingPublishOptions = {
+export interface SignalingPublishOptions {
   codec: VideoCodec
   record?: boolean | null
   sourceId?: string | null
@@ -61,7 +61,7 @@ export type ViewCmd = SignalingSubscribeOptions & {
   abr?: AbrConfigurationOptions
 }
 
-export type ViewResponse = {
+export interface ViewResponse {
   sdp: string
   subscriberId: string
   clusterId: string
@@ -73,7 +73,7 @@ export type PublishCmd = SignalingPublishOptions & {
   sdp: string
 }
 
-export type PublishResponse = {
+export interface PublishResponse {
   uuid: string
   feedId: string
   publisherId: string

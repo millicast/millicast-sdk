@@ -1,0 +1,30 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "name": "Millicast SDK",
+  "readme": "../../README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Core",
+    "Utilities",
+    "Types",
+    "*"
+  ],
+  "navigationLinks": {
+    "GitHub": "https://github.com/millicast/millicast-sdk",
+    "NPM": "https://www.npmjs.com/package/@millicast/sdk"
+  },
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "tsconfig": "./tsconfig.json"
+}

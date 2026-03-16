@@ -1,12 +1,8 @@
 // EventEmitter.ts
-interface EventMap {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+type EventMap = Record<string, unknown>;
 
-export class MillicastEventEmitter<T extends EventMap = object> {
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private events: { [K in keyof T]: Array<(payload: T[K]) => void> } = {} as any
+export class MillicastEventEmitter<T extends EventMap = Record<string, unknown>> {
+  private events: Partial<{ [K in keyof T]: ((payload: T[K]) => void)[] }> = {}
 
   on<K extends keyof T> (eventName: K, listener: (payload: T[K]) => void): this {
     if (!this.events[eventName]) {

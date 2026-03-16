@@ -1,5 +1,5 @@
 import { VideoCodec } from '../types/Codecs.types'
-import { PublishConnectOptions } from '../types/Publish.types'
+import { type PublishConnectOptions } from '../types/Publish.types'
 
 class ValidationError extends Error {
   messages: string[]

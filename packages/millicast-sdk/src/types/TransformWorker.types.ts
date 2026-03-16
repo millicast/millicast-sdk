@@ -1,5 +1,5 @@
-import { VideoCodec } from './Codecs.types'
-import { SEIUserUnregisteredData } from './View.types'
+import { type VideoCodec } from './Codecs.types'
+import { type SEIUserUnregisteredData } from './View.types'
 
 export interface TransformWorkerSeiMetadata {
   uuid: string
@@ -11,7 +11,7 @@ export interface TransformEvent {
   transformer: {
     options: {
       name: string
-      payloadTypeCodec: { [key: number]: string }
+      payloadTypeCodec: Record<number, string>
       codec: VideoCodec
       mid: string
     }

@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events'
 import PeerConnection from '../PeerConnection'
-import Signaling, { signalingEvents } from '../Signaling'
+import type Signaling from '../Signaling';
+import { signalingEvents } from '../Signaling'
 import Diagnostics from './Diagnostics'
-import { TokenGeneratorCallback } from '../types/Director.types'
-import { ILogger } from 'js-logger'
-import { ReconnectData } from '../types/BaseWebRTC.types'
-import { PublishConnectOptions } from '../types/Publish.types'
-import { ViewConnectOptions } from '../types/View.types'
+import { type TokenGeneratorCallback } from '../types/Director.types'
+import { type ILogger } from 'js-logger'
+import { type ReconnectData } from '../types/BaseWebRTC.types'
+import { type PublishConnectOptions } from '../types/Publish.types'
+import { type ViewConnectOptions } from '../types/View.types'
 import {webRTCEvents} from '../types/PeerConnection.types'
 
 
@@ -165,12 +166,13 @@ export default class BaseWebRTC extends EventEmitter {
     }
   }
 
-  async replaceConnection () {
-    /* tslint:disable:no-empty */
+  async replaceConnection (): Promise<void> {
+    // Abstract method to be overridden by subclasses
   }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async connect (_options: unknown): Promise<void> {
-    /* tslint:disable:no-empty */
+    // Abstract method to be overridden by subclasses
   }
 }
 

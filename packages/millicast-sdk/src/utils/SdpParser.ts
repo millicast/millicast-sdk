@@ -300,7 +300,7 @@ const SdpParser = {
    * @param {String} sdp - Current SDP.
    * @returns {Array<Number>} All available payload type ids.
    */
-  getAvailablePayloadTypeRange (sdp = ''): Array<number> {
+  getAvailablePayloadTypeRange (sdp = ''): number[] {
     const regex = new RegExp('m=(?:.*) (?:.*) UDP/TLS/RTP/SAVPF (.*)\\r\\n', 'gm')
 
     const matches = sdp.matchAll(regex)
@@ -321,7 +321,7 @@ const SdpParser = {
    * @param {String} sdp - Current SDP.
    * @returns {Array<Number>} All available header extension IDs.
    */
-  getAvailableHeaderExtensionIdRange (sdp = ''): Array<number> {
+  getAvailableHeaderExtensionIdRange (sdp = ''): number[] {
     const regex = new RegExp('a=extmap:(\\d+)(?:.*)\\r\\n', 'gm')
 
     const matches = sdp.matchAll(regex)
@@ -410,7 +410,7 @@ const SdpParser = {
   getCodecPayloadType (sdp = '') {
     const reg = new RegExp('a=rtpmap:(\\d+) (\\w+)/\\d+', 'g')
     const matches = sdp.matchAll(reg)
-    const codecMap: {[key: string]: string} = {}
+    const codecMap: Record<string, string> = {}
 
     for (const match of matches) {
       codecMap[match[1]] = match[2]
