@@ -198,7 +198,7 @@ const Director = {
 
   getSubscriber: async (
     options: DirectorSubscriberOptions,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     streamAccountId: string | null = null,
     subscriberToken: string | null = null
   ) => {

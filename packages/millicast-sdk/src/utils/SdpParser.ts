@@ -81,7 +81,7 @@ const SdpParser = {
       const msid = reg2.exec(sdp)?.[2]
       // Add simulcasts ssrcs
       const num = 2
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const ssrcs :  (string | number)[] = [ssrc]
       for (let i = 0; i < num; ++i) {
         // Create new ssrcs

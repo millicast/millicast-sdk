@@ -1,5 +1,5 @@
-/* eslint-disable no-new-wrappers */
-/* eslint-disable camelcase */
+ 
+ 
 import {
   AudioCodec,
   type PictureParameterSet,

@@ -263,7 +263,7 @@ export default class Publish extends BaseWebRTC {
 
       senders?.forEach(sender => {
         if (supportsRTCRtpScriptTransform && this.worker) {
-          // eslint-disable-next-line no-undef
+           
           sender.transform = new RTCRtpScriptTransform(this.worker, {
             name: 'senderTransform',
             codec: this.options.codec,

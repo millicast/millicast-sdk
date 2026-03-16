@@ -170,7 +170,7 @@ export default class BaseWebRTC extends EventEmitter {
     // Abstract method to be overridden by subclasses
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async connect (_options: unknown): Promise<void> {
     // Abstract method to be overridden by subclasses
   }
