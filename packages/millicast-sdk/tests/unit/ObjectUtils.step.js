@@ -1,4 +1,15 @@
-import { swapPropertyValues, typedKeys } from '../../src/utils/ObjectUtils'
+const mockError = jest.fn()
+jest.mock('../../src/Logger', () => ({
+  get: jest.fn(() => ({
+    error: mockError,
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn()
+  }))
+}))
+
+// Import after mock setup
+const { swapPropertyValues, typedKeys } = require('../../src/utils/ObjectUtils')
 
 describe('swapPropertyValues', () => {
   test('should swap string values between objects', () => {
@@ -67,53 +78,47 @@ describe('swapPropertyValues', () => {
 
   // Edge cases and error conditions
   test('should handle when first object missing property', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+    mockError.mockClear()
     const obj1 = { name: 'Alice' }
     const obj2 = { name: 'Bob', age: 30 }
 
     swapPropertyValues(obj1, obj2, 'age')
 
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(mockError).toHaveBeenCalledWith(
       'One or both objects do not have the property "age"'
     )
     expect(obj1.name).toBe('Alice') // unchanged
     expect(obj2.name).toBe('Bob') // unchanged
     expect(obj2.age).toBe(30) // unchanged
-
-    consoleSpy.mockRestore()
   })
 
   test('should handle when second object missing property', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+    mockError.mockClear()
     const obj1 = { name: 'Alice', age: 25 }
     const obj2 = { name: 'Bob' }
 
     swapPropertyValues(obj1, obj2, 'age')
 
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(mockError).toHaveBeenCalledWith(
       'One or both objects do not have the property "age"'
     )
     expect(obj1.name).toBe('Alice') // unchanged
     expect(obj1.age).toBe(25) // unchanged
     expect(obj2.name).toBe('Bob') // unchanged
-
-    consoleSpy.mockRestore()
   })
 
   test('should handle when both objects missing property', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+    mockError.mockClear()
     const obj1 = { name: 'Alice' }
     const obj2 = { name: 'Bob' }
 
     swapPropertyValues(obj1, obj2, 'age')
 
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(mockError).toHaveBeenCalledWith(
       'One or both objects do not have the property "age"'
     )
     expect(obj1.name).toBe('Alice') // unchanged
     expect(obj2.name).toBe('Bob') // unchanged
-
-    consoleSpy.mockRestore()
   })
 
   test('should work with different object types', () => {
