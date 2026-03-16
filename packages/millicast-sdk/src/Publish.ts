@@ -1,7 +1,23 @@
 import {jwtDecode} from 'jwt-decode'
 import reemit from 're-emitter'
-import { atob } from 'js-base64'
-import * as v from 'valibot'
+import {
+  type BaseSchema,
+  type BaseIssue,
+  instance,
+  any as vAny,
+  looseObject,
+  optional,
+  string,
+  boolean,
+  union,
+  array,
+  null as vNull,
+  number,
+  picklist,
+  nullable,
+  safeParse,
+  ValiError,
+} from 'valibot'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
@@ -76,10 +92,10 @@ export default class Publish extends BaseWebRTC {
    * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
    * @param {Object} options - General broadcast options.
    * @param {String} options.sourceId - Source unique id. Only avialable if stream is multisource.
-   * @param {Boolean} [options.stereo = false] - True to modify SDP for support stereo. Otherwise False.
-   * @param {Boolean} [options.dtx = false] - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * @param {Boolean} [options.stereo = false] - True to enable stereo audio. Applied via SDP munging.
+   * @param {Boolean} [options.dtx = false] - True to enable DTX in Opus. Applied via SDP munging. Reduces bandwidth when silent.
    * @param {Boolean} [options.absCaptureTime = false] - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
-   * @param {Boolean} [options.dependencyDescriptor = false] - True to modify SDP for supporting aom dependency descriptor header extension. Otherwise False.
+   * @param {Boolean} [options.dependencyDescriptor = false] - True to enable the AOM dependency descriptor header extension. Only takes effect when `simulcast` or `scalabilityMode` is also set. **Only available in Chromium-based browsers.**
    * @param {MediaStream|Array<MediaStreamTrack>} options.mediaStream - MediaStream to offer in a stream. This object must have
    * 1 audio track and 1 video track, or at least one of them. Alternative you can provide both tracks in an array.
    * @param {Number} [options.bandwidth = 0] - Broadcast bandwidth. 0 for unlimited.
@@ -189,7 +205,7 @@ export default class Publish extends BaseWebRTC {
   async initConnection (data: { migrate: boolean }) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
-    let promises
+    
     if (!this.options.mediaStream) {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
@@ -225,7 +241,7 @@ export default class Publish extends BaseWebRTC {
     }
     const decodedJWT = jwtDecode(publisherData.jwt) as DecodedJWT
     this.streamName = decodedJWT['millicast'].streamName
-    this.recordingAvailable = decodedJWT[atob('bWlsbGljYXN0')].record
+    this.recordingAvailable = decodedJWT['millicast'].record
     if (this.options.record && !this.recordingAvailable) {
       logger.error('Error while broadcasting. Record option detected but recording is not available')
       throw new Error('Record option detected but recording is not available')
@@ -249,10 +265,8 @@ export default class Publish extends BaseWebRTC {
       signalingEvents.broadcastEvent,
     ])
 
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.options)
-    const signalingConnectPromise = signalingInstance.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
+    const localSdp = await webRTCPeerInstance.getRTCLocalSDP(this.options)
+    await signalingInstance.connect()
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -292,14 +306,14 @@ export default class Publish extends BaseWebRTC {
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
       webRTCPeerInstance.sessionDescription
     )
-    promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
+    const promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
     let remoteSdp = promises[0]
 
-    if (!this.options.disableVideo && this.options.bandwidth && this.options.bandwidth > 0) {
-      remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
-    }
-
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
+
+    if (!this.options.disableVideo && this.options.bandwidth && this.options.bandwidth > 0) {
+      await webRTCPeerInstance.updateBandwidthRestriction(this.options.bandwidth)
+    }
 
     logger.info('Broadcasting to streamName: ', this.streamName)
 
@@ -353,43 +367,43 @@ export default class Publish extends BaseWebRTC {
 }
 
 let connectOptionsSchema:
-  | v.BaseSchema<PublishConnectOptions, PublishConnectOptions, v.BaseIssue<unknown>>
+  | BaseSchema<PublishConnectOptions, PublishConnectOptions, BaseIssue<unknown>>
   | undefined
 
 const validateConnectOptions = (options: PublishConnectOptions): void => {
   // Define safe references to prevent ReferenceErrors in Node environment
-  const SafeMediaStream = typeof MediaStream !== 'undefined' ? v.instance(MediaStream) : v.any()
+  const SafeMediaStream = typeof MediaStream !== 'undefined' ? instance(MediaStream) : vAny()
   const SafeMediaStreamTrack =
-    typeof MediaStreamTrack !== 'undefined' ? v.instance(MediaStreamTrack) : v.any()
+    typeof MediaStreamTrack !== 'undefined' ? instance(MediaStreamTrack) : vAny()
 
   connectOptionsSchema =
     connectOptionsSchema ||
-    v.looseObject({
-      sourceId: v.optional(v.string()),
-      stereo: v.optional(v.boolean()),
-      dtx: v.optional(v.boolean()),
-      absCaptureTime: v.optional(v.boolean()),
-      dependencyDescriptor: v.optional(v.boolean()),
-      mediaStream: v.union([SafeMediaStream, v.array(SafeMediaStreamTrack), v.null()]),
-      bandwidth: v.optional(v.number()),
-      metadata: v.optional(v.boolean()),
-      disableVideo: v.optional(v.boolean()),
-      disableAudio: v.optional(v.boolean()),
-      codec: v.optional(v.picklist(Object.values(VideoCodec))),
-      simulcast: v.optional(v.boolean()),
-      scalabilityMode: v.optional(v.string()),
-      peerConfig: v.optional(
-        v.looseObject({
-          autoInitStats: v.optional(v.boolean()),
-          statsIntervalMs: v.optional(v.number()),
+    looseObject({
+      sourceId: optional(string()),
+      stereo: optional(boolean()),
+      dtx: optional(boolean()),
+      absCaptureTime: optional(boolean()),
+      dependencyDescriptor: optional(boolean()),
+      mediaStream: union([SafeMediaStream, array(SafeMediaStreamTrack), vNull()]),
+      bandwidth: optional(number()),
+      metadata: optional(boolean()),
+      disableVideo: optional(boolean()),
+      disableAudio: optional(boolean()),
+      codec: optional(picklist(Object.values(VideoCodec))),
+      simulcast: optional(boolean()),
+      scalabilityMode: optional(nullable(string())),
+      peerConfig: optional(
+        looseObject({
+          autoInitStats: optional(boolean()),
+          statsIntervalMs: optional(number()),
         })
       ),
-      record: v.optional(v.boolean()),
-      events: v.optional(v.array(v.picklist(['active', 'inactive', 'viewercount']))),
-      priority: v.optional(v.number()),
+      record: optional(boolean()),
+      events: optional(array(picklist(['active', 'inactive', 'viewercount']))),
+      priority: optional(number()),
     })
 
-  const { success, issues } = v.safeParse(connectOptionsSchema, options)
-  if (!success) logger.warn(new v.ValiError(issues), options)
+  const { success, issues } = safeParse(connectOptionsSchema, options)
+  if (!success) logger.warn(new ValiError(issues), options)
 }
 

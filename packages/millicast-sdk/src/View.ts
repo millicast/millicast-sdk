@@ -140,7 +140,7 @@ export default class View extends BaseWebRTC {
    *
    * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
    * @param {Object} [options]                          - General subscriber options.
-   * @param {Boolean} [options.dtx = false]             - True to modify SDP for supporting dtx in opus. Otherwise False.
+   * @param {Boolean} [options.dtx = false]             - True to enable DTX in Opus. Reduces bandwidth when silent.
    * @param {Boolean} [options.absCaptureTime = false]  - True to modify SDP for supporting absolute capture time header extension. Otherwise False.
    * @param {Boolean} [options.metadata = false]        - Enable metadata extraction if stream is compatible.
    * @param {Boolean} [options.drm = false]             - Enable the DRM protected stream playback.
