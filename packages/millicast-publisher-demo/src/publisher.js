@@ -140,7 +140,6 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   let selectedBandwidthBtn = document.querySelector('#bandwidthMenuButton');
   let bandwidth = 0
   const events = ['viewercount']
-  let counter = 0;
 
   const onVideoFrameReceived = (now, _) => {
     const date = new Date(0)
@@ -158,10 +157,10 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       const priority = parseInt(params.priority)
       const sourceId = params.sourceId
       const codec = params.codec ?? 'h264'
-      const metadata = false; //params.metadata === 'true'
-      const simulcast = false; //params.simulcast === 'true'
-      const disableVideo = false;  //params.disableVideo === 'true'
-      const disableAudio = false; //params.disableAudio === 'true'
+      const metadata = params.metadata === 'true'
+      const simulcast = params.simulcast === 'true'
+      const disableVideo = params.disableVideo === 'true'
+      const disableAudio = params.disableAudio === 'true'
       const connectOptions = {
         bandwidth,
         codec,
@@ -170,11 +169,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         simulcast,
         disableVideo,
         disableAudio,
-        stereo: true,
-        dtx: true,
-        scalabilityMode: 'L3T3',
-        absCaptureTime: true,
-        dependencyDescriptor: true,
+        stereo,
+        dtx,
         setSDPToPeer: true,
         peerConfig : {
           autoInitStats: true,
