@@ -1,5 +1,5 @@
-import { type VideoCodec } from './Codecs.types'
-import { type SEIUserUnregisteredData } from './View.types'
+import { type VideoCodec } from './Codecs.types';
+import { type SEIUserUnregisteredData } from './View.types';
 
 export interface TransformWorkerSeiMetadata {
   uuid: string

@@ -1,8 +1,8 @@
-import {VideoCodec} from "../types/Codecs.types"
+import {VideoCodec} from "../types/Codecs.types";
 
 export function extractSupportedVideoCodecs (capabilities?: RTCRtpCapabilities | null): VideoCodec[] {
   if (!capabilities?.codecs) {
-    return []
+    return [];
   }
 
   const codecMap: Record<string, VideoCodec> = {
@@ -12,12 +12,12 @@ export function extractSupportedVideoCodecs (capabilities?: RTCRtpCapabilities |
     av1: VideoCodec.AV1,
     av1x: VideoCodec.AV1, // Normalize AV1X to AV1
     h265: VideoCodec.H265,
-  }
+  };
 
   return capabilities.codecs
     .map(codec => {
-      const codecName = codec.mimeType.split('/')[1].toLowerCase()
-      return codecMap[codecName]
+      const codecName = codec.mimeType.split('/')[1].toLowerCase();
+      return codecMap[codecName];
     })
-    .filter((codec): codec is VideoCodec => codec !== undefined)
+    .filter((codec): codec is VideoCodec => codec !== undefined);
 }

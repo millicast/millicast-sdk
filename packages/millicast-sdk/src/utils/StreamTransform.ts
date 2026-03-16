@@ -5,8 +5,8 @@ export const supportsInsertableStreams: boolean =
   !!window.RTCRtpSender &&
   typeof window.RTCRtpSender.prototype.createEncodedStreams === 'function' &&
   !!window.RTCRtpReceiver &&
-  typeof window.RTCRtpReceiver.prototype.createEncodedStreams === 'function'
+  typeof window.RTCRtpReceiver.prototype.createEncodedStreams === 'function';
 
 
 // WebRTC RTP Script Transform is supported
-export const supportsRTCRtpScriptTransform = typeof window !== 'undefined' && 'RTCRtpScriptTransform' in window
+export const supportsRTCRtpScriptTransform = typeof window !== 'undefined' && 'RTCRtpScriptTransform' in window;

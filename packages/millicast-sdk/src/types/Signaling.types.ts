@@ -1,6 +1,6 @@
-import { type PublishServerEvent, type ViewServerEvent } from './BaseWebRTC.types'
-import { type VideoCodec } from './Codecs.types'
-import { type LayerInfo } from './View.types'
+import { type PublishServerEvent, type ViewServerEvent } from './BaseWebRTC.types';
+import { type VideoCodec } from './Codecs.types';
+import { type LayerInfo } from './View.types';
 
 
 type AbrStrategy = 'quality' | 'bandwidth' | 'performance'

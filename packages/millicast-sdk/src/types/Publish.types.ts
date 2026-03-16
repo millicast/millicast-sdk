@@ -1,6 +1,6 @@
-import { type PublishServerEvent } from './BaseWebRTC.types'
-import { type VideoCodec } from './Codecs.types'
-import { type PeerConnectionConfig } from './PeerConnection.types'
+import { type PublishServerEvent } from './BaseWebRTC.types';
+import { type VideoCodec } from './Codecs.types';
+import { type PeerConnectionConfig } from './PeerConnection.types';
 
 export interface PublishConnectOptions {
   /**

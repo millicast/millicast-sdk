@@ -1,22 +1,22 @@
-import reemit from 're-emitter'
-import {jwtDecode} from 'jwt-decode'
-import Logger from './Logger'
-import BaseWebRTC from './utils/BaseWebRTC'
-import Signaling, { signalingEvents } from './Signaling'
-import PeerConnection from './PeerConnection'
-import { hexToUint8Array } from './utils/StringUtils'
-import { swapPropertyValues } from './utils/ObjectUtils'
-import FetchError from './utils/FetchError'
-import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
+import reemit from 're-emitter';
+import {jwtDecode} from 'jwt-decode';
+import Logger from './Logger';
+import BaseWebRTC from './utils/BaseWebRTC';
+import Signaling, { signalingEvents } from './Signaling';
+import PeerConnection from './PeerConnection';
+import { hexToUint8Array } from './utils/StringUtils';
+import { swapPropertyValues } from './utils/ObjectUtils';
+import FetchError from './utils/FetchError';
+import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform';
 import {
   rtcDrmConfigure,
   rtcDrmOnTrack,
   rtcDrmEnvironments,
   rtcDrmFeedFrame,
   type DrmConfig,
-} from './drm/rtc-drm-transform.min.js'
-import SdpParser from './utils/SdpParser'
-import { type TokenGeneratorCallback } from './types/Director.types'
+} from './drm/rtc-drm-transform.min.js';
+import SdpParser from './utils/SdpParser';
+import { type TokenGeneratorCallback } from './types/Director.types';
 import {
   type ViewConnectOptions,
   type LayerInfo,
@@ -24,16 +24,16 @@ import {
   type DRMOptions,
   type MetadataObject,
   type SEIUserUnregisteredData,
-} from './types/View.types.js'
-import { type ViewerEvents } from './types/Events.types'
-import { type DRMProfile } from './types/Director.types'
-import { type DecodedJWT, type Media } from './types/BaseWebRTC.types'
-import { VideoCodec } from './types/Codecs.types'
-import { webRTCEvents } from './types/PeerConnection.types'
-import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
+} from './types/View.types.js';
+import { type ViewerEvents } from './types/Events.types';
+import { type DRMProfile } from './types/Director.types';
+import { type DecodedJWT, type Media } from './types/BaseWebRTC.types';
+import { VideoCodec } from './types/Codecs.types';
+import { webRTCEvents } from './types/PeerConnection.types';
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline';
 
-const logger = Logger.get('View')
-logger.setLevel(Logger.DEBUG)
+const logger = Logger.get('View');
+logger.setLevel(Logger.DEBUG);
 
 const defaultConnectOptions: ViewConnectOptions = {
   metadata: false,
@@ -44,7 +44,7 @@ const defaultConnectOptions: ViewConnectOptions = {
     autoInitStats: true,
     statsIntervalMs: 1000,
   },
-}
+};
 
 /**
 
@@ -62,20 +62,20 @@ const defaultConnectOptions: ViewConnectOptions = {
  */
 export default class View extends BaseWebRTC {
   // States what payload type is associated with each codec from the SDP answer.
-  private payloadTypeCodec: Record<number, string> = {}
+  private payloadTypeCodec: Record<number, string> = {};
   // Follows the media id values of each transceiver's track from the 'track' events.
-  private tracksMidValues: Record<string, MediaStreamTrack> = {}
+  private tracksMidValues: Record<string, MediaStreamTrack> = {};
   // mapping media ID of RTCRtcTransceiver to DRM Options
-  private drmOptionsMap: Map<string, DrmConfig> | null = null
-  private streamName = ''
-  private DRMProfile: DRMProfile | null = null
-  private worker: Worker | null = null
-  private subscriberToken: string | null = null
-  private isMainStreamActive = false
-  private eventQueue: RTCTrackEvent[] = []
-  private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
-  private events: Partial<{ [K in keyof ViewerEvents]: ((payload: ViewerEvents[K]) => void)[] }> = {}
-  protected override options: ViewConnectOptions | null = null
+  private drmOptionsMap: Map<string, DrmConfig> | null = null;
+  private streamName = '';
+  private DRMProfile: DRMProfile | null = null;
+  private worker: Worker | null = null;
+  private subscriberToken: string | null = null;
+  private isMainStreamActive = false;
+  private eventQueue: RTCTrackEvent[] = [];
+  private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null;
+  private events: Partial<{ [K in keyof ViewerEvents]: ((payload: ViewerEvents[K]) => void)[] }> = {};
+  protected override options: ViewConnectOptions | null = null;
 
   constructor (
     streamName: string | undefined, 
@@ -84,54 +84,54 @@ export default class View extends BaseWebRTC {
     autoReconnect  = true) {
     if (streamName) {
       logger.warn(
-        'The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.'
-      )
+        'The streamName parameter is deprecated and will be removed in future versions. Please remove it from the constructor.',
+      );
     }
-    super(tokenGenerator, logger, autoReconnect)
+    super(tokenGenerator, logger, autoReconnect);
     
     if (mediaElement) {
       this.on(webRTCEvents.track, (e) => {
         if(e) {
-          mediaElement.srcObject = e.streams[0]
+          mediaElement.srcObject = e.streams[0];
         }
-      })
-      logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.')
+      });
+      logger.warn('The mediaElement property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, do this in either the `track` or the `active` broadcast event.');
     }
   }
 
   override on<K extends keyof ViewerEvents> (
     eventName: K,
-    listener: (payload: ViewerEvents[K]) => void
+    listener: (payload: ViewerEvents[K]) => void,
   ): this {
     if (!this.events[eventName]) {
-      this.events[eventName] = []
+      this.events[eventName] = [];
     }
-    this.events[eventName].push(listener)
-    return this
+    this.events[eventName].push(listener);
+    return this;
   }
 
   override off<K extends keyof ViewerEvents> (
     eventName: K,
-    listener: (payload: ViewerEvents[K]) => void
+    listener: (payload: ViewerEvents[K]) => void,
   ): this {
-    const listeners = this.events[eventName]
+    const listeners = this.events[eventName];
     if (listeners) {
-      const idx = listeners.indexOf(listener)
+      const idx = listeners.indexOf(listener);
       if (idx >= 0) {
-        listeners.splice(idx, 1)
+        listeners.splice(idx, 1);
       }
     }
-    return this
+    return this;
   }
 
   override emit<K extends keyof ViewerEvents> (eventName: K, payload: ViewerEvents[K]): boolean {
-    let handled = false
+    let handled = false;
     if (this.events[eventName]) {
-      this.events[eventName].forEach(listener => listener(payload))
-      handled = true
+      this.events[eventName].forEach(listener => listener(payload));
+      handled = true;
     }
     // Also emit to EventEmitter for BaseWebRTC events (reconnect, connectionStateChange, etc.)
-    return super.emit(eventName as string, payload) || handled
+    return super.emit(eventName as string, payload) || handled;
   }
 
   /**
@@ -195,12 +195,12 @@ export default class View extends BaseWebRTC {
       ...options,
       peerConfig: { 
         ...defaultConnectOptions.peerConfig, 
-        ...options?.peerConfig 
+        ...options?.peerConfig, 
       },
       setSDPToPeer: false,
-    }
-    this.eventQueue.length = 0
-    await this.initConnection({ migrate: false })
+    };
+    this.eventQueue.length = 0;
+    await this.initConnection({ migrate: false });
   }
 
   /**
@@ -209,9 +209,9 @@ export default class View extends BaseWebRTC {
    * @param {LayerInfo} layer - leave empty for automatic layer selection based on bandwidth estimation.
    */
   async select (layer?: LayerInfo): Promise<void> {
-    logger.debug('Viewer select layer values: ', layer)
-    await this.signaling?.cmd('select', { layer })
-    logger.info('Connected to streamName: ', this.streamName)
+    logger.debug('Viewer select layer values: ', layer);
+    await this.signaling?.cmd('select', { layer });
+    logger.info('Connected to streamName: ', this.streamName);
   }
 
   /**
@@ -222,12 +222,12 @@ export default class View extends BaseWebRTC {
    * @return {Promise<RTCRtpTransceiver>} Promise that will be resolved when the RTCRtpTransceiver is assigned an mid value.
    */
   async addRemoteTrack (media: Media, streams: MediaStream[]): Promise<RTCRtpTransceiver> {
-    logger.info('Viewer adding remote track', media)
-    const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams)
+    logger.info('Viewer adding remote track', media);
+    const transceiver = await this.webRTCPeer.addRemoteTrack(media, streams);
     for (const stream of streams) {
-      stream.addTrack(transceiver.receiver.track)
+      stream.addTrack(transceiver.receiver.track);
     }
-    return transceiver
+    return transceiver;
   }
 
   /**
@@ -244,22 +244,22 @@ export default class View extends BaseWebRTC {
   async project (sourceId: string, mapping: ViewProjectSourceMapping[]): Promise<void> {
     for (const map of mapping) {
       if (!map.trackId && !map.media) {
-        logger.error('Error in projection mapping, trackId or mediaId must be set')
-        throw new Error('Error in projection mapping, trackId or mediaId must be set')
+        logger.error('Error in projection mapping, trackId or mediaId must be set');
+        throw new Error('Error in projection mapping, trackId or mediaId must be set');
       }
-      const peer = this.webRTCPeer.getRTCPeer()
+      const peer = this.webRTCPeer.getRTCPeer();
       // Check we have the mediaId in the transceivers
       if (
         map.mediaId &&
         !peer?.getTransceivers().find((t: RTCRtpTransceiver) => t.mid === map.mediaId?.toString())
       ) {
-        logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
-        throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`)
+        logger.error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`);
+        throw new Error(`Error in projection mapping, ${map.mediaId} mid not found in local transceivers`);
       }
     }
-    logger.debug('Viewer project source: layer mappings: ', sourceId, mapping)
-    await this.signaling?.cmd('project', { sourceId, mapping })
-    logger.info('Projection done')
+    logger.debug('Viewer project source: layer mappings: ', sourceId, mapping);
+    await this.signaling?.cmd('project', { sourceId, mapping });
+    logger.info('Projection done');
   }
 
   /**
@@ -268,129 +268,129 @@ export default class View extends BaseWebRTC {
    * @param {Array<String>} mediaIds - mid value of the receivers that are going to be detached.
    */
   async unproject (mediaIds: string[]): Promise<void> {
-    logger.debug('Viewer unproject mediaIds: ', mediaIds)
-    await this.signaling?.cmd('unproject', { mediaIds })
-    logger.info('Unprojection done')
+    logger.debug('Viewer unproject mediaIds: ', mediaIds);
+    await this.signaling?.cmd('unproject', { mediaIds });
+    logger.info('Unprojection done');
   }
 
   override async replaceConnection (): Promise<void> {
-    logger.info('Migrating current connection')
-    await this.initConnection({ migrate: true })
+    logger.info('Migrating current connection');
+    await this.initConnection({ migrate: true });
   }
 
   override stop (): void {
-    super.stop()
-    this.drmOptionsMap?.clear()
-    this.DRMProfile = null
-    this.worker?.terminate()
-    this.worker = null
-    this.payloadTypeCodec = {}
-    this.tracksMidValues = {}
-    this.eventQueue.length = 0
+    super.stop();
+    this.drmOptionsMap?.clear();
+    this.DRMProfile = null;
+    this.worker?.terminate();
+    this.worker = null;
+    this.payloadTypeCodec = {};
+    this.tracksMidValues = {};
+    this.eventQueue.length = 0;
   }
 
   async initConnection (data: { migrate: boolean }) {
-    logger.debug('Viewer connect options values: ', this.options)
-    this.stopReconnection = false
-    let promises
+    logger.debug('Viewer connect options values: ', this.options);
+    this.stopReconnection = false;
+    let promises;
 
     // Validate ABR configuration if present
     if (this.options?.abrConfiguration?.metadata) {
-      const bitrate = this.options.abrConfiguration.metadata.bitrate
+      const bitrate = this.options.abrConfiguration.metadata.bitrate;
       if (bitrate !== undefined && bitrate < 0) {
         throw new Error(
-          `Invalid bitrate ${bitrate} supplied for ABR. The value must be a non-negative integer value.`
-        )
+          `Invalid bitrate ${bitrate} supplied for ABR. The value must be a non-negative integer value.`,
+        );
       }
     }
 
     if (!data.migrate && this.isActive()) {
-      logger.warn('Viewer currently subscribed')
-      throw new Error('Viewer currently subscribed')
+      logger.warn('Viewer currently subscribed');
+      throw new Error('Viewer currently subscribed');
     }
-    let subscriberData
+    let subscriberData;
     try {
-      subscriberData = await this.tokenGenerator()
+      subscriberData = await this.tokenGenerator();
       // Set the iceServers from the subscribe data into the peerConfig
       if (this.options?.peerConfig) {
-        this.options.peerConfig.iceServers = subscriberData?.iceServers
+        this.options.peerConfig.iceServers = subscriberData?.iceServers;
         // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
         this.options.peerConfig.encodedInsertableStreams =
-          supportsInsertableStreams && (this.options.enableDRM || this.options.metadata)
+          supportsInsertableStreams && (this.options.enableDRM || this.options.metadata);
       }
     } catch (error) {
       // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
-      logger.error('Error generating token.', error)
+      logger.error('Error generating token.', error);
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
-          this.stopReconnection = true
+          this.stopReconnection = true;
         } else {
           // should reconnect with exponential back off if autoReconnect is true
-          this.reconnect()
+          this.reconnect();
         }
       }
-      throw error
+      throw error;
     }
     if (!subscriberData) {
-      logger.error('Error while subscribing. Subscriber data required')
-      throw new Error('Subscriber data required')
+      logger.error('Error while subscribing. Subscriber data required');
+      throw new Error('Subscriber data required');
     }
 
-    const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT
-    this.streamName = decodedJWT['millicast'].streamName
+    const decodedJWT = jwtDecode(subscriberData.jwt) as DecodedJWT;
+    this.streamName = decodedJWT['millicast'].streamName;
     const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`,
-    })
+    });
     if (subscriberData.drmObject) {
       // cache the DRM license server URLs
-      this.DRMProfile = subscriberData.drmObject
+      this.DRMProfile = subscriberData.drmObject;
     }
     if (subscriberData.subscriberToken) {
-      this.subscriberToken = subscriberData.subscriberToken
+      this.subscriberToken = subscriberData.subscriberToken;
     }
-    const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
+    const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer;
 
-    await webRTCPeerInstance.createRTCPeer(this.options?.peerConfig)
+    await webRTCPeerInstance.createRTCPeer(this.options?.peerConfig);
     // Stop emiting events from the previous instances
-    this.stopReemitingWebRTCPeerInstanceEvents?.()
+    this.stopReemitingWebRTCPeerInstanceEvents?.();
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(
       webRTCPeerInstance,
       this,
-      Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track)
-    )
+      Object.values(webRTCEvents).filter(e => e !== webRTCEvents.track),
+    );
 
     if (this.options?.metadata) {
       if (!this.worker) {
-        this.worker = new TransformWorker()
+        this.worker = new TransformWorker();
       }
       this.worker.onmessage = message => {
         if (message.data.event === 'metadata') {
-          const decoder = new TextDecoder()
-          const metadata: MetadataObject = message.data.metadata
-          metadata.mid = message.data.mid
-          metadata.track = this.tracksMidValues[message.data.mid]
+          const decoder = new TextDecoder();
+          const metadata: MetadataObject = message.data.metadata;
+          metadata.mid = message.data.mid;
+          metadata.track = this.tracksMidValues[message.data.mid];
           if (message.data.metadata.uuid) {
-            const uuid = message.data.metadata.uuid as Uint8Array
+            const uuid = message.data.metadata.uuid as Uint8Array;
             metadata.uuid = uuid.reduce(
               (str: string, byte: number) => str + byte.toString(16).padStart(2, '0'),
-              ''
-            )
-            metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+              '',
+            );
+            metadata.uuid = metadata.uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
           }
           if (message.data.metadata.timecode) {
-            metadata.timecode = new Date(decoder.decode(message.data.metadata.timecode))
+            metadata.timecode = new Date(decoder.decode(message.data.metadata.timecode));
           }
           if (message.data.metadata.unregistered) {
-            const content = decoder.decode(message.data.metadata.unregistered)
+            const content = decoder.decode(message.data.metadata.unregistered);
             try {
-              const json: SEIUserUnregisteredData = JSON.parse(content)
-              metadata.unregistered = json
+              const json: SEIUserUnregisteredData = JSON.parse(content);
+              metadata.unregistered = json;
             } catch {
               // was not a JSON, just return the raw bytes (i.e. do nothing)
-              logger.info('The content could not be converted to JSON, returning raw bytes instead')
+              logger.info('The content could not be converted to JSON, returning raw bytes instead');
             }
           }
           /**
@@ -405,116 +405,116 @@ export default class View extends BaseWebRTC {
            * @property {Date} timecode - Timecode of when the metadata were generated.
            * @property {Object} unregistered - Unregistered data.
            */
-          this.emit('metadata', metadata)
+          this.emit('metadata', metadata);
         }
-      }
+      };
     }
 
     webRTCPeerInstance.on('track', (trackEvent: RTCTrackEvent) => {
       if (!this.isMainStreamActive) {
-        this.eventQueue.push(trackEvent)
-        return
+        this.eventQueue.push(trackEvent);
+        return;
       }
-      this.onTrackEvent(trackEvent)
-    })
+      this.onTrackEvent(trackEvent);
+    });
 
     signalingInstance.on(signalingEvents.broadcastEvent, event => {
       if (event.data.sourceId === null) {
         switch (event.name) {
           case 'active':
-            this.emit('broadcastEvent', event)
-            this.isMainStreamActive = true
+            this.emit('broadcastEvent', event);
+            this.isMainStreamActive = true;
             while (this.eventQueue.length > 0) {
-              this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent)
+              this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent);
             }
-            return
+            return;
           case 'inactive':
-            this.isMainStreamActive = false
-            break
+            this.isMainStreamActive = false;
+            break;
           default:
-            break
+            break;
         }
       }
-      this.emit('broadcastEvent', event)
-    })
+      this.emit('broadcastEvent', event);
+    });
 
-    const options = { ...(this.options as ViewConnectOptions), stereo: true }
-    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(options)
-    const signalingConnectPromise = signalingInstance.connect()
-    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
-    const localSdp = promises[0]
+    const options = { ...(this.options as ViewConnectOptions), stereo: true };
+    const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(options);
+    const signalingConnectPromise = signalingInstance.connect();
+    promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise]);
+    const localSdp = promises[0];
 
-    let oldSignaling = this.signaling
-    this.signaling = signalingInstance
+    let oldSignaling = this.signaling;
+    this.signaling = signalingInstance;
 
     const subscribePromise = this.signaling.subscribe(localSdp, {
       ...this.options,
       vad: !!this.options?.multiplexedAudioTracks,
-    } as ViewConnectOptions)
+    } as ViewConnectOptions);
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
-      webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit
-    )
-    promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
-    const sdpSubscriber = promises[0]
+      webRTCPeerInstance.sessionDescription as RTCSessionDescriptionInit,
+    );
+    promises = await Promise.all([subscribePromise, setLocalDescriptionPromise]);
+    const sdpSubscriber = promises[0];
 
-    this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber)
+    this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber);
 
-    await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
+    await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber);
 
-    logger.info('Connected to streamName: ', this.streamName)
+    logger.info('Connected to streamName: ', this.streamName);
 
-    let oldWebRTCPeer: PeerConnection | null = this.webRTCPeer
-    this.webRTCPeer = webRTCPeerInstance
-    this.setReconnect()
+    let oldWebRTCPeer: PeerConnection | null = this.webRTCPeer;
+    this.webRTCPeer = webRTCPeerInstance;
+    this.setReconnect();
 
     if (data.migrate) {
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, state => {
         if (state === 'connected') {
           setTimeout(() => {
-            oldSignaling?.close?.()
-            oldWebRTCPeer?.closeRTCPeer?.()
-            oldSignaling = oldWebRTCPeer = null
-            logger.info('Current connection migrated')
-          }, 1000)
+            oldSignaling?.close?.();
+            oldWebRTCPeer?.closeRTCPeer?.();
+            oldSignaling = oldWebRTCPeer = null;
+            logger.info('Current connection migrated');
+          }, 1000);
         } else if (['disconnected', 'failed', 'closed'].includes(state)) {
-          oldSignaling?.close?.()
-          oldWebRTCPeer?.closeRTCPeer?.()
-          oldSignaling = oldWebRTCPeer = null
+          oldSignaling?.close?.();
+          oldWebRTCPeer?.closeRTCPeer?.();
+          oldSignaling = oldWebRTCPeer = null;
         }
-      })
+      });
     }
   }
 
   onTrackEvent (trackEvent: RTCTrackEvent) {
-    this.tracksMidValues[trackEvent.transceiver?.mid as string] = trackEvent.track
+    this.tracksMidValues[trackEvent.transceiver?.mid as string] = trackEvent.track;
     if (this.isDRMOn) {
-      const mediaId = trackEvent.transceiver.mid
+      const mediaId = trackEvent.transceiver.mid;
       if (mediaId) {
-        const drmOptions = this.getDRMConfiguration(mediaId)
+        const drmOptions = this.getDRMConfiguration(mediaId);
         if (drmOptions) {
           try {
-            rtcDrmOnTrack(trackEvent, drmOptions)
+            rtcDrmOnTrack(trackEvent, drmOptions);
           } catch (error) {
-            logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error)
+            logger.error('Failed to apply DRM on media Id:', mediaId, 'error is: ', error);
             this.emit(
               'error',
-              new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error)
-            )
+              new Error('Failed to apply DRM on media Id: ' + mediaId + ' error is: ' + error),
+            );
           }
           if (!this.worker) {
-            this.worker = new TransformWorker()
+            this.worker = new TransformWorker();
           }
           this.worker.addEventListener('message', message => {
             if (message.data.event === 'complete') {
               // feed the frame to DRM processing worker
-              rtcDrmFeedFrame(message.data.frame, null, drmOptions)
+              rtcDrmFeedFrame(message.data.frame, null, drmOptions);
             }
-          })
+          });
         } else {
-          logger.warn('drmConfig not defined in track event')
+          logger.warn('drmConfig not defined in track event');
         }
       } else {
-        logger.warn('mediaId not defined in track event')
+        logger.warn('mediaId not defined in track event');
       }
     }
     if (this.options?.metadata) {
@@ -524,10 +524,10 @@ export default class View extends BaseWebRTC {
           payloadTypeCodec: { ...this.payloadTypeCodec },
           codec: this.options.metadata && VideoCodec.H264,
           mid: trackEvent.transceiver?.mid,
-        })
+        });
       } else if (supportsInsertableStreams) {
         if (trackEvent.receiver.createEncodedStreams !== undefined) {
-          const { readable, writable } = trackEvent.receiver.createEncodedStreams()
+          const { readable, writable } = trackEvent.receiver.createEncodedStreams();
           this.worker?.postMessage(
             {
               action: 'insertable-streams-receiver',
@@ -537,33 +537,33 @@ export default class View extends BaseWebRTC {
               readable,
               writable,
             },
-            [readable, writable]
-          )
+            [readable, writable],
+          );
         }
       }
     }
-    this.emit('track', trackEvent)
+    this.emit('track', trackEvent);
   }
 
   getDRMConfiguration (mediaId: string) {
-    return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null
+    return this.drmOptionsMap ? this.drmOptionsMap.get(mediaId) : null;
   }
 
   async onRtcDrmFetch (url: string, opts: RequestInit) {
-    opts.headers = (opts.headers as Headers) || new Headers()
+    opts.headers = (opts.headers as Headers) || new Headers();
     if (!opts.headers) {
-      opts.headers = new Headers()
+      opts.headers = new Headers();
     }
     // our server doesn't support x-dt-custom-data
     if (opts.headers.get('x-dt-custom-data')) {
-      opts.headers.delete('x-dt-custom-data')
+      opts.headers.delete('x-dt-custom-data');
     }
     if (this.subscriberToken) {
-      opts.headers.append('Authorization', `Bearer ${this.subscriberToken}`)
+      opts.headers.append('Authorization', `Bearer ${this.subscriberToken}`);
     } else {
-      logger.warn('onRtcDrmFetch: no subscriberToken')
+      logger.warn('onRtcDrmFetch: no subscriberToken');
     }
-    return fetch(url, opts)
+    return fetch(url, opts);
   }
 
   /**
@@ -574,11 +574,11 @@ export default class View extends BaseWebRTC {
    */
   configureDRM (options: DRMOptions) {
     if (!options) {
-      throw new Error('Required DRM options is not provided')
+      throw new Error('Required DRM options is not provided');
     }
     if (!this.drmOptionsMap) {
       // map transceiver's mediaId to its DRM options
-      this.drmOptionsMap = new Map()
+      this.drmOptionsMap = new Map();
     }
     const drmOptions: DrmConfig = {
       merchant: 'dolby',
@@ -594,42 +594,42 @@ export default class View extends BaseWebRTC {
       },
       audio: { codec: 'opus', encryption: 'clear' },
       onFetch: this.onRtcDrmFetch.bind(this),
-    }
+    };
     if (options.mediaBufferMs) {
-      drmOptions.mediaBufferMs = options.mediaBufferMs
+      drmOptions.mediaBufferMs = options.mediaBufferMs;
     }
     if (this.DRMProfile) {
       if (this.DRMProfile.playReadyUrl) {
-        drmOptions.prLicenseUrl = this.DRMProfile.playReadyUrl
+        drmOptions.prLicenseUrl = this.DRMProfile.playReadyUrl;
       }
       if (this.DRMProfile.widevineUrl) {
-        drmOptions.wvLicenseUrl = this.DRMProfile.widevineUrl
+        drmOptions.wvLicenseUrl = this.DRMProfile.widevineUrl;
       }
       if (this.DRMProfile.fairPlayUrl) {
-        drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl
+        drmOptions.fpsLicenseUrl = this.DRMProfile.fairPlayUrl;
       }
       if (this.DRMProfile.fairPlayCertUrl) {
-        drmOptions.fpsCertificateUrl = this.DRMProfile.fairPlayCertUrl
+        drmOptions.fpsCertificateUrl = this.DRMProfile.fairPlayCertUrl;
       }
     }
     try {
-      rtcDrmConfigure(drmOptions)
-      this.drmOptionsMap.set(options.videoMid, drmOptions)
+      rtcDrmConfigure(drmOptions);
+      this.drmOptionsMap.set(options.videoMid, drmOptions);
       if (options.audioMid) {
-        this.drmOptionsMap.set(options.audioMid, drmOptions)
+        this.drmOptionsMap.set(options.audioMid, drmOptions);
       }
       drmOptions.videoElement.addEventListener('rtcdrmerror', (event: unknown) => {
-        const rtcDrmErrorEvent = event as { detail: { message: string } }
+        const rtcDrmErrorEvent = event as { detail: { message: string } };
         logger.error(
           'DRM error: ',
           rtcDrmErrorEvent.detail.message,
           'in video element:',
-          drmOptions.videoElement.id
-        )
-        this.emit('error', new Error(rtcDrmErrorEvent.detail.message))
-      })
+          drmOptions.videoElement.id,
+        );
+        this.emit('error', new Error(rtcDrmErrorEvent.detail.message));
+      });
     } catch (error) {
-      logger.error('Failed to configure DRM with options:', options, 'error is:', error)
+      logger.error('Failed to configure DRM with options:', options, 'error is:', error);
     }
   }
 
@@ -639,7 +639,7 @@ export default class View extends BaseWebRTC {
    * @param {String} mediaId
    */
   removeDRMConfiguration (mediaId: string) {
-    this.drmOptionsMap?.delete(mediaId)
+    this.drmOptionsMap?.delete(mediaId);
   }
 
   /**
@@ -647,7 +647,7 @@ export default class View extends BaseWebRTC {
    * Check if there are any DRM protected Track
    */
   get isDRMOn () {
-    return !!this.drmOptionsMap && this.drmOptionsMap.size > 0
+    return !!this.drmOptionsMap && this.drmOptionsMap.size > 0;
   }
 
   /**
@@ -658,25 +658,25 @@ export default class View extends BaseWebRTC {
    * @param {String} sourceMediaId
    */
   exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string) {
-    const targetDRMOptions = this.getDRMConfiguration(targetMediaId)
-    const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId)
+    const targetDRMOptions = this.getDRMConfiguration(targetMediaId);
+    const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId);
     if (targetDRMOptions === null || !sourceDRMOptions?.video) {
-      throw new Error('No DRM configuration found for ' + targetMediaId)
+      throw new Error('No DRM configuration found for ' + targetMediaId);
     }
     if (sourceDRMOptions === null || !targetDRMOptions?.video) {
-      throw new Error('No DRM configuration found for ' + sourceMediaId)
+      throw new Error('No DRM configuration found for ' + sourceMediaId);
     }
-    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId')
-    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv')
+    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId');
+    swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'iv');
     try {
-      rtcDrmConfigure(targetDRMOptions)
+      rtcDrmConfigure(targetDRMOptions);
     } catch (error) {
-      logger.error('Failed to configure DRM with options:', targetDRMOptions, 'error is:', error)
+      logger.error('Failed to configure DRM with options:', targetDRMOptions, 'error is:', error);
     }
     try {
-      rtcDrmConfigure(sourceDRMOptions)
+      rtcDrmConfigure(sourceDRMOptions);
     } catch (error) {
-      logger.error('Failed to configure DRM with options:', sourceDRMOptions, 'error is:', error)
+      logger.error('Failed to configure DRM with options:', sourceDRMOptions, 'error is:', error);
     }
   }
 }

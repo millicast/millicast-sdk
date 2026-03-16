@@ -1,4 +1,4 @@
-import { type InputAudio, type InputVideo, type OutputAudio, type OutputVideo } from '@dolbyio/webrtc-stats'
+import { type InputAudio, type InputVideo, type OutputAudio, type OutputVideo } from '@dolbyio/webrtc-stats';
 
 export interface ConnectionStats {
   /**

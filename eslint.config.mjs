@@ -49,7 +49,9 @@ export default [
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-undef': 'off',
-      'no-unused-vars': 'off'
+      'no-unused-vars': 'off',
+      'semi': ['error', 'always'],
+      'comma-dangle': ['error', 'always-multiline'],
     }
   },
   // JavaScript files

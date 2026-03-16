@@ -1,19 +1,19 @@
-import { EventEmitter } from 'events'
-import PeerConnection from '../PeerConnection'
+import { EventEmitter } from 'events';
+import PeerConnection from '../PeerConnection';
 import type Signaling from '../Signaling';
-import { signalingEvents } from '../Signaling'
-import Diagnostics from './Diagnostics'
-import { type TokenGeneratorCallback } from '../types/Director.types'
-import { type ILogger } from 'js-logger'
-import { type ReconnectData } from '../types/BaseWebRTC.types'
-import { type PublishConnectOptions } from '../types/Publish.types'
-import { type ViewConnectOptions } from '../types/View.types'
-import {webRTCEvents} from '../types/PeerConnection.types'
+import { signalingEvents } from '../Signaling';
+import Diagnostics from './Diagnostics';
+import { type TokenGeneratorCallback } from '../types/Director.types';
+import { type ILogger } from 'js-logger';
+import { type ReconnectData } from '../types/BaseWebRTC.types';
+import { type PublishConnectOptions } from '../types/Publish.types';
+import { type ViewConnectOptions } from '../types/View.types';
+import {webRTCEvents} from '../types/PeerConnection.types';
 
 
 
-const maxReconnectionInterval = 32000
-const baseInterval = 1000
+const maxReconnectionInterval = 32000;
+const baseInterval = 1000;
 
 /**
  * @class BaseWebRTC
@@ -26,35 +26,35 @@ const baseInterval = 1000
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
 export default class BaseWebRTC extends EventEmitter {
-  protected webRTCPeer: PeerConnection
-  protected signaling: Signaling | null
-  protected autoReconnect: boolean
-  private reconnectionInterval: number
-  private alreadyDisconnected: boolean
-  private firstReconnection: boolean
-  protected stopReconnection: boolean
-  private isReconnecting: boolean
-  protected tokenGenerator: TokenGeneratorCallback
-  protected options: ViewConnectOptions | PublishConnectOptions | null
-  protected readonly logger: ILogger
+  protected webRTCPeer: PeerConnection;
+  protected signaling: Signaling | null;
+  protected autoReconnect: boolean;
+  private reconnectionInterval: number;
+  private alreadyDisconnected: boolean;
+  private firstReconnection: boolean;
+  protected stopReconnection: boolean;
+  private isReconnecting: boolean;
+  protected tokenGenerator: TokenGeneratorCallback;
+  protected options: ViewConnectOptions | PublishConnectOptions | null;
+  protected readonly logger: ILogger;
 
   constructor (tokenGenerator: TokenGeneratorCallback, loggerInstance: ILogger, autoReconnect: boolean) {
-    super()
-    this.logger = loggerInstance
+    super();
+    this.logger = loggerInstance;
     if (!tokenGenerator) {
-      this.logger.error('Token generator is required to construct this module.')
-      throw new Error('Token generator is required to construct this module.')
+      this.logger.error('Token generator is required to construct this module.');
+      throw new Error('Token generator is required to construct this module.');
     }
-    this.webRTCPeer = new PeerConnection()
-    this.signaling = null
-    this.autoReconnect = autoReconnect
-    this.reconnectionInterval = baseInterval
-    this.alreadyDisconnected = false
-    this.firstReconnection = true
-    this.stopReconnection = false
-    this.isReconnecting = false
-    this.tokenGenerator = tokenGenerator
-    this.options = null
+    this.webRTCPeer = new PeerConnection();
+    this.signaling = null;
+    this.autoReconnect = autoReconnect;
+    this.reconnectionInterval = baseInterval;
+    this.alreadyDisconnected = false;
+    this.firstReconnection = true;
+    this.stopReconnection = false;
+    this.isReconnecting = false;
+    this.tokenGenerator = tokenGenerator;
+    this.options = null;
   }
 
   /**
@@ -62,19 +62,19 @@ export default class BaseWebRTC extends EventEmitter {
    * @returns {RTCPeerConnection} Object which represents the RTCPeerConnection.
    */
   getRTCPeerConnection (): RTCPeerConnection | null {
-    return this.webRTCPeer ? this.webRTCPeer.getRTCPeer() : null
+    return this.webRTCPeer ? this.webRTCPeer.getRTCPeer() : null;
   }
 
   /**
    * Stops connection.
    */
   stop () {
-    this.logger.info('Stopping')
-    this.webRTCPeer.closeRTCPeer()
-    this.signaling?.close()
-    this.signaling = null
-    this.stopReconnection = true
-    this.webRTCPeer = new PeerConnection()
+    this.logger.info('Stopping');
+    this.webRTCPeer.closeRTCPeer();
+    this.signaling?.close();
+    this.signaling = null;
+    this.stopReconnection = true;
+    this.webRTCPeer = new PeerConnection();
   }
 
   /**
@@ -82,48 +82,48 @@ export default class BaseWebRTC extends EventEmitter {
    * @returns {Boolean} - True if connected, false if not.
    */
   isActive (): boolean {
-    const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
-    this.logger.info('Broadcast status: ', rtcPeerState || 'not_established')
-    return rtcPeerState === 'connected'
+    const rtcPeerState = this.webRTCPeer.getRTCPeerStatus();
+    this.logger.info('Broadcast status: ', rtcPeerState || 'not_established');
+    return rtcPeerState === 'connected';
   }
 
   /**
    * Sets reconnection if autoReconnect is enabled.
    */
   setReconnect () {
-    this.signaling?.on('migrate', () => this.replaceConnection())
+    this.signaling?.on('migrate', () => this.replaceConnection());
     if (this.autoReconnect) {
       this.signaling?.on(signalingEvents.connectionError, () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
-          this.firstReconnection = false
-          this.reconnect({ error: new Error('Signaling error: wsConnectionError') })
+          this.firstReconnection = false;
+          this.reconnect({ error: new Error('Signaling error: wsConnectionError') });
         }
-      })
+      });
 
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, state => {
-        Diagnostics.setConnectionState(state)
+        Diagnostics.setConnectionState(state);
         if (state === 'connected') {
-          Diagnostics.setConnectionTime(new Date().getTime())
+          Diagnostics.setConnectionTime(new Date().getTime());
         }
         if (
           (state === 'failed' || (state === 'disconnected' && this.alreadyDisconnected)) &&
           this.firstReconnection
         ) {
-          this.firstReconnection = false
-          this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') })
+          this.firstReconnection = false;
+          this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') });
         } else if (state === 'disconnected') {
-          this.alreadyDisconnected = true
+          this.alreadyDisconnected = true;
           setTimeout(
             () =>
               this.reconnect({
                 error: new Error('Connection state change: RTCPeerConnectionState disconnected'),
               }),
-            1500
-          )
+            1500,
+          );
         } else {
-          this.alreadyDisconnected = false
+          this.alreadyDisconnected = false;
         }
-      })
+      });
     }
   }
 
@@ -135,9 +135,9 @@ export default class BaseWebRTC extends EventEmitter {
    */
   async reconnect (data?: ReconnectData) {
     try {
-      this.logger.info('Attempting to reconnect...')
+      this.logger.info('Attempting to reconnect...');
       if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
-        this.stop()
+        this.stop();
         /**
          * Emits with every reconnection attempt made when an active stream
          * stopped unexpectedly.
@@ -150,19 +150,19 @@ export default class BaseWebRTC extends EventEmitter {
         this.emit('reconnect', {
           timeout: nextReconnectInterval(this.reconnectionInterval),
           error: data?.error ? data?.error : new Error('Attempting to reconnect'),
-        })
-        this.isReconnecting = true
-        await this.connect(this.options)
-        this.alreadyDisconnected = false
-        this.reconnectionInterval = baseInterval
-        this.firstReconnection = true
-        this.isReconnecting = false
+        });
+        this.isReconnecting = true;
+        await this.connect(this.options);
+        this.alreadyDisconnected = false;
+        this.reconnectionInterval = baseInterval;
+        this.firstReconnection = true;
+        this.isReconnecting = false;
       }
     } catch (error) {
-      this.isReconnecting = false
-      this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
-      this.logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
-      setTimeout(() => this.reconnect({ error: error as Error }), this.reconnectionInterval)
+      this.isReconnecting = false;
+      this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval);
+      this.logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error);
+      setTimeout(() => this.reconnect({ error: error as Error }), this.reconnectionInterval);
     }
   }
 
@@ -177,5 +177,5 @@ export default class BaseWebRTC extends EventEmitter {
 }
 
 const nextReconnectInterval = (interval: number) => {
-  return interval < maxReconnectionInterval ? interval * 2 : interval
-}
+  return interval < maxReconnectionInterval ? interval * 2 : interval;
+};
