@@ -99,7 +99,7 @@ function createSenderTransform (): TransformStream {
             addH26xSEI(metadata[0], encodedFrame)
             synchronizationSourcesWithMetadata.push(newSyncSource)
           } catch (error) {
-            console.error(error)
+            logger.error(error)
           } finally {
             clearMetadata()
           }

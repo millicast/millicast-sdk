@@ -1,3 +1,7 @@
+import Logger from '../Logger'
+
+const logger = Logger.get('ObjectUtils')
+
 export function swapPropertyValues<
   T1 extends object,
   T2 extends object,
@@ -11,7 +15,7 @@ export function swapPropertyValues<
     obj1[key] = obj2[key] as unknown as T1[K]
     obj2[key] = temp as unknown as T2[K]
   } else {
-    console.error(
+    logger.error(
       `One or both objects do not have the property "${String(key)}"`
     )
   }

@@ -334,7 +334,7 @@ const getDirectorPath = (mode = 'subscribe') : string | null => {
     }
     return `${apiEndpoint}/api/director/${mode}`
   } catch (e) {
-    console.error(`Director URL ${apiEndpoint} is invalid`, e)
+    logger.error(`Director URL ${apiEndpoint} is invalid`, e)
     return null
   }
 }

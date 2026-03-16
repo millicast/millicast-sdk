@@ -10,6 +10,9 @@ import BitStreamReader from './BitStreamReader'
 import { VideoCodec } from '../types/Codecs.types'
 import { type SEIUserUnregisteredData } from '../types/View.types'
 import { type TransformWorkerSeiMetadata } from '../types/TransformWorker.types'
+import Logger from '../Logger'
+
+const logger = Logger.get('Codecs')
 
 const NALUType = {
   SLICE_NON_IDR: 1,
@@ -488,7 +491,7 @@ function getSeiPicTimingTimecode (
   payloadContent: Uint8Array
 ) {
   if (!spsState.activeSPS) {
-    console.warn('Cannot find the active SPS')
+    logger.warn('Cannot find the active SPS')
     return
   }
   const hrdParameters =
@@ -507,7 +510,7 @@ function getSeiPicTimingTimecode (
       spsState.activeSPS.vui_parameters?.pic_struct_present_flag ?? 0
   }
   if (!options.pic_struct_present_flag) {
-    console.warn('pic_struct_present_flag is not present')
+    logger.warn('pic_struct_present_flag is not present')
     return undefined
   }
   const reader = new BitStreamReader(payloadContent)
@@ -561,7 +564,7 @@ function getSeiPicTimingTimecode (
         try {
           timecode.time_offset = reader.readBits(options.time_offset_length)
         } catch (err) {
-          console.error('Failed to read time_offset', err)
+          logger.error('Failed to read time_offset', err)
           timecode.time_offset = 0
         }
       } else {
@@ -756,7 +759,7 @@ export function addH26xSEI (
     throw new Error('uuid and payload cannot be empty')
   }
   if (uuid && typeof uuid === 'string' && !isValidUUID(uuid)) {
-    console.warn('Invalid UUID. Using default UUID.')
+    logger.warn('Invalid UUID. Using default UUID.')
     uuid = DOLBY_SDK_TIMESTAMP_UUID
   }
 
