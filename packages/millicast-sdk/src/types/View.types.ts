@@ -286,13 +286,6 @@ export interface LayersEvent extends BroadcastEvent {
  */
 export type MetadataEvent = MetadataObject
 
-/**
- * Events declaration of Viewers that user could listen to
- */
-export interface ViewerEvents {
-  broadcastEvent?: BroadcastEvent
-  track?: RTCTrackEvent
-  metadata?: MetadataEvent
-  // TODO: elaborate error type
-  error?: Error
-}
+// ViewerEvents is now defined in Events.types.ts for comprehensive event typing
+// Re-export for backwards compatibility
+export type { ViewerEvents } from './Events.types'

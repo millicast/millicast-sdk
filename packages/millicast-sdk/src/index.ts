@@ -89,7 +89,19 @@ export type {
   ViewServerEvent,
   PublishServerEvent,
   ReconnectData,
+  ReconnectEvent,
+  BaseWebRTCEvents,
 } from './types/BaseWebRTC.types'
+
+// Event types for type-safe event handling
+export type {
+  ConnectionState,
+  SignalingConnectionSuccessEvent,
+  SignalingEvents,
+  PeerConnectionEvents,
+  PeerConnectionStatsEvents,
+  PublisherEvents,
+} from './types/Events.types'
 
 // Stats types
 export type {

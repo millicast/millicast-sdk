@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import reemit from 're-emitter'
 import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnectionStats'
 import SdpParser from './utils/SdpParser'
@@ -6,6 +5,8 @@ import UserAgent from './utils/UserAgent'
 import Logger from './Logger'
 import { VideoCodec, AudioCodec } from './types/Codecs.types'
 import {ConnectionType, type ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types'
+import { type PeerConnectionEvents } from './types/Events.types'
+import { MillicastEventEmitter } from './EventEmitter'
 
 const logger = Logger.get('PeerConnection')
 
@@ -66,7 +67,7 @@ interface MillicastCodec {
  * @example const peerConnection = new PeerConnection()
  * @constructor
  */
-export default class PeerConnection extends EventEmitter {
+export default class PeerConnection extends MillicastEventEmitter<PeerConnectionEvents> {
   mode: ConnectionTypeValue | null
   sessionDescription: RTCSessionDescriptionInit | undefined
   peer: RTCPeerConnection | null

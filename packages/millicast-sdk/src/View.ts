@@ -24,8 +24,8 @@ import {
   type DRMOptions,
   type MetadataObject,
   type SEIUserUnregisteredData,
-  type ViewerEvents,
 } from './types/View.types.js'
+import { type ViewerEvents } from './types/Events.types'
 import { type DRMProfile } from './types/Director.types'
 import { type DecodedJWT, type Media } from './types/BaseWebRTC.types'
 import { VideoCodec } from './types/Codecs.types'
@@ -74,7 +74,7 @@ export default class View extends BaseWebRTC {
   private isMainStreamActive = false
   private eventQueue: RTCTrackEvent[] = []
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null
-  private events: { [K in keyof ViewerEvents]: ((payload: ViewerEvents[K]) => void)[] } = {}
+  private events: Partial<{ [K in keyof ViewerEvents]: ((payload: ViewerEvents[K]) => void)[] }> = {}
   protected override options: ViewConnectOptions | null = null
 
   constructor (

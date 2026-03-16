@@ -9,6 +9,12 @@ export type DecodedJWT = Record<string, {
     record: boolean
   }>;
 
+/**
+ * @deprecated Use ReconnectEvent from Events.types.ts instead
+ */
 export interface ReconnectData {
   error: Error
 }
+
+// Re-export event types for convenience
+export type { ReconnectEvent, BaseWebRTCEvents } from './Events.types'
