@@ -1,4 +1,4 @@
-import 'vite/client'
+import 'vite/client';
 
 declare global {
   // Fixes the 'createEncodedStreams' errors
@@ -37,4 +37,4 @@ declare global {
   }
 }
 
-export {}
+export {};

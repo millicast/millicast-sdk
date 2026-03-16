@@ -1,12 +1,12 @@
-import Logger from './Logger'
-import Diagnostics from './utils/Diagnostics'
-import { type OnStats, WebRTCStats } from '@dolbyio/webrtc-stats'
-import { type PeerConnectionConfig } from './types/PeerConnection.types'
-import { type ConnectionStats } from './types/stats.types'
-import { type PeerConnectionStatsEvents } from './types/Events.types'
-import { MillicastEventEmitter } from './EventEmitter'
+import Logger from './Logger';
+import Diagnostics from './utils/Diagnostics';
+import { type OnStats, WebRTCStats } from '@dolbyio/webrtc-stats';
+import { type PeerConnectionConfig } from './types/PeerConnection.types';
+import { type ConnectionStats } from './types/stats.types';
+import { type PeerConnectionStatsEvents } from './types/Events.types';
+import { MillicastEventEmitter } from './EventEmitter';
 
-const logger = Logger.get('PeerConnectionStats')
+const logger = Logger.get('PeerConnectionStats');
 
 /**
  * @typedef {Object} ConnectionStats
@@ -83,7 +83,7 @@ const logger = Logger.get('PeerConnectionStats')
 
 export const peerConnectionStatsEvents = {
   stats: 'stats' as const,
-} as const
+} as const;
 
 /**
  * Parses incoming WebRTC statistics
@@ -94,7 +94,7 @@ export const peerConnectionStatsEvents = {
  */
 const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  const { input, output, rawStats, ...filteredStats } = webRTCStats
+  const { input, output, rawStats, ...filteredStats } = webRTCStats;
   const statsObject: ConnectionStats = {
     ...filteredStats,
     audio: {
@@ -110,7 +110,7 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
           bitrateBitsPerSecond: bitrate * 8,
           bitrate,
           ...rest,
-        })
+        }),
       ),
       outbounds: webRTCStats.output.audio.map(({ bitrate = 0, ...rest }) => ({
         bitrateBitsPerSecond: bitrate * 8,
@@ -131,7 +131,7 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
           bitrateBitsPerSecond: bitrate * 8,
           bitrate,
           ...rest,
-        })
+        }),
       ),
       outbounds: webRTCStats.output.video.map(({ bitrate = 0, ...rest }) => ({
         bitrateBitsPerSecond: bitrate * 8,
@@ -140,25 +140,25 @@ const parseWebRTCStats = (webRTCStats: OnStats): ConnectionStats => {
       })),
     },
     raw: webRTCStats.rawStats,
-  }
-  return statsObject
-}
+  };
+  return statsObject;
+};
 
 export default class PeerConnectionStats extends MillicastEventEmitter<PeerConnectionStatsEvents> {
-  peer: RTCPeerConnection
-  collection: WebRTCStats | null
-  initialized: boolean
+  peer: RTCPeerConnection;
+  collection: WebRTCStats | null;
+  initialized: boolean;
 
   constructor (
     peer: RTCPeerConnection,
-    options: PeerConnectionConfig = { statsIntervalMs: 1000, autoInitStats: true }
+    options: PeerConnectionConfig = { statsIntervalMs: 1000, autoInitStats: true },
   ) {
-    super()
-    this.peer = peer
-    this.collection = null
-    this.initialized = false
+    super();
+    this.peer = peer;
+    this.collection = null;
+    this.initialized = false;
     if (options.autoInitStats && options.statsIntervalMs) {
-      this.init(options.statsIntervalMs)
+      this.init(options.statsIntervalMs);
     }
   }
 
@@ -170,30 +170,30 @@ export default class PeerConnectionStats extends MillicastEventEmitter<PeerConne
   init (statsIntervalMs: number) {
     if (this.initialized) {
       logger.warn(
-        'PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.'
-      )
-      return
+        'PeerConnectionStats.init() has already been called. Automatic initialization occurs when the PeerConnectionStats object is constructed.',
+      );
+      return;
     }
-    logger.info('Initializing peer connection stats')
-    const peer = this.peer
+    logger.info('Initializing peer connection stats');
+    const peer = this.peer;
     try {
       this.collection = new WebRTCStats({
         getStatsInterval: statsIntervalMs,
         getStats: () => {
-          return peer.getStats()
+          return peer.getStats();
         },
         includeRawStats: true,
-      })
+      });
 
       this.collection.on('stats', stats => {
-        const parsedStats = parseWebRTCStats(stats)
-        Diagnostics.addStats(parsedStats)
-        this.emit(peerConnectionStatsEvents.stats, parsedStats)
-      })
-      this.collection.start()
-      this.initialized = true
+        const parsedStats = parseWebRTCStats(stats);
+        Diagnostics.addStats(parsedStats);
+        this.emit(peerConnectionStatsEvents.stats, parsedStats);
+      });
+      this.collection.start();
+      this.initialized = true;
     } catch (e) {
-      logger.error(e)
+      logger.error(e);
     }
   }
 
@@ -204,15 +204,15 @@ export default class PeerConnectionStats extends MillicastEventEmitter<PeerConne
    * @returns {null} Method deprecated and no longer returns meaningful data.
    */
   parseStats (rawStats: RTCStatsReport): null {
-    logger.warn('The parseStats method is deprecated and will be removed in future releases.')
-    return null
+    logger.warn('The parseStats method is deprecated and will be removed in future releases.');
+    return null;
   }
 
   /**
    * Stops the monitoring of RTCPeerConnection statistics.
    */
   stop () {
-    logger.info('Stopping peer connection stats')
-    this.collection?.stop()
+    logger.info('Stopping peer connection stats');
+    this.collection?.stop();
   }
 }

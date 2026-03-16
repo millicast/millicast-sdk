@@ -4,5 +4,5 @@ declare module '*.worker.js' {
   class WebWorker extends Worker {
     constructor()
   }
-  export default WebWorker
+  export default WebWorker;
 }

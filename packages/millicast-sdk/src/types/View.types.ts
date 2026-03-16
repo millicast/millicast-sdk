@@ -1,7 +1,7 @@
-import { type Media, type ViewServerEvent } from './BaseWebRTC.types'
-import { type VideoCodec } from './Codecs.types'
-import { type PeerConnectionConfig } from './PeerConnection.types'
-import { type AbrConfigurationOptions } from './Signaling.types'
+import { type Media, type ViewServerEvent } from './BaseWebRTC.types';
+import { type VideoCodec } from './Codecs.types';
+import { type PeerConnectionConfig } from './PeerConnection.types';
+import { type AbrConfigurationOptions } from './Signaling.types';
 
 export interface ViewConnectOptions {
   /**
@@ -289,4 +289,4 @@ export type MetadataEvent = MetadataObject
 
 // ViewerEvents is now defined in Events.types.ts for comprehensive event typing
 // Re-export for backwards compatibility
-export type { ViewerEvents } from './Events.types'
+export type { ViewerEvents } from './Events.types';

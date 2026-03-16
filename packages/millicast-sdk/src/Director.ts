@@ -1,22 +1,22 @@
-import Logger from './Logger'
-import Diagnostics from './utils/Diagnostics'
-import FetchError from './utils/FetchError'
+import Logger from './Logger';
+import Diagnostics from './utils/Diagnostics';
+import FetchError from './utils/FetchError';
 import {
   type DirectorPublisherOptions,
   type DirectorResponse,
   type DirectorSubscriberOptions,
-  type MillicastDirectorResponse
-} from './types/Director.types'
+  type MillicastDirectorResponse,
+} from './types/Director.types';
 
-const logger = Logger.get('Director')
+const logger = Logger.get('Director');
 enum StreamTypes {
   WEBRTC = 'WebRtc',
   RTMP = 'Rtmp'
 }
 
-let liveWebsocketDomain = ''
-export const defaultApiEndpoint = 'https://director.millicast.com'
-let apiEndpoint = defaultApiEndpoint
+let liveWebsocketDomain = '';
+export const defaultApiEndpoint = 'https://director.millicast.com';
+let apiEndpoint = defaultApiEndpoint;
 
 /**
  * @module Director
@@ -68,7 +68,7 @@ const Director = {
    * @returns {void}
    */
   setEndpoint: (url: string): void => {
-    apiEndpoint = url.replace(/\/$/, '')
+    apiEndpoint = url.replace(/\/$/, '');
   },
 
   /**
@@ -78,7 +78,7 @@ const Director = {
    * @returns {String} API base url
    */
   getEndpoint: (): string => {
-    return apiEndpoint
+    return apiEndpoint;
   },
 
   /**
@@ -90,7 +90,7 @@ const Director = {
    * @returns {void}
    */
   setLiveDomain: (domain: string): void => {
-    liveWebsocketDomain = domain.replace(/\/$/, '')
+    liveWebsocketDomain = domain.replace(/\/$/, '');
   },
 
   /**
@@ -101,7 +101,7 @@ const Director = {
    * @returns {String} Websocket Live domain
    */
   getLiveDomain: (): string => {
-    return liveWebsocketDomain
+    return liveWebsocketDomain;
   },
 
   /**
@@ -129,44 +129,44 @@ const Director = {
   getPublisher: async (
     options: DirectorPublisherOptions | string,
     streamName: string | null = null,
-    streamType: StreamTypes = StreamTypes.WEBRTC
+    streamType: StreamTypes = StreamTypes.WEBRTC,
   ): Promise<MillicastDirectorResponse> => {
 
-    const optionsParsed = getPublisherOptions(options, streamName, streamType)
+    const optionsParsed = getPublisherOptions(options, streamName, streamType);
 
 
     logger.info(
       'Getting publisher connection path for stream name: ',
-      optionsParsed.streamName
-    )
+      optionsParsed.streamName,
+    );
     const payload = {
       streamName: optionsParsed.streamName,
-      streamType: optionsParsed.streamType
-    }
+      streamType: optionsParsed.streamType,
+    };
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${optionsParsed.token}`
-    }
-    const url = `${Director.getEndpoint()}/api/director/publish`
+      Authorization: `Bearer ${optionsParsed.token}`,
+    };
+    const url = `${Director.getEndpoint()}/api/director/publish`;
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers,
-        body: JSON.stringify(payload)
-      })
-      let data = await response.json()
+        body: JSON.stringify(payload),
+      });
+      let data = await response.json();
       if (data.status === 'fail') {
-        const error = new FetchError(data.data.message, response.status)
-        throw error
+        const error = new FetchError(data.data.message, response.status);
+        throw error;
       }
-      data = parseIncomingDirectorResponse(data)
-      logger.debug('Getting publisher response: ', data)
-      Diagnostics.initAccountId(data.data.streamAccountId)
+      data = parseIncomingDirectorResponse(data);
+      logger.debug('Getting publisher response: ', data);
+      Diagnostics.initAccountId(data.data.streamAccountId);
 
-      return data.data
+      return data.data;
     } catch (e) {
-      logger.error('Error while getting publisher connection path. ', e)
-      throw e
+      logger.error('Error while getting publisher connection path. ', e);
+      throw e;
     }
   },
 
@@ -200,90 +200,90 @@ const Director = {
     options: DirectorSubscriberOptions,
      
     streamAccountId: string | null = null,
-    subscriberToken: string | null = null
+    subscriberToken: string | null = null,
   ) => {
-    const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
+    const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken);
 
-    Diagnostics.initAccountId(optionsParsed.streamAccountId)
+    Diagnostics.initAccountId(optionsParsed.streamAccountId);
 
     logger.info(
-      `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`
-    )
+      `Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`,
+    );
 
     const payload = {
       streamAccountId: optionsParsed.streamAccountId,
-      streamName: optionsParsed.streamName
-    }
+      streamName: optionsParsed.streamName,
+    };
     let headers: { 'Content-Type': string; Authorization?: string } = {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    };
     if (subscriberToken) {
-      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
+      headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` };
     }
 
-    const url = `${getDirectorPath('subscribe')}`
+    const url = `${getDirectorPath('subscribe')}`;
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers,
-        body: JSON.stringify(payload)
-      })
-      let data = await response.json()
+        body: JSON.stringify(payload),
+      });
+      let data = await response.json();
       if (data.status === 'fail') {
-        const error = new FetchError(data.data.message, response.status)
-        throw error
+        const error = new FetchError(data.data.message, response.status);
+        throw error;
       }
-      data = parseIncomingDirectorResponse(data)
-      logger.debug('Getting subscriber response: ', data)
+      data = parseIncomingDirectorResponse(data);
+      logger.debug('Getting subscriber response: ', data);
       
       if (options.subscriberToken){
-        data.data.subscriberToken = options.subscriberToken
+        data.data.subscriberToken = options.subscriberToken;
       }
-      return data.data
+      return data.data;
     } catch (e) {
-      logger.error('Error while getting subscriber connection path. ', e)
-      throw e
+      logger.error('Error while getting subscriber connection path. ', e);
+      throw e;
     }
-  }
-}
+  },
+};
 
 const getPublisherOptions = (
   options: string | DirectorPublisherOptions,
   legacyStreamName: string | null,
-  legacyStreamType: 'WebRtc' | 'Rtmp' = StreamTypes.WEBRTC
+  legacyStreamType: 'WebRtc' | 'Rtmp' = StreamTypes.WEBRTC,
 ): DirectorPublisherOptions => {
   let parsedOptions: DirectorPublisherOptions | Record<string, never> =
-    typeof options === 'object' ? options : {}
+    typeof options === 'object' ? options : {};
 
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       token: options as string,
       streamName: legacyStreamName!,
       streamType: legacyStreamType,
-    }
+    };
   }
 
-  return parsedOptions as DirectorPublisherOptions
-}
+  return parsedOptions as DirectorPublisherOptions;
+};
 
 const getSubscriberOptions = (
   options: string | DirectorSubscriberOptions,
   legacyStreamAccountId: string | null,
-  legacySubscriberToken: string | null
+  legacySubscriberToken: string | null,
 ): DirectorSubscriberOptions => {
   let parsedOptions: DirectorSubscriberOptions | Record<string, never> =
-    typeof options === 'object' ? options : {}
+    typeof options === 'object' ? options : {};
 
   if (Object.keys(parsedOptions).length === 0) {
     parsedOptions = {
       streamName: options as string,
       streamAccountId: legacyStreamAccountId!,
       subscriberToken: legacySubscriberToken,
-    }
+    };
   }
 
-  return parsedOptions as DirectorSubscriberOptions
-}
+  return parsedOptions as DirectorSubscriberOptions;
+};
 
 
 
@@ -291,52 +291,52 @@ const parseIncomingDirectorResponse = (directorResponse: {
   data: DirectorResponse
 }) => {
   if (Director.getLiveDomain()) {
-    const domainRegex = /\/\/(.*?)\//
+    const domainRegex = /\/\/(.*?)\//;
     const urlsParsed = directorResponse.data.urls.map(url => {
-      const matched = domainRegex.exec(url)
+      const matched = domainRegex.exec(url);
       if (!matched) {
-        logger.warn('Unable to parse incoming director response')
-        return url
+        logger.warn('Unable to parse incoming director response');
+        return url;
       }
-      return url.replace(matched[1], Director.getLiveDomain())
-    })
-    directorResponse.data.urls = urlsParsed
+      return url.replace(matched[1], Director.getLiveDomain());
+    });
+    directorResponse.data.urls = urlsParsed;
   }
   // TODO: remove this when server returns full path of DRM license server URLs
   if (directorResponse.data.drmObject) {
-    const playReadyUrl = directorResponse.data.drmObject.playReadyUrl
+    const playReadyUrl = directorResponse.data.drmObject.playReadyUrl;
     if (playReadyUrl) {
-      directorResponse.data.drmObject.playReadyUrl = `${Director.getEndpoint()}${playReadyUrl}`
+      directorResponse.data.drmObject.playReadyUrl = `${Director.getEndpoint()}${playReadyUrl}`;
     }
-    const widevineUrl = directorResponse.data.drmObject.widevineUrl
+    const widevineUrl = directorResponse.data.drmObject.widevineUrl;
     if (widevineUrl) {
-      directorResponse.data.drmObject.widevineUrl = `${Director.getEndpoint()}${widevineUrl}`
+      directorResponse.data.drmObject.widevineUrl = `${Director.getEndpoint()}${widevineUrl}`;
     }
-    const fairPlayUrl = directorResponse.data.drmObject.fairPlayUrl
+    const fairPlayUrl = directorResponse.data.drmObject.fairPlayUrl;
     if (fairPlayUrl) {
-      directorResponse.data.drmObject.fairPlayUrl = `${Director.getEndpoint()}${fairPlayUrl}`
+      directorResponse.data.drmObject.fairPlayUrl = `${Director.getEndpoint()}${fairPlayUrl}`;
     }
-    const fairPlayCertUrl = directorResponse.data.drmObject.fairPlayCertUrl
+    const fairPlayCertUrl = directorResponse.data.drmObject.fairPlayCertUrl;
     if (fairPlayCertUrl) {
-      directorResponse.data.drmObject.fairPlayCertUrl = `${Director.getEndpoint()}${fairPlayCertUrl}`
+      directorResponse.data.drmObject.fairPlayCertUrl = `${Director.getEndpoint()}${fairPlayCertUrl}`;
     }
   }
-  return directorResponse
-}
+  return directorResponse;
+};
 
 
 const getDirectorPath = (mode = 'subscribe') : string | null => {
   try {
-    const url = new URL(apiEndpoint)
+    const url = new URL(apiEndpoint);
     // length > 1 because pathname is '/' when there is no path
     if (url.pathname && url.pathname.length > 1) {
-      return url.toString()
+      return url.toString();
     }
-    return `${apiEndpoint}/api/director/${mode}`
+    return `${apiEndpoint}/api/director/${mode}`;
   } catch (e) {
-    logger.error(`Director URL ${apiEndpoint} is invalid`, e)
-    return null
+    logger.error(`Director URL ${apiEndpoint} is invalid`, e);
+    return null;
   }
-}
+};
 
-export default Director
+export default Director;

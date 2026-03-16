@@ -3,11 +3,11 @@
  * These types enable TypeScript users to write type-safe event handlers
  */
 
-import type { ConnectionStats } from './stats.types'
+import type { ConnectionStats } from './stats.types';
 import type {
   BroadcastEvent,
   MetadataObject,
-} from './View.types'
+} from './View.types';
 
 /**
  * Reconnect event payload

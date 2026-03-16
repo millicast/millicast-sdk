@@ -21,4 +21,4 @@ export default {
   ],
   resolver: '<rootDir>/../../jest_resolver.cjs',
   coverageDirectory: '../../coverage/packages/millicast-sdk',
-}
+};

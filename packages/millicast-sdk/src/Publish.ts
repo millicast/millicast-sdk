@@ -1,5 +1,5 @@
-import {jwtDecode} from 'jwt-decode'
-import reemit from 're-emitter'
+import {jwtDecode} from 'jwt-decode';
+import reemit from 're-emitter';
 import {
   type BaseSchema,
   type BaseIssue,
@@ -17,24 +17,24 @@ import {
   nullable,
   safeParse,
   ValiError,
-} from 'valibot'
-import Logger from './Logger'
-import BaseWebRTC from './utils/BaseWebRTC'
-import Signaling, { signalingEvents } from './Signaling'
-import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs'
-import PeerConnection from './PeerConnection'
-import { ConnectionType, webRTCEvents } from './types/PeerConnection.types'
-import FetchError from './utils/FetchError'
-import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform'
-import { VideoCodec } from './types/Codecs.types'
-import { type PublishConnectOptions } from './types/Publish.types'
-import { type TokenGeneratorCallback } from './types/Director.types'
-import { type ReconnectData, type DecodedJWT } from './types/BaseWebRTC.types'
-import { type SignalingPublishOptions } from './types/Signaling.types'
-import { type SEIUserUnregisteredData } from './types/View.types'
-import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline'
+} from 'valibot';
+import Logger from './Logger';
+import BaseWebRTC from './utils/BaseWebRTC';
+import Signaling, { signalingEvents } from './Signaling';
+import { DOLBY_SDK_TIMESTAMP_UUID } from './utils/Codecs';
+import PeerConnection from './PeerConnection';
+import { ConnectionType, webRTCEvents } from './types/PeerConnection.types';
+import FetchError from './utils/FetchError';
+import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './utils/StreamTransform';
+import { VideoCodec } from './types/Codecs.types';
+import { type PublishConnectOptions } from './types/Publish.types';
+import { type TokenGeneratorCallback } from './types/Director.types';
+import { type ReconnectData, type DecodedJWT } from './types/BaseWebRTC.types';
+import { type SignalingPublishOptions } from './types/Signaling.types';
+import { type SEIUserUnregisteredData } from './types/View.types';
+import TransformWorker from './workers/TransformWorker.worker.ts?worker&inline';
 
-const logger = Logger.get('Publish')
+const logger = Logger.get('Publish');
 
 const connectOptions: PublishConnectOptions = {
   mediaStream: null,
@@ -49,7 +49,7 @@ const connectOptions: PublishConnectOptions = {
     autoInitStats: true,
     statsIntervalMs: 1000,
   },
-}
+};
 
 /**
  * @class Publish
@@ -68,22 +68,22 @@ const connectOptions: PublishConnectOptions = {
  * @param {Boolean} [autoReconnect=true] - Enable auto reconnect to stream.
  */
 export default class Publish extends BaseWebRTC {
-  private worker: Worker | null = null
-  private recordingAvailable = false
-  private stopReemitingWebRTCPeerInstanceEvents?: () => void
-  private stopReemitingSignalingInstanceEvents?: () => void
-  protected override options: PublishConnectOptions = connectOptions
-  private streamName: string | undefined
+  private worker: Worker | null = null;
+  private recordingAvailable = false;
+  private stopReemitingWebRTCPeerInstanceEvents?: () => void;
+  private stopReemitingSignalingInstanceEvents?: () => void;
+  protected override options: PublishConnectOptions = connectOptions;
+  private streamName: string | undefined;
   constructor (streamName: string | undefined, tokenGenerator: TokenGeneratorCallback, autoReconnect = true) {
     if (streamName) {
       logger.warn(
-        'The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator'
-      )
+        'The streamName property has been deprecated. In a future release, this will be removed. Please do not rely on this value. Instead, set via token generator',
+      );
     }
     if (!tokenGenerator) {
-      throw new Error('Token generator is required to construct this module.')
+      throw new Error('Token generator is required to construct this module.');
     }
-    super(tokenGenerator, logger, autoReconnect)
+    super(tokenGenerator, logger, autoReconnect);
   }
 
   /**
@@ -141,33 +141,33 @@ export default class Publish extends BaseWebRTC {
    * }
    */
   override async connect (options: PublishConnectOptions = connectOptions): Promise<void> {
-    validateConnectOptions(options)
+    validateConnectOptions(options);
     this.options = {
       ...connectOptions,
       ...options,
       peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig },
       setSDPToPeer: false,
-    }
+    };
     this.options.metadata =
-      this.options.metadata && this.options.codec === VideoCodec.H264 && !this.options.disableVideo
-    await this.initConnection({ migrate: false })
+      this.options.metadata && this.options.codec === VideoCodec.H264 && !this.options.disableVideo;
+    await this.initConnection({ migrate: false });
   }
 
   override async reconnect (data?: ReconnectData) {
-    const tracks = this.webRTCPeer?.getTracks()
+    const tracks = this.webRTCPeer?.getTracks();
     this.options.mediaStream = tracks
       ? tracks.filter((track): track is MediaStreamTrack => track !== null)
-      : this.options.mediaStream
-    super.reconnect(data)
+      : this.options.mediaStream;
+    super.reconnect(data);
   }
 
   override async replaceConnection () {
-    logger.info('Migrating current connection')
-    const tracks = this.webRTCPeer?.getTracks()
+    logger.info('Migrating current connection');
+    const tracks = this.webRTCPeer?.getTracks();
     this.options.mediaStream = tracks
       ? tracks.filter((track): track is MediaStreamTrack => track !== null)
-      : this.options.mediaStream
-    await this.initConnection({ migrate: true })
+      : this.options.mediaStream;
+    await this.initConnection({ migrate: true });
   }
 
   /**
@@ -175,11 +175,11 @@ export default class Publish extends BaseWebRTC {
    */
   async record () {
     if (this.recordingAvailable) {
-      this.options.record = true
-      await this.signaling?.cmd('record')
-      logger.info('Broadcaster start recording')
+      this.options.record = true;
+      await this.signaling?.cmd('record');
+      logger.info('Broadcaster start recording');
     } else {
-      logger.error('Record not available')
+      logger.error('Record not available');
     }
   }
 
@@ -188,92 +188,92 @@ export default class Publish extends BaseWebRTC {
    */
   async unrecord () {
     if (this.recordingAvailable) {
-      this.options.record = false
-      await this.signaling?.cmd('unrecord')
-      logger.info('Broadcaster stop recording')
+      this.options.record = false;
+      await this.signaling?.cmd('unrecord');
+      logger.info('Broadcaster stop recording');
     } else {
-      logger.error('Unrecord not available')
+      logger.error('Unrecord not available');
     }
   }
 
   override stop () {
-    super.stop()
-    this.worker?.terminate()
-    this.worker = null
+    super.stop();
+    this.worker?.terminate();
+    this.worker = null;
   }
 
   async initConnection (data: { migrate: boolean }) {
-    logger.debug('Broadcast option values: ', this.options)
-    this.stopReconnection = false
+    logger.debug('Broadcast option values: ', this.options);
+    this.stopReconnection = false;
     
     if (!this.options.mediaStream) {
-      logger.error('Error while broadcasting. MediaStream required')
-      throw new Error('MediaStream required')
+      logger.error('Error while broadcasting. MediaStream required');
+      throw new Error('MediaStream required');
     }
     if (!data.migrate && this.isActive()) {
-      logger.warn('Broadcast currently working')
-      throw new Error('Broadcast currently working')
+      logger.warn('Broadcast currently working');
+      throw new Error('Broadcast currently working');
     }
-    let publisherData
+    let publisherData;
     try {
-      publisherData = await this.tokenGenerator()
+      publisherData = await this.tokenGenerator();
       if (this.options.peerConfig) {
         //  Set the iceServers from the publish data into the peerConfig
-        this.options.peerConfig.iceServers = publisherData?.iceServers
-        this.options.peerConfig.encodedInsertableStreams = this.options.metadata
+        this.options.peerConfig.iceServers = publisherData?.iceServers;
+        this.options.peerConfig.encodedInsertableStreams = this.options.metadata;
       }
     } catch (error) {
-      logger.error('Error generating token.')
+      logger.error('Error generating token.');
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
           // should not reconnect
-          this.stopReconnection = true
+          this.stopReconnection = true;
         } else {
           // should reconnect with exponential back off if autoReconnect is true
-          this.reconnect()
+          this.reconnect();
         }
       }
-      throw error
+      throw error;
     }
     if (!publisherData) {
-      logger.error('Error while broadcasting. Publisher data required')
-      throw new Error('Publisher data required')
+      logger.error('Error while broadcasting. Publisher data required');
+      throw new Error('Publisher data required');
     }
-    const decodedJWT = jwtDecode(publisherData.jwt) as DecodedJWT
-    this.streamName = decodedJWT['millicast'].streamName
-    this.recordingAvailable = decodedJWT['millicast'].record
+    const decodedJWT = jwtDecode(publisherData.jwt) as DecodedJWT;
+    this.streamName = decodedJWT['millicast'].streamName;
+    this.recordingAvailable = decodedJWT['millicast'].record;
     if (this.options.record && !this.recordingAvailable) {
-      logger.error('Error while broadcasting. Record option detected but recording is not available')
-      throw new Error('Record option detected but recording is not available')
+      logger.error('Error while broadcasting. Record option detected but recording is not available');
+      throw new Error('Record option detected but recording is not available');
     }
 
     const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`,
-    })
-    const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
+    });
+    const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer;
 
-    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig, ConnectionType.Publisher)
+    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig, ConnectionType.Publisher);
     // Stop emiting events from the previous instances
-    this.stopReemitingWebRTCPeerInstanceEvents?.()
-    this.stopReemitingSignalingInstanceEvents?.()
+    this.stopReemitingWebRTCPeerInstanceEvents?.();
+    this.stopReemitingSignalingInstanceEvents?.();
     // And start emitting from the new ones
     this.stopReemitingWebRTCPeerInstanceEvents = reemit(webRTCPeerInstance, this, [
       webRTCEvents.connectionStateChange,
-    ])
+    ]);
     this.stopReemitingSignalingInstanceEvents = reemit(signalingInstance, this, [
       signalingEvents.broadcastEvent,
-    ])
+    ]);
 
-    const localSdp = await webRTCPeerInstance.getRTCLocalSDP(this.options)
-    await signalingInstance.connect()
+    const localSdp = await webRTCPeerInstance.getRTCLocalSDP(this.options);
+    await signalingInstance.connect();
 
     if (this.options.metadata) {
       if (!this.worker) {
-        this.worker = new TransformWorker
+        this.worker = new TransformWorker;
       }
 
-      const senders = this.getRTCPeerConnection()?.getSenders()
+      const senders = this.getRTCPeerConnection()?.getSenders();
 
       senders?.forEach(sender => {
         if (supportsRTCRtpScriptTransform && this.worker) {
@@ -281,10 +281,10 @@ export default class Publish extends BaseWebRTC {
           sender.transform = new RTCRtpScriptTransform(this.worker, {
             name: 'senderTransform',
             codec: this.options.codec,
-          })
+          });
         } else if (supportsInsertableStreams) {
           if (sender.createEncodedStreams) {
-            const { readable, writable } = sender.createEncodedStreams!()
+            const { readable, writable } = sender.createEncodedStreams!();
             this.worker?.postMessage(
               {
                 action: 'insertable-streams-sender',
@@ -292,43 +292,43 @@ export default class Publish extends BaseWebRTC {
                 readable,
                 writable,
               },
-              [readable, writable]
-            )
+              [readable, writable],
+            );
           }
         }
-      })
+      });
     }
 
-    let oldSignaling = this.signaling
-    this.signaling = signalingInstance
+    let oldSignaling = this.signaling;
+    this.signaling = signalingInstance;
 
-    const publishPromise = this.signaling.publish(localSdp, this.options as SignalingPublishOptions)
+    const publishPromise = this.signaling.publish(localSdp, this.options as SignalingPublishOptions);
     const setLocalDescriptionPromise = webRTCPeerInstance.peer?.setLocalDescription(
-      webRTCPeerInstance.sessionDescription
-    )
-    const promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
-    let remoteSdp = promises[0]
+      webRTCPeerInstance.sessionDescription,
+    );
+    const promises = await Promise.all([publishPromise, setLocalDescriptionPromise]);
+    let remoteSdp = promises[0];
 
-    await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
+    await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp);
 
     if (!this.options.disableVideo && this.options.bandwidth && this.options.bandwidth > 0) {
-      await webRTCPeerInstance.updateBandwidthRestriction(this.options.bandwidth)
+      await webRTCPeerInstance.updateBandwidthRestriction(this.options.bandwidth);
     }
 
-    logger.info('Broadcasting to streamName: ', this.streamName)
+    logger.info('Broadcasting to streamName: ', this.streamName);
 
-    let oldWebRTCPeer: PeerConnection | null = this.webRTCPeer
-    this.webRTCPeer = webRTCPeerInstance
-    this.setReconnect()
+    let oldWebRTCPeer: PeerConnection | null = this.webRTCPeer;
+    this.webRTCPeer = webRTCPeerInstance;
+    this.setReconnect();
 
     if (data.migrate) {
       this.webRTCPeer.on(webRTCEvents.connectionStateChange, state => {
         if (['connected', 'disconnected', 'failed', 'closed'].includes(state)) {
-          oldSignaling?.close?.()
-          oldWebRTCPeer?.closeRTCPeer?.()
-          oldSignaling = oldWebRTCPeer = null
+          oldSignaling?.close?.();
+          oldWebRTCPeer?.closeRTCPeer?.();
+          oldSignaling = oldWebRTCPeer = null;
         }
-      })
+      });
     }
   }
 
@@ -343,38 +343,38 @@ export default class Publish extends BaseWebRTC {
         action: 'metadata-sei-user-data-unregistered',
         uuid,
         payload: message,
-      })
+      });
     } else {
-      let warningMessage = 'Could not send metadata due to:'
+      let warningMessage = 'Could not send metadata due to:';
       if (this.options) {
         if (!this.options.metadata) {
-          warningMessage += '\n- Metadata option is not enabled.'
+          warningMessage += '\n- Metadata option is not enabled.';
           if (this.options.codec !== VideoCodec.H264) {
-            warningMessage += '\n- Incompatible codec. Only H264 available.'
+            warningMessage += '\n- Incompatible codec. Only H264 available.';
           }
           if (this.options.disableVideo) {
-            warningMessage += '\n- Video disabled.'
+            warningMessage += '\n- Video disabled.';
           }
         } else if (!this.worker) {
-          warningMessage += '\n- Stream not being published.'
+          warningMessage += '\n- Stream not being published.';
         }
       } else {
-        warningMessage += '\n- Stream not being published.'
+        warningMessage += '\n- Stream not being published.';
       }
-      logger.warn(warningMessage)
+      logger.warn(warningMessage);
     }
   }
 }
 
 let connectOptionsSchema:
   | BaseSchema<PublishConnectOptions, PublishConnectOptions, BaseIssue<unknown>>
-  | undefined
+  | undefined;
 
 const validateConnectOptions = (options: PublishConnectOptions): void => {
   // Define safe references to prevent ReferenceErrors in Node environment
-  const SafeMediaStream = typeof MediaStream !== 'undefined' ? instance(MediaStream) : vAny()
+  const SafeMediaStream = typeof MediaStream !== 'undefined' ? instance(MediaStream) : vAny();
   const SafeMediaStreamTrack =
-    typeof MediaStreamTrack !== 'undefined' ? instance(MediaStreamTrack) : vAny()
+    typeof MediaStreamTrack !== 'undefined' ? instance(MediaStreamTrack) : vAny();
 
   connectOptionsSchema =
     connectOptionsSchema ||
@@ -396,14 +396,14 @@ const validateConnectOptions = (options: PublishConnectOptions): void => {
         looseObject({
           autoInitStats: optional(boolean()),
           statsIntervalMs: optional(number()),
-        })
+        }),
       ),
       record: optional(boolean()),
       events: optional(array(picklist(['active', 'inactive', 'viewercount']))),
       priority: optional(number()),
-    })
+    });
 
-  const { success, issues } = safeParse(connectOptionsSchema, options)
-  if (!success) logger.warn(new ValiError(issues), options)
-}
+  const { success, issues } = safeParse(connectOptionsSchema, options);
+  if (!success) logger.warn(new ValiError(issues), options);
+};
 

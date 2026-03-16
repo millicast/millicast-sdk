@@ -17,4 +17,4 @@ export interface ReconnectData {
 }
 
 // Re-export event types for convenience
-export type { ReconnectEvent, BaseWebRTCEvents } from './Events.types'
+export type { ReconnectEvent, BaseWebRTCEvents } from './Events.types';

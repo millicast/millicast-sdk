@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { nodePolyfills } from 'vite-plugin-node-polyfills' 
-import { resolve } from 'path'
-import pkg from './package.json'
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { nodePolyfills } from 'vite-plugin-node-polyfills'; 
+import { resolve } from 'path';
+import pkg from './package.json';
 
 export default defineConfig({
   root: __dirname,
@@ -48,8 +48,8 @@ export default defineConfig({
       name: 'millicast',
       formats: ['es', 'umd'],
       fileName: format => {
-        if (format === 'es') return 'millicast.mjs'
-        return 'millicast.umd.js'
+        if (format === 'es') return 'millicast.mjs';
+        return 'millicast.umd.js';
       },
     },
     rollupOptions: {
@@ -62,4 +62,4 @@ export default defineConfig({
   worker: {
     format: 'es',
   },
-})
+});

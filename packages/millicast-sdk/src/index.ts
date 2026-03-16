@@ -9,32 +9,32 @@
 // CORE MODULES
 // These are the primary classes users interact with
 // =============================================================================
-export { default as Director } from './Director'
-export { default as Logger } from './Logger'
-export { default as PeerConnection } from './PeerConnection.js'
-export { default as Signaling } from './Signaling.js'
-export { default as Publish } from './Publish.js'
-export { default as View } from './View.js'
+export { default as Director } from './Director';
+export { default as Logger } from './Logger';
+export { default as PeerConnection } from './PeerConnection.js';
+export { default as Signaling } from './Signaling.js';
+export { default as Publish } from './Publish.js';
+export { default as View } from './View.js';
 
 // =============================================================================
 // NAMED EXPORTS 
 // =============================================================================
-export { defaultApiEndpoint } from './Director'
-export { signalingEvents } from './Signaling.js'
-export { ConnectionType, webRTCEvents } from './types/PeerConnection.types'
-export { VideoCodec, AudioCodec } from './types/Codecs.types'
+export { defaultApiEndpoint } from './Director';
+export { signalingEvents } from './Signaling.js';
+export { ConnectionType, webRTCEvents } from './types/PeerConnection.types';
+export { VideoCodec, AudioCodec } from './types/Codecs.types';
 
-export { default as PeerConnectionStats } from './PeerConnectionStats'
-export { peerConnectionStatsEvents } from './PeerConnectionStats'
-export { default as FetchError } from './utils/FetchError'
-export { MillicastEventEmitter } from './EventEmitter'
+export { default as PeerConnectionStats } from './PeerConnectionStats';
+export { peerConnectionStatsEvents } from './PeerConnectionStats';
+export { default as FetchError } from './utils/FetchError';
+export { MillicastEventEmitter } from './EventEmitter';
 
 // =============================================================================
 // TYPE EXPORTS
 // =============================================================================
 
 // Logger types
-export type { LogLevel } from './Logger'
+export type { LogLevel } from './Logger';
 
 // Director types
 export type {
@@ -45,7 +45,7 @@ export type {
   DRMProfile,
   TokenGeneratorCallback,
   DRMObject,
-} from './types/Director.types'
+} from './types/Director.types';
 
 // PeerConnection types
 export type {
@@ -54,17 +54,17 @@ export type {
   SdpOptions,
   ICodecs,
   MillicastCapability,
-} from './types/PeerConnection.types'
+} from './types/PeerConnection.types';
 
 // Signaling types
 export type {
   AbrConfigurationOptions,
   SignalingSubscribeOptions,
   SignalingPublishOptions,
-} from './types/Signaling.types'
+} from './types/Signaling.types';
 
 // Publish types
-export type { PublishConnectOptions } from './types/Publish.types'
+export type { PublishConnectOptions } from './types/Publish.types';
 
 // View types
 export type {
@@ -91,7 +91,7 @@ export type {
   Layer,
   LayersEvent,
   MetadataEvent,
-} from './types/View.types'
+} from './types/View.types';
 
 // Event types for event handling
 export type {
@@ -104,7 +104,7 @@ export type {
   ReconnectEvent,
   ConnectionState,
   BaseWebRTCEvents,
-} from './types/Events.types'
+} from './types/Events.types';
 
 // BaseWebRTC types
 export type {
@@ -112,7 +112,7 @@ export type {
   ViewServerEvent,
   PublishServerEvent,
   ReconnectData,
-} from './types/BaseWebRTC.types'
+} from './types/BaseWebRTC.types';
 
 // Stats types
 export type {
@@ -126,4 +126,4 @@ export type {
   DiagnosticsOptions,
   CMCDDiagnostics,
   CMCDStats,
-} from './types/stats.types'
+} from './types/stats.types';
