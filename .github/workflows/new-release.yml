@@ -3,74 +3,79 @@ name: New Release
 on:
   release:
     types: [created]
+  push:
+    branches:
+      - main
+    tags:
+      - 'next-*'
 
 permissions:
+  id-token: write  # Required for OIDC
   contents: write
 
 jobs:
-  build:
-    if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'rc')
+  build-sdk:
     runs-on: ubuntu-latest
 
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    permissions:
-      contents: read
-      pages: write # to deploy to Pages
-      id-token: write # to verify the deployment originates from an appropriate source
-
-    # Deploy to the github-pages environment
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install the dependencies 🧱
         run: npm ci
       
-      - name: Build All 🔧
-        run: |
-          npm run build
-          npm run build-docs
+      - name: Build the SDK 🔧
+        run: npm run build
       
-      - name: Test
-        run: npm test
+      - name: Test the package 🔧
+        run: npm run test
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
           PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
 
-      - name: Setup GitHub Pages 🛠
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact ⬆️
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload SDK build artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: packages/millicast-sdk/docs
-
-      - name: Deploy to GitHub Pages 🚀
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: sdk-dist
+          path: packages/millicast-sdk/dist
 
   publish-npm:
-    if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'rc')
-    needs: build
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs: build-sdk
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install the dependencies 🧱
         run: npm ci
 
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
-      - name: Login to npm
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-      - name: Publish package
+
+      - name: Download SDK build artifact
+        uses: actions/download-artifact@v4
+        with: 
+          name: sdk-dist
+          path: packages/millicast-sdk/dist
+
+      - name: Configure NPMJS 🔧
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Deploy release to NPMJS 🚀
+        if: ${{ !contains(github.ref, 'rc') }}
         working-directory: './packages/millicast-sdk'
-        run: |
-          npm run build
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        run: npm publish --workspaces true --access=public
+
+      - name: Deploy next release to NPMJS 🚀
+        if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
+        working-directory: './packages/millicast-sdk'
+        run: npm publish --workspaces true --access=public --tag next

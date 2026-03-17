@@ -6,7 +6,7 @@ This document describes how to release the Millicast SDK, including both Release
 
 - Write access to the repository
 - Ability to create GitHub releases/tags
-- NPM publish access is handled via CI/CD (requires `NPM_TOKEN` secret configured in GitHub)
+- NPM publish access is handled via CI/CD (requires a [Trusted Publisher](https://docs.npmjs.com/trusted-publishers) in NPM)
 
 ## Changesets Workflow
 
