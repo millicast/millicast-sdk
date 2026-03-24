@@ -203,8 +203,8 @@ const Director = {
       data = parseIncomingDirectorResponse(data);
       logger.debug('Getting subscriber response: ', data);
       
-      if (options.subscriberToken){
-        data.data.subscriberToken = options.subscriberToken;
+      if (optionsParsed.subscriberToken){
+        data.data.subscriberToken = optionsParsed.subscriberToken;
       }
       return data.data;
     } catch (e) {
