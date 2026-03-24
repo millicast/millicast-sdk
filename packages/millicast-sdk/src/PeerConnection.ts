@@ -1,10 +1,11 @@
-import { EventEmitter } from 'events';
 import reemit from 're-emitter';
 import PeerConnectionStats, { peerConnectionStatsEvents } from './PeerConnectionStats';
 import UserAgent from './utils/UserAgent';
 import Logger from './Logger';
+import { MillicastEventEmitter } from './EventEmitter';
 import { VideoCodec, AudioCodec } from './types/Codecs.types';
-import {ConnectionType, type ConnectionTypeValue, webRTCEvents} from './types/PeerConnection.types';
+import { ConnectionType, type ConnectionTypeValue, webRTCEvents } from './types/PeerConnection.types';
+import { type PeerConnectionEvents } from './types/Events.types';
 import BitrateManager from './utils/BitrateManager';
 import SdpParser from './utils/SdpParser';
 
@@ -67,7 +68,7 @@ interface MillicastCodec {
  * @example const peerConnection = new PeerConnection()
  * @constructor
  */
-export default class PeerConnection extends EventEmitter {
+export default class PeerConnection extends MillicastEventEmitter<PeerConnectionEvents> {
   mode: ConnectionTypeValue | null;
   sessionDescription: RTCSessionDescriptionInit | undefined;
   peer: RTCPeerConnection | null;
@@ -75,8 +76,8 @@ export default class PeerConnection extends EventEmitter {
   transceiverMap: Map<RTCRtpTransceiver, (value: RTCRtpTransceiver) => void>;
   options: LocalSDPOptions;
   bitrateManager: BitrateManager | null;
-  
-  constructor () {
+
+  constructor() {
     super();
     this.mode = null;
     this.sessionDescription = undefined;
@@ -87,7 +88,7 @@ export default class PeerConnection extends EventEmitter {
     this.bitrateManager = null;
   }
 
-  async createRTCPeer (
+  async createRTCPeer(
     config: RTCConfigurationExtended = { autoInitStats: true, statsIntervalMs: 1000 },
     mode: ConnectionTypeValue = ConnectionType.Viewer,
   ): Promise<void> {
@@ -100,12 +101,12 @@ export default class PeerConnection extends EventEmitter {
     }
   }
 
-  getRTCPeer (): RTCPeerConnection | null {
+  getRTCPeer(): RTCPeerConnection | null {
     logger.info('Getting RTC Peer');
     return this.peer;
   }
 
-  async closeRTCPeer (): Promise<void> {
+  async closeRTCPeer(): Promise<void> {
     logger.info('Closing RTCPeerConnection');
     this.peer?.close();
     this.peer = null;
@@ -113,7 +114,7 @@ export default class PeerConnection extends EventEmitter {
     this.emit(webRTCEvents.connectionStateChange, 'closed');
   }
 
-  async setRTCRemoteSDP (sdp: string): Promise<void> {
+  async setRTCRemoteSDP(sdp: string): Promise<void> {
     logger.info('Setting RTC Remote SDP');
     const answer: RTCSessionDescriptionInit = { type: 'answer', sdp };
 
@@ -127,7 +128,7 @@ export default class PeerConnection extends EventEmitter {
     }
   }
 
-  async getRTCLocalSDP (options: LocalSDPOptions = localSDPOptions): Promise<string> {
+  async getRTCLocalSDP(options: LocalSDPOptions = localSDPOptions): Promise<string> {
     logger.info('Getting RTC Local SDP');
     options = { ...localSDPOptions, ...options };
     this.options = options;
@@ -170,7 +171,7 @@ export default class PeerConnection extends EventEmitter {
     return this.sessionDescription.sdp!;
   }
 
-  async addRemoteTrack (media: string, streams: MediaStream[]): Promise<RTCRtpTransceiver> {
+  async addRemoteTrack(media: string, streams: MediaStream[]): Promise<RTCRtpTransceiver> {
     return new Promise((resolve, reject) => {
       try {
         const transceiver = this.peer!.addTransceiver(media, {
@@ -184,7 +185,7 @@ export default class PeerConnection extends EventEmitter {
     });
   }
 
-  async updateBandwidthRestriction (bitrate: number): Promise<void> {
+  async updateBandwidthRestriction(bitrate: number): Promise<void> {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed');
       throw new Error('It is not possible for a viewer to update the bitrate.');
@@ -200,7 +201,7 @@ export default class PeerConnection extends EventEmitter {
     await this.bitrateManager!.updateVideoBitrate(bitrate);
   }
 
-  async updateBitrate (bitrate = 0): Promise<void> {
+  async updateBitrate(bitrate = 0): Promise<void> {
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed');
       throw new Error('It is not possible for a viewer to update the bitrate.');
@@ -215,7 +216,7 @@ export default class PeerConnection extends EventEmitter {
     await this.updateBandwidthRestriction(bitrate);
   }
 
-  getRTCPeerStatus (): RTCPeerConnectionState | RTCIceConnectionState | null {
+  getRTCPeerStatus(): RTCPeerConnectionState | RTCIceConnectionState | null {
     logger.info('Getting RTC peer status');
     if (!this.peer) {
       return null;
@@ -225,13 +226,13 @@ export default class PeerConnection extends EventEmitter {
     return connectionState;
   }
 
-  replaceTrack (mediaStreamTrack: MediaStreamTrack): void {
+  replaceTrack(mediaStreamTrack: MediaStreamTrack): void {
     if (!this.peer) {
       logger.error('Could not change track if there is not an active connection.');
       return;
     }
 
-    const currentSender = this.peer.getSenders().find(s => s.track?.kind === mediaStreamTrack.kind);
+    const currentSender = this.peer.getSenders().find((s) => s.track?.kind === mediaStreamTrack.kind);
 
     if (currentSender) {
       currentSender.replaceTrack(mediaStreamTrack);
@@ -240,64 +241,63 @@ export default class PeerConnection extends EventEmitter {
     }
   }
 
-static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
-  const browserCapabilities = RTCRtpSender.getCapabilities(kind);
+  static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
+    const browserCapabilities = RTCRtpSender.getCapabilities(kind);
 
-  if (browserCapabilities) {
-    const codecs: Record<string, Partial<MillicastCodec>> = {};
-    let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i');
+    if (browserCapabilities) {
+      const codecs: Record<string, Partial<MillicastCodec>> = {};
+      let regex = new RegExp(`^video/(${Object.values(VideoCodec).join('|')})x?$`, 'i');
 
-    if (kind === 'audio') {
-      regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i');
+      if (kind === 'audio') {
+        regex = new RegExp(`^audio/(${Object.values(AudioCodec).join('|')})$`, 'i');
 
-      if (userAgent.isChrome()) {
-        codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 }; 
-      }
-    }
-
-    for (const codec of browserCapabilities.codecs) {
-      const matches = codec.mimeType.match(regex);
-      if (matches) {
-        const codecName = matches[1].toLowerCase();
-
-        codecs[codecName] = { 
-          ...codecs[codecName], 
-          mimeType: codec.mimeType, 
-        };
-
-        // Cast to extended type to access scalabilityModes
-        const extendedCodec = codec as RTCRtpCodecCapabilityExtended;
-        if (extendedCodec.scalabilityModes) {
-          let modes = (codecs[codecName].scalabilityModes as string[]) || [];
-          modes = [...modes, ...extendedCodec.scalabilityModes];
-          codecs[codecName].scalabilityModes = [...new Set(modes)];
-        }
-        if (codec.channels) {
-          codecs[codecName].channels = codec.channels;
+        if (userAgent.isChrome()) {
+          codecs['multiopus'] = { mimeType: 'audio/multiopus', channels: 6 };
         }
       }
+
+      for (const codec of browserCapabilities.codecs) {
+        const matches = codec.mimeType.match(regex);
+        if (matches) {
+          const codecName = matches[1].toLowerCase();
+
+          codecs[codecName] = {
+            ...codecs[codecName],
+            mimeType: codec.mimeType,
+          };
+
+          // Cast to extended type to access scalabilityModes
+          const extendedCodec = codec as RTCRtpCodecCapabilityExtended;
+          if (extendedCodec.scalabilityModes) {
+            let modes = (codecs[codecName].scalabilityModes as string[]) || [];
+            modes = [...modes, ...extendedCodec.scalabilityModes];
+            codecs[codecName].scalabilityModes = [...new Set(modes)];
+          }
+          if (codec.channels) {
+            codecs[codecName].channels = codec.channels;
+          }
+        }
+      }
+
+      // Create a properly typed result
+      const result: RTCRtpCapabilities = {
+        ...browserCapabilities,
+        codecs: Object.keys(codecs).map((key) => {
+          return { codec: key, ...codecs[key] } as MillicastCodec;
+        }) as unknown as RTCRtpCodecCapability[],
+      };
+
+      return result;
     }
 
-    // Create a properly typed result
-    const result: RTCRtpCapabilities = {
-      ...browserCapabilities,
-      codecs: Object.keys(codecs).map((key) => {
-        return { codec: key, ...codecs[key] } as MillicastCodec;
-      }) as unknown as RTCRtpCodecCapability[],
-    };
-
-    return result;
+    return browserCapabilities;
   }
 
-  return browserCapabilities;
-}
-
-
-  getTracks (): (MediaStreamTrack | null)[] | undefined {
-    return this.peer?.getSenders()?.map(sender => sender.track);
+  getTracks(): (MediaStreamTrack | null)[] | undefined {
+    return this.peer?.getSenders()?.map((sender) => sender.track);
   }
 
-  initStats (options?: RTCConfigurationExtended): void {
+  initStats(options?: RTCConfigurationExtended): void {
     if (this.peerConnectionStats) {
       logger.warn(
         'PeerConnection.initStats() has already been called. Automatic initialization occurs via View.connect(), Publish.connect() or this.createRTCPeer(). See options',
@@ -310,7 +310,7 @@ static getCapabilities(kind: 'audio' | 'video'): RTCRtpCapabilities | null {
     }
   }
 
-  stopStats (): void {
+  stopStats(): void {
     this.peerConnectionStats?.stop();
     this.peerConnectionStats = undefined;
   }
@@ -353,8 +353,8 @@ const instanceRTCPeerConnection = (
   return instance;
 };
 
-async function delay (ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+async function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection): void => {
@@ -376,7 +376,7 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection): 
   };
 
   if (peer.connectionState) {
-    peer.onconnectionstatechange = (/*event: Event*/ ) => {
+    peer.onconnectionstatechange = (/*event: Event*/) => {
       logger.info('Peer connection state change: ', peer.connectionState);
       instanceClass.emit(webRTCEvents.connectionStateChange, peer.connectionState);
     };
@@ -401,10 +401,10 @@ const addPeerEvents = (instanceClass: PeerConnection, peer: RTCPeerConnection): 
   };
 };
 
-function syncVideoExtensions (peer: RTCPeerConnection): void {
+function syncVideoExtensions(peer: RTCPeerConnection): void {
   const transceivers = peer.getTransceivers();
   const videoTransceivers = transceivers.filter(
-    t => t.sender?.track?.kind === 'video' || t.receiver?.track?.kind === 'video',
+    (t) => t.sender?.track?.kind === 'video' || t.receiver?.track?.kind === 'video',
   );
 
   if (videoTransceivers.length < 2) return;
@@ -428,13 +428,13 @@ function syncVideoExtensions (peer: RTCPeerConnection): void {
   }
 }
 
-function renegotiateRemoteSdp (localOffer: string, remoteAnswer: string): string {
+function renegotiateRemoteSdp(localOffer: string, remoteAnswer: string): string {
   const splitSdp = (sdp: string) => {
     const idx = sdp.indexOf('\r\nm=');
     if (idx === -1) return { session: sdp, sections: [] as string[] };
     const session = sdp.substring(0, idx + 2);
     const rest = sdp.substring(idx + 2);
-    return { session, sections: rest.split(/(?=m=)/).filter(s => s.length > 0) };
+    return { session, sections: rest.split(/(?=m=)/).filter((s) => s.length > 0) };
   };
 
   const getMid = (s: string) => s.match(/a=mid:(\S+)/)?.[1] ?? null;
@@ -566,7 +566,9 @@ const addMediaStreamToPeer = async (
 
           initOptions.sendEncodings = getOptimizedSimulcastEncodings(width, height);
 
-          logger.debug(`Simulcast configured for ${width}x${height} with ${initOptions.sendEncodings.length} layers`);
+          logger.debug(
+            `Simulcast configured for ${width}x${height} with ${initOptions.sendEncodings.length} layers`,
+          );
         } else {
           logger.warn('Simulcast not supported in this browser');
         }
@@ -597,7 +599,7 @@ const addReceiveTransceivers = (peer: RTCPeerConnection, options: LocalSDPOption
       const videoCapabilities = RTCRtpReceiver.getCapabilities('video');
       if (videoCapabilities) {
         transceiver.setCodecPreferences(
-          videoCapabilities.codecs.filter(codec => {
+          videoCapabilities.codecs.filter((codec) => {
             const extendedCodec = codec as RTCRtpCodecCapabilityExtended;
             return (
               codec.mimeType !== 'video/H264' ||
@@ -620,7 +622,6 @@ const addReceiveTransceivers = (peer: RTCPeerConnection, options: LocalSDPOption
   }
 };
 
-
 const getConnectionState = (peer: RTCPeerConnection): RTCPeerConnectionState | RTCIceConnectionState => {
   const connectionState = peer.connectionState ?? peer.iceConnectionState;
 
@@ -633,12 +634,11 @@ const getConnectionState = (peer: RTCPeerConnection): RTCPeerConnectionState | R
   return iceStateMap[connectionState] ?? connectionState;
 };
 
-
 const ResolutionTier = {
-  '1080p': (1920*1080),
-  '720p' : (1280*720),
-  '480p': (640*480),
-  'low': (320*240),
+  '1080p': 1920 * 1080,
+  '720p': 1280 * 720,
+  '480p': 640 * 480,
+  low: 320 * 240,
 };
 
 /**
@@ -746,7 +746,7 @@ const getOptimizedSimulcastEncodings = (width: number, height: number) => {
  * @param {RTCRtpTransceiver} transceiver - The transceiver to configure
  * @param {String} preferredCodec - Preferred codec ('h264' or 'vp8')
  */
-const setCodecPreferences = (transceiver : RTCRtpTransceiver, preferredCodec : string) => {
+const setCodecPreferences = (transceiver: RTCRtpTransceiver, preferredCodec: string) => {
   try {
     if (!transceiver.setCodecPreferences || !RTCRtpSender.getCapabilities) {
       return;
@@ -755,7 +755,9 @@ const setCodecPreferences = (transceiver : RTCRtpTransceiver, preferredCodec : s
     const capabilities = RTCRtpSender.getCapabilities('video');
     if (!capabilities) return;
 
-    const selectedCodec = capabilities.codecs.find((codec) => codec.mimeType.toLowerCase().includes(preferredCodec.toLowerCase()));
+    const selectedCodec = capabilities.codecs.find((codec) =>
+      codec.mimeType.toLowerCase().includes(preferredCodec.toLowerCase()),
+    );
 
     if (selectedCodec) {
       transceiver.setCodecPreferences([selectedCodec]);
@@ -765,5 +767,3 @@ const setCodecPreferences = (transceiver : RTCRtpTransceiver, preferredCodec : s
     logger.warn('Failed to set codec preferences:', e);
   }
 };
-
-

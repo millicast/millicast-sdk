@@ -26,39 +26,6 @@ let apiEndpoint = defaultApiEndpoint;
  *
  * You will need your own Publishing token and Stream name, please refer to [Managing Your Tokens](https://docs.dolby.io/streaming-apis/docs/managing-your-tokens).
  */
-
-/**
- * @typedef {Object} DRMObject
- * @property {String} fairPlayCertUrl - URL of the FairPlay certificate server.
- * @property {String} fairPlayUrl - URL of the FairPlay license server.
- * @property {String} widevineUrl - URL of the Widevine license server.
- */
-
-/**
- * @typedef {Object} MillicastDirectorResponse
- * @global
- * @property {Array<String>} urls - WebSocket available URLs.
- * @property {String} jwt - Access token for signaling initialization.
- * @property {Array<RTCIceServer>} iceServers - Object which represents a list of Ice servers.
- * @property {DRMObject} [drmObject] - DRM proxy server information.
- */
-
-/**
- * @typedef {Object} DirectorPublisherOptions
- * @global
- * @property {String} token - Millicast Publishing Token.
- * @property {String} streamName - Millicast Stream Name.
- * @property {("WebRtc" | "Rtmp")} [streamType] - Millicast Stream Type.
- */
-
-/**
- * @typedef {Object} DirectorSubscriberOptions
- * @global
- * @property {String} streamName - Millicast publisher Stream Name.
- * @property {String} streamAccountId - Millicast Account ID.
- * @property {String} [subscriberToken] - Token to subscribe to secure streams. If you are subscribing to an unsecure stream, you can omit this param.
- */
-
 const Director = {
   /**
    * @function
@@ -217,7 +184,7 @@ const Director = {
     let headers: { 'Content-Type': string; Authorization?: string } = {
       'Content-Type': 'application/json',
     };
-    if (subscriberToken) {
+    if (optionsParsed.subscriberToken) {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` };
     }
 

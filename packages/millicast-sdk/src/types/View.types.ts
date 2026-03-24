@@ -197,6 +197,8 @@ export type BroadcastEventName = ViewServerEvent
 
 export interface BroadcastEvent {
   name: BroadcastEventName
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any
 }
 
 /**

@@ -11,16 +11,16 @@
 // =============================================================================
 export { default as Director } from './Director';
 export { default as Logger } from './Logger';
-export { default as PeerConnection } from './PeerConnection.js';
-export { default as Signaling } from './Signaling.js';
-export { default as Publish } from './Publish.js';
-export { default as View } from './View.js';
+export { default as PeerConnection } from './PeerConnection';
+export { default as Signaling } from './Signaling';
+export { default as Publish } from './Publish';
+export { default as View } from './View';
 
 // =============================================================================
 // NAMED EXPORTS 
 // =============================================================================
 export { defaultApiEndpoint } from './Director';
-export { signalingEvents } from './Signaling.js';
+export { signalingEvents } from './Signaling';
 export { ConnectionType, webRTCEvents } from './types/PeerConnection.types';
 export { VideoCodec, AudioCodec } from './types/Codecs.types';
 

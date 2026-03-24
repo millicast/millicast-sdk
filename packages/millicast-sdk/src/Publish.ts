@@ -270,7 +270,7 @@ export default class Publish extends BaseWebRTC {
 
     if (this.options.metadata) {
       if (!this.worker) {
-        this.worker = new TransformWorker;
+        this.worker = new TransformWorker();
       }
 
       const senders = this.getRTCPeerConnection()?.getSenders();

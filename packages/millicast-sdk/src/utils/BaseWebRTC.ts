@@ -1,11 +1,12 @@
-import { EventEmitter } from 'events';
 import PeerConnection from '../PeerConnection';
 import type Signaling from '../Signaling';
 import { signalingEvents } from '../Signaling';
 import Diagnostics from './Diagnostics';
+import { MillicastEventEmitter } from '../EventEmitter';
 import { type TokenGeneratorCallback } from '../types/Director.types';
 import { type ILogger } from 'js-logger';
 import { type ReconnectData } from '../types/BaseWebRTC.types';
+import { type BaseWebRTCEvents } from '../types/Events.types';
 import { type PublishConnectOptions } from '../types/Publish.types';
 import { type ViewConnectOptions } from '../types/View.types';
 import {webRTCEvents} from '../types/PeerConnection.types';
@@ -25,7 +26,7 @@ const baseInterval = 1000;
  * @param {Object} loggerInstance - Logger instance from the extended classes.
  * @param {Boolean} autoReconnect - Enable auto reconnect.
  */
-export default class BaseWebRTC extends EventEmitter {
+export default class BaseWebRTC extends MillicastEventEmitter<BaseWebRTCEvents> {
   protected webRTCPeer: PeerConnection;
   protected signaling: Signaling | null;
   protected autoReconnect: boolean;

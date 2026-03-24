@@ -85,7 +85,7 @@ export interface PublishConnectOptions {
    */
   priority?: number
   /**
-   * TODO
+   * True to set the SDP to local peer.
    */
   setSDPToPeer?: boolean
 }

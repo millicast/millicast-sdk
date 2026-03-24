@@ -43,9 +43,11 @@ export interface SignalingEvents {
   /** Fired when WebSocket connection fails */
   wsConnectionError: string
   /** Fired when WebSocket connection is closed */
-  wsConnectionClose: void
+  wsConnectionClose: undefined
   /** Fired when a broadcast event is received from the server */
   broadcastEvent: BroadcastEvent
+  /** Fired when a migration event is received */
+  migrate: undefined
 }
 
 /**
@@ -56,6 +58,8 @@ export interface PeerConnectionEvents {
   track: RTCTrackEvent
   /** Fired when the connection state changes */
   connectionStateChange: ConnectionState
+  /** Fired periodically with connection statistics */
+  stats: ConnectionStats
 }
 
 /**

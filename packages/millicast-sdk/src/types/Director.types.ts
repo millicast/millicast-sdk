@@ -48,6 +48,7 @@ export interface DirectorResponse {
   iceServers: RTCIceServer[]
   drmObject?: DRMProfile
   subscriberToken?: string
+  streamAccountId?: string
 }
 
 /**

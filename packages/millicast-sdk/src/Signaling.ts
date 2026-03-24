@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
 import TransactionManager from 'transaction-manager';
 import Logger from './Logger';
+import { MillicastEventEmitter } from './EventEmitter';
 import SdpParser from './utils/SdpParser';
 import { VideoCodec } from './types/Codecs.types';
 import Diagnostics from './utils/Diagnostics';
@@ -12,6 +12,7 @@ import {
   type PublishCmd,
   type PublishResponse,
 } from './types/Signaling.types';
+import { type SignalingEvents } from './types/Events.types';
 import { extractSupportedVideoCodecs } from './utils/RTCCodec';
 
 const logger = Logger.get('Signaling');
@@ -59,7 +60,7 @@ type InternalSubscribeOptions = SignalingSubscribeOptions & {
  * Starts WebSocket connection and manages the messages between peers.
  * @example const millicastSignaling = new Signaling(options)
  */
-export default class Signaling extends EventEmitter {
+export default class Signaling extends MillicastEventEmitter<SignalingEvents> {
   streamName: string | null;
   wsUrl: string;
   webSocket: WebSocket | null;
@@ -119,7 +120,7 @@ export default class Signaling extends EventEmitter {
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened');
         this.transactionManager!.on('event', (evt: TransactionManager.Event) => {
-          this.emit(signalingEvents.broadcastEvent, evt);
+          this.emit(signalingEvents.broadcastEvent, evt as unknown as SignalingEvents['broadcastEvent']);
         });
         logger.info('Connected to server: ', this.webSocket!.url);
         logger.debug('WebSocket value: ', {

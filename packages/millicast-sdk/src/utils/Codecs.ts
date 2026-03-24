@@ -576,33 +576,6 @@ function getSeiPicTimingTimecode (
   metadata.seiPicTimingTimeCodeArray = timecodes;
 }
 
-/**
- * SEI User unregistered data
- * @typedef {object} SEIUserUnregisteredData
- * @global
- * @property {string} uuid - the UUID of the SEI user unregistered data
- * @property {Uint8Array} data - the binary content of the SEI user unregistered data
- */
-
-/**
- * SEI Pic timing time code
- * @typedef {object} SEIPicTimingTimeCode
- * @global
- * @property {number} seconds
- * @property {number} minutes
- * @property {number} hours
- * @property {number} n_frames
- * @property {number} time_offset
- */
-
-/**
- * Metadata of the Encoded Frame
- * @typedef {object} FrameMetaData
- * @global
- * @property {number} timestamp - the time at which frame sampling started, value is a positive integer containing the sampling instant of the first byte in this frame, in microseconds
- * @property { Array<SEIUserUnregisteredData> } seiUserUnregisteredDataArray - the SEI user unregistered data array
- * @property { Array<SEIPicTimingTimeCode> } [seiPicTimingTimeCodeArray] - the SEI pic timing time codes
- */
 
 /**
  * Extract user unregistered metadata from H26x Encoded Frame

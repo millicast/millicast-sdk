@@ -97,12 +97,6 @@ let loggerLevel = jsLogger.OFF;
 const namedLoggerLevels: Record<string, LogLevel> = {};
 const customHandlers: {handler: ILogHandler; level: LogLevel}[] = [];
 
-/**
- * @typedef {Object} LogLevel
- * @global
- * @property {Number} value - The numerical representation of the level.
- * @property {String} name - Human readable name of the log level.
- */
 
 /** @constant {LogLevel} TRACE - Logger.TRACE */
 /** @constant {LogLevel} DEBUG - Logger.DEBUG */

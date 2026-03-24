@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import reemit from 're-emitter';
 import {jwtDecode} from 'jwt-decode';
 import Logger from './Logger';
@@ -74,7 +75,6 @@ export default class View extends BaseWebRTC {
   private isMainStreamActive = false;
   private eventQueue: RTCTrackEvent[] = [];
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null;
-  private events: Partial<{ [K in keyof ViewerEvents]: ((payload: ViewerEvents[K]) => void)[] }> = {};
   protected override options: ViewConnectOptions | null = null;
 
   constructor (
@@ -103,10 +103,7 @@ export default class View extends BaseWebRTC {
     eventName: K,
     listener: (payload: ViewerEvents[K]) => void,
   ): this {
-    if (!this.events[eventName]) {
-      this.events[eventName] = [];
-    }
-    this.events[eventName].push(listener);
+    EventEmitter.prototype.on.call(this, eventName as string, listener);
     return this;
   }
 
@@ -114,24 +111,12 @@ export default class View extends BaseWebRTC {
     eventName: K,
     listener: (payload: ViewerEvents[K]) => void,
   ): this {
-    const listeners = this.events[eventName];
-    if (listeners) {
-      const idx = listeners.indexOf(listener);
-      if (idx >= 0) {
-        listeners.splice(idx, 1);
-      }
-    }
+    EventEmitter.prototype.off.call(this, eventName as string, listener);
     return this;
   }
 
   override emit<K extends keyof ViewerEvents> (eventName: K, payload: ViewerEvents[K]): boolean {
-    let handled = false;
-    if (this.events[eventName]) {
-      this.events[eventName].forEach(listener => listener(payload));
-      handled = true;
-    }
-    // Also emit to EventEmitter for BaseWebRTC events (reconnect, connectionStateChange, etc.)
-    return super.emit(eventName as string, payload) || handled;
+    return EventEmitter.prototype.emit.call(this, eventName as string, payload);
   }
 
   /**
