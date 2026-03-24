@@ -185,9 +185,7 @@ describe('View', () => {
         }
       })
 
-      // The first condition checks sourceDRMOptions?.video, so when source '1' is null,
-      // it throws with targetMediaId '0' due to the OR condition
-      expect(() => viewer.exchangeDRMConfiguration('0', '1')).toThrow('No DRM configuration found for 0')
+      expect(() => viewer.exchangeDRMConfiguration('0', '1')).toThrow('No DRM configuration found for 1')
     })
   })
 
