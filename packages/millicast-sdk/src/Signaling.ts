@@ -219,8 +219,8 @@ export default class Signaling extends MillicastEventEmitter<SignalingEvents> {
 
     if (optionsParsed.abrConfiguration) {
       data.abr = {
+        initialBitrate: optionsParsed.abrConfiguration.metadata?.bitrate,
         strategy: optionsParsed.abrConfiguration.strategy,
-        metadata: optionsParsed.abrConfiguration.metadata,
       };
     }
     if (optionsParsed.customKeys) {
