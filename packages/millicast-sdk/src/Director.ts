@@ -114,7 +114,7 @@ const Director = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${optionsParsed.token}`,
     };
-    const url = `${Director.getEndpoint()}/api/director/publish`;
+    const url = `${getDirectorPath('publish')}`;
     try {
       const response = await fetch(url, {
         method: 'POST',
