@@ -73,6 +73,7 @@ export default class View extends BaseWebRTC {
   private worker: Worker | null = null;
   private subscriberToken: string | null = null;
   private isMainStreamActive = false;
+  private mainSourceId: string | null = null;
   private eventQueue: RTCTrackEvent[] = [];
   private stopReemitingWebRTCPeerInstanceEvents: (() => void) | null = null;
   protected override options: ViewConnectOptions | null = null;
@@ -272,6 +273,8 @@ export default class View extends BaseWebRTC {
     this.payloadTypeCodec = {};
     this.tracksMidValues = {};
     this.eventQueue.length = 0;
+    this.isMainStreamActive = false;
+    this.mainSourceId = null;
   }
 
   async initConnection (data: { migrate: boolean }) {
@@ -403,23 +406,34 @@ export default class View extends BaseWebRTC {
       this.onTrackEvent(trackEvent);
     });
 
-    signalingInstance.on(signalingEvents.broadcastEvent, event => {
-      if (event.data.sourceId === null) {
-        switch (event.name) {
-          case 'active':
-            this.emit('broadcastEvent', event);
-            this.isMainStreamActive = true;
-            while (this.eventQueue.length > 0) {
-              this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent);
+    signalingInstance.on(signalingEvents.broadcastEvent, async (event) => {
+      if (!this.isMainStreamActive && event.name === 'active') {
+        this.mainSourceId = event.data.sourceId;
+        this.isMainStreamActive = true;
+
+        if (!this.DRMProfile && event.data.encryption) {
+          try {
+            const subscriberData = await this.tokenGenerator();
+            if (subscriberData.drmObject) {
+              this.DRMProfile = subscriberData.drmObject;
             }
-            return;
-          case 'inactive':
-            this.isMainStreamActive = false;
-            break;
-          default:
-            break;
+          } catch (e) {
+            logger.error('Failed to fetch DRM profile on active event', e);
+          }
         }
+
+        this.emit('broadcastEvent', event);
+        while (this.eventQueue.length > 0) {
+          this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent);
+        }
+        return;
       }
+
+      if (event.name === 'inactive' && this.isMainStreamActive && this.mainSourceId === event.data.sourceId) {
+        this.isMainStreamActive = false;
+        this.mainSourceId = null;
+      }
+
       this.emit('broadcastEvent', event);
     });
 
