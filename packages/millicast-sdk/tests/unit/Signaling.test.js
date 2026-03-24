@@ -109,14 +109,14 @@ describe('Signaling internal options', () => {
       })
 
       await signaling.subscribe(offerSdp, {
-        abrConfiguration: { strategy: 'bandwidth', metadata: true },
+        abrConfiguration: { strategy: 'bandwidth', metadata: { bitrate: 1000 } },
         forceSmooth: true
       })
 
       expect(cmdSpy).toHaveBeenCalledWith('view', expect.objectContaining({
         abr: expect.objectContaining({
+          initialBitrate: 1000,
           strategy: 'bandwidth',
-          metadata: true,
           forceSmooth: true
         })
       }))

@@ -58,7 +58,11 @@ export interface SignalingPublishOptions {
 
 export type ViewCmd = SignalingSubscribeOptions & {
   sdp: string
-  abr?: AbrConfigurationOptions
+  abr?: {
+    initialBitrate?: number
+    strategy?: AbrStrategy
+    forceSmooth?: boolean
+  }
 }
 
 export interface ViewResponse {

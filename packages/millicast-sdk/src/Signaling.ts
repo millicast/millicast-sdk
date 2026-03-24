@@ -231,7 +231,6 @@ export default class Signaling extends MillicastEventEmitter<SignalingEvents> {
     if (optionsParsed.forceSmooth) {
       data.abr = {
         ...(data.abr || {}),
-        // @ts-expect-error - forceSmooth is internal and not in public type definition
         forceSmooth: optionsParsed.forceSmooth,
       };
     }
