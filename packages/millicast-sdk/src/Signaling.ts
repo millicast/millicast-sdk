@@ -294,6 +294,7 @@ export default class Signaling extends MillicastEventEmitter<SignalingEvents> {
     const processedSdp = this.handleAV1Codec(sdp, optionsParsed.codec);
 
     const data: PublishCmd = {
+      name: this.streamName!,
       ...optionsParsed,
       sdp: processedSdp,
     };

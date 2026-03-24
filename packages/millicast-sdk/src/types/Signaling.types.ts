@@ -74,6 +74,7 @@ export interface ViewResponse {
 }
 
 export type PublishCmd = SignalingPublishOptions & {
+  name: string
   sdp: string
 }
 

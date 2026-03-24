@@ -5,7 +5,7 @@ const logger = Logger.get('BitrateManager');
 export default class BitrateManager {
   private readonly peerConnection: RTCPeerConnection;
   private readonly currentBitrates: { video: number } = { video: 0 };
-  
+
   constructor(peerConnection: RTCPeerConnection) {
     this.peerConnection = peerConnection;
   }
@@ -29,7 +29,12 @@ export default class BitrateManager {
 
     if (params.encodings && params.encodings.length > 0) {
       // Handle simulcast - set bitrates for different layers
-      if (params.encodings.length > 1) {
+      if (bitrate <= 0) {
+        // Remove bitrate restriction for unlimited
+        for (const encoding of params.encodings) {
+          delete encoding.maxBitrate;
+        }
+      } else if (params.encodings.length > 1) {
         // Simulcast: distribute bitrate across layers
         this.setSimulcastBitrates(params.encodings, bitrate);
       } else {
@@ -52,5 +57,4 @@ export default class BitrateManager {
       }
     });
   }
-
 }

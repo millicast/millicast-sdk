@@ -659,10 +659,10 @@ export default class View extends BaseWebRTC {
   exchangeDRMConfiguration (targetMediaId: string, sourceMediaId: string) {
     const targetDRMOptions = this.getDRMConfiguration(targetMediaId);
     const sourceDRMOptions = this.getDRMConfiguration(sourceMediaId);
-    if (targetDRMOptions === null || !sourceDRMOptions?.video) {
+    if (targetDRMOptions === null || !targetDRMOptions?.video) {
       throw new Error('No DRM configuration found for ' + targetMediaId);
     }
-    if (sourceDRMOptions === null || !targetDRMOptions?.video) {
+    if (sourceDRMOptions === null || !sourceDRMOptions?.video) {
       throw new Error('No DRM configuration found for ' + sourceMediaId);
     }
     swapPropertyValues(targetDRMOptions.video, sourceDRMOptions.video, 'keyId');
