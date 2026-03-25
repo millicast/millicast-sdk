@@ -149,8 +149,10 @@ export default class PeerConnection extends MillicastEventEmitter<PeerConnection
 
     this.sessionDescription = response;
 
-    // Apply Opus codec parameters via SDP munging (after createOffer, before setLocalDescription).
-    // This is required because no browser API supports modifying Opus fmtp parameters at runtime.
+    // SDP munging: stereo, DTX, multiopus (after createOffer, before setLocalDescription).
+    // Required because no browser API supports modifying Opus fmtp parameters at runtime.
+    // Browser APIs are used instead for: codec selection (setCodecPreferences),
+    // simulcast (sendEncodings), bitrate (setParameters via BitrateManager).
     // See: https://issues.webrtc.org/issues/443612840
     if (!options.disableAudio && this.sessionDescription.sdp) {
       if (options.stereo) {
@@ -161,6 +163,8 @@ export default class PeerConnection extends MillicastEventEmitter<PeerConnection
         this.sessionDescription.sdp = SdpParser.setDTX(this.sessionDescription.sdp);
         logger.info('Applied DTX to SDP via munging');
       }
+      this.sessionDescription.sdp = SdpParser.setMultiopus(this.sessionDescription.sdp, mediaStream ?? undefined);
+      logger.info('Applied multiopus to SDP via munging');
     }
 
     if (options.setSDPToPeer) {
@@ -186,6 +190,16 @@ export default class PeerConnection extends MillicastEventEmitter<PeerConnection
   }
 
   async updateBandwidthRestriction(bitrate: number): Promise<void> {
+    if (typeof bitrate === 'string') {
+      logger.warn(
+        'DEPRECATED: updateBandwidthRestriction(sdp, bitrate) signature is deprecated. ' +
+        'Use updateBandwidthRestriction(bitrate) instead — the sdp parameter is no longer needed. ' +
+        'Bitrate control now uses RTCRtpSender.setParameters().',
+      );
+       
+      bitrate = arguments[1] as number;
+    }
+    
     if (this.mode === ConnectionType.Viewer) {
       logger.error('Viewer attempting to update bitrate, this is not allowed');
       throw new Error('It is not possible for a viewer to update the bitrate.');

@@ -164,7 +164,7 @@ const Director = {
    */
 
   getSubscriber: async (
-    options: DirectorSubscriberOptions,
+    options: DirectorSubscriberOptions | string,
      
     streamAccountId: string | null = null,
     subscriberToken: string | null = null,

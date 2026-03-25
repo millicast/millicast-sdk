@@ -265,8 +265,11 @@ export default class Publish extends BaseWebRTC {
       signalingEvents.broadcastEvent,
     ]);
 
-    const localSdp = await webRTCPeerInstance.getRTCLocalSDP(this.options);
-    await signalingInstance.connect();
+    const [localSdp] = await Promise.all([
+      webRTCPeerInstance.getRTCLocalSDP(this.options),
+      signalingInstance.connect(),
+    ]);
+
 
     if (this.options.metadata) {
       if (!this.worker) {

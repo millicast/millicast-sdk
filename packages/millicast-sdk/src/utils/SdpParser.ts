@@ -1,17 +1,41 @@
+import UserAgent from './UserAgent';
+import Logger from '../Logger';
+
+const logger = Logger.get('SdpParser');
+
 /**
  * @module SdpParser
  * @description Simplify SDP parser.
  *
- * NOTE: SDP munging is still required for Opus codec parameters (DTX, stereo) because
- * no browser API supports modifying these at runtime:
- * - setParameters().codecs is read-only per W3C spec — confirmed broken in Chrome, Firefox, Safari.
+ * ## SDP munging vs Browser API summary
+ *
+ * Functions in this module use **SDP munging** (modifying the local SDP after createOffer,
+ * before setLocalDescription). The following features rely on SDP munging because no
+ * browser API supports them at runtime:
+ *
+ * - **setStereo** — Appends `stereo=1;sprop-stereo=1` to the Opus fmtp line.
+ * - **setDTX** — Appends `usedtx=1` to the Opus fmtp line.
+ * - **setMultiopus** — Adds a `multiopus/48000/6` codec entry for 5.1 surround audio.
+ *
+ * Why SDP munging is required for these:
+ * - `RTCRtpSender.setParameters()` codecs field is read-only per W3C spec — confirmed
+ *   broken in Chrome, Firefox, Safari.
  *   Chrome returns INTERNAL_ERROR for Opus fmtp changes: https://issues.webrtc.org/issues/443612840
- * - setCodecPreferences() rejects modified sdpFmtpLine with InvalidModificationError.
+ * - `RTCRtpTransceiver.setCodecPreferences()` rejects modified sdpFmtpLine with
+ *   InvalidModificationError.
  * - Chrome engineers recommend SDP munging as the current workaround:
  *   https://github.com/w3c/webrtc-extensions/issues/120
  *
- * The munging approach (modifying the local SDP after createOffer, before setLocalDescription)
- * is the only approach right now (March, 2026).
+ * The following features use **Browser APIs** instead (handled in PeerConnection.ts):
+ *
+ * - **Codec selection** — `RTCRtpTransceiver.setCodecPreferences()` to order preferred codecs.
+ * - **Simulcast** — `RTCRtpTransceiver` with `sendEncodings` for multiple spatial layers.
+ * - **Bitrate control** — `RTCRtpSender.setParameters()` via BitrateManager to set
+ *   `maxBitrate` on encodings.
+ *
+ * Utility functions (no munging, just parsing):
+ * - **adaptCodecName** — Simple string replacement for codec name normalization (e.g. AV1X ↔ AV1).
+ * - **getCodecPayloadType** — Extracts payload-type-to-codec mapping from SDP.
  */
 const SdpParser = {
 
@@ -80,6 +104,55 @@ const SdpParser = {
     }
     return codecMap;
   },
+
+  /**
+   * @function
+   * @name setMultiopus
+   * @description Parse SDP for support multiopus (multichannel Opus, e.g. 5.1 surround).
+   * Adds a multiopus/48000/6 codec entry to the audio m-line if the MediaStream has
+   * more than 2 audio channels, or if no MediaStream is provided (viewer side).
+   * Not supported in Firefox.
+   * @param {String} sdp - Current SDP.
+   * @param {MediaStream} [mediaStream] - MediaStream offered in the stream.
+   * @returns {String} SDP parsed with multiopus support.
+   * @example SdpParser.setMultiopus(sdp, mediaStream)
+   */
+  setMultiopus (sdp = '', mediaStream?: MediaStream): string {
+    const browserData = new UserAgent();
+    if (browserData.isFirefox()) {
+      logger.info('Multiopus is not supported in Firefox');
+      return sdp;
+    }
+    if (mediaStream && !hasAudioMultichannel(mediaStream)) {
+      return sdp;
+    }
+    if (sdp.includes('multiopus/48000/6')) {
+      logger.info('Multiopus already set');
+      return sdp;
+    }
+
+    const audioMLineRegex = new RegExp('m=audio 9 UDP/TLS/RTP/SAVPF (.*)\\r\\n');
+    const audioMLineMatch = audioMLineRegex.exec(sdp);
+    if (!audioMLineMatch) {
+      return sdp;
+    }
+
+    const audioMLine = audioMLineMatch[0];
+    const pt = getAvailablePayloadTypeRange(sdp)[0];
+    if (pt === undefined) {
+      logger.warn('No available payload type for multiopus');
+      return sdp;
+    }
+
+    const multiopus = audioMLine.replace('\r\n', ' ') + pt + '\r\n' +
+      'a=rtpmap:' + pt + ' multiopus/48000/6\r\n' +
+      'a=fmtp:' + pt + ' channel_mapping=0,4,1,2,3,5;coupled_streams=2;minptime=10;num_streams=4;useinbandfec=1\r\n';
+
+    sdp = sdp.replace(audioMLine, multiopus);
+    logger.info('Multiopus offer created');
+    logger.debug('SDP parsed for multiopus: ', sdp);
+    return sdp;
+  },
 };
 
 const appendOpusFmtpParam = (sdp = '', paramName = ''): string => {
@@ -126,6 +199,37 @@ const appendOpusFmtpParam = (sdp = '', paramName = ''): string => {
   });
 
   return lines.join('\r\n');
+};
+
+const firstPayloadTypeLowerRange = 35;
+const lastPayloadTypeLowerRange = 65;
+const firstPayloadTypeUpperRange = 96;
+const lastPayloadTypeUpperRange = 127;
+
+const payloadTypeLowerRange = Array.from(
+  { length: (lastPayloadTypeLowerRange - firstPayloadTypeLowerRange) + 1 },
+  (_, i) => i + firstPayloadTypeLowerRange,
+);
+const payloadTypeUpperRange = Array.from(
+  { length: (lastPayloadTypeUpperRange - firstPayloadTypeUpperRange) + 1 },
+  (_, i) => i + firstPayloadTypeUpperRange,
+);
+
+const getAvailablePayloadTypeRange = (sdp: string): number[] => {
+  const regex = /m=(?:.*) (?:.*) UDP\/TLS\/RTP\/SAVPF (.*)\r\n/gm;
+  const matches = sdp.matchAll(regex);
+  let ptAvailable = payloadTypeUpperRange.concat(payloadTypeLowerRange);
+
+  for (const match of matches) {
+    const usedNumbers = match[1].split(' ').map(n => parseInt(n));
+    ptAvailable = ptAvailable.filter(n => !usedNumbers.includes(n));
+  }
+
+  return ptAvailable;
+};
+
+const hasAudioMultichannel = (mediaStream: MediaStream): boolean => {
+  return mediaStream.getAudioTracks().some(track => (track.getSettings().channelCount ?? 0) > 2);
 };
 
 export default SdpParser;

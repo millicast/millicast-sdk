@@ -859,12 +859,11 @@
 //      */
 //     addRemoteTrack(media: string, streams: Array<MediaStream>): Promise<RTCRtpTransceiver>
 //     /**
-//      * Update remote SDP information to restrict bandwidth.
-//      * @param {String} sdp - Remote SDP.
+//      * Update bandwidth restriction using RTCRtpSender parameters.
 //      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
-//      * @return {String} Updated SDP information with new bandwidth restriction.
+//      * @returns {Promise<void>} Promise object which resolves when bitrate was successfully updated.
 //      */
-//     updateBandwidthRestriction(sdp: string, bitrate: number): string
+//     updateBandwidthRestriction(bitrate: number): Promise<void>
 //     /**
 //      * Set SDP information to remote peer with bandwidth restriction.
 //      * @param {Number} bitrate - New bitrate value in kbps or 0 unlimited bitrate.
