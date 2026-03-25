@@ -1,56 +1,161 @@
 name: Check tests
 
 on:
+  
   push:
-    branches:
-      - main
-
+    branches: [main]
   pull_request:
-    branches:
-      - main
-
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  eslint:
+  install-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: Check Linter and Build 📑
-        run: |
-          npm run build
-          npx eslint . --ext .js,.jsx,.ts,.tsx
 
-  unit-test:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+
+      - name: Derive appropriate SHAs for base and head for affected commands
+        uses: nrwl/nx-set-shas@v4
+
+
+      - name: Setup Node.js & Cache 🧱
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+
+      - name: Lint SDK Only
+        run: npx nx lint @millicast/sdk
+
+
+      - name: Build affected projects
+        run: npx nx affected -t build --parallel=3
+        timeout-minutes: 10
+
+      - name: Build documentation
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npx nx affected -t build-docs
+        timeout-minutes: 5
+
+
+      - name: Cache dependencies and build artifacts
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            dist
+            .nx/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+  unit-tests:
+    needs: install-and-build
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: Unit Testing 🧪
-        working-directory: './packages/millicast-sdk'
+        with:
+          fetch-depth: 0
+
+
+      - name: Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+
+      - name: Restore dependencies and build artifacts
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            dist
+            .nx/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+
+      - name: Install dependencies (if cache miss)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+
+
+      - name: Run Unit Tests
         run: npm run test-unit
+        timeout-minutes: 10
 
-  e2e-test:
+  e2e-tests:
+    needs: install-and-build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-file: 
+
+          - 'FunctionalPublish.steps.js'
+          - 'Puppeteer.steps.js'
+          - 'AbrStrategies.steps.js'
+          - 'ViewerCodecs.steps.js'
     steps:
       - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: End-2-End Testing
-        working-directory: './packages/millicast-sdk'
-        run: npm run test-e2e
+        with:
+          fetch-depth: 0
+
+
+      - name: Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+
+      - name: Restore dependencies and build artifacts
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            dist
+            .nx/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Install dependencies (if cache miss)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Cache Puppeteer Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: ${{ runner.os }}-puppeteer-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-puppeteer-
+
+      - name: Install Puppeteer Chrome
+        run: npx -y puppeteer browsers install chrome
+      - name: Run E2E Tests
+        run: |
+          npx nx run @millicast/sdk:build
+          npx jest --config packages/millicast-sdk/jest.e2e.config.ts --runTestsByPath packages/millicast-sdk/tests/e2e/${{ matrix.test-file }}
+        timeout-minutes: 10
         env:
-          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
-          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
-
-  build-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install the dependencies 🧱
-        run: npm ci
-      - name: build docs
-        run: npm run build-docs
+          ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}

@@ -2,8 +2,8 @@ import {Director, View, Logger} from "@millicast/sdk"
 
 window.Logger = Logger
 
-if (import.meta.env.MILLICAST_DIRECTOR_ENDPOINT) {
-    Director.setEndpoint(import.meta.env.MILLICAST_DIRECTOR_ENDPOINT)
+if (import.meta.env.VITE_MILLICAST_DIRECTOR_ENDPOINT) {
+    Director.setEndpoint(import.meta.env.VITE_MILLICAST_DIRECTOR_ENDPOINT)
 }
 
 // Get query params
@@ -12,11 +12,11 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 })
 
 // Config data
-const accountId = params.accountId || import.meta.env.MILLICAST_ACCOUNT_ID
-const streamName = params.streamName || import.meta.env.MILLICAST_STREAM_NAME
+const streamName=params.streamName|| import.meta.env.VITE_MILLICAST_STREAM_NAME
+const accountId= params.accountId || import.meta.env.VITE_MILLICAST_ACCOUNT_ID
 const metadata = params.metadata === "true"
 const enableDRM = params.drm === "true"
-const subscriberToken = params.token || import.meta.env.MILLICAST_SUBSCRIBER_TOKEN
+const subscriberToken=params.token || import.meta.env.VITE_MILLICAST_SUBSCRIBER_TOKEN
 const disableVideo = params.disableVideo === "true"
 const disableAudio = params.disableAudio === "true"
 const forceSmooth = params.forceSmooth === "true"
@@ -65,6 +65,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         viewer.on("metadata", (metadata) => {
             console.log(`Metadata event from ${transceiverMidToSourceIdMap[metadata.mid] || "main"}:`, metadata)
         })
+        viewer.on('reconnect', () => {
+            console.log("Reconnection event received")
+        })
         // Listen for broadcast events
         viewer.on("broadcastEvent", (event) => {
             // Get event name and data
@@ -99,6 +102,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 addStreamToVideoElement(event.streams[0], event.transceiver.mid)
             }
         })
+        viewer.webRTCPeer.on('stats', (event) => {
+            console.log("Stats event incoming", event)
+        });
         await viewer.connect(connectOptions)
     } catch (e) {
         console.error(e)

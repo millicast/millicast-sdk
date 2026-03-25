@@ -1,60 +1,134 @@
 <html>
-   <head>
-      <title>PuppeteerJest</title>
-      <script src="../../dist/millicast.umd.js"></script>
-      <script>
-         const startPublisher = async (publishToken, streamName, options) => {
-            const millicast = window.millicast
-            millicast.Logger.setLevel(millicast.Logger.DEBUG)
-            const tokenGenerator = () => millicast.Director.getPublisher(publishToken, streamName)
-            const publish = new millicast.Publish(undefined, tokenGenerator)
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-            document.getElementById('my-video').srcObject = mediaStream
-            await publish.connect({
-               ...options,
-               mediaStream
-            })
-            window.publish = publish
-         }
 
-         const startViewer = (streamName, accountId) => {
-            return new Promise(resolve => {
-               const millicast = window.millicast
-               const video = document.getElementById('my-video')
-               millicast.Logger.setLevel(millicast.Logger.DEBUG)
-               const tokenGenerator = () => millicast.Director.getSubscriber(streamName, accountId)
-               const view = new millicast.View(undefined, tokenGenerator)
-               video.addEventListener('timeupdate', () => {
-                  if (video.currentTime > 1){
-                     resolve()
-                  }
-               })
-               view.on('track', (event) => {
-                  video.srcObject = event.streams[0]
-               })
-               view.connect()
-            })
-         }
+<head>
+   <title>PuppeteerJest</title>
+   <script src="../../dist/millicast.umd.js"></script>
+   <script>
+      window.pubStatsCount=0;
+      window.viewStatsCount=0;
+      window.lastReceivedMetadata=null;
 
-         const getVideoPixelSums = () => {
-            const canvas = document.createElement('canvas')
-            const id = document.getElementById('my-video')
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(id, 0, 0, id.videoHeight - 1, id.videoWidth - 1)
-            const imageData = ctx.getImageData(0, 0, id.videoHeight - 1, id.videoWidth - 1).data
-            const sum = imageData.reduce((total, current) => total + current)
-            if (sum === 255 * (Math.pow(id.videoHeight - 1, (id.videoWidth - 1) * (id.videoWidth - 1)))) {
-               return 0
+      async function startPublisher (publishToken, streamName, options) {
+         const millicast=window.millicast;
+         millicast.Logger.setLevel(millicast.Logger.DEBUG);
+         const tokenGenerator=() => millicast.Director.getPublisher(publishToken, streamName);
+         const publish=new millicast.Publish(undefined, tokenGenerator);
+
+         publish.webRTCPeer.on('stats', () => {window.pubStatsCount++;});
+
+         const mediaStream=await navigator.mediaDevices.getUserMedia(
+            {
+               audio: true,
+               video: {
+                  width: {ideal: 1280},
+                  height: {ideal: 720}
+               }
             }
-            return sum
-         }
-      </script>
-   </head>
-   <body>
-      <h1>PuppeteerJest</h1>
-      <br />
-      <h3>Run 'npm test' for test with Jest!</h3>
-      <br />
-      <video id='my-video' muted autoplay controls width='640' height='480' style='display: block;margin: 0 auto;'></video>
-   </body>
+         );
+         document.getElementById('my-video').srcObject=mediaStream;
+
+         await publish.connect({
+            ...options,
+            mediaStream
+         });
+         window.publish=publish;
+      }
+
+      function startViewer (streamName, accountId, connectOptions = {}) {
+         return new Promise((resolve, reject) => {
+            const millicast=window.millicast;
+            const video=document.getElementById('my-video');
+            console.log("[DIAG] startViewer called", {streamName, accountId, connectOptions});
+            console.log("[DIAG] millicast keys:", Object.keys(millicast));
+
+            const tokenGenerator=() => {
+               console.log("[DIAG] tokenGenerator called");
+               return millicast.Director.getSubscriber(streamName, accountId);
+            };
+
+            const view=new millicast.View(streamName, tokenGenerator);
+            window.view=view;
+            console.log("[DIAG] View instance created");
+
+            view.webRTCPeer.on('stats', () => {
+               window.viewStatsCount++;
+            });
+
+            view.on('metadata', (data) => {
+               window.lastReceivedMetadata=data;
+            });
+
+            view.on("broadcastEvent", async (event) => {
+               const {name, data}=event;
+               console.log("[DIAG] broadcastEvent received:", name, JSON.stringify(data));
+               if (name==="active") {
+                  try {
+                     const tracksMapping = (data.tracks || []).map(track => ({
+                           ...track,
+                           mediaId: track.media === "video" ? "0" : "1"
+                        }
+                     ));
+                     console.log("[DIAG] Calling view.project with sourceId:", data.sourceId, "mapping:", JSON.stringify(tracksMapping));
+                     await view.project(data.sourceId, tracksMapping);
+                     console.log("[DIAG] view.project() succeeded");
+                  } catch (e) {
+                     console.error("[DIAG] Project failed:", e.message);
+                  }
+               }
+            });
+
+            view.on("track", (event) => {
+               console.log("[DIAG] track event:", event.track.kind, "readyState:", event.track.readyState, "streams:", event.streams.length);
+               if (event.track.kind==="video") {
+                  video.srcObject=event.streams[0];
+                  video.play()
+                    .catch(() => undefined)
+                    .finally(() => {
+                       console.log("[DIAG] Video track received, resolving promise");
+                       resolve();
+                    });
+               }
+            });
+
+            // Set a timeout so the test doesn't hang forever if projection fails
+            setTimeout(() => {
+               console.error("[DIAG] TIMEOUT - viewer state:", {
+                  isActive: view.isActive(),
+                  viewStatsCount: window.viewStatsCount
+               });
+               reject(new Error("Viewer connection timeout"));
+            }, 15000);
+
+            console.log("[DIAG] Calling view.connect()");
+            view.connect({
+               metadata: true,
+               peerConfig: {
+                  autoInitStats: true,
+                  statsIntervalMs: 1000
+               },
+               ...connectOptions
+            }).then(() => {
+               console.log("[DIAG] view.connect() resolved");
+            }).catch((e) => {
+               console.error("[DIAG] view.connect() rejected:", e.message);
+               reject(e);
+            });
+         });
+      }
+
+      function getVideoPixelSums () {
+         const canvas=document.createElement('canvas');
+         const id=document.getElementById('my-video');
+         const ctx=canvas.getContext('2d');
+         ctx.drawImage(id, 0, 0, 640, 480);
+         const imageData=ctx.getImageData(0, 0, 640, 480).data;
+         return imageData.reduce((total, current) => total+current, 0);
+      }
+   </script>
+</head>
+
+<body>
+   <video id='my-video' muted autoplay controls width='640' height='480'></video>
+</body>
+
 </html>

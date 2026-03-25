@@ -8,14 +8,14 @@ const feature = loadFeature('../features/View.feature', { loadRelativePath: true
 
 jest.mock('../../src/Signaling')
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn()
   }))
 )
 
-jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
+jest.mock('../../src/drm/rtc-drm-transform.min.js', () => ({
   rtcDrmConfigure: jest.fn(),
   rtcDrmOnTrack: jest.fn(),
   rtcDrmEnvironments: jest.fn(),
@@ -24,14 +24,12 @@ jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
 
 const mockTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
+    urls: ['ws://localhost:8080'],
     jwt: 'this-is-a-jwt-dummy-token'
   }
 })
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   beforeEach(() => {
     jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
   })
@@ -42,7 +40,7 @@ defineFeature(feature, test => {
     given('no token generator', () => null)
 
     when('I instance a View', async () => {
-      expectError = expect(() => new View(undefined))
+      expectError = expect(() => new View())
     })
 
     then('throws an error', async () => {
@@ -177,7 +175,9 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of View with invalid token generator', async () => {
-      const errorTokenGenerator = jest.fn(() => { throw new Error('Error getting token') })
+      const errorTokenGenerator = jest.fn(() => {
+        throw new Error('Error getting token')
+      })
       viewer = new View(undefined, errorTokenGenerator)
     })
 

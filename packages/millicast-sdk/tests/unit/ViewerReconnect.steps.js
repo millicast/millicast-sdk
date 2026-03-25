@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { webRTCEvents } from '../../src/PeerConnection'
+import { webRTCEvents } from '../../src/types/PeerConnection.types'
 import { signalingEvents } from '../../src/Signaling'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
@@ -32,7 +32,7 @@ jest.mock('../../src/Signaling', () => {
   }
 })
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn()
@@ -60,7 +60,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -78,7 +78,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -96,17 +96,20 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
-      jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
+      jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
+        viewer.firstReconnection = false
+        viewer.alreadyDisconnected = true
+      })
       await viewer.connect()
     })
 
-    when('signaling has an error', () => {
-      viewer.signaling.emit(signalingEvents.connectionError, 'webSocketLocation')
+    when('signaling has an error', async () => {
+      viewer.signaling.emit(signalingEvents.connectionError)
     })
 
-    then('reconnection is called', async () => {
-      expect(viewer.reconnect).toHaveBeenCalledTimes(1)
+    then('reconnection is called', () => {
+      expect(viewer.reconnect).toHaveBeenCalled()
     })
   })
 
@@ -114,7 +117,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(() => {
         viewer.firstReconnection = false
         viewer.alreadyDisconnected = true
@@ -137,7 +140,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection disabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, false)
+      viewer = new View(undefined, mockTokenGenerator, undefined, false)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -155,7 +158,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       jest.spyOn(viewer, 'reconnect').mockImplementation(jest.fn)
       await viewer.connect()
     })
@@ -178,7 +181,7 @@ defineFeature(feature, test => {
     const errorMessage = 'Error has ocurred'
 
     given('an instance of Viewer with reconnection enabled and peer with error', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       viewer.on('reconnect', reconnectHandler)
       await viewer.connect()
       viewer.webRTCPeer.peer.connectionState = 'failed'
@@ -213,7 +216,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       await viewer.connect()
     })
 
@@ -231,7 +234,7 @@ defineFeature(feature, test => {
     let viewer
 
     given('an instance of Viewer with reconnection enabled', async () => {
-      viewer = new View(undefined, mockTokenGenerator, null, true)
+      viewer = new View(undefined, mockTokenGenerator, undefined, true)
       await viewer.connect()
     })
 

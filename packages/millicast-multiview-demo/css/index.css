@@ -1,0 +1,36 @@
+body {
+    background: #e2e1e0;
+    text-align: center;
+    margin: 0px;
+    padding: 0px;
+    color: #555;
+    font-family: 'Roboto';
+    }
+
+#remoteVideos {
+    flex-wrap: wrap;
+    margin: 1rem;
+}
+
+#mainVideo {
+    margin: 1rem;
+}
+
+#mainVideo video {
+    justify-content: center;
+    width: 600px;
+    height: 400px;
+    cursor: pointer;
+}
+
+    /* make video elements more small */
+#remoteVideos video {
+    width: 300px;
+    height: 200px;
+    margin: 1rem;
+    cursor: pointer;
+}
+
+#dropDownSelector {
+    display: block;
+}

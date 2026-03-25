@@ -1,85 +1,131 @@
 {
     "tasksRunnerOptions": {
-    "default": {
-        "runner": "nx/tasks-runners/default",
-        "options": {
-            "cacheableOperations": [
-                "build",
-                "test",
-                "lint",
-                "lint:format",
-                "prepare",
-                "build-docs",
-                "test-unit",
-                "test-unit-coverage",
-                "test-e2e",
-                "test-all"
-            ]
+        "default": {
+            "runner": "nx/tasks-runners/default",
+            "options": {
+                "cacheableOperations": [
+                    "build",
+                    "test",
+                    "lint",
+                    "lint:format",
+                    "prepare",
+                    "build-docs",
+                    "test-unit",
+                    "test-unit-coverage",
+                    "test-e2e",
+                    "test-all"
+                ]
+            }
         }
-    }
+    },
+    "namedInputs": {
+        "default": [
+            "{projectRoot}/**/*",
+            "sharedGlobals"
+        ],
+        "production": [
+            "default",
+            "!{projectRoot}/.eslintrc.json",
+            "!{projectRoot}/eslint.config.js",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/tsconfig.spec.json",
+            "!{projectRoot}/jest.config.[jt]s",
+            "!{projectRoot}/src/test-setup.[jt]s",
+            "!{projectRoot}/test-setup.[jt]s"
+        ],
+        "sharedGlobals": [
+            "{workspaceRoot}/.github/workflows/check-tests.yml"
+        ]
     },
     "targetDefaults": {
-    "test": {
-        "dependsOn": [
-            "^test"
-        ],
-        "inputs": [
-            "{projectRoot}/**/*",
-            "!{projectRoot}/**/*.md"
-        ],
-        "cache": true
+        "build": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "outputs": [
+                "{projectRoot}/dist"
+            ]
+        },
+        "@nx/vite:build": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "outputs": [
+                "{projectRoot}/dist"
+            ]
+        },
+        "test": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+            ]
+        }
     },
-    "prepare": {
-        "dependsOn": [
-            "^prepare"
-        ],
-        "cache": true
-    },
-    "preview": {
-        "dependsOn": [
-            "^preview"
-        ]
-    },
-    "build:watch": {
-        "dependsOn": [
-            "^build:watch"
-        ]
-    },
-    "build": {
-        "outputs": [
-            "{projectRoot}//**/dist/*"
-        ],
-        "cache": true,
-        "dependsOn": []
-    },
-    "start": {
-        "dependsOn": []
-    },
-    "build-docs": {
-        "cache": true,
-        "dependsOn": []
-    },
-    "start-docs": {
-        "dependsOn": []
-    },
-    "test-unit": {
-        "cache": true,
-        "dependsOn": []
-    },
-    "test-unit-coverage": {
-        "cache": true,
-        "dependsOn": []
-    },
-    "test-e2e": {
-        "cache": true,
-        "dependsOn": []
-    },
-    "test-all": {
-        "cache": true,
-        "dependsOn": []
-    }
+    "plugins": [
+        {
+            "plugin": "@nx/vite/plugin",
+            "options": {
+                "buildTargetName": "build",
+                "testTargetName": "test",
+                "serveTargetName": "serve",
+                "previewTargetName": "preview",
+                "serveStaticTargetName": "serve-static"
+            }
+        },
+        {
+            "plugin": "@nx/eslint/plugin",
+            "options": {
+                "targetName": "lint"
+            }
+        },
+        {
+            "plugin": "@nx/jest/plugin",
+            "options": {
+                "targetName": "test"
+            }
+        }
+    ],
+    "generators": {
+        "@nx/web:application": {
+            "style": "css",
+            "linter": "eslint",
+            "unitTestRunner": "jest",
+            "e2eTestRunner": "none"
+        }
     },
     "affected": {
         "defaultBase": "main"
+    },
+    "release": {
+        "projects": [
+            "@millicast/sdk"
+        ],
+        "version": {
+            "conventionalCommits": true
+        },
+        "changelog": {
+            "workspaceChangelog": false,
+            "projectChangelogs": true
+        },
+        "git": {
+            "commit": false,
+            "tag": false
+        },
+        "conventionalCommits": {}
     }
 }

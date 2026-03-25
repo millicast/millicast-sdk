@@ -1,0 +1,27 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2020",
+    "module": "esnext",
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@millicast/sdk": ["packages/millicast-sdk/src/index.ts"],
+      "vite/client": ["node_modules/vite/client.d.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

@@ -1,10 +1,12 @@
-# Millicast SDK for JavaScript
+# Dolby OptiView Real-time Streaming SDK for JavaScript
 
 [![npm (scoped)](https://img.shields.io/npm/v/@millicast/sdk)](https://www.npmjs.com/package/@millicast/sdk)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/millicast/millicast-sdk)](https://github.com/millicast/millicast-sdk/releases)
 [![Check tests](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml/badge.svg?branch=main)](https://github.com/millicast/millicast-sdk/actions/workflows/check-tests.yml)
+[![GitHub](https://img.shields.io/badge/GitHub-_?logo=GitHub&labelColor=black&color=blue)](https://github.com/millicast/millicast-sdk)
+[![Documentation](https://img.shields.io/badge/Documentation-_?logo=readthedocs&labelColor=black&color=blue)](https://millicast.github.io/millicast-sdk-interactivity/)
 
-This Software Development Kit (SDK) for JavaScript allows developers to simplify Millicast services integration into their own web apps.
+This Software Development Kit (SDK) for JavaScript allows developers to simplify Dolby OptiView Real-time streaming services integration into their own web apps.
 
 ## Table of Contents
 
@@ -19,15 +21,15 @@ This Software Development Kit (SDK) for JavaScript allows developers to simplify
 - [SDK developer information](#sdk-developer-information)
 - [License](#license)
 
-
 ## Installation
+
 You can use the CDN version of the SDK adding this tag to your document's `<head>`. Then `millicast` global variable will be available to use it.
+
 ```html
 <script src='https://cdn.jsdelivr.net/npm/@millicast/sdk@latest/dist/millicast.umd.js'></script>
 ```
 
 Or if you are building an application with Node.js, you can install the SDK package to your dependencies.
-
 
 ```sh
 npm i --save @millicast/sdk
@@ -37,7 +39,7 @@ npm i --save @millicast/sdk
 
 The following examples demonstrate how to broadcast with the Publisher app capturing the user's camera and microphone. You can then view the stream using the Viewer app.
 
-You will need to use a [Dolby Millicast account](https://streaming.dolby.io/) with a valid publishing token.
+You will need to use a [Dolby OptiView Real-time streaming account](https://streaming.dolby.io/) with a valid publishing token.
 
 ### Publisher app
 
@@ -56,37 +58,39 @@ In vanilla JavaScript:
 
   <body>
     <script type="module">
-      const yourPublishingToken = "..."
-      const yourStreamName = "..."
+      const yourPublishingToken = "...";
+      const yourStreamName = "...";
 
       // Define callback for generate new tokens
       const tokenGenerator = () => millicast.Director.getPublisher({
         token: yourPublishingToken,
-        streamName: yourStreamName
-      })
+        streamName: yourStreamName,
+      });
 
       // Create a new instance
-      const millicastPublish = new millicast.Publish(undefined, tokenGenerator)
+      const millicastPublish = new millicast.Publish(undefined, tokenGenerator);
 
       // Get user camera and microphone
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
 
       // Publishing options
       const broadcastOptions = {
-        mediaStream
-      }
+        mediaStream,
+      };
 
       // Start broadcast
       try {
-        await millicastPublish.connect(broadcastOptions)
+        await millicastPublish.connect(broadcastOptions);
       } catch (e) {
-        console.log('Connection failed, handle error', e)
+        console.log('Connection failed, handle error', e);
       }
     </script>
   </body>
 </html>
 ```
-
 
 ### Viewer app
 
@@ -108,26 +112,26 @@ In vanilla JavaScript:
 
     <script type="module">
       // Get media element
-      const video = document.getElementById('my-video')
+      const video = document.getElementById('my-video');
 
       // Set the credentials for the streaming
-      const yourStreamName = "..."
-      const yourStreamAccountId = "..."
+      const yourStreamName = "...";
+      const yourStreamAccountId = "...";
 
       // Define callback for generate new token
       const tokenGenerator = () => millicast.Director.getSubscriber({
         streamName: yourStreamName,
-        streamAccountId: yourStreamAccountId
+        streamAccountId: yourStreamAccountId,
       })
 
       // Create a new instance
-      const millicastView = new millicast.View(undefined, tokenGenerator, video)
+      const millicastView = new millicast.View(undefined, tokenGenerator, video);
 
       // Start connection to publisher
       try {
-        await millicastView.connect()
+        await millicastView.connect();
       } catch (e) {
-        console.log('Connection failed, handle error', e)
+        console.log('Connection failed, handle error', e);
       }
     </script>
   </body>
@@ -136,7 +140,7 @@ In vanilla JavaScript:
 
 ## Documentation
 
-The [Documentation](https://docs.optiview.dolby.com/millicast/) provides an overview of the Dolby Millicast services. This includes a [Getting Started](https://docs.optiview.dolby.com/millicast/getting-started/) guide as a quick start.
+The [Documentation](https://docs.optiview.dolby.com/millicast/) provides an overview of the Dolby OptiView Real-time streaming services. This includes a [Getting Started](https://docs.optiview.dolby.com/millicast/getting-started/) guide as a quick start.
 
 The [SDK Documentation](https://millicast.github.io/millicast-sdk/) details the Modules, Classes, and APIs you can use during development. 
 
@@ -148,20 +152,22 @@ There are several packages that implement a publisher and viewer. These samples 
 * [millicast-viewer-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-viewer-demo#readme)
 * [millicast-webaudio-delay-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-webaudio-delay-demo#readme)
 * [millicast-multiview-demo](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-multiview-demo#readme)
+* [millicast-chromecast-receiver](https://github.com/millicast/millicast-sdk/tree/main/packages/millicast-chromecast-receiver#readme)
 
 ## JS Frameworks
 
-This section is intended to explain how properly integrate this SDK with different JS frameworks, with links to official guides that will contain a more step by step oriented explanation on how to do it. 
-
-Right now, we only have a React Native guide.
+This section is intended to explain how properly integrate this SDK with different JS frameworks, with links to official guides that will contain a more step by step oriented explanation on how to do it.
 
 ### React Native
-This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose. 
+
+This SDK can be used for React Native based projects. In order to accomplish this integration, some configuration steps are needed. This library assumes all webRTC methods are natively defined (usually, inside web browsers). However this is not the case for native Android/iOS native applications. In order to solve this, we have tested and worked along with [React Native webRTC project](https://github.com/react-native-webrtc/react-native-webrtc) for this purpose.
 
 Check out this guide on [how to integrate Millicast JS SDK with React Native webRTC](https://docs.optiview.dolby.com/millicast/playback/players-sdks/react-native/)!
 
 ## SDK developer information
-To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link.](https://github.com/millicast/millicast-sdk/blob/main/CONTRIBUTING.md)
+
+To develop and contribute to this project, there are some instructions of how to set up your environment to start contributing. [Follow this link](https://github.com/millicast/millicast-sdk/blob/main/CONTRIBUTING.md).
 
 ## License
+
 Please refer to [LICENSE](https://github.com/millicast/millicast-sdk/blob/main/LICENSE) file.

@@ -20,6 +20,7 @@ defineFeature(feature, test => {
       streamName,
       url: publishWebSocketLocation
     })
+    handler.mockClear()
   })
 
   afterEach(async () => {

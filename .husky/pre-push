@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run unit tests
+echo "Running unit tests..."
+npm run test-unit
+
+# Run signature check
+echo "Checking commit signatures..."
+./check-signature.sh

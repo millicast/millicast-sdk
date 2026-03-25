@@ -2,16 +2,16 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import Publish from '../../src/Publish'
 import PeerConnection from '../../src/PeerConnection'
 import Signaling from '../../src/Signaling'
-import { VideoCodec } from '../../src/utils/Codecs'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockBrowser'
+import './__mocks__/jwt-decode'
 
 const feature = loadFeature('../features/Publish.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('../../src/Signaling')
 
-jest.mock('../../src/workers/TransformWorker.worker.js', () =>
+jest.mock('../../src/workers/TransformWorker.worker.ts', () =>
   jest.fn(() => ({
     postMessage: jest.fn(),
     terminate: jest.fn()
@@ -20,23 +20,23 @@ jest.mock('../../src/workers/TransformWorker.worker.js', () =>
 
 const mockTokenGenerator = jest.fn(() => {
   return {
-    urls: [
-      'ws://localhost:8080'
-    ],
-    jwt: process.env.JWT_TEST_TOKEN ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
+    urls: ['ws://localhost:8080'],
+    jwt:
+      process.env.JWT_TEST_TOKEN ??
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJtaWxsaWNhc3QiOnt9fQ.IqT-PLLz-X7Wn7BNo-x4pFApAbMT9mmnlupR8eD9q4U'
   }
 })
 
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
-defineFeature(feature, test => {
+defineFeature(feature, (test) => {
   test('Instance publisher without tokenGenerator', ({ given, when, then }) => {
     let expectError
 
     given('no token generator', () => null)
 
     when('I instance a Publish', async () => {
-      expectError = expect(() => new Publish('streamName'))
+      expectError = expect(() => new Publish(undefined))
     })
 
     then('throws an error', async () => {
@@ -49,7 +49,7 @@ defineFeature(feature, test => {
     let publisher
 
     given('an instance of Publish with connection path', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
+      publisher = new Publish(undefined, mockTokenGenerator)
     })
 
     when('I broadcast a stream with media stream', async () => {
@@ -66,7 +66,7 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of Publish', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
+      publisher = new Publish(undefined, mockTokenGenerator)
     })
 
     when('I broadcast a stream without options', async () => {
@@ -87,7 +87,7 @@ defineFeature(feature, test => {
 
     when('I instance a Publish with token generator without connection path', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
-      publisher = new Publish('streamName', mockErrorTokenGenerator)
+      publisher = new Publish(undefined, mockErrorTokenGenerator)
       expectError = expect(() => publisher.connect({ mediaStream }))
     })
 
@@ -102,7 +102,7 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of Publish', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
+      publisher = new Publish(undefined, mockTokenGenerator)
     })
 
     when('I broadcast a stream without a mediaStream', async () => {
@@ -121,7 +121,7 @@ defineFeature(feature, test => {
 
     given('an instance of Publish already connected', async () => {
       jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
-      publisher = new Publish('streamName', mockTokenGenerator)
+      publisher = new Publish(undefined, mockTokenGenerator)
       await publisher.connect({ mediaStream })
     })
 
@@ -139,8 +139,8 @@ defineFeature(feature, test => {
     let publisher
 
     given('an instance of Publish', async () => {
-      jest.spyOn(PeerConnection.prototype, 'updateBandwidthRestriction').mockImplementation(jest.fn)
-      publisher = new Publish('streamName', mockTokenGenerator)
+      jest.spyOn(PeerConnection.prototype, 'updateBandwidthRestriction').mockResolvedValue(undefined)
+      publisher = new Publish(undefined, mockTokenGenerator)
     })
 
     when('I broadcast a stream with bandwidth restriction', async () => {
@@ -157,7 +157,7 @@ defineFeature(feature, test => {
   })
 
   test('Stop publish', ({ given, when, then }) => {
-    const publisher = new Publish('streamName', mockTokenGenerator)
+    const publisher = new Publish(undefined, mockTokenGenerator)
     let signaling
 
     given('I am publishing a stream', async () => {
@@ -178,7 +178,7 @@ defineFeature(feature, test => {
   })
 
   test('Stop inactive publish', ({ given, when, then }) => {
-    const publisher = new Publish('streamName', mockTokenGenerator)
+    const publisher = new Publish(undefined, mockTokenGenerator)
 
     given('I am not publishing a stream', () => null)
 
@@ -193,7 +193,7 @@ defineFeature(feature, test => {
   })
 
   test('Check status of active publish', ({ given, when, then }) => {
-    const publisher = new Publish('streamName', mockTokenGenerator)
+    const publisher = new Publish(undefined, mockTokenGenerator)
     let result
 
     given('I am publishing a stream', async () => {
@@ -211,7 +211,7 @@ defineFeature(feature, test => {
   })
 
   test('Check status of inactive publish', ({ given, when, then }) => {
-    const publisher = new Publish('streamName', mockTokenGenerator)
+    const publisher = new Publish(undefined, mockTokenGenerator)
     let result
 
     given('I am not publishing a stream', () => null)
@@ -230,8 +230,10 @@ defineFeature(feature, test => {
     let expectError
 
     given('an instance of Publish with invalid token generator', async () => {
-      const errorTokenGenerator = jest.fn(() => { throw new Error('Error getting token') })
-      publisher = new Publish('streamName', errorTokenGenerator)
+      const errorTokenGenerator = jest.fn(() => {
+        throw new Error('Error getting token')
+      })
+      publisher = new Publish(undefined, errorTokenGenerator)
     })
 
     when('I broadcast a stream', async () => {
@@ -244,12 +246,16 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Broadcast to stream with record option but no record available from token', ({ given, when, then }) => {
+  test('Broadcast to stream with record option but no record available from token', ({
+    given,
+    when,
+    then
+  }) => {
     let publisher
     let expectError
 
     given('an instance of Publish with valid token generator with no recording available', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
+      publisher = new Publish(undefined, mockTokenGenerator)
     })
 
     when('I broadcast a stream', async () => {
@@ -267,20 +273,19 @@ defineFeature(feature, test => {
     let expectedError
 
     given('an instance of Publish', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
-      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue(
-        {
-          codecs: [
-            { codec: 'vp8', mimeType: 'video/VP8' },
-            { codec: 'vp9', mimeType: 'video/VP9' },
-            { codec: 'h264', mimeType: 'video/H264' }
-          ],
-          headerExtensions: []
-        })
+      publisher = new Publish(undefined, mockTokenGenerator)
+      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue({
+        codecs: [
+          { codec: 'vp8', mimeType: 'video/VP8' },
+          { codec: 'vp9', mimeType: 'video/VP9' },
+          { codec: 'h264', mimeType: 'video/H264' }
+        ],
+        headerExtensions: []
+      })
     })
 
     when('I broadcast with unsupported codec', async () => {
-      expectedError = expect(() => publisher.connect({ mediaStream, record: true, codec: VideoCodec.H265 }))
+      expectedError = expect(() => publisher.connect({ mediaStream, record: true, codec: 'h265' }))
     })
 
     then('throws an error', async () => {
@@ -292,21 +297,20 @@ defineFeature(feature, test => {
     let publisher
 
     given('an instance of Publish', async () => {
-      publisher = new Publish('streamName', mockTokenGenerator)
-      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue(
-        {
-          codecs: [
-            { codec: 'vp8', mimeType: 'video/VP8' },
-            { codec: 'vp9', mimeType: 'video/VP9' },
-            { codec: 'h264', mimeType: 'video/H264' },
-            { codec: 'h265', mimeType: 'video/H265' }
-          ],
-          headerExtensions: []
-        })
+      publisher = new Publish(undefined, mockTokenGenerator)
+      jest.spyOn(PeerConnection, 'getCapabilities').mockReturnValue({
+        codecs: [
+          { codec: 'vp8', mimeType: 'video/VP8' },
+          { codec: 'vp9', mimeType: 'video/VP9' },
+          { codec: 'h264', mimeType: 'video/H264' },
+          { codec: 'h265', mimeType: 'video/H265' }
+        ],
+        headerExtensions: []
+      })
     })
 
     when('I broadcast a stream with H265 codec', async () => {
-      await publisher.connect({ mediaStream, codec: VideoCodec.H265 })
+      await publisher.connect({ mediaStream, codec: 'h265' })
     })
 
     then('peer connection state is connected', async () => {

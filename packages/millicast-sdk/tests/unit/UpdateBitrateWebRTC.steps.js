@@ -1,5 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import PeerConnection, { ConnectionType } from '../../src/PeerConnection'
+import PeerConnection from '../../src/PeerConnection'
+import { ConnectionType } from '../../src/types/PeerConnection.types'
 import './__mocks__/MockMediaStream'
 import './__mocks__/MockRTCPeerConnection'
 import { changeBrowserMock } from './__mocks__/MockBrowser'
@@ -18,8 +19,8 @@ defineFeature(feature, test => {
 
     given('I have a peer connected', async () => {
       await peerConnection.createRTCPeer(config, ConnectionType.Publisher)
+      peerConnection.peer.addTransceiver({ kind: 'video', label: 'Video1', id: '1', getSettings: () => ({ width: 1280, height: 720 }) }, { direction: 'sendonly' })
       await peerConnection.setRTCRemoteSDP(sdp)
-      expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
 
     when('I want to update the bitrate to 1000 kbps', async () => {
@@ -27,7 +28,9 @@ defineFeature(feature, test => {
     })
 
     then('the bitrate is updated', async () => {
-      expect(peerConnection.peer.currentRemoteDescription.sdp).not.toBe(sdp)
+      const videoSender = peerConnection.peer.getSenders().find(s => s.track?.kind === 'video')
+      expect(videoSender).toBeDefined()
+      expect(videoSender.setParameters).toHaveBeenCalled()
     })
   })
 
@@ -37,8 +40,8 @@ defineFeature(feature, test => {
 
     given('I have a peer connected', async () => {
       await peerConnection.createRTCPeer(config, ConnectionType.Publisher)
+      peerConnection.peer.addTransceiver({ kind: 'video', label: 'Video1', id: '1', getSettings: () => ({ width: 1280, height: 720 }) }, { direction: 'sendonly' })
       await peerConnection.setRTCRemoteSDP(sdp)
-      expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
 
     when('I want to update the bitrate to unlimited', async () => {
@@ -46,7 +49,9 @@ defineFeature(feature, test => {
     })
 
     then('the bitrate is updated', async () => {
-      expect(peerConnection.peer.currentRemoteDescription.sdp).not.toBe(sdp)
+      const videoSender = peerConnection.peer.getSenders().find(s => s.track?.kind === 'video')
+      expect(videoSender).toBeDefined()
+      expect(videoSender.setParameters).toHaveBeenCalled()
     })
   })
 
@@ -57,8 +62,8 @@ defineFeature(feature, test => {
     given('I am using Firefox and I have a peer connected', async () => {
       changeBrowserMock('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0')
       await peerConnection.createRTCPeer(config, ConnectionType.Publisher)
+      peerConnection.peer.addTransceiver({ kind: 'video', label: 'Video1', id: '1', getSettings: () => ({ width: 1280, height: 720 }) }, { direction: 'sendonly' })
       await peerConnection.setRTCRemoteSDP(sdp)
-      expect(peerConnection.peer.currentRemoteDescription.sdp).toBe(sdp)
     })
 
     when('I want to update the bitrate to 1000 kbps', async () => {
@@ -66,7 +71,9 @@ defineFeature(feature, test => {
     })
 
     then('the bitrate is updated', async () => {
-      expect(peerConnection.peer.currentRemoteDescription.sdp).not.toBe(sdp)
+      const videoSender = peerConnection.peer.getSenders().find(s => s.track?.kind === 'video')
+      expect(videoSender).toBeDefined()
+      expect(videoSender.setParameters).toHaveBeenCalled()
     })
   })
 

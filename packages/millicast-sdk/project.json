@@ -1,0 +1,38 @@
+{
+    "name": "@millicast/sdk",
+    "targets": {
+        "test": {
+            "executor": "@nx/jest:jest",
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "{workspaceRoot}/coverage/packages/millicast-sdk"
+            ],
+            "options": {
+                "jestConfig": "packages/millicast-sdk/jest.config.ts",
+                "passWithNoTests": true
+            }
+        },
+        "test-e2e": {
+            "executor": "@nx/jest:jest",
+            "dependsOn": [
+                "build"
+            ],
+            "options": {
+                "jestConfig": "packages/millicast-sdk/jest.e2e.config.ts",
+                "passWithNoTests": true
+            }
+        },
+        "build": {
+            "executor": "@nx/vite:build",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                "outputPath": "packages/millicast-sdk/dist",
+                "configFile": "packages/millicast-sdk/vite.config.ts"
+            }
+        }
+    }
+}

@@ -55,9 +55,3 @@ This demo application allows the user to set some URL parameters for configuring
 | **disablePlay**     | Set to disable play/pause control.                                                             | `false`
 | **disableFull**     | Set to disable fullscreen control.                                                             | `false`
 
-## Introducing updates
-After introducing any changes to the `public` directory, use the following command:
-```
-npm run prepare
-```
-
