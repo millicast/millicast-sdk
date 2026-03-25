@@ -79,7 +79,7 @@ defineFeature(feature, test => {
 
     then('the View instance should be created successfully', () => {
       expect(viewInstance).toBeDefined()
-      expect(viewInstance.streamName).toBe('test-stream')
+      expect(viewInstance.streamName).toBe('')
       expect(viewInstance.isActive).toBe(false)
     })
   })

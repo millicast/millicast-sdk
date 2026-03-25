@@ -8,7 +8,7 @@
       window.viewStatsCount=0;
       window.lastReceivedMetadata=null;
 
-      const startPublisher=async (publishToken, streamName, options) => {
+      async function startPublisher (publishToken, streamName, options) {
          const millicast=window.millicast;
          millicast.Logger.setLevel(millicast.Logger.DEBUG);
          const tokenGenerator=() => millicast.Director.getPublisher(publishToken, streamName);
@@ -34,7 +34,7 @@
          window.publish=publish;
       }
 
-      const startViewer=(streamName, accountId) => {
+      function startViewer (streamName, accountId) {
          return new Promise((resolve, reject) => {
             const millicast=window.millicast;
             const video=document.getElementById('my-video');
@@ -91,7 +91,7 @@
          });
       }
 
-      const getVideoPixelSums=() => {
+      function getVideoPixelSums () {
          const canvas=document.createElement('canvas');
          const id=document.getElementById('my-video');
          const ctx=canvas.getContext('2d');

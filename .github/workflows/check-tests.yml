@@ -152,7 +152,9 @@ jobs:
       - name: Install Puppeteer Chrome
         run: npx -y puppeteer browsers install chrome
       - name: Run E2E Tests
-        run: npx nx run @millicast/sdk:test-e2e --runTestsByPath=packages/millicast-sdk/tests/e2e/${{ matrix.test-file }}
+        run: |
+          npx nx run @millicast/sdk:build
+          npx jest --config packages/millicast-sdk/jest.e2e.config.ts --runTestsByPath packages/millicast-sdk/tests/e2e/${{ matrix.test-file }}
         timeout-minutes: 10
         env:
           ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
