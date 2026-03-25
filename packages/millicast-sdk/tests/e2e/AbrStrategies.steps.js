@@ -16,6 +16,10 @@ const streamName = process.env.STREAM_NAME ?? 'abr_test_' + Math.round(Math.rand
 
 let browser = null
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+const addDiagConsole = (page) => page.on('console', msg => {
+  const text = msg.text()
+  if (text.includes('[DIAG]')) console.log('Viewer:', text)
+})
 
 beforeAll(async () => {
   const packageRoot = path.resolve(__dirname, '..', '..')
@@ -94,6 +98,7 @@ defineFeature(feature, test => {
     and('a viewer page ready to connect', async () => {
       viewerPage = await browser.newPage()
       viewerPage.on('pageerror', err => console.error('Viewer page error:', err.message))
+      addDiagConsole(viewerPage)
       await viewerPage.goto(pageLocation)
     })
 
@@ -165,6 +170,7 @@ defineFeature(feature, test => {
     and('a viewer page ready to connect', async () => {
       viewerPage = await browser.newPage()
       viewerPage.on('pageerror', err => console.error('Viewer page error:', err.message))
+      addDiagConsole(viewerPage)
       await viewerPage.goto(pageLocation)
     })
 
@@ -236,6 +242,7 @@ defineFeature(feature, test => {
     and('a viewer connected with abrConfiguration strategy bandwidth', async () => {
       viewerPage = await browser.newPage()
       viewerPage.on('pageerror', err => console.error('Viewer page error:', err.message))
+      addDiagConsole(viewerPage)
       await viewerPage.goto(pageLocation)
 
       await viewerPage.evaluate(({ streamName, accountId }) => {

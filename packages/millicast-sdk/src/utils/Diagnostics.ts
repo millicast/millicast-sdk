@@ -12,7 +12,7 @@ import pkg from '../../package.json';
 
 const MAX_STATS_HISTORY_SIZE = 60;
 
-const userAgent = window?.navigator?.userAgent || 'No user agent available';
+const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : 'No user agent available';
 let _accountId = '';
 let _streamName = '';
 let _subscriberId = '';
