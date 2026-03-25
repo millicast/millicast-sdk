@@ -186,7 +186,10 @@ export default class View extends BaseWebRTC {
       setSDPToPeer: false,
     };
     this.eventQueue.length = 0;
+    this.isMainStreamActive = false;
+    this.mainSourceId = null;
     await this.initConnection({ migrate: false });
+  }
   }
 
   /**
