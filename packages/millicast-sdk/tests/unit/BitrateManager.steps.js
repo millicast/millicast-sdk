@@ -41,14 +41,14 @@ defineFeature(feature, test => {
       bitrateManager = new BitrateManager(peer)
     })
 
-    when('I update the video bitrate to 2000000', async () => {
-      await bitrateManager.updateVideoBitrate(2000000)
+    when('I update the video bitrate to 2000', async () => {
+      await bitrateManager.updateVideoBitrate(2000)
     })
 
     then('the video sender parameters are updated with the bitrate', () => {
       expect(videoSender.setParameters).toHaveBeenCalledTimes(1)
       const params = videoSender.setParameters.mock.calls[0][0]
-      expect(params.encodings[0].maxBitrate).toBe(2000000)
+      expect(params.encodings[0].maxBitrate).toBe(2000 * 1000)
     })
   })
 
@@ -62,17 +62,17 @@ defineFeature(feature, test => {
       bitrateManager = new BitrateManager(peer)
     })
 
-    when('I update the video bitrate to 3000000', async () => {
-      await bitrateManager.updateVideoBitrate(3000000)
+    when('I update the video bitrate to 3000', async () => {
+      await bitrateManager.updateVideoBitrate(3000)
     })
 
     then('the simulcast encodings are distributed across layers', () => {
       expect(videoSender.setParameters).toHaveBeenCalledTimes(1)
       const params = videoSender.setParameters.mock.calls[0][0]
       // Distribution: 70%, 20%, 10%
-      expect(params.encodings[0].maxBitrate).toBe(Math.floor(3000000 * 0.7))
-      expect(params.encodings[1].maxBitrate).toBe(Math.floor(3000000 * 0.2))
-      expect(params.encodings[2].maxBitrate).toBe(Math.floor(3000000 * 0.1))
+      expect(params.encodings[0].maxBitrate).toBe(Math.floor(3000 * 1000 * 0.7))
+      expect(params.encodings[1].maxBitrate).toBe(Math.floor(3000 * 1000 * 0.2))
+      expect(params.encodings[2].maxBitrate).toBe(Math.floor(3000 * 1000 * 0.1))
     })
   })
 
