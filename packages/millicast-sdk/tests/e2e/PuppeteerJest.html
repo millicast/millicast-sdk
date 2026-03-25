@@ -34,7 +34,7 @@
          window.publish=publish;
       }
 
-      function startViewer (streamName, accountId) {
+      function startViewer (streamName, accountId, connectOptions = {}) {
          return new Promise((resolve, reject) => {
             const millicast=window.millicast;
             const video=document.getElementById('my-video');
@@ -54,12 +54,12 @@
             view.on("broadcastEvent", async (event) => {
                const {name, data}=event;
                if (name==="active") {
-                  const tracksMapping = data.tracks.map(track => ({
-                        ...track,
-                        mediaId: track.media === "video" ? "0" : "1"
-                     }
-                  ));
                   try {
+                     const tracksMapping = (data.tracks || []).map(track => ({
+                           ...track,
+                           mediaId: track.media === "video" ? "0" : "1"
+                        }
+                     ));
                      await view.project(data.sourceId, tracksMapping);
                   } catch (e) {
                      console.error("Project failed", e);
@@ -70,11 +70,12 @@
             view.on("track", (event) => {
                if (event.track.kind==="video") {
                   video.srcObject=event.streams[0];
-
-                  video.onplaying=() => {
-                     console.log("Video is playing, resolving promise");
-                     resolve();
-                  };
+                  video.play()
+                    .catch(() => undefined)
+                    .finally(() => {
+                       console.log("Video track received, resolving promise");
+                       resolve();
+                    });
                }
             });
 
@@ -86,7 +87,8 @@
                peerConfig: {
                   autoInitStats: true,
                   statsIntervalMs: 1000
-               }
+               },
+               ...connectOptions
             }).catch(reject);
          });
       }

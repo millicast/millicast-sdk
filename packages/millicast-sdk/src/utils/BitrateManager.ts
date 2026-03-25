@@ -39,7 +39,7 @@ export default class BitrateManager {
         this.setSimulcastBitrates(params.encodings, bitrate);
       } else {
         // Single encoding
-        params.encodings[0].maxBitrate = bitrate;
+        params.encodings[0].maxBitrate = bitrate * 1000;
       }
 
       await sender.setParameters(params);
@@ -53,7 +53,7 @@ export default class BitrateManager {
 
     encodings.forEach((encoding, index) => {
       if (index < distributions.length) {
-        encoding.maxBitrate = Math.floor(totalBitrate * distributions[index]);
+        encoding.maxBitrate = Math.floor(totalBitrate * 1000 * distributions[index]);
       }
     });
   }

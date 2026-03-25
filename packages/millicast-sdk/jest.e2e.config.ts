@@ -17,5 +17,6 @@ export default {
     '<rootDir>/tests/e2e/**/*.step.js',
     '<rootDir>/tests/e2e/**/*.test.js',
   ],
+  transformIgnorePatterns: ['<rootDir>/../../puppeteerrc.cjs$'],
   resolver: '<rootDir>/../../jest_resolver.cjs',
 };
