@@ -14,6 +14,16 @@
                 "passWithNoTests": true
             }
         },
+        "test-e2e": {
+            "executor": "@nx/jest:jest",
+            "dependsOn": [
+                "build"
+            ],
+            "options": {
+                "jestConfig": "packages/millicast-sdk/jest.e2e.config.ts",
+                "passWithNoTests": true
+            }
+        },
         "build": {
             "executor": "@nx/vite:build",
             "outputs": [

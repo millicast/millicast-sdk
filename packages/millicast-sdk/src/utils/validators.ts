@@ -47,7 +47,7 @@ export function validatePublishConnectOptions (obj: any): {
     errorMessages.push(`Invalid sourceId: ${obj.sourceId}`);
   }
 
-  if (obj.stereo in obj && !isBoolean(obj.stereo)) {
+  if ('stereo' in obj && !isBoolean(obj.stereo)) {
     errorMessages.push(`Invalid stereo: ${obj.stereo}`);
   }
   if (obj.dtx && !isBoolean(obj.dtx)) {

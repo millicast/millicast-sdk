@@ -2,15 +2,31 @@
  * @jest-environment node
  */
 
-import path from 'path'
 import puppeteer from 'puppeteer'
+import path from 'path'
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import { startStaticServer } from './utils/static-server'
 const feature = loadFeature('../features/Puppeteer.feature', { loadRelativePath: true, errors: true })
 
 // Variables used for testing
-const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
+let pageLocation = ''
+let closeStaticServer = null
 let browser = null
 let page = null
+
+beforeAll(async () => {
+  const packageRoot = path.resolve(__dirname, '..', '..')
+  const { baseUrl, close } = await startStaticServer(packageRoot)
+  pageLocation = `${baseUrl}/tests/e2e/PuppeteerJest.html`
+  closeStaticServer = close
+})
+
+afterAll(async () => {
+  if (closeStaticServer) {
+    await closeStaticServer()
+  }
+  closeStaticServer = null
+})
 
 defineFeature(feature, test => {
   afterEach(async () => {

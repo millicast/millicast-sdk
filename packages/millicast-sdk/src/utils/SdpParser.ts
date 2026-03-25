@@ -25,7 +25,8 @@ const SdpParser = {
    * @example SdpParser.setStereo(sdp)
    */
   setStereo (sdp  = ''): string {
-    sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1;stereo=1;sprop-stereo=1');
+    sdp = appendOpusFmtpParam(sdp, 'stereo');
+    sdp = appendOpusFmtpParam(sdp, 'sprop-stereo');
     return sdp;
   },
 
@@ -40,7 +41,7 @@ const SdpParser = {
    * @example SdpParser.setDTX(sdp)
    */
   setDTX (sdp = ''): string {
-    sdp = sdp.replace(/useinbandfec=1/g, 'useinbandfec=1;usedtx=1');
+    sdp = appendOpusFmtpParam(sdp, 'usedtx');
     return sdp;
   },
 
@@ -79,6 +80,52 @@ const SdpParser = {
     }
     return codecMap;
   },
+};
+
+const appendOpusFmtpParam = (sdp = '', paramName = ''): string => {
+  if (!sdp || !paramName) {
+    return sdp;
+  }
+
+  const opusPayloadTypes = new Set<string>();
+  const opusRtpMapRegex = /^a=rtpmap:(\d+)\s+opus\/\d+/gim;
+  let match: RegExpExecArray | null = opusRtpMapRegex.exec(sdp);
+  while (match) {
+    opusPayloadTypes.add(match[1]);
+    match = opusRtpMapRegex.exec(sdp);
+  }
+
+  if (opusPayloadTypes.size === 0) {
+    return sdp;
+  }
+
+  const hasParamRegex = new RegExp(`(?:^|;)${paramName}=\\d+(?:;|$)`);
+
+  const lines = sdp.split('\r\n').map((line) => {
+    const fmtpMatch = line.match(/^a=fmtp:(\d+)\s+(.+)$/i);
+    if (!fmtpMatch) {
+      return line;
+    }
+
+    const payloadType = fmtpMatch[1];
+    const fmtpValue = fmtpMatch[2];
+
+    if (!opusPayloadTypes.has(payloadType)) {
+      return line;
+    }
+
+    if (!/\buseinbandfec=1\b/.test(fmtpValue)) {
+      return line;
+    }
+
+    if (hasParamRegex.test(fmtpValue)) {
+      return line;
+    }
+
+    return `a=fmtp:${payloadType} ${fmtpValue};${paramName}=1`;
+  });
+
+  return lines.join('\r\n');
 };
 
 export default SdpParser;

@@ -2,13 +2,15 @@
  * @jest-environment node
  */
 
-import path from 'path'
 import puppeteer from 'puppeteer'
+import path from 'path'
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import { startStaticServer } from './utils/static-server'
 const feature = loadFeature('../features/FunctionalPublish.feature', { loadRelativePath: true, errors: true })
 
 jest.setTimeout(50000)
-const pageLocation = `file:${path.join(__dirname, './PuppeteerJest.html')}`
+let pageLocation = ''
+let closeStaticServer = null
 const streamName = process.env.STREAM_NAME ?? 'demo_' + Math.round(Math.random() * 100) + '_' + new Date().getTime()
 
 const startPublisher = () => null
@@ -23,6 +25,20 @@ const defaultOptions = {
 }
 let browser = null
 const sleep = ms => new Promise(function (resolve) { setTimeout(resolve, ms) })
+
+beforeAll(async () => {
+  const packageRoot = path.resolve(__dirname, '..', '..')
+  const { baseUrl, close } = await startStaticServer(packageRoot)
+  pageLocation = `${baseUrl}/tests/e2e/PuppeteerJest.html`
+  closeStaticServer = close
+})
+
+afterAll(async () => {
+  if (closeStaticServer) {
+    await closeStaticServer()
+  }
+  closeStaticServer = null
+})
 
 const waitForCondition = async (page, expression, timeout = 15000) => {
   const start = Date.now()

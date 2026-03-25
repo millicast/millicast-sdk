@@ -755,13 +755,30 @@ const setCodecPreferences = (transceiver: RTCRtpTransceiver, preferredCodec: str
     const capabilities = RTCRtpSender.getCapabilities('video');
     if (!capabilities) return;
 
-    const selectedCodec = capabilities.codecs.find((codec) =>
-      codec.mimeType.toLowerCase().includes(preferredCodec.toLowerCase()),
+    const codecs = capabilities.codecs;
+    const preferredCodecName = preferredCodec.toLowerCase();
+    const preferred = codecs.filter((codec) =>
+      codec.mimeType.toLowerCase().includes(preferredCodecName),
     );
 
-    if (selectedCodec) {
-      transceiver.setCodecPreferences([selectedCodec]);
-      logger.info(`Codec preference set to: ${selectedCodec.mimeType}`);
+    if (preferred.length > 0) {
+      const rtx = codecs.filter((codec) => codec.mimeType.toLowerCase() === 'video/rtx');
+      const resilienceCodecs = codecs.filter((codec) => {
+        const mimeType = codec.mimeType.toLowerCase();
+        return mimeType === 'video/red' || mimeType === 'video/ulpfec' || mimeType === 'video/flexfec-03';
+      });
+      const remaining = codecs.filter(
+        (codec) => !preferred.includes(codec) && !rtx.includes(codec) && !resilienceCodecs.includes(codec),
+      );
+
+      const orderedCodecs = [...preferred, ...rtx, ...resilienceCodecs, ...remaining];
+
+      transceiver.setCodecPreferences(orderedCodecs);
+      logger.info(
+        `Codec preference set with ${preferredCodec}: ${orderedCodecs
+          .map((codec) => codec.mimeType)
+          .join(', ')}`,
+      );
     }
   } catch (e) {
     logger.warn('Failed to set codec preferences:', e);
