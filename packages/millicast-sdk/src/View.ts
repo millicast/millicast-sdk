@@ -407,9 +407,8 @@ export default class View extends BaseWebRTC {
     });
 
     signalingInstance.on(signalingEvents.broadcastEvent, async (event) => {
-      if (!this.isMainStreamActive && event.name === 'active') {
+    if (!this.isMainStreamActive && event.name === 'active') {
         this.mainSourceId = event.data.sourceId;
-        this.isMainStreamActive = true;
 
         if (!this.DRMProfile && event.data.encryption) {
           try {
@@ -423,6 +422,7 @@ export default class View extends BaseWebRTC {
         }
 
         this.emit('broadcastEvent', event);
+        this.isMainStreamActive = true;
         while (this.eventQueue.length > 0) {
           this.onTrackEvent(this.eventQueue.shift() as RTCTrackEvent);
         }
