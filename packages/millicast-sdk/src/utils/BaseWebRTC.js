@@ -51,6 +51,9 @@ export default class BaseWebRTC extends EventEmitter {
     this.isReconnecting = false
     this.tokenGenerator = tokenGenerator
     this.options = null
+    this._disconnectTimerId = null
+    this._retryTimerId = null
+    this._reconnectGeneration = 0
   }
 
   /**
@@ -66,6 +69,10 @@ export default class BaseWebRTC extends EventEmitter {
    */
   stop () {
     logger.info('Stopping')
+    clearTimeout(this._disconnectTimerId)
+    clearTimeout(this._retryTimerId)
+    this._disconnectTimerId = null
+    this._retryTimerId = null
     this.webRTCPeer.closeRTCPeer()
     this.signaling?.close()
     this.signaling = null
@@ -106,7 +113,7 @@ export default class BaseWebRTC extends EventEmitter {
           this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') })
         } else if (state === 'disconnected') {
           this.alreadyDisconnected = true
-          setTimeout(() => this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') }), 1500)
+          this._disconnectTimerId = setTimeout(() => this.reconnect({ error: new Error('Connection state change: RTCPeerConnectionState disconnected') }), 1500)
         } else {
           this.alreadyDisconnected = false
         }
@@ -121,6 +128,11 @@ export default class BaseWebRTC extends EventEmitter {
    * @property {String} error - The value sent in the first [reconnect event]{@link BaseWebRTC#event:reconnect} within the error key of the payload
    */
   async reconnect (data) {
+    clearTimeout(this._disconnectTimerId)
+    clearTimeout(this._retryTimerId)
+    this._disconnectTimerId = null
+    this._retryTimerId = null
+    const generation = ++this._reconnectGeneration
     try {
       logger.info('Attempting to reconnect...')
       if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
@@ -146,7 +158,11 @@ export default class BaseWebRTC extends EventEmitter {
       this.isReconnecting = false
       this.reconnectionInterval = nextReconnectInterval(this.reconnectionInterval)
       logger.error(`Reconnection failed, retrying in ${this.reconnectionInterval}ms. `, error)
-      setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
+      this._retryTimerId = setTimeout(() => {
+        if (this._reconnectGeneration === generation) {
+          this.reconnect({ error })
+        }
+      }, this.reconnectionInterval)
     }
   }
 }
