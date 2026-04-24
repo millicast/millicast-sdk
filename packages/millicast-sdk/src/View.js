@@ -381,6 +381,8 @@ export default class View extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
+    this.removeReconnectListeners()
+
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 

@@ -247,6 +247,8 @@ export default class Publish extends BaseWebRTC {
       })
     }
 
+    this.removeReconnectListeners()
+
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 
