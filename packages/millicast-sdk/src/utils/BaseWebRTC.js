@@ -132,7 +132,7 @@ export default class BaseWebRTC extends EventEmitter {
     clearTimeout(this._retryTimerId)
     this._disconnectTimerId = null
     this._retryTimerId = null
-    const generation = ++this._reconnectGeneration
+    const generation = this.isReconnecting ? this._reconnectGeneration : ++this._reconnectGeneration
     try {
       logger.info('Attempting to reconnect...')
       if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
