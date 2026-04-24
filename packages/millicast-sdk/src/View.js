@@ -400,7 +400,7 @@ export default class View extends BaseWebRTC {
     this.setReconnect()
 
     if (data.migrate) {
-      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      this.webRTCPeer.once(webRTCEvents.connectionStateChange, (state) => {
         if (state === 'connected') {
           setTimeout(() => {
             oldSignaling?.close?.()

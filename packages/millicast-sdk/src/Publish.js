@@ -268,7 +268,7 @@ export default class Publish extends BaseWebRTC {
     this.setReconnect()
 
     if (data.migrate) {
-      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      this.webRTCPeer.once(webRTCEvents.connectionStateChange, (state) => {
         if (['connected', 'disconnected', 'failed', 'closed'].includes(state)) {
           oldSignaling?.close?.()
           oldWebRTCPeer?.closeRTCPeer?.()

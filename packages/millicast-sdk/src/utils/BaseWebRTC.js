@@ -66,6 +66,7 @@ export default class BaseWebRTC extends EventEmitter {
    */
   stop () {
     logger.info('Stopping')
+    this.removeReconnectListeners()
     this.webRTCPeer.closeRTCPeer()
     this.signaling?.close()
     this.signaling = null
@@ -84,19 +85,39 @@ export default class BaseWebRTC extends EventEmitter {
   }
 
   /**
+   * Removes reconnection listeners previously added by setReconnect.
+   */
+  removeReconnectListeners () {
+    if (this._migrateHandler) {
+      this.signaling?.off('migrate', this._migrateHandler)
+    }
+    if (this._signalingErrorHandler) {
+      this.signaling?.off(signalingEvents.connectionError, this._signalingErrorHandler)
+    }
+    if (this._peerStateHandler) {
+      this.webRTCPeer?.off(webRTCEvents.connectionStateChange, this._peerStateHandler)
+    }
+  }
+
+  /**
    * Sets reconnection if autoReconnect is enabled.
    */
   setReconnect () {
-    this.signaling.on('migrate', () => this.replaceConnection())
+    this.removeReconnectListeners()
+
+    this._migrateHandler = () => this.replaceConnection()
+    this.signaling.on('migrate', this._migrateHandler)
+
     if (this.autoReconnect) {
-      this.signaling.on(signalingEvents.connectionError, () => {
+      this._signalingErrorHandler = () => {
         if (this.firstReconnection || !this.alreadyDisconnected) {
           this.firstReconnection = false
           this.reconnect({ error: new Error('Signaling error: wsConnectionError') })
         }
-      })
+      }
+      this.signaling.on(signalingEvents.connectionError, this._signalingErrorHandler)
 
-      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      this._peerStateHandler = (state) => {
         Diagnostics.setConnectionState(state)
         if (state === 'connected') {
           Diagnostics.setConnectionTime(new Date())
@@ -110,7 +131,8 @@ export default class BaseWebRTC extends EventEmitter {
         } else {
           this.alreadyDisconnected = false
         }
-      })
+      }
+      this.webRTCPeer.on(webRTCEvents.connectionStateChange, this._peerStateHandler)
     }
   }
 
