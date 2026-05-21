@@ -23,10 +23,19 @@ const headerExtensionIdLowerRange = Array.from({ length: (lastHeaderExtensionIdL
 const headerExtensionIdUppperRange = Array.from({ length: (lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange) + 1 }, (_, i) => i + firstHeaderExtensionIdUpperRange)
 
 /**
+ * Replaces the upstream semantic-sdp library's default "https://medooze" stream identifier
+ * with a non-URL string to avoid false positives in firewall deep packet inspection.
+ */
+const sanitizeMedoozeUrl = (sdp) => {
+  return sdp.replace(/https:\/\/medooze/g, 'optiview')
+}
+
+/**
  * @module SdpParser
  * @description Simplify SDP parser.
  */
 const SdpParser = {
+  sanitizeMedoozeUrl,
   /**
    * @function
    * @name setSimulcast
@@ -191,7 +200,7 @@ const SdpParser = {
 
       logger.info('Setting video bitrate')
       videoOffer.setBitrate(bitrate)
-      sdp = offer.toString()
+      sdp = sanitizeMedoozeUrl(offer.toString())
     }
     return sdp
   },
@@ -352,7 +361,7 @@ const SdpParser = {
       }
     }
 
-    return answer.toString()
+    return sanitizeMedoozeUrl(answer.toString())
   },
 
   /**

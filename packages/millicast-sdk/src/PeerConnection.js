@@ -157,6 +157,8 @@ export default class PeerConnection extends EventEmitter {
       this.sessionDescription.sdp = SdpParser.setDependencyDescriptor(this.sessionDescription.sdp)
     }
 
+    this.sessionDescription.sdp = SdpParser.sanitizeMedoozeUrl(this.sessionDescription.sdp)
+
     if (options.setSDPToPeer) {
       await this.peer.setLocalDescription(this.sessionDescription)
       logger.info('Peer local description set')
@@ -470,6 +472,7 @@ const addPeerEvents = (instanceClass, peer) => {
     logger.info('Peer onnegotiationneeded, updating local description')
     const offer = await peer.createOffer()
     logger.info('Peer onnegotiationneeded, got local offer', offer.sdp)
+    offer.sdp = SdpParser.sanitizeMedoozeUrl(offer.sdp)
     offer.sdp = SdpParser.updateMissingVideoExtensions(offer.sdp, peer.remoteDescription.sdp)
     await peer.setLocalDescription(offer)
     const sdp = SdpParser.renegotiate(offer.sdp, peer.remoteDescription.sdp)
