@@ -377,8 +377,8 @@ const SdpParser = {
     const answer = SDPInfo.parse(remoteDescription)
     // Get extensions of answer
     const remoteVideoExtensions = answer.getMediasByType('video')[0]?.getExtensions()
-    if (!remoteVideoExtensions && !remoteVideoExtensions.length) {
-      return
+    if (!remoteVideoExtensions || !remoteVideoExtensions.length) {
+      return localDescription
     }
     for (const offeredMedia of offer.getMediasByType('video')) {
       const offerExtensions = offeredMedia.getExtensions()
