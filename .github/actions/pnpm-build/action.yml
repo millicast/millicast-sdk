@@ -25,8 +25,7 @@ runs:
         pwd
 
         # some packages use node-gyp
-        apt-get update -qq -y
-        apt-get install -qq -y build-essential >/dev/null
+        apk add --no-cache build-base
 
         pnpm run build
 
