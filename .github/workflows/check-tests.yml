@@ -53,8 +53,8 @@ jobs:
       - name: Install Chromium
         shell: bash
         run: |
-          apt-get update -qq -y
-          apt-get install chromium-browser
+          sudo apt-get update -qq -y
+          sudo apt-get install -qq -y chromium-browser
           which chromium-browser
 
       - name: Unit Testing 🧪
