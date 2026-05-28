@@ -20,7 +20,7 @@
     "scripts": {
         "build": "pnpm -r run build",
         "build:sdk": "pnpm --filter @millicast/sdk run build:watch",
-        "start:projects": "pnpm --filter millicast-publisher-demo --filter millicast-viewer-demo run start",
+        "start:projects": "pnpm --filter millicast-viewer-demo run start",
         "delay": "node -e \"setTimeout(() => {}, 3000)\"",
         "start": "concurrently \"pnpm run build:sdk\" \"pnpm run delay && pnpm run start:projects\"",
         "start-all:projects": "pnpm -r run start",
