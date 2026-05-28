@@ -18,7 +18,7 @@ on:
         # only used if bump_version is 'prerelease'
         # otherwise can be ignored
         description: Prerelease identifier
-        default: 'alpha'
+        default: 'next'
       skip_publish:
         type: boolean
         required: false
