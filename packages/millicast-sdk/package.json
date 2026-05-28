@@ -15,8 +15,7 @@
   "millicastdebug": "dist/millicast.debug.umd.js",
   "types": "dist/millicast.d.ts",
   "files": [
-    "dist",
-    "scripts"
+    "dist"
   ],
   "scripts": {
     "build": "tsc --build && vite build --config vite.config.debug.mjs && vite build && rollup -c",
