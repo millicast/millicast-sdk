@@ -16,7 +16,7 @@ runs:
         package_path: ${{ inputs.package_path }}
       run: |
         # some packages use node-gyp
-        apk add --no-cache build-base
+        apk add --no-cache build-base python3
 
         corepack enable
         pnpm ci
