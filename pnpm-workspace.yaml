@@ -15,3 +15,6 @@ allowBuilds:
   sharp: true
   unix-dgram: true
   unrs-resolver: true
+
+overrides:
+  hot-shots>unix-dgram: 2.0.7

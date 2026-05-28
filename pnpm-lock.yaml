@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  hot-shots>unix-dgram: 2.0.7
+
 importers:
 
   .:
@@ -7787,8 +7790,8 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
-  unix-dgram@2.0.6:
-    resolution: {integrity: sha512-AURroAsb73BZ6CdAyMrTk/hYKNj3DuYYEuOaB8bYMOHGKupRNScw90Q5C71tWJc3uE7dIeXRyuwN0xLLq3vDTg==}
+  unix-dgram@2.0.7:
+    resolution: {integrity: sha512-pWaQorcdxEUBFIKjCqqIlQaOoNVmchyoaNAJ/1LwyyfK2XSxcBhgJNiSE8ZRhR0xkNGyk4xInt1G03QPoKXY5A==}
     engines: {node: '>=0.10.48'}
 
   unixify@1.0.0:
@@ -13533,7 +13536,7 @@ snapshots:
 
   hot-shots@10.2.1:
     optionalDependencies:
-      unix-dgram: 2.0.6
+      unix-dgram: 2.0.7
 
   html-encoding-sniffer@4.0.0:
     dependencies:
@@ -17444,7 +17447,7 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  unix-dgram@2.0.6:
+  unix-dgram@2.0.7:
     dependencies:
       bindings: 1.5.0
       nan: 2.22.2
