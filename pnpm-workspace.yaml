@@ -1,3 +1,8 @@
+minimumReleaseAge: 10080
+minimumReleaseAgeIgnoreMissingTime: false
+trustPolicy: no-downgrade
+engineStrict: true
+
 packages:
   - 'packages/*'
 
@@ -10,8 +15,3 @@ allowBuilds:
   sharp: true
   unix-dgram: true
   unrs-resolver: true
-
-trustPolicy: no-downgrade
-engineStrict: true
-minimumReleaseAge: 10080
-minimumReleaseAgeIgnoreMissingTime: false
