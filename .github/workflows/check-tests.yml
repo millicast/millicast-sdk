@@ -41,7 +41,7 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
       - name: Install Puppeteer browsers
         working-directory: './packages/millicast-sdk'
-        run: npx puppeteer browsers install chrome
+        run: pnpm exec puppeteer browsers install chrome
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
         run: pnpm run test-unit
@@ -59,7 +59,7 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
       - name: Install Puppeteer browsers
         working-directory: './packages/millicast-sdk'
-        run: npx puppeteer browsers install chrome
+        run: pnpm exec puppeteer browsers install chrome
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: pnpm run test-e2e
