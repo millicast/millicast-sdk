@@ -20,4 +20,4 @@ jobs:
 
       - uses: ./.github/actions/pnpm-build
         with:
-          package_path: 'packages/millicast-sdk'
+          package_path: './packages/millicast-sdk'
