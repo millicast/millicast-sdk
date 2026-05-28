@@ -15,6 +15,9 @@ runs:
       env:
         package_path: ${{ inputs.package_path }}
       run: |
+        # some packages use node-gyp
+        apk add --no-cache build-base
+
         corepack enable
         pnpm ci
 
@@ -23,9 +26,6 @@ runs:
         fi
         # test
         pwd
-
-        # some packages use node-gyp
-        apk add --no-cache build-base
 
         pnpm run build
 
