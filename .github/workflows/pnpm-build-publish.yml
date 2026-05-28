@@ -20,6 +20,11 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
 jobs:
   build-publish:
     name: "build-publish ${{ inputs.ref }}"
@@ -33,10 +38,12 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - name: "pnpm publish"
+      - name: Setup GitHub Pages 🛠
+        uses: actions/configure-pages@v6
+
+      - name: "pnpm build"
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-          dist_tag: ${{ inputs.dist_tag }}
         shell: 'ash -e -o pipefail {0}'
         run: |
           # some packages use node-gyp
@@ -49,8 +56,24 @@ jobs:
           pnpm ci
   
           pnpm run build
+          pnpm run build-docs
 
           printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
+
+      - name: Upload artifact ⬆️
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: './packages/millicast-sdk/docs'
+
+      - name: Deploy to GitHub Pages 🚀
+        uses: actions/deploy-pages@v5
+
+      - name: "pnpm publish"
+        env:
+          dist_tag: ${{ inputs.dist_tag }}
+        shell: 'ash -e -o pipefail {0}'
+        run: |
+          cd ./packages/millicast-sdk/
 
           set --
           if [ -n "${dist_tag}" ]; then
