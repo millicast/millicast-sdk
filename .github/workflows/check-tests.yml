@@ -23,8 +23,6 @@ jobs:
       - name: Install the dependencies 🧱
         shell: bash
         run: |
-          # test
-          node --version
           corepack enable
           pnpm ci
 
