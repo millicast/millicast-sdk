@@ -11,19 +11,12 @@ on:
         description: 'Distribution tag to publish package with'
         required: false
         type: string
-      package_path:
-        description: 'Change to directory prior to publish'
-        required: false
-        type: string
   workflow_call:
     inputs:
       ref:
         required: true
         type: string
       dist_tag:
-        required: false
-        type: string
-      package_path:
         required: false
         type: string
 
@@ -53,9 +46,8 @@ jobs:
           corepack enable
           pnpm ci
   
-          if [ -n "${package_path}" ]; then
-            cd "${package_path}"
-          fi
+          cp README.md ./packages/millicast-sdk/
+          cd ./packages/millicast-sdk/
   
           pnpm run build
 

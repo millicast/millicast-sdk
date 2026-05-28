@@ -48,4 +48,3 @@ jobs:
     with:
       ref: ${{ inputs.bump_version != 'prerelease' && format('v{0}', needs.next-version.outputs.semVer) || needs.next-version.outputs.newHeadSha }}
       dist_tag: ${{ inputs.bump_version == 'prerelease' && inputs.prerelease_id || '' }}
-      package_path: './packages/millicast-sdk'
