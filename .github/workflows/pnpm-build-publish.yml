@@ -1,0 +1,60 @@
+name: pnpm-build-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'git reference to checkout'
+        required: true
+        type: string
+      dist_tag:
+        description: 'Distribution tag to publish package with'
+        required: false
+        type: string
+      package_path:
+        description: 'Change to directory prior to publish'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      dist_tag:
+        required: false
+        type: string
+      package_path:
+        required: false
+        type: string
+
+jobs:
+  build-publish:
+    name: "build-publish ${{ inputs.ref }}"
+    runs-on: ubuntu-latest
+    container: node:24-alpine
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: ./.github/actions/pnpm-build
+
+      - name: "pnpm publish"
+        env:
+          dist_tag: ${{ inputs.dist_tag }}
+          package_path: ${{ inputs.package_path }}
+        shell: 'ash -e -o pipefail {0}'
+        run: |
+          set --
+          if [ -n "${dist_tag}" ]; then
+            set -- "$@" --tag "${dist_tag}"
+          fi
+
+          if [ -n "${package_path}" ]; then
+            cd "${package_path}"
+          fi
+
+          pnpm publish --provenance "$@"
