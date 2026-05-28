@@ -33,7 +33,10 @@ jobs:
       - name: Install the dependencies 🧱
         run: |
           corepack enable
-          pnpm ci
+          PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
+      - name: Install Puppeteer browsers
+        working-directory: './packages/millicast-sdk'
+        run: pnpm exec puppeteer browsers install chrome
       
       - name: Build All 🔧
         run: |
