@@ -20,11 +20,6 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
-  id-token: write
-  pages: write
-
 jobs:
   build-publish:
     name: "build-publish ${{ inputs.ref }}"
@@ -33,6 +28,12 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      pages: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v6
         with:
@@ -66,6 +67,7 @@ jobs:
           path: './packages/millicast-sdk/docs'
 
       - name: Deploy to GitHub Pages 🚀
+        id: deployment
         uses: actions/deploy-pages@v5
 
       - name: "pnpm publish"
