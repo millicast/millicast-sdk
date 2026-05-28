@@ -21,6 +21,12 @@ runs:
         if [ -n "${package_path}" ]; then
           cd "${package_path}"
         fi
+        # test
+        pwd
+
+        # some packages use node-gyp
+        apt-get update -qq -y
+        apt-get install -qq -y build-essential >/dev/null
 
         pnpm run build
 
