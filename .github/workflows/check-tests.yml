@@ -38,7 +38,7 @@ jobs:
       - name: Install the dependencies 🧱
         run: |
           corepack enable
-          pnpm ci
+          PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
       - name: Install Puppeteer browsers
         run: pnpm --filter @millicast/sdk exec puppeteer browsers install chrome
       - name: Unit Testing 🧪
@@ -55,7 +55,7 @@ jobs:
       - name: Install the dependencies 🧱
         run: |
           corepack enable
-          pnpm ci
+          PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
       - name: Install Puppeteer browsers
         run: pnpm --filter @millicast/sdk exec puppeteer browsers install chrome
       - name: End-2-End Testing
