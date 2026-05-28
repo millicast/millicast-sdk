@@ -37,17 +37,16 @@ jobs:
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           dist_tag: ${{ inputs.dist_tag }}
-          package_path: ${{ inputs.package_path }}
         shell: 'ash -e -o pipefail {0}'
         run: |
           # some packages use node-gyp
           apk add --no-cache build-base python3
+
+          cp README.md ./packages/millicast-sdk/
+          cd ./packages/millicast-sdk/
   
           corepack enable
           pnpm ci
-  
-          cp README.md ./packages/millicast-sdk/
-          cd ./packages/millicast-sdk/
   
           pnpm run build
 
@@ -56,10 +55,6 @@ jobs:
           set --
           if [ -n "${dist_tag}" ]; then
             set -- "$@" --tag "${dist_tag}"
-          fi
-
-          if [ -n "${package_path}" ]; then
-            cd "${package_path}"
           fi
 
           pnpm publish --provenance "$@"
