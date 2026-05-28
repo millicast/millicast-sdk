@@ -82,4 +82,4 @@ jobs:
             set -- "$@" --tag "${dist_tag}"
           fi
 
-          pnpm publish --provenance "$@"
+          pnpm publish --provenance --no-git-checks "$@"
