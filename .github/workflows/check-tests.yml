@@ -15,68 +15,90 @@ jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
+
       - name: Install the dependencies 🧱
+        shell: bash
         run: |
+          # test
+          node --version
           corepack enable
           pnpm ci
+
       - name: Check Linter and Build 📑
+        shell: bash
         run: |
           pnpm run build
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+          pnpm exec eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
+
       - name: Install the dependencies 🧱
+        shell: bash
         run: |
           corepack enable
-          PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
+          pnpm ci
+
       - name: Install Puppeteer browsers
+        shell: bash
         working-directory: './packages/millicast-sdk'
         run: node node_modules/puppeteer/install.mjs
+
       - name: Unit Testing 🧪
+        shell: bash
         working-directory: './packages/millicast-sdk'
         run: pnpm run test-unit
 
   e2e-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
+
       - name: Install the dependencies 🧱
+        shell: bash
         run: |
           corepack enable
-          PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
+          pnpm ci
+
       - name: Install Puppeteer browsers
+        shell: bash
         working-directory: './packages/millicast-sdk'
         run: node node_modules/puppeteer/install.mjs
-      - name: End-2-End Testing
+
+      - name: End-to-End Testing
+        shell: bash
         working-directory: './packages/millicast-sdk'
-        run: pnpm run test-e2e
         env:
-          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
-          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
+          ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}
+        run: pnpm run test-e2e
 
   build-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
+
       - name: Install the dependencies 🧱
+        shell: bash
         run: |
           corepack enable
           pnpm ci
+
       - name: build docs
+        shell: bash
         run: pnpm run build-docs
