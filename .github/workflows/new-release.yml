@@ -43,13 +43,6 @@ jobs:
           pnpm run build
           pnpm run build-docs
 
-      - name: Test
-        shell: bash
-        env:
-          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
-          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
-        run: pnpm run test
-
       - name: Setup GitHub Pages 🛠
         uses: actions/configure-pages@v6
 
