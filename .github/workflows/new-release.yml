@@ -31,14 +31,11 @@ jobs:
 
       - name: Install the dependencies 🧱
         shell: bash
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
           corepack enable
           pnpm ci
-
-      - name: Install Puppeteer browsers
-        shell: bash
-        working-directory: './packages/millicast-sdk'
-        run: node node_modules/puppeteer/install.mjs
 
       - name: Build All 🔧
         shell: bash

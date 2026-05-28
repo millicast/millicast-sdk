@@ -13,6 +13,7 @@ runs:
     - name: 'pnpm run build'
       shell: 'sh -e -o pipefail {0}'
       env:
+        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         package_path: ${{ inputs.package_path }}
       run: |
         # some packages use node-gyp
