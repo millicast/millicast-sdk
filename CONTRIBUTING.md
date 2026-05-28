@@ -5,9 +5,7 @@
 This project is a monorepo using [pnpm workspaces](https://pnpm.io/workspaces) and contains the following packages:
 
 - `millicast-sdk`: The SDK itself.
-- `millicast-publisher-demo`: Publisher demo page using SDK. You can try this demo [here](https://demo.millicast.com/?codec=h264&nosimulcast).
 - `millicast-viewer-demo`: Viewer demo page using SDK.
-- `millicast-chromecast-receiver`: Example of Google Cast receiver for demo.
 
 ## Development
 
