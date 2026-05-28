@@ -22,12 +22,12 @@
     "build": "tsc --build && vite build --config vite.config.debug.mjs && vite build && rollup -c",
     "build:watch": "vite build --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
-    "start-docs": "npm run build-docs && serve docs",
-    "test-unit": "npm run build && jest --testMatch \"**/unit/*.steps.js\"",
-    "test-unit-coverage": "npm run build && jest --testMatch \"**/unit/*.steps.js\" --coverage",
-    "test-e2e": "npm run build && jest --testMatch \"**/e2e/*.steps.js\" --verbose",
-    "test-all": "npm run build && jest --testMatch \"**/*.steps.js\"",
-    "test": "npm run test-all"
+    "start-docs": "pnpm run build-docs && serve docs",
+    "test-unit": "pnpm run build && jest --testMatch \"**/unit/*.steps.js\"",
+    "test-unit-coverage": "pnpm run build && jest --testMatch \"**/unit/*.steps.js\" --coverage",
+    "test-e2e": "pnpm run build && jest --testMatch \"**/e2e/*.steps.js\" --verbose",
+    "test-all": "pnpm run build && jest --testMatch \"**/*.steps.js\"",
+    "test": "pnpm run test-all"
   },
   "babel": {
     "env": {

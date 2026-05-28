@@ -1,8 +1,0 @@
-{
-  "packages": [
-    "packages/*"
-  ],
-  "npmClient": "npm",
-  "useWorkspaces": true,
-  "version": "0.1.40"
-}

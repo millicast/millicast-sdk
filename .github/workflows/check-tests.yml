@@ -16,32 +16,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       - name: Check Linter and Build 📑
         run: |
-          npm run build
+          pnpm run build
           npx eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
-        run: npm run test-unit
+        run: pnpm run test-unit
 
   e2e-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
-        run: npm run test-e2e
+        run: pnpm run test-e2e
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
           PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
@@ -50,7 +65,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       - name: build docs
-        run: npm run build-docs
+        run: pnpm run build-docs

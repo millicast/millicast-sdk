@@ -26,16 +26,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       
       - name: Build All 🔧
         run: |
-          npm run build
-          npm run build-docs
+          pnpm run build
+          pnpm run build-docs
       
       - name: Test
-        run: npm test
+        run: pnpm run test
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
           PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
@@ -59,8 +65,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
 
       - name: Add Readme to package
         run: cp README.md packages/millicast-sdk/README.md
@@ -70,7 +82,7 @@ jobs:
       - name: Publish package
         working-directory: './packages/millicast-sdk'
         run: |
-          npm run build
-          npm publish --access public
+          pnpm run build
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

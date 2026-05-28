@@ -14,10 +14,15 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       - name: build
-        run: npx lerna run build --scope=@millicast/sdk
+        run: pnpm --filter @millicast/sdk run build
       - name: Upload SDK build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -30,8 +35,13 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/next-') }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install the dependencies 🧱
-        run: npm ci
+        run: |
+          corepack enable
+          pnpm ci
       - name: Download SDK build artifact
         uses: actions/download-artifact@v4
         with:
@@ -47,4 +57,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
-          npm publish --tag next
+          pnpm publish --tag next --no-git-checks

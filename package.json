@@ -13,28 +13,26 @@
             "git add"
         ]
     },
-    "workspaces": [
-        "packages/*"
-    ],
+    "engines": {
+        "node": ">=24.0.0",
+        "pnpm": ">=11.0.0"
+    },
     "scripts": {
-        "prepare": "lerna bootstrap --ci",
-        "build": "lerna run build",
-        "build:sdk": "lerna run build:watch --scope '@millicast/sdk' --parallel",
-        "start:projects": "lerna run start --scope 'millicast-publisher-demo' --scope 'millicast-viewer-demo' --parallel",
+        "build": "pnpm -r run build",
+        "build:sdk": "pnpm --filter @millicast/sdk run build:watch",
+        "start:projects": "pnpm --filter millicast-publisher-demo --filter millicast-viewer-demo run start",
         "delay": "node -e \"setTimeout(() => {}, 3000)\"",
-        "start": "concurrently \"npm run build:sdk\" \"npm run delay && npm run start:projects\"",
-        "start-all:projects": "lerna run start --parallel",
-        "start-all": "concurrently \"npm run build:sdk\" \"npm run delay && npm run start-all:projects\"",
-        "test": "lerna run test --stream",
-        "test-e2e": "lerna run test-e2e --stream",
-        "build-docs": "lerna run build-docs",
-        "start-docs": "lerna run start-docs --stream",
-        "publish": "lerna publish from-git",
+        "start": "concurrently \"pnpm run build:sdk\" \"pnpm run delay && pnpm run start:projects\"",
+        "start-all:projects": "pnpm -r run start",
+        "start-all": "concurrently \"pnpm run build:sdk\" \"pnpm run delay && pnpm run start-all:projects\"",
+        "test": "pnpm -r run test",
+        "test-e2e": "pnpm -r run test-e2e",
+        "build-docs": "pnpm -r run build-docs",
+        "start-docs": "pnpm -r run start-docs",
         "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.1",
-        "@lerna/publish": "^5.5.0",
         "babel-eslint": "^10.1.0",
         "concurrently": "^8.2.2",
         "eslint": "^8.2.0",
@@ -48,11 +46,9 @@
         "eslint-plugin-promise": "^6.0.0",
         "eslint-plugin-standard": "^5.0.0",
         "husky": "^4.3.8",
-        "install": "^0.13.0",
-        "lerna": "^5.5.0",
         "lint-staged": "^10.5.4",
         "netlify-cli": "^22.1.3",
-        "npm": "^11.4.2",
         "vite": "^6.3.5"
-    }
+    },
+    "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
 }
