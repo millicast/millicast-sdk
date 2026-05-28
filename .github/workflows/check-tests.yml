@@ -55,7 +55,7 @@ jobs:
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq -y chromium-browser
-          which chromium-browser
+          echo "PUPPETEER_EXECUTABLE_PATH=$(which chromium-browser)" >> "${GITHUB_ENV}"
 
       - name: Unit Testing 🧪
         shell: bash
