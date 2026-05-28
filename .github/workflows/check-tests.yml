@@ -81,9 +81,9 @@ jobs:
       - name: Install Chromium
         shell: bash
         run: |
-          apt-get update -qq -y
-          apt-get install chromium-browser
-          which chromium-browser
+          sudo apt-get update -qq -y
+          sudo apt-get install -qq -y chromium-browser
+          echo "PUPPETEER_EXECUTABLE_PATH=$(which chromium-browser)" >> "${GITHUB_ENV}"
 
       - name: End-to-End Testing
         shell: bash
