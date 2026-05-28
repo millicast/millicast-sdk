@@ -60,52 +60,6 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@22.6.1)(jiti@1.21.0)(terser@5.33.0)(yaml@2.8.0)
 
-  packages/millicast-chromecast-receiver:
-    dependencies:
-      '@millicast/sdk':
-        specifier: file:../millicast-sdk
-        version: link:../millicast-sdk
-    devDependencies:
-      '@babel/core':
-        specifier: ^7.23.6
-        version: 7.27.4
-      '@babel/plugin-transform-runtime':
-        specifier: ^7.13.10
-        version: 7.25.4(@babel/core@7.27.4)
-      '@babel/preset-env':
-        specifier: ^7.23.6
-        version: 7.25.4(@babel/core@7.27.4)
-      '@rollup/plugin-babel':
-        specifier: ^6.0.4
-        version: 6.0.4(@babel/core@7.27.4)(@types/babel__core@7.20.5)(rollup@4.43.0)
-      '@rollup/plugin-commonjs':
-        specifier: ^28.0.3
-        version: 28.0.3(rollup@4.43.0)
-      '@rollup/plugin-node-resolve':
-        specifier: ^16.0.1
-        version: 16.0.1(rollup@4.43.0)
-      dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
-      rollup:
-        specifier: 4.43.0
-        version: 4.43.0
-      rollup-plugin-cleanup:
-        specifier: ^3.2.1
-        version: 3.2.1(rollup@4.43.0)
-      rollup-plugin-inject-process-env:
-        specifier: ^1.3.1
-        version: 1.3.1
-      rollup-plugin-serve:
-        specifier: ^3.0.0
-        version: 3.0.0
-      rollup-plugin-terser:
-        specifier: ^7.0.2
-        version: 7.0.2(rollup@4.43.0)
-      vite:
-        specifier: ^6.3.5
-        version: 6.3.5(@types/node@22.6.1)(jiti@1.21.0)(terser@5.33.0)(yaml@2.8.0)
-
   packages/millicast-multiview-demo:
     dependencies:
       '@millicast/sdk':
@@ -151,58 +105,6 @@ importers:
       rollup-plugin-serve:
         specifier: ^3.0.0
         version: 3.0.0
-      rollup-plugin-terser:
-        specifier: ^7.0.2
-        version: 7.0.2(rollup@4.43.0)
-      vite:
-        specifier: ^6.3.5
-        version: 6.3.5(@types/node@22.6.1)(jiti@1.21.0)(terser@5.33.0)(yaml@2.8.0)
-
-  packages/millicast-publisher-demo:
-    dependencies:
-      '@millicast/sdk':
-        specifier: file:../millicast-sdk
-        version: link:../millicast-sdk
-    devDependencies:
-      '@babel/core':
-        specifier: ^7.13.10
-        version: 7.27.4
-      '@babel/plugin-transform-runtime':
-        specifier: ^7.13.10
-        version: 7.25.4(@babel/core@7.27.4)
-      '@babel/preset-env':
-        specifier: ^7.13.12
-        version: 7.25.4(@babel/core@7.27.4)
-      '@rollup/plugin-babel':
-        specifier: ^6.0.4
-        version: 6.0.4(@babel/core@7.27.4)(@types/babel__core@7.20.5)(rollup@4.43.0)
-      '@rollup/plugin-commonjs':
-        specifier: ^28.0.3
-        version: 28.0.3(rollup@4.43.0)
-      '@rollup/plugin-node-resolve':
-        specifier: ^16.0.1
-        version: 16.0.1(rollup@4.43.0)
-      concurrently:
-        specifier: ^8.2.2
-        version: 8.2.2
-      dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
-      nodemon:
-        specifier: ^3.1.3
-        version: 3.1.7
-      rollup:
-        specifier: ^4.43.0
-        version: 4.43.0
-      rollup-plugin-cleanup:
-        specifier: ^3.2.1
-        version: 3.2.1(rollup@4.43.0)
-      rollup-plugin-inject-process-env:
-        specifier: ^1.3.1
-        version: 1.3.1
-      rollup-plugin-serve:
-        specifier: ^1.1.0
-        version: 1.1.1
       rollup-plugin-terser:
         specifier: ^7.0.2
         version: 7.0.2(rollup@4.43.0)
