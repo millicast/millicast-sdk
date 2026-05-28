@@ -50,6 +50,13 @@ jobs:
           corepack enable
           pnpm ci
 
+      - name: Install Chromium
+        shell: bash
+        run: |
+          apt-get update -qq -y
+          apt-get install chromium-browser
+          which chromium-browser
+
       - name: Unit Testing 🧪
         shell: bash
         working-directory: './packages/millicast-sdk'
@@ -70,6 +77,13 @@ jobs:
         run: |
           corepack enable
           pnpm ci
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          apt-get update -qq -y
+          apt-get install chromium-browser
+          which chromium-browser
 
       - name: End-to-End Testing
         shell: bash
