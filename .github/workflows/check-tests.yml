@@ -39,6 +39,8 @@ jobs:
         run: |
           corepack enable
           pnpm ci
+      - name: Install Puppeteer browsers
+        run: pnpm --filter @millicast/sdk exec puppeteer browsers install chrome
       - name: Unit Testing 🧪
         working-directory: './packages/millicast-sdk'
         run: pnpm run test-unit
@@ -54,6 +56,8 @@ jobs:
         run: |
           corepack enable
           pnpm ci
+      - name: Install Puppeteer browsers
+        run: pnpm --filter @millicast/sdk exec puppeteer browsers install chrome
       - name: End-2-End Testing
         working-directory: './packages/millicast-sdk'
         run: pnpm run test-e2e
