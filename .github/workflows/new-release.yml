@@ -24,39 +24,43 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
 
       - name: Install the dependencies 🧱
+        shell: bash
         run: |
           corepack enable
-          PUPPETEER_SKIP_DOWNLOAD=true pnpm ci
+          pnpm ci
+
       - name: Install Puppeteer browsers
+        shell: bash
         working-directory: './packages/millicast-sdk'
         run: node node_modules/puppeteer/install.mjs
-      
+
       - name: Build All 🔧
+        shell: bash
         run: |
           pnpm run build
           pnpm run build-docs
-      
+
       - name: Test
-        run: pnpm run test
+        shell: bash
         env:
           ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
           PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
+        run: pnpm run test
 
       - name: Setup GitHub Pages 🛠
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact ⬆️
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
-          path: packages/millicast-sdk/docs
+          path: './packages/millicast-sdk/docs'
 
       - name: Deploy to GitHub Pages 🚀
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
