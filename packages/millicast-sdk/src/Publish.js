@@ -22,9 +22,59 @@ const connectOptions = {
   codec: VideoCodec.H264,
   simulcast: false,
   scalabilityMode: null,
+  maintainResolution: false,
   peerConfig: {
     autoInitStats: true,
     statsIntervalMs: 1000
+  }
+}
+
+/**
+ * Ask the pipeline to keep resolution constant and sacrifice frame rate instead.
+ *
+ * A mid-stream resolution change forces the encoder to re-emit its parameter sets, and
+ * max_num_ref_frames is derived from the level's DPB capacity divided by the frame size, so it
+ * changes with the resolution. Some downstream transcoders mishandle that combination. Holding
+ * the resolution steady avoids the situation entirely.
+ *
+ * Applied in two places because neither alone is reliable across browsers: contentHint is
+ * broadly supported and steers libwebrtc's degradation preference implicitly, while
+ * degradationPreference states it explicitly but is not implemented everywhere.
+ * @param {MediaStream|Array<MediaStreamTrack>} mediaStream - Stream or tracks being published.
+ */
+const applyResolutionContentHint = (mediaStream) => {
+  const tracks = Array.isArray(mediaStream)
+    ? mediaStream.filter(track => track.kind === 'video')
+    : mediaStream?.getVideoTracks?.() ?? []
+  for (const track of tracks) {
+    track.contentHint = 'detail'
+    if (track.contentHint !== 'detail') {
+      logger.warn('maintainResolution: contentHint was not accepted for track ', track.id)
+    }
+  }
+}
+
+/**
+ * Set degradationPreference on every video sender, and verify it stuck.
+ *
+ * Browsers may accept setParameters() and silently drop the field, so the value is read back
+ * rather than assumed. A warning here means the option is resting on contentHint alone.
+ * @param {RTCPeerConnection} peer - Peer connection whose senders should be configured.
+ */
+const applyDegradationPreference = async (peer) => {
+  const senders = peer.getSenders().filter(sender => sender.track?.kind === 'video')
+  for (const sender of senders) {
+    try {
+      const parameters = sender.getParameters()
+      parameters.degradationPreference = 'maintain-resolution'
+      await sender.setParameters(parameters)
+      const applied = sender.getParameters().degradationPreference
+      if (applied !== 'maintain-resolution') {
+        logger.warn('maintainResolution: degradationPreference not honoured, read back as ', applied)
+      }
+    } catch (error) {
+      logger.warn('maintainResolution: could not set degradationPreference ', error)
+    }
   }
 }
 
@@ -72,6 +122,10 @@ export default class Publish extends BaseWebRTC {
    * @param {Boolean} [options.simulcast = false] - Enable simulcast. **Only available in Chromium based browsers and with H.264 or VP8 video codecs.**
    * @param {String} [options.scalabilityMode = null] - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
+   * @param {Boolean} [options.maintainResolution = false] - Hold the encoder at a constant resolution,
+   * giving up frame rate instead when bandwidth or CPU is constrained. Sets `contentHint = 'detail'` on
+   * the video track and `degradationPreference = 'maintain-resolution'` on the sender. Both are
+   * preferences, not guarantees; the browser may still adapt under sustained pressure.
    * @param {PeerConnectionConfig} [options.peerConfig = null] - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record = false ] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
    * @param {Array<String>} [options.events = null] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
@@ -167,6 +221,9 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
     }
+    if (this.options.maintainResolution) {
+      applyResolutionContentHint(this.options.mediaStream)
+    }
     if (!data.migrate && this.isActive()) {
       logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
@@ -220,6 +277,11 @@ export default class Publish extends BaseWebRTC {
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
+
+    // Senders only exist once getRTCLocalSDP has added the tracks above.
+    if (this.options.maintainResolution) {
+      await applyDegradationPreference(webRTCPeerInstance.getRTCPeer())
+    }
 
     if (this.options.metadata) {
       if (!this.worker) {
