@@ -1298,10 +1298,11 @@ declare module "@millicast/sdk" {
          */
         scalabilityMode?: string
         /**
-         * - Hold the encoder at a constant resolution, giving up frame rate instead when bandwidth
-         * or CPU is constrained. Sets `contentHint = 'detail'` on the video track and
-         * `degradationPreference = 'maintain-resolution'` on the sender. Both are preferences, not
-         * guarantees; the browser may still adapt under sustained pressure.
+         * - Work around decoders that glitch on a mid-stream resolution change (seen with YouTube
+         * when the stream is restreamed) by holding the encoder at a constant resolution, giving up
+         * frame rate instead when bandwidth or CPU is constrained. Sets `contentHint = 'detail'` on
+         * the video track and `degradationPreference = 'maintain-resolution'` on the sender. Both
+         * are preferences, not guarantees; the browser may still adapt under sustained pressure.
          */
         maintainResolution?: boolean
         /**

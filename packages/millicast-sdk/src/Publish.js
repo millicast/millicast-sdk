@@ -32,10 +32,8 @@ const connectOptions = {
 /**
  * Ask the pipeline to keep resolution constant and sacrifice frame rate instead.
  *
- * A mid-stream resolution change forces the encoder to re-emit its parameter sets, and
- * max_num_ref_frames is derived from the level's DPB capacity divided by the frame size, so it
- * changes with the resolution. Some downstream transcoders mishandle that combination. Holding
- * the resolution steady avoids the situation entirely.
+ * This works around decoders that glitch on a mid-stream resolution change; holding the
+ * resolution steady avoids the change in the first place.
  *
  * Applied in two places because neither alone is reliable across browsers: contentHint is
  * broadly supported and steers libwebrtc's degradation preference implicitly, while
@@ -122,10 +120,10 @@ export default class Publish extends BaseWebRTC {
    * @param {Boolean} [options.simulcast = false] - Enable simulcast. **Only available in Chromium based browsers and with H.264 or VP8 video codecs.**
    * @param {String} [options.scalabilityMode = null] - Selected scalability mode. You can get the available capabilities using <a href="PeerConnection#.getCapabilities">PeerConnection.getCapabilities</a> method.
    * **Only available in Google Chrome.**
-   * @param {Boolean} [options.maintainResolution = false] - Hold the encoder at a constant resolution,
-   * giving up frame rate instead when bandwidth or CPU is constrained. Sets `contentHint = 'detail'` on
-   * the video track and `degradationPreference = 'maintain-resolution'` on the sender. Both are
-   * preferences, not guarantees; the browser may still adapt under sustained pressure.
+   * @param {Boolean} [options.maintainResolution = false] - Work around decoders that glitch on a
+   * mid-stream resolution change by holding the encoder at a constant resolution, giving up frame
+   * rate instead when bandwidth or CPU is constrained. Both settings it applies are preferences,
+   * not guarantees; the browser may still adapt under sustained pressure.
    * @param {PeerConnectionConfig} [options.peerConfig = null] - Options to configure the new RTCPeerConnection.
    * @param {Boolean} [options.record = false ] - Enable stream recording. If record is not provided, use default Token configuration. **Only available in Tokens with recording enabled.**
    * @param {Array<String>} [options.events = null] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
@@ -221,12 +219,12 @@ export default class Publish extends BaseWebRTC {
       logger.error('Error while broadcasting. MediaStream required')
       throw new Error('MediaStream required')
     }
-    if (this.options.maintainResolution) {
-      applyResolutionContentHint(this.options.mediaStream)
-    }
     if (!data.migrate && this.isActive()) {
       logger.warn('Broadcast currently working')
       throw new Error('Broadcast currently working')
+    }
+    if (this.options.maintainResolution) {
+      applyResolutionContentHint(this.options.mediaStream)
     }
     let publisherData
     try {
