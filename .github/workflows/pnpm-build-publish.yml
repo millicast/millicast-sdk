@@ -73,8 +73,6 @@ jobs:
         env:
           dist_tag: ${{ inputs.dist_tag }}
         run: |
-          cd ./packages/millicast-sdk/
-
           set --
           if [ -n "${dist_tag}" ]; then
             set -- "$@" --tag "${dist_tag}"
