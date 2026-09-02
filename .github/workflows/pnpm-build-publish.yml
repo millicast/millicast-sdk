@@ -51,13 +51,12 @@ jobs:
           apk add --no-cache build-base python3
 
           cp README.md ./packages/millicast-sdk/
-          cd ./packages/millicast-sdk/
   
           corepack enable
           pnpm ci
   
-          pnpm run build
-          pnpm run build-docs
+          pnpm --filter @millicast/sdk run build
+          pnpm --filter @millicast/sdk run build-docs
 
           printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
 
@@ -81,4 +80,4 @@ jobs:
             set -- "$@" --tag "${dist_tag}"
           fi
 
-          pnpm publish --provenance --no-git-checks "$@"
+          pnpm --filter @millicast/sdk publish --provenance --no-git-checks "$@"
