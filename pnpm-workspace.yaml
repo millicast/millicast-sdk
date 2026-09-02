@@ -9,7 +9,6 @@ packages:
 allowBuilds:
   core-js: true
   esbuild: true
-  husky: true
   netlify-cli: true
   puppeteer: true
   sharp: true

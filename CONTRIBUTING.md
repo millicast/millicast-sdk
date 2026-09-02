@@ -6,6 +6,8 @@ This project is a monorepo using [pnpm workspaces](https://pnpm.io/workspaces) a
 
 - `millicast-sdk`: The SDK itself.
 - `millicast-viewer-demo`: Viewer demo page using SDK.
+- `millicast-multiview-demo`: Multi-source viewer demo page using SDK.
+- `millicast-webaudio-delay-demo`: Web Audio delay demo page using SDK.
 
 ## Development
 
@@ -24,7 +26,7 @@ Whenever you are working on a new feature, fix or change, make sure you create a
 
 pnpm workspaces handle package linking automatically. Dependencies are installed when you run `pnpm ci`.
 
-You will need to add a `.env` file in all demo packages (`packages/millicast-publisher-demo`, `packages/millicast-viewer-demo`, `packages/millicast-chromecast-receiver`, `packages/millicast-multiview-demo` & `packages/millicast-webaudio-delay-demo`). You can simply copy the `.env.sample` to get started:
+You will need to add a `.env` file in all demo packages (`packages/millicast-viewer-demo`, `packages/millicast-multiview-demo` & `packages/millicast-webaudio-delay-demo`). You can simply copy the `.env.sample` to get started:
 
 > note : The `.env` is typically not added to git. When you clone the repo, you will not find this file and will have to create one yourself. The `.env.example` app can be used as a template with basic keys. Rename the file to `.env` and insert your tokens to get the file up and running.
 
@@ -68,7 +70,6 @@ pnpm run start
 > Please note that before you run `pnpm run start`, you need to have built the solution first using `pnpm run build`
 
 This command opens the following demo apps in your browser:
-- millicast-publisher-demo
 - millicast-viewer-demo
 - millicast-sdk
 
