@@ -29,16 +29,16 @@ This content is also available in the `.env.sample` file.
 
 8. Install all dependencies:
 ```sh
-npm ci
+pnpm ci
 ```
 9. Run the application:
 ```sh
-npm start
+pnpm start
 ```
 
 10. Open `http://localhost:10005` and test the application.
 
-To receive streams, you need to broadcast them first. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token, or you can use the [Publisher](../millicast-publisher-demo/) demo application. After you start broadcasting, the Multiview application will be able to play the streamed content. 
+To receive streams, you need to broadcast them first. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token,. After you start broadcasting, the Multiview application will be able to play the streamed content. 
 
 The simplest way to receive two streams in the application is to open the dashboard in two browser tabs and start broadcasting a stream from each tab. It additionally requires opening **media settings** via the gear icon and providing a **source ID** for each stream. The ID is a stream name that simplifies stream identification.
 
@@ -58,6 +58,6 @@ This demo application allows the user to set some URL parameters for configuring
 ## Introducing updates
 After introducing any changes to the `public` directory, use the following command:
 ```
-npm run prepare
+pnpm run build
 ```
 

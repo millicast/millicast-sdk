@@ -25,16 +25,16 @@ This content is also available in the `.env.sample` file.
 
 7. Install all dependencies:
 ```sh
-npm ci
+pnpm ci
 ```
 8. Run the application:
 ```sh
-npm start
+pnpm start
 ```
 
 9. Open `http://localhost:10002` and test the application.
 
-To receive a stream, you need to broadcast it first. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token, or you can use the [Publisher](../millicast-publisher-demo/) demo application. After you start broadcasting, the Viewer application will be able to play the streamed content.
+To receive a stream, you need to broadcast it first. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token,. After you start broadcasting, the Viewer application will be able to play the streamed content.
 
 ## Custom connect options through URL parameters
 This demo application allows the user to set some URL parameters for configuring stream connection options:
@@ -58,6 +58,6 @@ This demo application allows the user to set some URL parameters for configuring
 ## Introducing updates
 After introducing any changes to the `public` directory, use the following command:
 ```
-npm run prepare
+pnpm run build
 ```
 
