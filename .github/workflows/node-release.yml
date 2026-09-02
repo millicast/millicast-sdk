@@ -19,10 +19,10 @@ on:
         # otherwise can be ignored
         description: Prerelease identifier
         default: 'next'
-      dryrun:
+      skip_publish:
         type: boolean
         required: false
-        description: 'dryrun'
+        description: Skip pnpm publish
         default: false
 
 jobs:
@@ -49,4 +49,4 @@ jobs:
     with:
       ref: ${{ inputs.bump_version != 'prerelease' && format('v{0}', needs.next-version.outputs.semVer) || needs.next-version.outputs.newHeadSha }}
       dist_tag: ${{ inputs.bump_version == 'prerelease' && inputs.prerelease_id || '' }}
-      dryrun: ${{ inputs.dryrun }}
+      dryrun: ${{ inputs.skip_publish || false }}
