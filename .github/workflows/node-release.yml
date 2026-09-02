@@ -19,10 +19,10 @@ on:
         # otherwise can be ignored
         description: Prerelease identifier
         default: 'next'
-      skip_publish:
+      dryrun:
         type: boolean
         required: false
-        description: Skip pnpm publish
+        description: 'dryrun'
         default: false
 
 jobs:
@@ -41,7 +41,6 @@ jobs:
   build-publish:
     uses: ./.github/workflows/pnpm-build-publish.yml
     needs: [next-version]
-    if: success() && inputs.skip_publish != true
     permissions:
       contents: read
       id-token: write
@@ -49,3 +48,4 @@ jobs:
     with:
       ref: ${{ inputs.bump_version != 'prerelease' && format('v{0}', needs.next-version.outputs.semVer) || needs.next-version.outputs.newHeadSha }}
       dist_tag: ${{ inputs.bump_version == 'prerelease' && inputs.prerelease_id || '' }}
+      dryrun: ${{ inputs.dryrun }}

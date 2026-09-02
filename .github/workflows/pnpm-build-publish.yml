@@ -11,6 +11,10 @@ on:
         description: 'Distribution tag to publish package with'
         required: false
         type: string
+      dryrun:
+        description: 'dryrun'
+        required: false
+        type: boolean
   workflow_call:
     inputs:
       ref:
@@ -19,6 +23,9 @@ on:
       dist_tag:
         required: false
         type: string
+      dryrun:
+        required: false
+        type: boolean
 
 jobs:
   build-publish:
@@ -42,6 +49,7 @@ jobs:
 
       - name: Setup GitHub Pages 🛠
         uses: actions/configure-pages@v6
+        if: inputs.dryrun != true
 
       - name: "pnpm build"
         env:
@@ -62,20 +70,26 @@ jobs:
 
       - name: Upload artifact ⬆️
         uses: actions/upload-pages-artifact@v5
+        if: inputs.dryrun != true
         with:
           path: './packages/millicast-sdk/docs'
 
       - name: Deploy to GitHub Pages 🚀
         id: deployment
         uses: actions/deploy-pages@v5
+        if: inputs.dryrun != true
 
       - name: "pnpm publish"
         env:
           dist_tag: ${{ inputs.dist_tag }}
+          dryrun: ${{ inputs.dryrun || 'false' }}
         run: |
           set --
           if [ -n "${dist_tag}" ]; then
             set -- "$@" --tag "${dist_tag}"
+          fi
+          if [ "${dryrun}" = 'true' ]; then
+            set -- "$@" --dry-run
           fi
 
           pnpm --filter @millicast/sdk publish --provenance --no-git-checks "$@"
