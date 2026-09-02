@@ -34,7 +34,7 @@ pnpm start
 
 9. Open `http://localhost:10002` and test the application.
 
-To receive a stream, you need to broadcast it first. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token,. After you start broadcasting, the Viewer application will be able to play the streamed content.
+To receive a stream, you need to broadcast it first. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token. After you start broadcasting, the Viewer application will be able to play the streamed content.
 
 ## Custom connect options through URL parameters
 This demo application allows the user to set some URL parameters for configuring stream connection options:
