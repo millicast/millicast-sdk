@@ -30,8 +30,8 @@ jobs:
 
       - name: Check Linter and Build 📑
         run: |
-          pnpm --filter @millicast/sdk run build
-          pnpm exec eslint packages/millicast-sdk --ext .js,.jsx,.ts,.tsx
+          pnpm run build
+          pnpm exec eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
     runs-on: ubuntu-latest
