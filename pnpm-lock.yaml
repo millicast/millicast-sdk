@@ -37,7 +37,7 @@ importers:
         version: 2.31.0(eslint@8.57.1)
       eslint-plugin-jest:
         specifier: ^28.13.3
-        version: 28.13.3(eslint@8.57.1)(typescript@5.8.3)
+        version: 28.13.3(eslint@8.57.1)(jest@30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3)))(typescript@5.8.3)
       eslint-plugin-jsx-a11y:
         specifier: ^6.4.1
         version: 6.10.2(eslint@8.57.1)
@@ -52,15 +52,15 @@ importers:
         version: 5.0.0(eslint@8.57.1)
       netlify-cli:
         specifier: ^22.1.3
-        version: 22.1.3(@types/node@22.6.1)(picomatch@4.0.2)(rollup@4.43.0)
+        version: 22.1.3(@types/node@22.6.1)(encoding@0.1.13)(picomatch@4.0.2)(rollup@4.43.0)
       vite:
         specifier: ^6.3.5
-        version: 6.3.5(@types/node@22.6.1)(jiti@1.21.0)(yaml@2.8.0)
+        version: 6.3.5(@types/node@22.6.1)(jiti@1.21.0)(terser@5.33.0)(yaml@2.8.0)
 
   packages/millicast-multiview-demo:
     dependencies:
       '@millicast/sdk':
-        specifier: file:../millicast-sdk
+        specifier: workspace:*
         version: link:../millicast-sdk
     devDependencies:
       '@babel/core':
@@ -254,7 +254,7 @@ importers:
   packages/millicast-viewer-demo:
     dependencies:
       '@millicast/sdk':
-        specifier: file:../millicast-sdk
+        specifier: workspace:*
         version: link:../millicast-sdk
     devDependencies:
       '@babel/core':
@@ -309,7 +309,7 @@ importers:
         specifier: ^1.9.8
         version: 1.9.8
       '@millicast/sdk':
-        specifier: file:../millicast-sdk
+        specifier: workspace:*
         version: link:../millicast-sdk
     devDependencies:
       '@babel/core':
@@ -3375,6 +3375,7 @@ packages:
   cron-parser@4.9.0:
     resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
+    deprecated: v4 is no longer maintained, upgrade to v5
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -8130,7 +8131,7 @@ snapshots:
       '@babel/traverse': 7.27.4
       '@babel/types': 7.27.6
       convert-source-map: 2.0.0
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -8894,7 +8895,7 @@ snapshots:
       '@babel/parser': 7.27.5
       '@babel/template': 7.27.2
       '@babel/types': 7.27.6
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -9238,7 +9239,7 @@ snapshots:
   '@eslint/eslintrc@2.1.4':
     dependencies:
       ajv: 6.12.6
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       espree: 9.6.1
       globals: 13.24.0
       ignore: 5.3.2
@@ -9299,7 +9300,7 @@ snapshots:
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -9381,6 +9382,43 @@ snapshots:
       - esbuild-register
       - supports-color
       - ts-node
+
+  '@jest/core@30.0.0(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))':
+    dependencies:
+      '@jest/console': 30.0.0
+      '@jest/pattern': 30.0.0
+      '@jest/reporters': 30.0.0
+      '@jest/test-result': 30.0.0
+      '@jest/transform': 30.0.0
+      '@jest/types': 30.0.0
+      '@types/node': 18.19.86
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      ci-info: 4.2.0
+      exit-x: 0.2.2
+      graceful-fs: 4.2.11
+      jest-changed-files: 30.0.0
+      jest-config: 30.0.0(@types/node@18.19.86)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))
+      jest-haste-map: 30.0.0
+      jest-message-util: 30.0.0
+      jest-regex-util: 30.0.0
+      jest-resolve: 30.0.0
+      jest-resolve-dependencies: 30.0.0
+      jest-runner: 30.0.0
+      jest-runtime: 30.0.0
+      jest-snapshot: 30.0.0
+      jest-util: 30.0.0
+      jest-validate: 30.0.0
+      jest-watcher: 30.0.0
+      micromatch: 4.0.8
+      pretty-format: 30.0.0
+      slash: 3.0.0
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - esbuild-register
+      - supports-color
+      - ts-node
+    optional: true
 
   '@jest/diff-sequences@30.0.0': {}
 
@@ -9633,12 +9671,25 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 1.1.0
 
-  '@mapbox/node-pre-gyp@2.0.0(supports-color@10.0.0)':
+  '@mapbox/node-pre-gyp@2.0.0(encoding@0.1.13)':
+    dependencies:
+      consola: 3.2.3
+      detect-libc: 2.0.4
+      https-proxy-agent: 7.0.6
+      node-fetch: 2.7.0(encoding@0.1.13)
+      nopt: 8.1.0
+      semver: 7.7.2
+      tar: 7.4.3
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
+  '@mapbox/node-pre-gyp@2.0.0(encoding@0.1.13)(supports-color@10.0.0)':
     dependencies:
       consola: 3.2.3
       detect-libc: 2.0.4
       https-proxy-agent: 7.0.6(supports-color@10.0.0)
-      node-fetch: 2.7.0
+      node-fetch: 2.7.0(encoding@0.1.13)
       nopt: 8.1.0
       semver: 7.7.2
       tar: 7.4.3
@@ -9683,7 +9734,7 @@ snapshots:
       yaml: 2.8.0
       yargs: 17.7.2
 
-  '@netlify/build@33.4.3(@opentelemetry/api@1.8.0)(@types/node@22.6.1)(picomatch@4.0.2)(rollup@4.43.0)':
+  '@netlify/build@33.4.3(@opentelemetry/api@1.8.0)(@types/node@22.6.1)(encoding@0.1.13)(picomatch@4.0.2)(rollup@4.43.0)':
     dependencies:
       '@bugsnag/js': 8.2.0
       '@netlify/blobs': 9.1.5
@@ -9691,12 +9742,12 @@ snapshots:
       '@netlify/config': 23.0.10
       '@netlify/edge-bundler': 14.0.6
       '@netlify/framework-info': 10.0.4
-      '@netlify/functions-utils': 6.0.10(rollup@4.43.0)(supports-color@10.0.0)
+      '@netlify/functions-utils': 6.0.10(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)
       '@netlify/git-utils': 6.0.2
       '@netlify/opentelemetry-utils': 2.0.1(@opentelemetry/api@1.8.0)
       '@netlify/plugins-list': 6.80.0
       '@netlify/run-utils': 6.0.2
-      '@netlify/zip-it-and-ship-it': 12.1.4(rollup@4.43.0)(supports-color@10.0.0)
+      '@netlify/zip-it-and-ship-it': 12.1.4(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)
       '@opentelemetry/api': 1.8.0
       '@sindresorhus/slugify': 2.2.1
       ansi-escapes: 7.0.0
@@ -9840,9 +9891,9 @@ snapshots:
       read-package-up: 11.0.0
       semver: 7.7.2
 
-  '@netlify/functions-utils@6.0.10(rollup@4.43.0)(supports-color@10.0.0)':
+  '@netlify/functions-utils@6.0.10(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)':
     dependencies:
-      '@netlify/zip-it-and-ship-it': 12.1.4(rollup@4.43.0)(supports-color@10.0.0)
+      '@netlify/zip-it-and-ship-it': 12.1.4(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)
       cpy: 11.1.0
       path-exists: 5.0.0
     transitivePeerDependencies:
@@ -9942,13 +9993,53 @@ snapshots:
 
   '@netlify/serverless-functions-api@2.1.1': {}
 
-  '@netlify/zip-it-and-ship-it@12.1.4(rollup@4.43.0)(supports-color@10.0.0)':
+  '@netlify/zip-it-and-ship-it@12.1.4(encoding@0.1.13)(rollup@4.43.0)':
     dependencies:
       '@babel/parser': 7.27.5
       '@babel/types': 7.27.6
       '@netlify/binary-info': 1.0.0
       '@netlify/serverless-functions-api': 2.1.1
-      '@vercel/nft': 0.29.4(rollup@4.43.0)(supports-color@10.0.0)
+      '@vercel/nft': 0.29.4(encoding@0.1.13)(rollup@4.43.0)
+      archiver: 7.0.1
+      common-path-prefix: 3.0.0
+      copy-file: 11.0.0
+      es-module-lexer: 1.6.0
+      esbuild: 0.25.5
+      execa: 8.0.1
+      fast-glob: 3.3.3
+      filter-obj: 6.1.0
+      find-up: 7.0.0
+      is-builtin-module: 3.2.1
+      is-path-inside: 4.0.0
+      junk: 4.0.1
+      locate-path: 7.2.0
+      merge-options: 3.0.4
+      minimatch: 9.0.5
+      normalize-path: 3.0.0
+      p-map: 7.0.3
+      path-exists: 5.0.0
+      precinct: 12.2.0
+      require-package-name: 2.0.1
+      resolve: 2.0.0-next.5
+      semver: 7.7.2
+      tmp-promise: 3.0.3
+      toml: 3.0.0
+      unixify: 1.0.0
+      urlpattern-polyfill: 8.0.2
+      yargs: 17.7.2
+      zod: 3.25.63
+    transitivePeerDependencies:
+      - encoding
+      - rollup
+      - supports-color
+
+  '@netlify/zip-it-and-ship-it@12.1.4(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)':
+    dependencies:
+      '@babel/parser': 7.27.5
+      '@babel/types': 7.27.6
+      '@netlify/binary-info': 1.0.0
+      '@netlify/serverless-functions-api': 2.1.1
+      '@vercel/nft': 0.29.4(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)
       archiver: 7.0.1
       common-path-prefix: 3.0.0
       copy-file: 11.0.0
@@ -10187,7 +10278,7 @@ snapshots:
 
   '@pnpm/tabtab@0.5.4':
     dependencies:
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       enquirer: 2.4.1
       minimist: 1.2.8
       untildify: 4.0.0
@@ -10526,6 +10617,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/project-service@8.34.0(typescript@5.8.3)':
+    dependencies:
+      '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/types': 8.34.0
+      debug: 4.4.1(supports-color@5.5.0)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/scope-manager@8.34.0':
     dependencies:
       '@typescript-eslint/types': 8.34.0
@@ -10553,12 +10653,28 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/typescript-estree@8.34.0(typescript@5.8.3)':
+    dependencies:
+      '@typescript-eslint/project-service': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/types': 8.34.0
+      '@typescript-eslint/visitor-keys': 8.34.0
+      debug: 4.4.1(supports-color@5.5.0)
+      fast-glob: 3.3.3
+      is-glob: 4.0.3
+      minimatch: 9.0.5
+      semver: 7.7.2
+      ts-api-utils: 2.1.0(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/utils@8.34.0(eslint@8.57.1)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@8.57.1)
       '@typescript-eslint/scope-manager': 8.34.0
       '@typescript-eslint/types': 8.34.0
-      '@typescript-eslint/typescript-estree': 8.34.0(supports-color@10.0.0)(typescript@5.8.3)
+      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.8.3)
       eslint: 8.57.1
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -10630,9 +10746,28 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.9.0':
     optional: true
 
-  '@vercel/nft@0.29.4(rollup@4.43.0)(supports-color@10.0.0)':
+  '@vercel/nft@0.29.4(encoding@0.1.13)(rollup@4.43.0)':
     dependencies:
-      '@mapbox/node-pre-gyp': 2.0.0(supports-color@10.0.0)
+      '@mapbox/node-pre-gyp': 2.0.0(encoding@0.1.13)
+      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      acorn: 8.15.0
+      acorn-import-attributes: 1.9.5(acorn@8.15.0)
+      async-sema: 3.1.1
+      bindings: 1.5.0
+      estree-walker: 2.0.2
+      glob: 10.4.5
+      graceful-fs: 4.2.11
+      node-gyp-build: 4.8.4
+      picomatch: 4.0.2
+      resolve-from: 5.0.0
+    transitivePeerDependencies:
+      - encoding
+      - rollup
+      - supports-color
+
+  '@vercel/nft@0.29.4(encoding@0.1.13)(rollup@4.43.0)(supports-color@10.0.0)':
+    dependencies:
+      '@mapbox/node-pre-gyp': 2.0.0(encoding@0.1.13)(supports-color@10.0.0)
       '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
       acorn: 8.15.0
       acorn-import-attributes: 1.9.5(acorn@8.15.0)
@@ -11030,7 +11165,7 @@ snapshots:
     dependencies:
       '@fastify/error': 3.4.1
       archy: 1.0.0
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       fastq: 1.17.1
     transitivePeerDependencies:
       - supports-color
@@ -11992,6 +12127,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  detective-typescript@14.0.0(typescript@5.8.3):
+    dependencies:
+      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.8.3)
+      ast-module-types: 6.0.1
+      node-source-walk: 7.0.1
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
   detective-vue2@2.2.0(supports-color@10.0.0)(typescript@5.8.3):
     dependencies:
       '@dependents/detective-less': 5.0.1
@@ -12001,6 +12145,19 @@ snapshots:
       detective-scss: 5.0.1
       detective-stylus: 5.0.1
       detective-typescript: 14.0.0(supports-color@10.0.0)(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
+  detective-vue2@2.2.0(typescript@5.8.3):
+    dependencies:
+      '@dependents/detective-less': 5.0.1
+      '@vue/compiler-sfc': 3.5.16
+      detective-es6: 5.0.1
+      detective-sass: 6.0.1
+      detective-scss: 5.0.1
+      detective-stylus: 5.0.1
+      detective-typescript: 14.0.0(typescript@5.8.3)
       typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
@@ -12365,10 +12522,12 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-jest@28.13.3(eslint@8.57.1)(typescript@5.8.3):
+  eslint-plugin-jest@28.13.3(eslint@8.57.1)(jest@30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3)))(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/utils': 8.34.0(eslint@8.57.1)(typescript@5.8.3)
       eslint: 8.57.1
+    optionalDependencies:
+      jest: 30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -12479,7 +12638,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.2.2
@@ -12647,7 +12806,7 @@ snapshots:
 
   extract-zip@2.0.1:
     dependencies:
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -13295,7 +13454,7 @@ snapshots:
   https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -13766,6 +13925,26 @@ snapshots:
       - supports-color
       - ts-node
 
+  jest-cli@30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3)):
+    dependencies:
+      '@jest/core': 30.0.0(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))
+      '@jest/test-result': 30.0.0
+      '@jest/types': 30.0.0
+      chalk: 4.1.2
+      exit-x: 0.2.2
+      import-local: 3.2.0
+      jest-config: 30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))
+      jest-util: 30.0.0
+      jest-validate: 30.0.0
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - esbuild-register
+      - supports-color
+      - ts-node
+    optional: true
+
   jest-config@30.0.0(@types/node@18.19.86)(ts-node@10.9.2(@types/node@18.19.86)(typescript@5.8.3)):
     dependencies:
       '@babel/core': 7.27.4
@@ -13798,6 +13977,74 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
+
+  jest-config@30.0.0(@types/node@18.19.86)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3)):
+    dependencies:
+      '@babel/core': 7.27.4
+      '@jest/get-type': 30.0.0
+      '@jest/pattern': 30.0.0
+      '@jest/test-sequencer': 30.0.0
+      '@jest/types': 30.0.0
+      babel-jest: 30.0.0(@babel/core@7.27.4)
+      chalk: 4.1.2
+      ci-info: 4.2.0
+      deepmerge: 4.3.1
+      glob: 10.4.5
+      graceful-fs: 4.2.11
+      jest-circus: 30.0.0
+      jest-docblock: 30.0.0
+      jest-environment-node: 30.0.0
+      jest-regex-util: 30.0.0
+      jest-resolve: 30.0.0
+      jest-runner: 30.0.0
+      jest-util: 30.0.0
+      jest-validate: 30.0.0
+      micromatch: 4.0.8
+      parse-json: 5.2.0
+      pretty-format: 30.0.0
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+    optionalDependencies:
+      '@types/node': 18.19.86
+      ts-node: 10.9.2(@types/node@22.6.1)(typescript@5.8.3)
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+    optional: true
+
+  jest-config@30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3)):
+    dependencies:
+      '@babel/core': 7.27.4
+      '@jest/get-type': 30.0.0
+      '@jest/pattern': 30.0.0
+      '@jest/test-sequencer': 30.0.0
+      '@jest/types': 30.0.0
+      babel-jest: 30.0.0(@babel/core@7.27.4)
+      chalk: 4.1.2
+      ci-info: 4.2.0
+      deepmerge: 4.3.1
+      glob: 10.4.5
+      graceful-fs: 4.2.11
+      jest-circus: 30.0.0
+      jest-docblock: 30.0.0
+      jest-environment-node: 30.0.0
+      jest-regex-util: 30.0.0
+      jest-resolve: 30.0.0
+      jest-runner: 30.0.0
+      jest-util: 30.0.0
+      jest-validate: 30.0.0
+      micromatch: 4.0.8
+      parse-json: 5.2.0
+      pretty-format: 30.0.0
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+    optionalDependencies:
+      '@types/node': 22.6.1
+      ts-node: 10.9.2(@types/node@22.6.1)(typescript@5.8.3)
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+    optional: true
 
   jest-cucumber@4.5.0(jest@30.0.0(@types/node@18.19.86)(ts-node@10.9.2(@types/node@18.19.86)(typescript@5.8.3))):
     dependencies:
@@ -14171,6 +14418,20 @@ snapshots:
       - esbuild-register
       - supports-color
       - ts-node
+
+  jest@30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3)):
+    dependencies:
+      '@jest/core': 30.0.0(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))
+      '@jest/types': 30.0.0
+      import-local: 3.2.0
+      jest-cli: 30.0.0(@types/node@22.6.1)(ts-node@10.9.2(@types/node@22.6.1)(typescript@5.8.3))
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - esbuild-register
+      - supports-color
+      - ts-node
+    optional: true
 
   jiti@1.21.0: {}
 
@@ -14807,12 +15068,12 @@ snapshots:
 
   negotiator@0.6.3: {}
 
-  netlify-cli@22.1.3(@types/node@22.6.1)(picomatch@4.0.2)(rollup@4.43.0):
+  netlify-cli@22.1.3(@types/node@22.6.1)(encoding@0.1.13)(picomatch@4.0.2)(rollup@4.43.0):
     dependencies:
       '@fastify/static': 7.0.4
       '@netlify/api': 14.0.3
       '@netlify/blobs': 9.1.5
-      '@netlify/build': 33.4.3(@opentelemetry/api@1.8.0)(@types/node@22.6.1)(picomatch@4.0.2)(rollup@4.43.0)
+      '@netlify/build': 33.4.3(@opentelemetry/api@1.8.0)(@types/node@22.6.1)(encoding@0.1.13)(picomatch@4.0.2)(rollup@4.43.0)
       '@netlify/build-info': 10.0.5
       '@netlify/config': 23.0.10
       '@netlify/edge-bundler': 14.0.6
@@ -14820,7 +15081,7 @@ snapshots:
       '@netlify/headers-parser': 9.0.1
       '@netlify/local-functions-proxy': 2.0.3
       '@netlify/redirect-parser': 15.0.2
-      '@netlify/zip-it-and-ship-it': 12.1.4(rollup@4.43.0)(supports-color@10.0.0)
+      '@netlify/zip-it-and-ship-it': 12.1.4(encoding@0.1.13)(rollup@4.43.0)
       '@octokit/rest': 21.1.1
       '@opentelemetry/api': 1.8.0
       '@pnpm/tabtab': 0.5.4
@@ -14860,7 +15121,7 @@ snapshots:
       gitconfiglocal: 2.1.0
       http-proxy: 1.18.1(debug@4.4.0)
       http-proxy-middleware: 2.0.9(debug@4.4.0)
-      https-proxy-agent: 7.0.6(supports-color@10.0.0)
+      https-proxy-agent: 7.0.6
       inquirer: 8.2.6
       inquirer-autocomplete-prompt: 1.4.0(inquirer@8.2.6)
       ipx: 2.1.0(@netlify/blobs@9.1.5)
@@ -14956,9 +15217,11 @@ snapshots:
 
   node-fetch-native@1.6.6: {}
 
-  node-fetch@2.7.0:
+  node-fetch@2.7.0(encoding@0.1.13):
     dependencies:
       whatwg-url: 5.0.0
+    optionalDependencies:
+      encoding: 0.1.13
 
   node-fetch@3.3.2:
     dependencies:
@@ -15521,6 +15784,26 @@ snapshots:
       simple-get: 4.0.1
       tar-fs: 2.1.3
       tunnel-agent: 0.6.0
+
+  precinct@12.2.0:
+    dependencies:
+      '@dependents/detective-less': 5.0.1
+      commander: 12.1.0
+      detective-amd: 6.0.1
+      detective-cjs: 6.0.1
+      detective-es6: 5.0.1
+      detective-postcss: 7.0.1(postcss@8.5.5)
+      detective-sass: 6.0.1
+      detective-scss: 5.0.1
+      detective-stylus: 5.0.1
+      detective-typescript: 14.0.0(typescript@5.8.3)
+      detective-vue2: 2.2.0(typescript@5.8.3)
+      module-definition: 6.0.1
+      node-source-walk: 7.0.1
+      postcss: 8.5.5
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
 
   precinct@12.2.0(supports-color@10.0.0):
     dependencies:
@@ -17055,20 +17338,6 @@ snapshots:
       terser: 5.33.0
       yaml: 2.8.0
 
-  vite@6.3.5(@types/node@22.6.1)(jiti@1.21.0)(yaml@2.8.0):
-    dependencies:
-      esbuild: 0.25.5
-      fdir: 6.4.6(picomatch@4.0.2)
-      picomatch: 4.0.2
-      postcss: 8.5.5
-      rollup: 4.43.0
-      tinyglobby: 0.2.14
-    optionalDependencies:
-      '@types/node': 22.6.1
-      fsevents: 2.3.3
-      jiti: 1.21.0
-      yaml: 2.8.0
-
   w3c-xmlserializer@5.0.0:
     dependencies:
       xml-name-validator: 5.0.0
@@ -17087,7 +17356,7 @@ snapshots:
     dependencies:
       chalk: 4.1.2
       commander: 9.5.0
-      debug: 4.4.1(supports-color@10.0.0)
+      debug: 4.4.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
