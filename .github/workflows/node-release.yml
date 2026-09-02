@@ -37,6 +37,7 @@ jobs:
       bump_version: ${{ inputs.bump_version }}
       prerelease_id: ${{ inputs.prerelease_id }}
       skip_tag: ${{ inputs.bump_version == 'prerelease' }}
+      app_path: 'packages/millicast-sdk'
 
   build-publish:
     uses: ./.github/workflows/pnpm-build-publish.yml
