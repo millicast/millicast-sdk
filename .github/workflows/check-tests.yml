@@ -8,6 +8,10 @@ on:
     branches:
       - '**'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   eslint:
     runs-on: ubuntu-latest
@@ -18,7 +22,6 @@ jobs:
           node-version: 24
 
       - name: Install the dependencies 🧱
-        shell: bash
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
@@ -26,7 +29,6 @@ jobs:
           pnpm ci
 
       - name: Check Linter and Build 📑
-        shell: bash
         run: |
           pnpm run build
           pnpm exec eslint . --ext .js,.jsx,.ts,.tsx
@@ -40,7 +42,6 @@ jobs:
           node-version: 24
 
       - name: Install the dependencies 🧱
-        shell: bash
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
@@ -48,14 +49,12 @@ jobs:
           pnpm ci
 
       - name: Install Chromium
-        shell: bash
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq -y chromium-browser
           echo "PUPPETEER_EXECUTABLE_PATH=$(which chromium-browser)" >> "${GITHUB_ENV}"
 
       - name: Unit Testing 🧪
-        shell: bash
         working-directory: './packages/millicast-sdk'
         run: pnpm run test-unit
 
@@ -68,7 +67,6 @@ jobs:
           node-version: 24
 
       - name: Install the dependencies 🧱
-        shell: bash
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
@@ -76,14 +74,12 @@ jobs:
           pnpm ci
 
       - name: Install Chromium
-        shell: bash
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq -y chromium-browser
           echo "PUPPETEER_EXECUTABLE_PATH=$(which chromium-browser)" >> "${GITHUB_ENV}"
 
       - name: End-to-End Testing
-        shell: bash
         working-directory: './packages/millicast-sdk'
         env:
           ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
@@ -99,7 +95,6 @@ jobs:
           node-version: 24
 
       - name: Install the dependencies 🧱
-        shell: bash
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
@@ -107,5 +102,4 @@ jobs:
           pnpm ci
 
       - name: build docs
-        shell: bash
         run: pnpm run build-docs

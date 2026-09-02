@@ -29,11 +29,12 @@ jobs:
       contents: read
       id-token: write
       pages: write
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
+    defaults:
+      run:
+        shell: 'ash -euo pipefail {0}'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -45,7 +46,6 @@ jobs:
       - name: "pnpm build"
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-        shell: 'ash -e -o pipefail {0}'
         run: |
           # some packages use node-gyp
           apk add --no-cache build-base python3
@@ -73,7 +73,6 @@ jobs:
       - name: "pnpm publish"
         env:
           dist_tag: ${{ inputs.dist_tag }}
-        shell: 'ash -e -o pipefail {0}'
         run: |
           cd ./packages/millicast-sdk/
 
