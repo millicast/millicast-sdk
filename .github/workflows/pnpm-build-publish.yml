@@ -78,7 +78,7 @@ jobs:
 
           pnpm --filter @millicast/sdk publish --provenance --no-git-checks "$@"
 
-  build-docs:
+  deploy-docs:
     name: "build-docs ${{ inputs.ref }}"
     runs-on: ubuntu-latest
     container: debian:stable-slim
