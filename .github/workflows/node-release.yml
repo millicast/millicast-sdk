@@ -50,11 +50,18 @@ jobs:
           path: changeset_preview.json
           retention-days: 7
 
-      - name: changeset version
+      - id: changeset-version
+        name: changeset version
         shell: bash
         env:
           new_version: ${{ steps.changeset-status.outputs.new_version }}
         run: |
+          before_files_json="$(
+            find .changeset -type f -name '*.md' ! -name 'README.md' -print0 \
+              | sort -z \
+              | jq -R -s -c 'split("\u0000") | map(select(length > 0))'
+          )"
+
           pnpm exec changeset version
           current_version="$(pnpm --filter @millicast/sdk pkg get version | jq -r '."@millicast/sdk".version // ""')"
           if [ "${new_version}" != "${current_version}" ]; then
@@ -62,6 +69,16 @@ jobs:
             echo '::error::newVersion did not match package version after bump.'
             exit 1
           fi
+
+          after_files_json="$(
+            find .changeset -type f -name '*.md' ! -name 'README.md' -print0 \
+              | sort -z \
+              | jq -R -s -c 'split("\u0000") | map(select(length > 0))'
+          )"
+          deleted_files_json="$(
+            jq -n -c --argjson before "${before_files_json}" --argjson after "${after_files_json}" '$before - $after'
+          )"
+          echo "deleted_files=${deleted_files_json}" >> "${GITHUB_OUTPUT}"
 
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -79,6 +96,7 @@ jobs:
           appPath: 'packages/millicast-sdk'
           branch: ${{ github.head_ref || github.ref_name }}
           semVer: ${{ steps.changeset-status.outputs.new_version }}
+          deletedFiles: ${{ steps.changeset-version.outputs.deleted_files }}
           skipTag: false
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -91,6 +109,7 @@ jobs:
 
             const appPath = (process.env.appPath || '').replace(/^\.?\/+/, '').replace(/\/$/, '');
             const semVer = process.env.semVer;
+            const deletedFiles = JSON.parse(process.env.deletedFiles);
             const skipTag = process.env.skipTag === 'true';
 
             const filePath = (name) => appPath ? `${appPath}/${name}` : name;
@@ -105,6 +124,9 @@ jobs:
             const packageFiles = [];
             appendFileContents(filePath('package.json'), false, packageFiles);
             appendFileContents(filePath('CHANGELOG.md'), false, packageFiles);
+            for (const deletedPath of deletedFiles) {
+              packageFiles.push({ path: deletedPath, sha: null });
+            }
 
             // validate tag does not already exist in repo
             const tagName = `v${semVer}`;
