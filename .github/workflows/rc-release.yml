@@ -1,11 +1,12 @@
 name: Release Candidate
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'next-*'
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #    - main
+  #  tags:
+  #    - 'next-*'
 
 jobs:
   build-sdk:
