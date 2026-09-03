@@ -94,7 +94,6 @@
     "rollup": "4.63.0",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-dts": "^6.5.1",
-    "rollup-plugin-filesize": "^10.0.0",
     "serve": "^14.2.6",
     "typescript": "^5.9.3",
     "underscore": "^1.13.8",
