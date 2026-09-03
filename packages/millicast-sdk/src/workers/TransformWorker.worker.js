@@ -38,7 +38,6 @@ function createReceiverTransform (mid) {
 function isVideoFrame (frame) {
   if (typeof RTCEncodedVideoFrame !== 'undefined') {
     try {
-      // eslint-disable-next-line no-undef
       if (frame instanceof RTCEncodedVideoFrame) {
         return true
       }
@@ -123,7 +122,6 @@ function setupPipe ({ readable, writable }, transform) {
     .pipeTo(writable)
 }
 
-// eslint-disable-next-line no-undef
 addEventListener('rtctransform', (event) => {
   let transform
   if (event.transformer.options.name === 'senderTransform') {

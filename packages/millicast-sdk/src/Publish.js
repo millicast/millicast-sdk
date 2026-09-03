@@ -1,4 +1,4 @@
-import jwtDecode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import reemit from 're-emitter'
 import { atob } from 'Base64'
 import * as v from 'valibot'
@@ -230,7 +230,6 @@ export default class Publish extends BaseWebRTC {
 
       senders.forEach(sender => {
         if (supportsRTCRtpScriptTransform) {
-          // eslint-disable-next-line no-undef
           sender.transform = new RTCRtpScriptTransform(this.worker, {
             name: 'senderTransform',
             codec: this.options.codec

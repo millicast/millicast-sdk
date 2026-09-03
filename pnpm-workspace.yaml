@@ -6,7 +6,11 @@ engineStrict: true
 packages:
   - 'packages/*'
 
+overrides:
+  'jest-environment-puppeteer>jest-environment-node': '^30.4.1'
+
 allowBuilds:
+  esbuild: true
   core-js: true
   unrs-resolver: true
   puppeteer: true

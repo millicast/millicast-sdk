@@ -1,5 +1,3 @@
-/* eslint-disable no-new-wrappers */
-/* eslint-disable camelcase */
 import BitStreamReader from './BitStreamReader'
 /**
  * Enum of Millicast supported Video codecs
