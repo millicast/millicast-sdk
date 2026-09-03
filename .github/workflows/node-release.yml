@@ -13,6 +13,7 @@ jobs:
   changeset:
     runs-on: ubuntu-latest
     container: node:24-alpine
+    #if: github.ref_name == 'main'
     outputs:
       oldVersion: ${{ steps.changeset-status.outputs.old_version }}
       newVersion: ${{ steps.changeset-status.outputs.new_version }}
