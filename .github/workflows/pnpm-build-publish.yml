@@ -35,7 +35,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      pages: write
     defaults:
       run:
         shell: 'ash -euo pipefail {0}'
@@ -44,39 +43,26 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - name: Setup GitHub Pages 🛠
-        uses: actions/configure-pages@v6
-        if: inputs.dryrun != true
-
       - name: "pnpm build"
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
           cp README.md ./packages/millicast-sdk/
-  
+
           corepack enable
           pnpm ci
-  
+
           pnpm --filter @millicast/sdk run build
           pnpm --filter @millicast/sdk run build-docs
 
           printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
 
-      # upload-pages-artifact needs GNU tar (--hard-dereference); busybox tar lacks it
-      - name: Install GNU tar
-        if: inputs.dryrun != true
-        run: apk add --no-cache tar
-
-      - name: Upload artifact ⬆️
-        uses: actions/upload-pages-artifact@v5
-        if: inputs.dryrun != true
+      - uses: actions/upload-artifact@v7
         with:
-          path: './packages/millicast-sdk/docs'
-
-      - name: Deploy to GitHub Pages 🚀
-        id: deployment
-        uses: actions/deploy-pages@v5
-        if: inputs.dryrun != true
+          name: sdk-docs
+          path: packages/millicast-sdk/docs
+          retention-days: 1
+          overwrite: true
 
       - name: "pnpm publish"
         env:
@@ -92,3 +78,36 @@ jobs:
           fi
 
           pnpm --filter @millicast/sdk publish --provenance --no-git-checks "$@"
+
+  deploy-docs:
+    name: "build-docs ${{ inputs.ref }}"
+    runs-on: ubuntu-latest
+    if: inputs.dryrun != true
+    needs: [build-publish]
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdk-docs
+          path: packages/millicast-sdk/docs
+
+      - name: Setup GitHub Pages 🛠
+        uses: actions/configure-pages@v6
+
+      - name: Upload artifact ⬆️
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: packages/millicast-sdk/docs
+
+      - id: deployment
+        name: Deploy to GitHub Pages 🚀
+        uses: actions/deploy-pages@v5
