@@ -36,6 +36,9 @@ jobs:
       contents: read
       id-token: write
       pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     defaults:
       run:
         shell: 'ash -euo pipefail {0}'
