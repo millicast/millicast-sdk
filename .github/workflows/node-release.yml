@@ -3,22 +3,6 @@ name: 'RELEASE: Bump version, create tag/release, and pnpm publish'
 on:
   workflow_dispatch:
     inputs:
-      bump_version:
-        type: choice
-        required: true
-        description: Which part of version to bump
-        options:
-          - patch
-          - minor
-          - major
-          - prerelease
-      prerelease_id:
-        type: string
-        required: false
-        # only used if bump_version is 'prerelease'
-        # otherwise can be ignored
-        description: Prerelease identifier
-        default: 'next'
       skip_publish:
         type: boolean
         required: false
@@ -248,6 +232,5 @@ jobs:
       id-token: write
       pages: write
     with:
-      ref: ${{ inputs.bump_version != 'prerelease' && format('v{0}', needs.changeset.outputs.newVersion) || needs.changeset.outputs.newHeadSha }}
-      dist_tag: ${{ inputs.bump_version == 'prerelease' && inputs.prerelease_id || '' }}
+      ref: ${{ format('v{0}', needs.changeset.outputs.newVersion) }}
       dryrun: ${{ inputs.skip_publish || false }}
