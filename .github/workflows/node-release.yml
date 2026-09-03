@@ -23,14 +23,16 @@ jobs:
       run:
         shell: 'ash -euo pipefail {0}'
     steps:
+      - name: changeset dependencies
+        run: |
+          # hard dependency of changeset unfortunately
+          apk add --no-cache git
+
       - uses: actions/checkout@v7
 
       - id: changeset-status
         name: changeset status
         run: |
-          # hard dependency of changeset unfortunately
-          apk add --no-cache git
-
           corepack enable
           pnpm ci
 
