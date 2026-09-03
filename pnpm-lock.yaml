@@ -11,18 +11,8 @@ overrides:
   ip-address@9: ^10.5.0
   js-yaml@3: ^3.15.1
   linkify-it@5: ^5.0.2
-  diff@4: ^4.0.4
-  flatted@3: ^3.4.2
   glob@10: ^12.0.0
-  joi@17: ^17.13.4
-  js-yaml@4: ^4.3.1
-  lodash@4: ^4.18.1
-  markdown-it@14: ^14.2.0
-  minimatch@3: ^3.1.4
-  picomatch@2: ^2.3.2
-  underscore@1: ^1.13.8
   uuid@<11.1.1: ^11.1.1
-  ws@8: ^8.21.0
 
 importers:
 
@@ -3843,7 +3833,7 @@ packages:
     resolution: {integrity: sha512-FlCHFwNnutLgVTflOYHPW2pPcl2AACqVzExlkGQNsi4CJgqOHN7YTgDd4LuhgN1BFO3TS0vLAruV1Td6dwWPJA==}
     peerDependencies:
       '@types/markdown-it': '*'
-      markdown-it: ^14.2.0
+      markdown-it: '*'
 
   markdown-it@14.3.0:
     resolution: {integrity: sha512-RCEsPjR+sr0x+AuYp601tKTkgFG4YEPLCzHST3cQ/fhlJkqAkz1L2/Qbp1j9qw5SBwQHFBoW8+hoN5xssOF0Tw==}
