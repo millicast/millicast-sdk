@@ -28,6 +28,9 @@ jobs:
       - id: changeset-status
         name: changeset status
         run: |
+          # hard dependency of changeset unfortunately
+          apk add --no-cache git
+
           corepack enable
           pnpm ci
 
