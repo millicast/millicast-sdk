@@ -381,6 +381,8 @@ export default class View extends BaseWebRTC {
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
     const localSdp = promises[0]
 
+    this.removeReconnectListeners()
+
     let oldSignaling = this.signaling
     this.signaling = signalingInstance
 
@@ -400,7 +402,7 @@ export default class View extends BaseWebRTC {
     this.setReconnect()
 
     if (data.migrate) {
-      this.webRTCPeer.on(webRTCEvents.connectionStateChange, (state) => {
+      const migrateCleanup = (state) => {
         if (state === 'connected') {
           setTimeout(() => {
             oldSignaling?.close?.()
@@ -408,12 +410,15 @@ export default class View extends BaseWebRTC {
             oldSignaling = oldWebRTCPeer = null
             logger.info('Current connection migrated')
           }, 1000)
+          this.webRTCPeer.off(webRTCEvents.connectionStateChange, migrateCleanup)
         } else if (['disconnected', 'failed', 'closed'].includes(state)) {
           oldSignaling?.close?.()
           oldWebRTCPeer?.closeRTCPeer?.()
           oldSignaling = oldWebRTCPeer = null
+          this.webRTCPeer.off(webRTCEvents.connectionStateChange, migrateCleanup)
         }
-      })
+      }
+      this.webRTCPeer.on(webRTCEvents.connectionStateChange, migrateCleanup)
     }
   }
 
