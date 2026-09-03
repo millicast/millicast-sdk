@@ -1,56 +1,103 @@
 name: Check tests
 
 on:
-  push:
-    branches:
-      - main
-
-  pull_request:
-    branches:
-      - main
-
   workflow_dispatch:
+  push:
+    tags:
+      - '**'
+    branches:
+      - '**'
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
       - name: Install the dependencies 🧱
-        run: npm ci
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+        run: |
+          corepack enable
+          pnpm ci
+
       - name: Check Linter and Build 📑
         run: |
-          npm run build
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+          pnpm run build
+          pnpm exec eslint . --ext .js,.jsx,.ts,.tsx
 
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
       - name: Install the dependencies 🧱
-        run: npm ci
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+        run: |
+          corepack enable
+          pnpm ci
+
+      - name: Install Chromium
+        run: |
+          sudo apt-get update -qq -y
+          sudo apt-get install -qq -y chromium-browser
+          echo "PUPPETEER_EXECUTABLE_PATH=$(which chromium-browser)" >> "${GITHUB_ENV}"
+
       - name: Unit Testing 🧪
-        working-directory: './packages/millicast-sdk'
-        run: npm run test-unit
+        run: pnpm --filter @millicast/sdk run test-unit
 
   e2e-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
       - name: Install the dependencies 🧱
-        run: npm ci
-      - name: End-2-End Testing
-        working-directory: './packages/millicast-sdk'
-        run: npm run test-e2e
         env:
-          ACCOUNT_ID: ${{vars.PUBLISHER_DEMO_ACC_ID}}
-          PUBLISH_TOKEN: ${{secrets.PUBLISHER_DEMO_TOKEN}}
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+        run: |
+          corepack enable
+          pnpm ci
+
+      - name: Install Chromium
+        run: |
+          sudo apt-get update -qq -y
+          sudo apt-get install -qq -y chromium-browser
+          echo "PUPPETEER_EXECUTABLE_PATH=$(which chromium-browser)" >> "${GITHUB_ENV}"
+
+      - name: End-to-End Testing
+        env:
+          ACCOUNT_ID: ${{ secrets.PUBLISHER_DEMO_ACC_ID }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}
+        run: pnpm --filter @millicast/sdk run test-e2e
 
   build-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
       - name: Install the dependencies 🧱
-        run: npm ci
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+        run: |
+          corepack enable
+          pnpm ci
+
       - name: build docs
-        run: npm run build-docs
+        run: pnpm --filter @millicast/sdk run build-docs

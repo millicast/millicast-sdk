@@ -27,19 +27,19 @@ This content is also available in the `.env.sample` file.
 
 7. Install all dependencies:
 ```sh
-npm ci
+pnpm ci
 ```
 8. Run the application:
 ```sh
-npm start
+pnpm start
 ```
 
 9. Open `http://localhost:10003` and test the application.
 
-You need to broadcast a stream to experience the latency. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token, or you can use the [Publisher](../millicast-publisher-demo/) demo application. After you start broadcasting, you can move the red slider in the application to change the latency. To listen to the broadcasted audio, we recommend using the [Viewer](../millicast-viewer-demo/) demo application.
+You need to broadcast a stream to experience the latency. You can do it either via the Dolby.io dashboard by clicking the **broadcast** button, located next to your token. After you start broadcasting, you can move the red slider in the application to change the latency. To listen to the broadcasted audio, we recommend using the [Viewer](../millicast-viewer-demo/) demo application.
 
 ## Introducing updates
 After introducing any changes to the `public` directory, use the following command:
 ```
-npm run prepare
+pnpm run build
 ```

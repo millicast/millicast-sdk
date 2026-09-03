@@ -1,0 +1,92 @@
+name: pnpm-build-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'git reference to checkout'
+        required: true
+        type: string
+      dist_tag:
+        description: 'Distribution tag to publish package with'
+        required: false
+        type: string
+      dryrun:
+        description: 'dryrun'
+        required: false
+        type: boolean
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      dist_tag:
+        required: false
+        type: string
+      dryrun:
+        required: false
+        type: boolean
+
+jobs:
+  build-publish:
+    name: "build-publish ${{ inputs.ref }}"
+    runs-on: ubuntu-latest
+    container: node:24-alpine
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
+    defaults:
+      run:
+        shell: 'ash -euo pipefail {0}'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup GitHub Pages 🛠
+        uses: actions/configure-pages@v6
+        if: inputs.dryrun != true
+
+      - name: "pnpm build"
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+        run: |
+          # some packages use node-gyp
+          apk add --no-cache build-base python3
+
+          cp README.md ./packages/millicast-sdk/
+  
+          corepack enable
+          pnpm ci
+  
+          pnpm --filter @millicast/sdk run build
+          pnpm --filter @millicast/sdk run build-docs
+
+          printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
+
+      - name: Upload artifact ⬆️
+        uses: actions/upload-pages-artifact@v5
+        if: inputs.dryrun != true
+        with:
+          path: './packages/millicast-sdk/docs'
+
+      - name: Deploy to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@v5
+        if: inputs.dryrun != true
+
+      - name: "pnpm publish"
+        env:
+          dist_tag: ${{ inputs.dist_tag }}
+          dryrun: ${{ inputs.dryrun || 'false' }}
+        run: |
+          set --
+          if [ -n "${dist_tag}" ]; then
+            set -- "$@" --tag "${dist_tag}"
+          fi
+          if [ "${dryrun}" = 'true' ]; then
+            set -- "$@" --dry-run
+          fi
+
+          pnpm --filter @millicast/sdk publish --provenance --no-git-checks "$@"
