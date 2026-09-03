@@ -91,7 +91,7 @@ importers:
     dependencies:
       '@dolbyio/webrtc-stats':
         specifier: ^1.0.4
-        version: 1.0.4
+        version: 1.2.2
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3
@@ -1115,8 +1115,8 @@ packages:
   '@cucumber/messages@24.1.0':
     resolution: {integrity: sha512-hxVHiBurORcobhVk80I9+JkaKaNXkW6YwGOEFIh/2aO+apAN+5XJgUUWjng9NwqaQrW1sCFuawLB1AuzmBaNdQ==}
 
-  '@dolbyio/webrtc-stats@1.0.4':
-    resolution: {integrity: sha512-QOo1TVQSI3NVaSWG1p3JopLkTDB9z94t9Bi1JvJwaQbwrEkLwGXccOX9U+FjroUsfSh9QK2tlifKJifedEBa7w==}
+  '@dolbyio/webrtc-stats@1.2.2':
+    resolution: {integrity: sha512-3MEZkHDntpo9yOxnBVxV3R3geif4Eut4p7naVOJTTWmLZvdpgQp6ayuKqnbBSvAKFwkv2X8XHQoBA5lcbNoBAw==}
 
   '@emnapi/core@1.4.3':
     resolution: {integrity: sha512-4m62DuCE07lw01soJwPiBGC0nAww0Q+RY70VZ+n49yDIO13yyinhbWCeNnaob0lakDtWQzSdtNWzJeOJt2ma+g==}
@@ -6887,7 +6887,7 @@ snapshots:
       reflect-metadata: 0.2.1
       uuid: 9.0.1
 
-  '@dolbyio/webrtc-stats@1.0.4':
+  '@dolbyio/webrtc-stats@1.2.2':
     dependencies:
       js-logger: 1.6.1
 
