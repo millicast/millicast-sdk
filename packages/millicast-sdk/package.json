@@ -21,7 +21,7 @@
     "build": "tsc --build && vite build --config vite.config.debug.mjs && vite build && rollup -c",
     "build:watch": "vite build --watch",
     "build-docs": "jsdoc -c jsdoc.json -R ../../README.md",
-    "start-docs": "pnpm run build-docs && rm -rf docs-preview && mkdir docs-preview && ln -s ../docs docs-preview/millicast-sdk && serve --symlinks docs-preview",
+    "start-docs": "jsdoc -c jsdoc.json -R ../../README.md -d docs-preview/millicast-sdk && serve docs-preview",
     "test-unit": "pnpm run build && jest --testMatch \"**/unit/*.steps.js\"",
     "test-unit-coverage": "pnpm run build && jest --testMatch \"**/unit/*.steps.js\" --coverage",
     "test-e2e": "pnpm run build && cross-env NODE_OPTIONS=--experimental-vm-modules jest --testMatch \"**/e2e/*.steps.js\" --verbose",
