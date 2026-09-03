@@ -1,5 +1,19 @@
 # @millicast/sdk
 
+## 0.8.0
+
+### Minor Changes
+
+- d08b1b2: Update dependencies (jwt-decode 4, @types/node 24, Babel/Rollup/Jest/Puppeteer refresh) and migrate ESLint to flat config.
+
+### Patch Changes
+
+- 18ec462: Fix jsdoc `excludePattern` so docs build when the checkout path contains `_` (e.g. GitHub Actions containers).
+- 94d3277: Upgrade dev tooling to Babel 8, TypeScript 7 and Puppeteer 25; bump ua-parser-js to latest 1.x.
+- eafd30f: Pin patched versions of remaining vulnerable transitive dev dependencies reported by `pnpm audit`.
+- 1a2f448: Pin @dolbyio/webrtc-stats to 1.0.x; the 1.2.x bundle has no exports and breaks the SDK build.
+- 4c4b38a: Remove unused rollup-plugin-filesize and pin patched versions of vulnerable transitive dev dependencies.
+
 ## 0.6.1
 
 ### Patch Changes
