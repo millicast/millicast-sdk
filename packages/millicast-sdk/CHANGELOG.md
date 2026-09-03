@@ -1,5 +1,12 @@
 # @millicast/sdk
 
+## 0.8.1
+
+### Patch Changes
+
+- b3a7299: Bump `@dolbyio/webrtc-stats` to `^1.3.0` and drop the `~1.0.4` pin.
+- 21a2285: Fix the published docs site: set the clean-jsdoc-theme v5 `basePath` to `/millicast-sdk/` and move `siteName`/`menu` to the v5 option names so assets, page links and the header render correctly on GitHub Pages.
+
 ## 0.8.0
 
 ### Minor Changes
