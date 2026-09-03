@@ -29,8 +29,6 @@ jobs:
           apk add --no-cache git
 
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - id: changeset-status
         name: changeset status
@@ -39,7 +37,7 @@ jobs:
           pnpm ci
 
           set +e
-          pnpm exec changeset status --output changeset_preview.json
+          pnpm exec changeset status --since origin/main --output changeset_preview.json
           rc=$?
           set -e
           if [ "${rc}" -ne 0 ]; then
