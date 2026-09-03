@@ -37,7 +37,7 @@ jobs:
           pnpm ci
 
           set +e
-          pnpm exec changeset status --output=changeset_preview.json
+          pnpm exec changeset status --output changeset_preview.json
           rc=$?
           set -e
           if [ "${rc}" -ne 0 ]; then
