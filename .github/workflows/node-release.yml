@@ -26,27 +26,228 @@ on:
         default: false
 
 jobs:
-  next-version:
-    uses: millicast/github-actions/.github/workflows/npm-version-release.yml@v1.0.2
-    # should ONLY be used from main
-    if: github.ref_name == 'main' || inputs.bump_version == 'prerelease'
-    permissions:
-      contents: write
-    secrets: inherit
-    with:
-      bump_version: ${{ inputs.bump_version }}
-      prerelease_id: ${{ inputs.prerelease_id }}
-      skip_tag: ${{ inputs.bump_version == 'prerelease' }}
-      app_path: 'packages/millicast-sdk'
+  changeset:
+    runs-on: ubuntu-latest
+    container: node:24-alpine
+    outputs:
+      oldVersion: ${{ steps.changeset-status.outputs.old_version }}
+      newVersion: ${{ steps.changeset-status.outputs.new_version }}
+      newHeadSha: ${{ steps.commit-tag-release.outputs.newHeadSha }}
+    steps:
+      - id: changeset-status
+        name: changeset status
+        shell: bash
+        run: |
+          corepack enable
+          pnpm ci
+
+          set +e
+          pnpm exec changeset status --output=changeset_preview.json
+          rc=$?
+          set -e
+          if [ "${rc}" -ne 0 ]; then
+            echo '::error::No changesets added or other error involving `pnpm exec changeset status`.'
+            exit 1
+          fi
+
+          old_version="$(pnpm --filter @millicast/sdk pkg get version | jq -r '."@millicast/sdk".version // ""')"
+          new_version="$(jq -r '(.releases // [])[] | select(.name == "@millicast/sdk") | .newVersion // ""' changeset_preview.json)"
+          if [ -z "${new_version}" ]; then
+            echo '::error::changeset status missing newVersion output for @millicast/sdk'.
+            exit 1
+          fi
+          echo "old_version=${old_version}" >> "${GITHUB_OUTPUT}"
+          echo "new_version=${new_version}" >> "${GITHUB_OUTPUT}"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: changeset.json
+          path: changeset_preview.json
+          retention-days: 7
+
+      - name: changeset version
+        shell: bash
+        env:
+          new_version: ${{ steps.changeset-status.outputs.new_version }}
+        run: |
+          pnpm exec changeset version
+          current_version="$(pnpm --filter @millicast/sdk pkg get version | jq -r '."@millicast/sdk".version // ""')"
+          if [ "${new_version}" != "${current_version}" ]; then
+            # would imply some serious error between changeset and package.json
+            echo '::error::newVersion did not match package version after bump.'
+            exit 1
+          fi
+
+      - id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.WRITE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.WRITE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - id: commit-tag-release
+        name: "github commit, tag, and release: ${{ steps.changeset-status.outputs.new_version }}"
+        uses: actions/github-script@v9
+        env:
+          appPath: 'packages/millicast-sdk'
+          branch: ${{ github.head_ref || github.ref_name }}
+          semVer: ${{ steps.changeset-status.outputs.new_version }}
+          skipTag: false
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          result-encoding: string
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = process.env.branch;
+            const expectedSha = context.sha;
+
+            const appPath = (process.env.appPath || '').replace(/^\.?\/+/, '').replace(/\/$/, '');
+            const semVer = process.env.semVer;
+            const skipTag = process.env.skipTag === 'true';
+
+            const filePath = (name) => appPath ? `${appPath}/${name}` : name;
+
+            if (!semVer) {
+              core.setFailed('Empty semVer received in step.');
+              return;
+            }
+
+            const fs = require('fs');
+
+            const packageFiles = [];
+            appendFileContents(filePath('package.json'), false, packageFiles);
+            appendFileContents(filePath('CHANGELOG.md'), false, packageFiles);
+
+            // validate tag does not already exist in repo
+            const tagName = `v${semVer}`;
+            try {
+              const { data: tagRef } = await github.rest.git.getRef({
+                owner,
+                repo,
+                ref: `tags/${tagName}`
+              });
+              console.log('tag ref', tagRef);
+
+              // if we get here that means we found a tag, so we should error out
+              // if version drifted from git tags, will require manual fixing
+              core.setFailed(`Tag ${tagName} already exists in repo`);
+              return;
+
+            } catch (err) {
+              if (err.status !== 404) {
+                // error testing if tag exists
+                throw err;
+              }
+              // else if status is 404 then tag does not exist, we can continue
+            }
+
+            // 1) Read current branch ref
+            const { data: branchRef } = await github.rest.git.getRef({
+              owner,
+              repo,
+              ref: `heads/${branch}`,
+            });
+            console.log('current branch ref', branchRef);
+            const currentCommitSha = branchRef.object.sha;
+
+            if (expectedSha !== currentCommitSha) {
+              // someone performed a commit between steps
+              core.setFailed('HEAD sha does not match expected sha');
+              return;
+            }
+
+            // 2) Read current commit so we can get its tree
+            const { data: branchCommit } = await github.rest.git.getCommit({
+              owner,
+              repo,
+              commit_sha: currentCommitSha,
+            });
+            console.log('current branch commit', branchCommit);
+            const baseTreeSha = branchCommit.tree.sha;
+
+            // 3) Create a new tree with just the updated file(s) replaced
+            const { data: newTree } = await github.rest.git.createTree({
+              owner,
+              repo,
+              base_tree: baseTreeSha,
+              tree: packageFiles.map(f => ({
+                ...f,
+                mode: '100644',
+                type: 'blob'
+              }))
+            });
+            const newTreeTree = newTree.tree;
+            newTree.tree = `${newTreeTree.length} files`;
+            console.log('created new tree', newTree);
+
+            const newTreeSha = newTree.sha;
+
+            // 4) Create a new commit with the old commit as parent
+            const { data: newCommit } = await github.rest.git.createCommit({
+              owner,
+              repo,
+              message: `chore: bump version to ${semVer}`,
+              tree: newTreeSha,
+              parents: [currentCommitSha],
+            });
+            console.log('created new commit', newCommit);
+
+            const newCommitSha = newCommit.sha;
+
+            // 5) Fast-forward branch ref only; fail if branch moved
+            const { data: newRef } = await github.rest.git.updateRef({
+              owner,
+              repo,
+              ref: `heads/${branch}`,
+              sha: newCommitSha,
+              force: false,
+            });
+            console.log(`fast-forward ${branch} ref`, newRef);
+
+            core.setOutput('newHeadSha', newCommitSha);
+
+            if (skipTag) {
+              return;
+            }
+
+            // 6) Create a tag and release
+            const { data: release } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tagName,
+              target_commitish: newCommitSha,
+              name: tagName, // release name
+              body: '', // will be prepended to generated release notes
+              generate_release_notes: true
+            });
+            console.log('created github release:', release);
+
+            function appendFileContents(filePath, isOptional, fileArr) {
+              if (!fs.existsSync(filePath)) {
+                if (isOptional === true) {
+                  return;
+                }
+                throw new Error(`${filePath} not found in workspace`);
+              }
+
+              const fileContents = fs.readFileSync(filePath, 'utf8');
+              fileArr.push({
+                path: filePath,
+                content: fileContents,
+              });
+            }
 
   build-publish:
     uses: ./.github/workflows/pnpm-build-publish.yml
-    needs: [next-version]
+    needs: [changeset]
     permissions:
       contents: read
       id-token: write
       pages: write
     with:
-      ref: ${{ inputs.bump_version != 'prerelease' && format('v{0}', needs.next-version.outputs.semVer) || needs.next-version.outputs.newHeadSha }}
+      ref: ${{ inputs.bump_version != 'prerelease' && format('v{0}', needs.changeset.outputs.newVersion) || needs.changeset.outputs.newHeadSha }}
       dist_tag: ${{ inputs.bump_version == 'prerelease' && inputs.prerelease_id || '' }}
       dryrun: ${{ inputs.skip_publish || false }}
