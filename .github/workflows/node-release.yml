@@ -19,12 +19,14 @@ jobs:
       oldVersion: ${{ steps.changeset-status.outputs.old_version }}
       newVersion: ${{ steps.changeset-status.outputs.new_version }}
       newHeadSha: ${{ steps.commit-tag-release.outputs.newHeadSha }}
+    defaults:
+      run:
+        shell: 'ash -euo pipefail {0}'
     steps:
       - uses: actions/checkout@v7
 
       - id: changeset-status
         name: changeset status
-        shell: bash
         run: |
           corepack enable
           pnpm ci
@@ -55,7 +57,6 @@ jobs:
 
       - id: changeset-version
         name: changeset version
-        shell: bash
         env:
           new_version: ${{ steps.changeset-status.outputs.new_version }}
         run: |
