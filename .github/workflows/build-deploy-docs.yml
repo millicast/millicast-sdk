@@ -1,0 +1,50 @@
+name: build-deploy-docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-deploy-docs:
+    name: "build-deploy-docs ${{ github.ref_name }}"
+    runs-on: ubuntu-latest
+    container: node:24-slim
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "pnpm build"
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+        run: |
+          corepack enable
+          pnpm ci
+
+          pnpm --filter @millicast/sdk run build-docs
+
+          printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdk-docs
+          path: packages/millicast-sdk/docs
+
+      - name: Setup GitHub Pages 🛠
+        uses: actions/configure-pages@v6
+
+      - name: Upload artifact ⬆️
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: packages/millicast-sdk/docs
+
+      - id: deployment
+        name: Deploy to GitHub Pages 🚀
+        uses: actions/deploy-pages@v5
