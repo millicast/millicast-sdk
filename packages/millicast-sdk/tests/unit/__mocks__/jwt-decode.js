@@ -11,4 +11,4 @@ jwtDecodeMock.mockImplementation((token) => {
   }
 })
 
-export default jwtDecodeMock
+export { jwtDecodeMock as jwtDecode }

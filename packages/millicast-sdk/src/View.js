@@ -1,5 +1,5 @@
 import reemit from 're-emitter'
-import jwtDecode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
@@ -440,7 +440,7 @@ export default class View extends BaseWebRTC {
     }
     if (this.options.metadata) {
       if (supportsRTCRtpScriptTransform) {
-        // eslint-disable-next-line no-undef
+         
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
           name: 'receiverTransform',
           payloadTypeCodec: { ...this.payloadTypeCodec },

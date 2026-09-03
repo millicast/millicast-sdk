@@ -7,6 +7,7 @@ packages:
   - 'packages/*'
 
 allowBuilds:
+  esbuild: true
   core-js: true
   unrs-resolver: true
   puppeteer: true
