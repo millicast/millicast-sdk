@@ -60,6 +60,7 @@ jobs:
             echo '::error::changeset status missing newVersion output for @millicast/sdk'.
             exit 1
           fi
+          echo "::notice ::Bumping version from ${old_version} -> ${new_version}"
           echo "old_version=${old_version}" >> "${GITHUB_OUTPUT}"
           echo "new_version=${new_version}" >> "${GITHUB_OUTPUT}"
 
