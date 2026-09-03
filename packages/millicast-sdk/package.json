@@ -24,8 +24,8 @@
     "start-docs": "pnpm run build-docs && serve docs",
     "test-unit": "pnpm run build && jest --testMatch \"**/unit/*.steps.js\"",
     "test-unit-coverage": "pnpm run build && jest --testMatch \"**/unit/*.steps.js\" --coverage",
-    "test-e2e": "pnpm run build && jest --testMatch \"**/e2e/*.steps.js\" --verbose",
-    "test-all": "pnpm run build && jest --testMatch \"**/*.steps.js\"",
+    "test-e2e": "pnpm run build && cross-env NODE_OPTIONS=--experimental-vm-modules jest --testMatch \"**/e2e/*.steps.js\" --verbose",
+    "test-all": "pnpm run build && cross-env NODE_OPTIONS=--experimental-vm-modules jest --testMatch \"**/*.steps.js\"",
     "test": "pnpm run test-all"
   },
   "babel": {
@@ -36,7 +36,7 @@
             "@babel/preset-env",
             {
               "targets": {
-                "node": 12
+                "node": "current"
               }
             }
           ]
@@ -63,24 +63,17 @@
     "re-emitter": "^1.1.4",
     "semantic-sdp": "^3.22.0",
     "transaction-manager": "^2.1.3",
-    "ua-parser-js": "^0.7.30",
+    "ua-parser-js": "^1.0.41",
     "valibot": "^1.4.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/helpers": "^7.29.7",
-    "@babel/plugin-transform-modules-commonjs": "^7.29.7",
-    "@babel/plugin-transform-runtime": "^7.29.7",
-    "@babel/preset-env": "^7.29.7",
-    "@babel/runtime": "^7.29.7",
-    "@rollup/plugin-babel": "^7.1.0",
-    "@rollup/plugin-commonjs": "^29.0.3",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-terser": "^1.0.0",
+    "@babel/core": "^8.0.0",
+    "@babel/preset-env": "^8.0.0",
+    "@typescript/typescript6": "^6.0.2",
     "babel-jest": "^30.4.1",
     "clean-jsdoc-theme": "^5.1.1",
     "core-js": "^3.50.0",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "jest": "^30.4.2",
     "jest-cucumber": "^4.5.0",
@@ -90,12 +83,11 @@
     "jsdoc": "^4.0.5",
     "jsdoc-export-default-interop": "^0.3.1",
     "mock-socket": "^9.0.3",
-    "puppeteer": "^24.37.3",
+    "puppeteer": "^25.9.0",
     "rollup": "4.63.0",
-    "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-dts": "^6.5.1",
     "serve": "^14.2.6",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "underscore": "^1.13.8",
     "vite": "^8.2.2"
   }
