@@ -1,0 +1,12 @@
+name: 'RELEASE: Bump version, create tag/release, and pnpm publish'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  empty:
+    runs-on: [ubuntu-latest]
+    container: alpine:latest
+    steps:
+      - name: step1
+        run: whoami
