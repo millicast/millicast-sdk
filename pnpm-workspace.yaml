@@ -8,21 +8,9 @@ packages:
 
 allowBuilds:
   core-js: true
-  esbuild: true
-  netlify-cli: true
-  puppeteer: true
-  sharp: true
-  unix-dgram: true
   unrs-resolver: true
-
-overrides:
-  hot-shots>unix-dgram: 2.0.7
+  puppeteer: true
 
 trustPolicyExclude:
-  - 'chokidar@4.0.3'
   - 'semver@6.3.1'
-  - '@netlify/edge-bundler@14.0.6'
-  - '@netlify/serverless-functions-api@2.1.1'
-  - '@netlify/zip-it-and-ship-it@12.1.4'
-  - 'ua-parser-js@0.7.41'
   - 'undici-types@6.19.8'
