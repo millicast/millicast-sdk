@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   define: {
-    global: 'globalThis'
+    global: "(typeof globalThis !== 'undefined' ? globalThis : self)"
   },
   build: {
     emptyOutDir: false,

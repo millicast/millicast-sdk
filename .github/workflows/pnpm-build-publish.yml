@@ -52,9 +52,6 @@ jobs:
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: |
-          # some packages use node-gyp
-          apk add --no-cache build-base python3
-
           cp README.md ./packages/millicast-sdk/
   
           corepack enable
