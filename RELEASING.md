@@ -33,6 +33,9 @@ Before any release, ensure all changes have been documented using changesets:
 
 RC releases are published to NPM under the `next` tag, allowing users to test pre-release versions.
 
+### TODO
+Need to re-add a workflow/logic to follow this. Perform this manually if needed.
+
 ### Steps
 
 1. **Ensure your changes are merged to `main`**
