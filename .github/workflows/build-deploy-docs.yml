@@ -32,11 +32,6 @@ jobs:
 
           printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
 
-      - uses: actions/download-artifact@v8
-        with:
-          name: sdk-docs
-          path: packages/millicast-sdk/docs
-
       - name: Setup GitHub Pages 🛠
         uses: actions/configure-pages@v6
 
