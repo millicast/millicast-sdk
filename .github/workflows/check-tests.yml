@@ -80,7 +80,7 @@ jobs:
 
       - name: End-to-End Testing
         env:
-          ACCOUNT_ID: ${{ vars.PUBLISHER_DEMO_ACC_ID }}
+          ACCOUNT_ID: ${{ secrets.PUBLISHER_DEMO_ACC_ID }}
           PUBLISH_TOKEN: ${{ secrets.PUBLISHER_DEMO_TOKEN }}
         run: pnpm --filter @millicast/sdk run test-e2e
 
