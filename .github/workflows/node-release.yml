@@ -35,6 +35,9 @@ jobs:
       - id: changeset-status
         name: changeset status
         run: |
+          # some packages use node-gyp
+          apk add --no-cache build-base python3
+
           corepack enable
           pnpm ci
 
