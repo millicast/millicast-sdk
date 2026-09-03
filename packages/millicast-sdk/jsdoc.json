@@ -15,7 +15,7 @@
     "node_modules/jsdoc-i18n-plugin/index.js"
   ],
   "markdown": {
-    "idInHeadings": true 
+    "idInHeadings": true
   },
   "i18n": {
     "locale": "en",
@@ -29,22 +29,20 @@
     "destination": "docs/",
     "recurse": true,
     "verbose": true,
-    "theme_opts": {
-      "title": "Millicast SDK",
-      "theme": "light",
-      "menu": [
-        {
-          "title": "Github",
-          "link": "https://github.com/millicast/millicast-sdk",
-          "target": "_blank"
-        },
-        {
-          "title": "NPM Package",
-          "link": "https://www.npmjs.com/package/@millicast/sdk",
-          "target": "_blank"
-        }
-      ]
-    }
+    "siteName": "Millicast SDK",
+    "menu": [
+      {
+        "title": "Github",
+        "link": "https://github.com/millicast/millicast-sdk",
+        "target": "_blank"
+      },
+      {
+        "title": "NPM Package",
+        "link": "https://www.npmjs.com/package/@millicast/sdk",
+        "target": "_blank"
+      }
+    ],
+    "basePath": "/millicast-sdk/"
   },
   "templates": {
     "cleverLinks": false,

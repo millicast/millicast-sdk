@@ -134,7 +134,7 @@ Or if you want to navigate to the docs on your local machine, run:
 pnpm run start-docs
 ```
 
-In the logs you find the link where you can access to docs. By default, the logs run on http://localhost:5000.
+The docs are served under the same `/millicast-sdk/` prefix as the published site, e.g. http://localhost:3000/millicast-sdk/.
 
 ### SDK Components
 
