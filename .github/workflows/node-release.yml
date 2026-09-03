@@ -19,6 +19,8 @@ jobs:
       newVersion: ${{ steps.changeset-status.outputs.new_version }}
       newHeadSha: ${{ steps.commit-tag-release.outputs.newHeadSha }}
     steps:
+      - uses: actions/checkout@v7
+
       - id: changeset-status
         name: changeset status
         shell: bash
