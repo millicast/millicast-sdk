@@ -62,6 +62,11 @@ jobs:
 
           printf '\nNODE: %s\nPNPM: %s\n\n' "$(node --version)" "$(pnpm --version)"
 
+      # upload-pages-artifact needs GNU tar (--hard-dereference); busybox tar lacks it
+      - name: Install GNU tar
+        if: inputs.dryrun != true
+        run: apk add --no-cache tar
+
       - name: Upload artifact ⬆️
         uses: actions/upload-pages-artifact@v5
         if: inputs.dryrun != true
