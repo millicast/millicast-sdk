@@ -1,5 +1,3 @@
- 
- 
 import BitStreamReader from './BitStreamReader'
 /**
  * Enum of Millicast supported Video codecs

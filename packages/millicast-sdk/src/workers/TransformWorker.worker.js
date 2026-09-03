@@ -38,7 +38,6 @@ function createReceiverTransform (mid) {
 function isVideoFrame (frame) {
   if (typeof RTCEncodedVideoFrame !== 'undefined') {
     try {
-       
       if (frame instanceof RTCEncodedVideoFrame) {
         return true
       }
@@ -123,7 +122,6 @@ function setupPipe ({ readable, writable }, transform) {
     .pipeTo(writable)
 }
 
- 
 addEventListener('rtctransform', (event) => {
   let transform
   if (event.transformer.options.name === 'senderTransform') {

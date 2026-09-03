@@ -440,7 +440,6 @@ export default class View extends BaseWebRTC {
     }
     if (this.options.metadata) {
       if (supportsRTCRtpScriptTransform) {
-         
         trackEvent.receiver.transform = new RTCRtpScriptTransform(this.worker, {
           name: 'receiverTransform',
           payloadTypeCodec: { ...this.payloadTypeCodec },

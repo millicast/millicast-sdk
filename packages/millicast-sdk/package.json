@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@dolbyio/webrtc-stats": "^1.0.4",
-    "@types/node": "^26.4.0",
+    "@types/node": "^24.0.0",
     "Base64": "^1.1.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
@@ -90,7 +90,7 @@
     "jsdoc": "^4.0.5",
     "jsdoc-export-default-interop": "^0.3.1",
     "mock-socket": "^9.0.3",
-    "puppeteer": "^25.9.0",
+    "puppeteer": "^24.37.3",
     "rollup": "4.63.0",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-dts": "^6.5.1",
