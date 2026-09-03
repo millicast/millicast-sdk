@@ -81,7 +81,6 @@ jobs:
   deploy-docs:
     name: "build-docs ${{ inputs.ref }}"
     runs-on: ubuntu-latest
-    container: debian:stable-slim
     if: inputs.dryrun != true
     needs: [build-publish]
     permissions:
