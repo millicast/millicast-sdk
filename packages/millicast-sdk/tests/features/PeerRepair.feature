@@ -49,6 +49,19 @@ Feature: As a viewer I want unusable ICE candidate pairs to be detected and repa
     And the repair fails
     Then no candidates are demoted and relay only is off
 
+  Scenario: Monitoring continues after a failed repair
+    Given a repair monitor connected 3 seconds ago
+    When a repair was started 40 seconds ago
+    And the repair fails
+    And stats report the selected host pair with 9 seconds RTT and a relay pair with 300 ms RTT
+    Then a repair is decided with the selected remote candidate demoted and relay only
+
+  Scenario: Relay only follows the latest repair decision
+    Given a repair monitor connected 3 seconds ago
+    When a repair was started 5 seconds ago
+    And a repair towards a direct alternative is started
+    Then relay only is off
+
   Scenario: Disabled monitor never repairs
     Given a disabled repair monitor connected 3 seconds ago
     When stats report the selected host pair with 9 seconds RTT and a relay pair with 300 ms RTT

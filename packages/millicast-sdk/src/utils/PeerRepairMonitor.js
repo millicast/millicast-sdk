@@ -110,14 +110,14 @@ export default class PeerRepairMonitor {
     for (const candidate of decision.demote) {
       this.demotedCandidates.add(candidate)
     }
-    if (decision.relayOnly) {
-      this.relayOnly = true
-    }
+    this.relayOnly = decision.relayOnly === true
     this.reset()
   }
 
-  onRepairFailed () {
+  /** The current connection is kept, so monitoring of it continues. */
+  onRepairFailed (nowMs = Date.now()) {
     this.clearDemotions()
+    this.onConnected(nowMs)
   }
 
   canRepair (nowMs) {

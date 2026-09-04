@@ -169,6 +169,36 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Monitoring continues after a failed repair', ({ given, when, and, then }) => {
+    given('a repair monitor connected 3 seconds ago', () => connectedAgo(3))
+    when('a repair was started 40 seconds ago', () => {
+      monitor.onRepairStarted({ demote: [SELECTED_REMOTE], relayOnly: true }, now - 40000)
+    })
+    and('the repair fails', () => { monitor.onRepairFailed(now) })
+    and('stats report the selected host pair with 9 seconds RTT and a relay pair with 300 ms RTT', () => {
+      report(buildRaw({ selectedRtt: 9, alternativeRtt: 0.3 }))
+    })
+    then('a repair is decided with the selected remote candidate demoted and relay only', () => {
+      expectRepair()
+      expect(monitor.attempts).toBe(1)
+    })
+  })
+
+  test('Relay only follows the latest repair decision', ({ given, when, and, then }) => {
+    given('a repair monitor connected 3 seconds ago', () => connectedAgo(3))
+    when('a repair was started 5 seconds ago', () => {
+      monitor.onRepairStarted({ demote: [SELECTED_REMOTE], relayOnly: true }, now - 5000)
+      expect(monitor.relayOnly).toBe(true)
+    })
+    and('a repair towards a direct alternative is started', () => {
+      monitor.onRepairStarted({ demote: [RELAY_REMOTE], relayOnly: false }, now)
+    })
+    then('relay only is off', () => {
+      expect(monitor.relayOnly).toBe(false)
+      expect(monitor.demotedCandidates.has(SELECTED_REMOTE)).toBe(true)
+    })
+  })
+
   test('Disabled monitor never repairs', ({ given, when, then }) => {
     given('a disabled repair monitor connected 3 seconds ago', () => connectedAgo(3, { enabled: false }))
     when('stats report the selected host pair with 9 seconds RTT and a relay pair with 300 ms RTT', () => {
