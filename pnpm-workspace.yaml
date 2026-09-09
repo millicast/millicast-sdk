@@ -18,10 +18,11 @@ peerDependencyRules:
     '@babel/core': '8'
 
 allowBuilds:
-  esbuild: true
-  core-js: true
-  unrs-resolver: true
-  puppeteer: true
+  '@parcel/watcher': false
+  core-js: false
+  esbuild: false
+  puppeteer: false
+  unrs-resolver: false
 
 trustPolicyExclude:
   - 'semver@6.3.1'
