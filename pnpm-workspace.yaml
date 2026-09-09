@@ -22,6 +22,7 @@ allowBuilds:
   core-js: true
   unrs-resolver: true
   puppeteer: true
+  '@parcel/watcher': false
 
 trustPolicyExclude:
   - 'semver@6.3.1'
