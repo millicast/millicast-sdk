@@ -23,7 +23,7 @@ jobs:
 
       - name: Install the dependencies 🧱
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           corepack enable
           pnpm ci
@@ -43,7 +43,7 @@ jobs:
 
       - name: Install the dependencies 🧱
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           corepack enable
           pnpm ci
@@ -67,7 +67,7 @@ jobs:
 
       - name: Install the dependencies 🧱
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           corepack enable
           pnpm ci
@@ -94,7 +94,7 @@ jobs:
 
       - name: Install the dependencies 🧱
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           corepack enable
           pnpm ci
