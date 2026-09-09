@@ -45,7 +45,7 @@ jobs:
 
       - name: "pnpm build"
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           cp README.md ./packages/millicast-sdk/
 
