@@ -98,6 +98,12 @@ export default class MockRTCPeerConnection {
   addTrack (track, mediaStream) {
     this.senders.push({
       track,
+      parameters: {},
+      getParameters () { return { ...this.parameters } },
+      setParameters (parameters) {
+        this.parameters = { ...parameters }
+        return Promise.resolve()
+      },
       replaceTrack: (newTrack) => {
         for (const sender of this.senders) {
           if (sender.track.kind === newTrack.kind) {
@@ -127,6 +133,12 @@ export default class MockRTCPeerConnection {
   addTransceiver (track, options) {
     this.senders.push({
       track,
+      parameters: {},
+      getParameters () { return { ...this.parameters } },
+      setParameters (parameters) {
+        this.parameters = { ...parameters }
+        return Promise.resolve()
+      },
       replaceTrack: (newTrack) => {
         for (const sender of this.senders) {
           if (sender.track.kind === newTrack.kind) {

@@ -241,6 +241,13 @@ export default class PeerConnection extends EventEmitter {
 
   /**
    * Replace current audio or video track that is being broadcasted.
+   *
+   * Any contentHint set on the outgoing track is carried over to the incoming one unless the
+   * new track already declares its own. contentHint is a property of the track rather than of
+   * the sender, so without this a replacement silently discards it - which would quietly
+   * disable the `maintainResolution` publish option the first time a camera is switched.
+   * degradationPreference does not need the same treatment; it lives on the sender and
+   * survives the replacement.
    * @param {MediaStreamTrack} mediaStreamTrack - New audio or video track to replace the current one.
    */
   replaceTrack (mediaStreamTrack) {
@@ -252,6 +259,11 @@ export default class PeerConnection extends EventEmitter {
     const currentSender = this.peer.getSenders().find(s => s.track.kind === mediaStreamTrack.kind)
 
     if (currentSender) {
+      const previousHint = currentSender.track?.contentHint
+      if (previousHint && !mediaStreamTrack.contentHint) {
+        mediaStreamTrack.contentHint = previousHint
+        logger.debug('Carried contentHint over to the replacement track: ', previousHint)
+      }
       currentSender.replaceTrack(mediaStreamTrack)
     } else {
       logger.error(`There is no ${mediaStreamTrack.kind} track in active broadcast.`)
