@@ -66,10 +66,10 @@ export default class BaseWebRTC extends EventEmitter {
    */
   stop () {
     logger.info('Stopping')
+    this.stopReconnection = true
     this.webRTCPeer.closeRTCPeer()
     this.signaling?.close()
     this.signaling = null
-    this.stopReconnection = true
     this.webRTCPeer = new PeerConnection()
   }
 
