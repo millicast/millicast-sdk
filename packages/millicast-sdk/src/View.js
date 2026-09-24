@@ -4,6 +4,7 @@ import Logger from './Logger'
 import BaseWebRTC from './utils/BaseWebRTC'
 import Signaling, { signalingEvents } from './Signaling'
 import PeerConnection, { webRTCEvents } from './PeerConnection'
+import { peerConnectionStatsEvents } from './PeerConnectionStats'
 import { hexToUint8Array } from './utils/StringUtils'
 import { swapPropertyValues } from './utils/ObjectUtils'
 import FetchError from './utils/FetchError'
@@ -11,8 +12,11 @@ import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './util
 import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
+import PeerRepairMonitor, { defaultPeerRepairOptions } from './utils/PeerRepairMonitor'
 
 const logger = Logger.get('View')
+// Firefox reports the raw iceConnectionState, which can be 'completed' instead of 'connected'.
+const isConnectedState = (state) => state === 'connected' || state === 'completed'
 logger.setLevel(Logger.DEBUG)
 
 const connectOptions = {
@@ -23,7 +27,8 @@ const connectOptions = {
   peerConfig: {
     autoInitStats: true,
     statsIntervalMs: 1000
-  }
+  },
+  peerRepair: defaultPeerRepairOptions
 }
 
 /**
@@ -56,6 +61,11 @@ export default class View extends BaseWebRTC {
     // cache of events to coordinate re-emitting
     this.eventQueue = []
     this.isMainStreamActive = false
+    this.peerRepairMonitor = null
+    this.repairInProgress = false
+    this.repairPeer = null
+    this.connectionGeneration = 0
+    this.trackEventsByPeer = new Map()
     if (mediaElement) {
       this.on(webRTCEvents.track, (e) => {
         mediaElement.srcObject = e.streams[0]
@@ -123,6 +133,7 @@ export default class View extends BaseWebRTC {
      * @param {Boolean} [options.enableDRM]                       - Enable DRM, default is false.
      * @param {Boolean} [options.forceSmooth]                     - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to what the server determines.
      * @param {AbrConfigurationOptions} [options.abrConfiguration] - The strategy for initial playback behavior. Can be one of ("quality" | "performance" | "bandwidth")
+     * @param {PeerRepairOptions} [options.peerRepair]            - Experimental. Detect a connected but unusable ICE candidate pair and replace the connection when a better pair exists. Disabled by default.
      * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
      * @fires PeerConnection#track
      * @fires Signaling#broadcastEvent
@@ -155,8 +166,17 @@ export default class View extends BaseWebRTC {
      * }
      */
   async connect (options = connectOptions) {
-    this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+    this.options = {
+      ...connectOptions,
+      ...options,
+      peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig },
+      peerRepair: { ...defaultPeerRepairOptions, ...options.peerRepair },
+      setSDPToPeer: false
+    }
     this.eventQueue.length = 0
+    // A new monitor per connect: a full reconnect gives demoted candidates a new chance.
+    this.peerRepairMonitor = this.options.peerRepair.enabled ? new PeerRepairMonitor(this.options.peerRepair) : null
+    this.repairInProgress = false
     await this.initConnection({ migrate: false })
   }
 
@@ -228,8 +248,58 @@ export default class View extends BaseWebRTC {
     await this.initConnection({ migrate: true })
   }
 
+  /**
+   * Replaces the current connection because its selected ICE candidate pair is unusable.
+   * The current connection keeps running until the replacement is connected. If the replacement
+   * fails, the current connection is kept and the candidate demotions are cleared.
+   * @param {Object} decision - Result of {@link PeerRepairMonitor#evaluate}.
+   * @fires View#peerRepair
+   */
+  async repairConnection (decision) {
+    logger.warn('Repairing current connection', decision)
+    this.repairInProgress = true
+    this.peerRepairMonitor.onRepairStarted(decision)
+    /**
+     * Emits when a peer repair starts, completes or fails.
+     *
+     * @event View#peerRepair
+     * @type {Object}
+     * @property {"started" | "completed" | "failed"} state
+     * @property {String} reason - Why the selected candidate pair was considered bad.
+     * @property {Object} selected - Selected candidate pair (local type, remote address, RTT).
+     * @property {Object} alternative - Candidate pair expected to be used after the repair.
+     * @property {Array<String>} demote - Remote candidates demoted in the replacement SDP.
+     * @property {Boolean} relayOnly - Whether the replacement uses only relay candidates.
+     */
+    this.emit('peerRepair', { state: 'started', ...decision })
+    const generation = this.connectionGeneration
+    try {
+      await this.initConnection({ migrate: true, repair: decision })
+    } catch (error) {
+      this.closeRepairPeer()
+      if (generation !== this.connectionGeneration) return
+      logger.error('Peer repair failed, keeping current connection', error)
+      this.repairInProgress = false
+      this.peerRepairMonitor.onRepairFailed()
+      this.emit('peerRepair', { state: 'failed', error, ...decision })
+    }
+  }
+
+  closeRepairPeer () {
+    const repairPeer = this.repairPeer
+    this.repairPeer = null
+    if (!repairPeer) return
+    repairPeer.signaling.close()
+    repairPeer.webRTCPeer.closeRTCPeer()
+    this.trackEventsByPeer.delete(repairPeer.webRTCPeer)
+  }
+
   stop () {
     super.stop()
+    this.connectionGeneration++
+    this.closeRepairPeer()
+    this.repairInProgress = false
+    this.trackEventsByPeer.clear()
     this.drmOptionsMap?.clear()
     this.DRMProfile = null
     this.worker?.terminate()
@@ -290,15 +360,19 @@ export default class View extends BaseWebRTC {
     }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
-    await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
-    // Stop emiting events from the previous instances
-    this.stopReemitingWebRTCPeerInstanceEvents?.()
-    // And start emitting from the new ones
-    this.stopReemitingWebRTCPeerInstanceEvents = reemit(
-      webRTCPeerInstance,
-      this,
-      Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
-    )
+    const peerConfig = this.peerRepairMonitor?.relayOnly
+      ? { ...this.options.peerConfig, iceTransportPolicy: 'relay' }
+      : this.options.peerConfig
+    await webRTCPeerInstance.createRTCPeer(peerConfig)
+    if (data.repair) {
+      this.repairPeer = { webRTCPeer: webRTCPeerInstance, signaling: signalingInstance }
+    } else {
+      this.reemitWebRTCPeerEvents(webRTCPeerInstance)
+    }
+    this.trackEventsByPeer.set(webRTCPeerInstance, [])
+    if (this.peerRepairMonitor) {
+      this.monitorPeerRepair(webRTCPeerInstance)
+    }
 
     if (this.options.metadata) {
       if (!this.worker) {
@@ -345,6 +419,10 @@ export default class View extends BaseWebRTC {
     }
 
     webRTCPeerInstance.on(webRTCEvents.track, (trackEvent) => {
+      if (this.peerRepairMonitor && webRTCPeerInstance !== this.webRTCPeer && webRTCPeerInstance !== this.repairPeer?.webRTCPeer) {
+        return
+      }
+      this.trackEventsByPeer.get(webRTCPeerInstance)?.push(trackEvent)
       if (!this.isMainStreamActive) {
         this.eventQueue.push(trackEvent)
         return
@@ -382,18 +460,28 @@ export default class View extends BaseWebRTC {
     const localSdp = promises[0]
 
     let oldSignaling = this.signaling
-    this.signaling = signalingInstance
+    if (!data.repair) {
+      this.signaling = signalingInstance
+    }
 
-    const subscribePromise = this.signaling.subscribe(localSdp, { ...this.options, vad: this.options.multiplexedAudioTracks > 0 })
+    const subscribePromise = signalingInstance.subscribe(localSdp, { ...this.options, vad: this.options.multiplexedAudioTracks > 0 })
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
-    const sdpSubscriber = promises[0]
+    let sdpSubscriber = promises[0]
 
     this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber)
 
+    if (this.peerRepairMonitor) {
+      sdpSubscriber = SdpParser.demoteCandidates(sdpSubscriber, this.peerRepairMonitor.demotedCandidates)
+    }
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
 
     logger.info('Connected to streamName: ', this.streamName)
+
+    if (data.repair) {
+      this.finishRepair(webRTCPeerInstance, signalingInstance, data.repair)
+      return
+    }
 
     let oldWebRTCPeer = this.webRTCPeer
     this.webRTCPeer = webRTCPeerInstance
@@ -415,6 +503,95 @@ export default class View extends BaseWebRTC {
         }
       })
     }
+  }
+
+  reemitWebRTCPeerEvents (webRTCPeerInstance) {
+    // Stop emiting events from the previous instances
+    this.stopReemitingWebRTCPeerInstanceEvents?.()
+    // And start emitting from the new ones
+    this.stopReemitingWebRTCPeerInstanceEvents = reemit(
+      webRTCPeerInstance,
+      this,
+      Object.values(webRTCEvents).filter((e) => e !== webRTCEvents.track)
+    )
+  }
+
+  monitorPeerRepair (webRTCPeerInstance) {
+    webRTCPeerInstance.on(webRTCEvents.connectionStateChange, (state) => {
+      if (isConnectedState(state) && this.webRTCPeer === webRTCPeerInstance) {
+        this.peerRepairMonitor.onConnected()
+      }
+    })
+    webRTCPeerInstance.on(peerConnectionStatsEvents.stats, (stats) => {
+      if (this.webRTCPeer !== webRTCPeerInstance || this.repairInProgress) return
+      const decision = this.peerRepairMonitor.evaluate(stats, this.isMainStreamActive)
+      if (decision) {
+        this.repairConnection(decision)
+      }
+    })
+  }
+
+  finishRepair (newWebRTCPeer, newSignaling, decision) {
+    const oldWebRTCPeer = this.webRTCPeer
+    const oldSignaling = this.signaling
+    const generation = this.connectionGeneration
+    let done = false
+
+    const complete = () => {
+      done = true
+      clearTimeout(timeout)
+      this.repairPeer = null
+      this.webRTCPeer = newWebRTCPeer
+      this.signaling = newSignaling
+      this.reemitWebRTCPeerEvents(newWebRTCPeer)
+      this.setReconnect()
+      this.peerRepairMonitor.onConnected()
+      this.repairInProgress = false
+      this.emit('peerRepair', { state: 'completed', ...decision })
+      setTimeout(() => {
+        oldSignaling?.close?.()
+        oldWebRTCPeer?.closeRTCPeer?.()
+        this.trackEventsByPeer.delete(oldWebRTCPeer)
+        logger.info('Current connection repaired')
+      }, 1000)
+    }
+
+    const rollback = (error) => {
+      done = true
+      clearTimeout(timeout)
+      logger.error('Peer repair failed, keeping current connection', error)
+      this.closeRepairPeer()
+      this.peerRepairMonitor.onRepairFailed()
+      this.repairInProgress = false
+      this.emit('peerRepair', { state: 'failed', error, ...decision })
+      // The application already received the tracks of the replacement; give it the current ones again.
+      for (const trackEvent of this.trackEventsByPeer.get(oldWebRTCPeer) ?? []) {
+        this.emit(webRTCEvents.track, trackEvent)
+      }
+    }
+
+    const timeout = setTimeout(() => {
+      if (!done) rollback(new Error('Replacement connection did not connect in time'))
+    }, this.options.peerRepair.repairTimeoutMs)
+
+    const onState = (state) => {
+      if (done) return
+      if (generation !== this.connectionGeneration) {
+        // The View was stopped or fully reconnected while the replacement was connecting.
+        done = true
+        clearTimeout(timeout)
+        newSignaling.close()
+        newWebRTCPeer.closeRTCPeer()
+        return
+      }
+      if (isConnectedState(state)) {
+        complete()
+      } else if (['disconnected', 'failed', 'closed'].includes(state)) {
+        rollback(new Error(`Replacement connection state: ${state}`))
+      }
+    }
+    newWebRTCPeer.on(webRTCEvents.connectionStateChange, onState)
+    onState(newWebRTCPeer.getRTCPeerStatus())
   }
 
   onTrackEvent (trackEvent) {

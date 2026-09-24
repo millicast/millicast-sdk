@@ -1180,6 +1180,10 @@ declare module "@millicast/sdk" {
          */
         peerConfig?: RTCConfiguration
         /**
+         * - Experimental. Detect a connected but unusable ICE candidate pair and replace the connection when a better pair exists. Disabled by default.
+         */
+        peerRepair?: PeerRepairOptions
+        /**
          * - Select the simulcast encoding layer and svc layers for the main video track, leave empty for automatic layer selection based on bandwidth estimation.
          */
         layer?: {
@@ -1313,6 +1317,23 @@ declare module "@millicast/sdk" {
          * - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
          */
         priority?: Number
+    }
+
+    export type PeerRepairOptions = {
+        enabled?: boolean
+        startupWindowMs?: number
+        startupBadRttMs?: number
+        startupNoMediaTicks?: number
+        badRttMs?: number
+        badLossRatio?: number
+        badTicks?: number
+        relativeRttRatio?: number
+        relativeRttTicks?: number
+        alternativeRttRatio?: number
+        deadCandidateRequests?: number
+        repairTimeoutMs?: number
+        cooldownMs?: number
+        maxAttempts?: number
     }
 
     export interface PeerConnectionConfig extends RTCConfiguration {
