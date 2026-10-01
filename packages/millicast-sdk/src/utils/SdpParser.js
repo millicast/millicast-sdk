@@ -20,6 +20,9 @@ const firstHeaderExtensionIdUpperRange = 16
 const lastHeaderExtensionIdUpperRange = 255
 
 const headerExtensionIdLowerRange = Array.from({ length: (lastHeaderExtensionIdLowerRange - firstHeaderExtensionIdLowerRange) + 1 }, (_, i) => i + firstHeaderExtensionIdLowerRange)
+// Lowest valid ICE candidate priority. Pairs using a candidate with this priority sort last.
+const demotedCandidatePriority = 1
+
 const headerExtensionIdUppperRange = Array.from({ length: (lastHeaderExtensionIdUpperRange - firstHeaderExtensionIdUpperRange) + 1 }, (_, i) => i + firstHeaderExtensionIdUpperRange)
 
 /**
@@ -384,6 +387,26 @@ const SdpParser = {
       })
     }
     return localDescription
+  },
+  /**
+   * @function
+   * @name demoteCandidates
+   * @description Lowers the ICE priority of the given remote candidates so the browser prefers any other
+   * candidate pair (RFC 8445 pair priority is dominated by the lower candidate priority). The candidates
+   * stay in the SDP and are still used when no other pair works.
+   * @param {String} sdp - Remote sdp
+   * @param {Iterable<String>} candidates - Candidates to demote, as `address:port` strings.
+   * @returns {String} SDP with the candidate priorities rewritten.
+   */
+  demoteCandidates (sdp, candidates) {
+    const demoted = new Set(candidates)
+    if (demoted.size === 0) {
+      return sdp
+    }
+    const candidateRegex = /^(a=candidate:\S+ \d+ \S+ )(\d+)( (\S+) (\d+) typ [^\r\n]*)/gm
+    return sdp.replace(candidateRegex, (line, prefix, priority, suffix, address, port) => {
+      return demoted.has(`${address}:${port}`) ? `${prefix}${demotedCandidatePriority}${suffix}` : line
+    })
   },
   getCodecPayloadType (sdp) {
     const reg = /a=rtpmap:(\d+) (\w+)\/\d+/g
