@@ -242,6 +242,14 @@ export default class View extends BaseWebRTC {
     this.eventQueue.length = 0
   }
 
+  releaseConnectAttempt (attempt) {
+    super.releaseConnectAttempt(attempt)
+    if (this.connectAttempt === attempt) {
+      this.worker?.terminate()
+      this.worker = null
+    }
+  }
+
   async initConnection (data, attempt) {
     logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false

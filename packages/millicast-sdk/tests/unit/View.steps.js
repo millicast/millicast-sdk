@@ -1,6 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import View from '../../src/View'
 import Signaling from '../../src/Signaling'
+import TransformWorker from '../../src/workers/TransformWorker.worker.js'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockBrowser'
 
@@ -312,6 +313,27 @@ defineFeature(feature, test => {
       await viewer.connect()
       expect(viewer.isActive()).toBeTruthy()
       expect(viewer.signaling).not.toBe(signaling)
+    })
+  })
+
+  test('Subscribe with metadata fails after the worker is created', ({ given, when, then }) => {
+    let viewer
+    let pendingConnect
+
+    given('an instance of View whose subscribe request fails', async () => {
+      jest.spyOn(Signaling.prototype, 'subscribe').mockRejectedValueOnce(new Error('Subscribe failed'))
+      viewer = new View(undefined, mockTokenGenerator)
+    })
+
+    when('I subscribe to a stream with metadata', async () => {
+      pendingConnect = viewer.connect({ metadata: true })
+    })
+
+    then('the connection fails and the metadata worker is terminated', async () => {
+      await expect(pendingConnect).rejects.toThrow('Subscribe failed')
+      expect(TransformWorker).toHaveBeenCalledTimes(1)
+      expect(TransformWorker.mock.results[0].value.terminate).toHaveBeenCalled()
+      expect(viewer.worker).toBeNull()
     })
   })
 })

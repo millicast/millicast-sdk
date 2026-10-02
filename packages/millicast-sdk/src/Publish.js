@@ -162,6 +162,14 @@ export default class Publish extends BaseWebRTC {
     this.worker = null
   }
 
+  releaseConnectAttempt (attempt) {
+    super.releaseConnectAttempt(attempt)
+    if (this.connectAttempt === attempt) {
+      this.worker?.terminate()
+      this.worker = null
+    }
+  }
+
   async initConnection (data, attempt) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
