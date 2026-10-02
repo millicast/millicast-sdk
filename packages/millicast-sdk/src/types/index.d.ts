@@ -1374,7 +1374,7 @@ declare module "@millicast/sdk" {
          */
         isActive(): boolean
         /**
-         * Get if a connection attempt is in progress, from the `connect()` call until the peer connection is established.
+         * Returns true if a connection attempt is in progress, from the `connect()` call until the peer connection is established.
          * @returns {Boolean} - True if connecting, false if not.
          */
         isConnecting(): boolean
