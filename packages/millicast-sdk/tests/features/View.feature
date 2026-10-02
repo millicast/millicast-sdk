@@ -71,3 +71,8 @@ Feature: As a user I want to subscribe to a stream without managing connections
     Given an instance of View whose subscribe request fails
     When I subscribe to a stream with metadata
     Then the connection fails and the metadata worker is terminated
+
+  Scenario: Subscribe again with metadata to an active stream
+    Given an instance of View already connected with metadata
+    When I connect again to the stream with metadata
+    Then the connection fails and the metadata worker is kept

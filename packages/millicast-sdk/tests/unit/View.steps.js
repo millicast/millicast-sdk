@@ -336,4 +336,26 @@ defineFeature(feature, test => {
       expect(viewer.worker).toBeNull()
     })
   })
+
+  test('Subscribe again with metadata to an active stream', ({ given, when, then }) => {
+    let viewer
+    let worker
+    let pendingConnect
+
+    given('an instance of View already connected with metadata', async () => {
+      viewer = new View(undefined, mockTokenGenerator)
+      await viewer.connect({ metadata: true })
+      worker = viewer.worker
+    })
+
+    when('I connect again to the stream with metadata', async () => {
+      pendingConnect = viewer.connect({ metadata: true })
+    })
+
+    then('the connection fails and the metadata worker is kept', async () => {
+      await expect(pendingConnect).rejects.toThrow('Viewer currently subscribed')
+      expect(worker.terminate).not.toHaveBeenCalled()
+      expect(viewer.worker).toBe(worker)
+    })
+  })
 })

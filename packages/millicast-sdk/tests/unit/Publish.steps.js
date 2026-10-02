@@ -396,4 +396,27 @@ defineFeature(feature, test => {
       expect(publisher.worker).toBeNull()
     })
   })
+
+  test('Broadcast again with metadata to an active stream', ({ given, when, then }) => {
+    let publisher
+    let worker
+    let pendingConnect
+
+    given('an instance of Publish already connected with metadata', async () => {
+      jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
+      publisher = new Publish('streamName', mockTokenGenerator)
+      await publisher.connect({ mediaStream, metadata: true, codec: VideoCodec.H264 })
+      worker = publisher.worker
+    })
+
+    when('I broadcast again to the stream with metadata', async () => {
+      pendingConnect = publisher.connect({ mediaStream, metadata: true, codec: VideoCodec.H264 })
+    })
+
+    then('the connection fails and the metadata worker is kept', async () => {
+      await expect(pendingConnect).rejects.toThrow('Broadcast currently working')
+      expect(worker.terminate).not.toHaveBeenCalled()
+      expect(publisher.worker).toBe(worker)
+    })
+  })
 })

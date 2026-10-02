@@ -244,9 +244,11 @@ export default class View extends BaseWebRTC {
 
   releaseConnectAttempt (attempt) {
     super.releaseConnectAttempt(attempt)
-    if (this.connectAttempt === attempt) {
-      this.worker?.terminate()
-      this.worker = null
+    if (attempt.worker) {
+      attempt.worker.terminate()
+      if (this.worker === attempt.worker) {
+        this.worker = null
+      }
     }
   }
 
@@ -324,6 +326,9 @@ export default class View extends BaseWebRTC {
     if (this.options.metadata) {
       if (!this.worker) {
         this.worker = new TransformWorker()
+        if (attempt) {
+          attempt.worker = this.worker
+        }
       }
       this.worker.onmessage = (message) => {
         if (message.data.event === 'metadata') {

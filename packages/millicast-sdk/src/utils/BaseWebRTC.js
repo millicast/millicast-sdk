@@ -103,7 +103,7 @@ export default class BaseWebRTC extends EventEmitter {
       logger.warn(inProgressMessage)
       throw new Error(inProgressMessage)
     }
-    const attempt = { cancelled: false, signaling: null, webRTCPeer: null }
+    const attempt = { cancelled: false, signaling: null, webRTCPeer: null, worker: null }
     const cancellation = new Promise((resolve, reject) => {
       attempt.cancel = () => {
         attempt.cancelled = true

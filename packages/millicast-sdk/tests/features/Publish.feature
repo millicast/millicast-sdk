@@ -90,3 +90,8 @@ Feature: As a user I want to publish a stream without managing connections
     Given an instance of Publish whose publish request fails
     When I broadcast a stream with metadata
     Then the connection fails and the metadata worker is terminated
+
+  Scenario: Broadcast again with metadata to an active stream
+    Given an instance of Publish already connected with metadata
+    When I broadcast again to the stream with metadata
+    Then the connection fails and the metadata worker is kept
