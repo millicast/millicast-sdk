@@ -44,3 +44,35 @@ Feature: As a user I want to subscribe to a stream without managing connections
     Given an instance of View with invalid token generator
     When I subscribe to a stream
     Then throws token generator error
+
+  Scenario: Connect subscriber while a connection is in progress
+    Given an instance of View with a connection in progress
+    When I connect again to the stream
+    Then throws a connection in progress error and only one token is requested
+
+  Scenario: Connect subscriber while the peer connection is still connecting
+    Given an instance of View whose peer connection is still connecting
+    When I connect again to the stream
+    Then throws a connection in progress error
+
+  Scenario: Stop subscription while requesting a token
+    Given an instance of View waiting for a token
+    When I stop the subscription
+    Then the connection is cancelled without creating a signaling connection
+    And I can connect again
+
+  Scenario: Stop subscription while subscribing
+    Given an instance of View waiting for the subscribe response
+    When I stop the subscription
+    Then the connection is cancelled and the WebSocket is closed
+    And I can connect again
+
+  Scenario: Subscribe with metadata fails after the worker is created
+    Given an instance of View whose subscribe request fails
+    When I subscribe to a stream with metadata
+    Then the connection fails and the metadata worker is terminated
+
+  Scenario: Subscribe again with metadata to an active stream
+    Given an instance of View already connected with metadata
+    When I connect again to the stream with metadata
+    Then the connection fails and the metadata worker is kept

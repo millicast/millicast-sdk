@@ -124,6 +124,7 @@ export default class View extends BaseWebRTC {
      * @param {Boolean} [options.forceSmooth]                     - Enables/Disables force smoothing (less aggressive layer switching) when viewing streams. Defaults to what the server determines.
      * @param {AbrConfigurationOptions} [options.abrConfiguration] - The strategy for initial playback behavior. Can be one of ("quality" | "performance" | "bandwidth")
      * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
+     * Rejects with `Viewer connection already in progress` while a previous `connect()` is still connecting, and with an `AbortError` if `stop()` is called before it completes.
      * @fires PeerConnection#track
      * @fires Signaling#broadcastEvent
      * @fires PeerConnection#connectionStateChange
@@ -155,9 +156,11 @@ export default class View extends BaseWebRTC {
      * }
      */
   async connect (options = connectOptions) {
-    this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
-    this.eventQueue.length = 0
-    await this.initConnection({ migrate: false })
+    await this.runConnectAttempt('Viewer connection already in progress', async (attempt) => {
+      this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+      this.eventQueue.length = 0
+      await this.initConnection({ migrate: false }, attempt)
+    })
   }
 
   /**
@@ -239,7 +242,17 @@ export default class View extends BaseWebRTC {
     this.eventQueue.length = 0
   }
 
-  async initConnection (data) {
+  releaseConnectAttempt (attempt) {
+    super.releaseConnectAttempt(attempt)
+    if (attempt.worker) {
+      attempt.worker.terminate()
+      if (this.worker === attempt.worker) {
+        this.worker = null
+      }
+    }
+  }
+
+  async initConnection (data, attempt) {
     logger.debug('Viewer connect options values: ', this.options)
     this.stopReconnection = false
     let promises
@@ -257,11 +270,13 @@ export default class View extends BaseWebRTC {
     let subscriberData
     try {
       subscriberData = await this.tokenGenerator()
+      this.throwIfConnectAttemptCancelled(attempt)
       // Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
       // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
       this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && (this.options.enableDRM || this.options.metadata)
     } catch (error) {
+      this.throwIfConnectAttemptCancelled(attempt)
       // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
@@ -270,6 +285,7 @@ export default class View extends BaseWebRTC {
           this.stopReconnection = true
         } else {
           // should reconnect with exponential back off if autoReconnect is true
+          this.endConnectAttempt(attempt)
           this.reconnect()
         }
       }
@@ -285,12 +301,19 @@ export default class View extends BaseWebRTC {
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
+    if (attempt) {
+      attempt.signaling = signalingInstance
+    }
     if (subscriberData.subscriberToken) {
       this.subscriberToken = subscriberData.subscriberToken
     }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
+    this.throwIfConnectAttemptCancelled(attempt)
+    if (attempt) {
+      attempt.webRTCPeer = webRTCPeerInstance
+    }
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     // And start emitting from the new ones
@@ -303,6 +326,9 @@ export default class View extends BaseWebRTC {
     if (this.options.metadata) {
       if (!this.worker) {
         this.worker = new TransformWorker()
+        if (attempt) {
+          attempt.worker = this.worker
+        }
       }
       this.worker.onmessage = (message) => {
         if (message.data.event === 'metadata') {
@@ -379,6 +405,7 @@ export default class View extends BaseWebRTC {
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP({ ...this.options, stereo: true })
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    this.throwIfConnectAttemptCancelled(attempt)
     const localSdp = promises[0]
 
     let oldSignaling = this.signaling
@@ -387,11 +414,13 @@ export default class View extends BaseWebRTC {
     const subscribePromise = this.signaling.subscribe(localSdp, { ...this.options, vad: this.options.multiplexedAudioTracks > 0 })
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([subscribePromise, setLocalDescriptionPromise])
+    this.throwIfConnectAttemptCancelled(attempt)
     const sdpSubscriber = promises[0]
 
     this.payloadTypeCodec = SdpParser.getCodecPayloadType(sdpSubscriber)
 
     await webRTCPeerInstance.setRTCRemoteSDP(sdpSubscriber)
+    this.throwIfConnectAttemptCancelled(attempt)
 
     logger.info('Connected to streamName: ', this.streamName)
 
