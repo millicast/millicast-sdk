@@ -27,6 +27,8 @@ const mockTokenGenerator = jest.fn(() => {
   }
 })
 
+const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0))
+
 const mediaStream = new MediaStream([{ kind: 'video' }, { kind: 'audio' }])
 
 defineFeature(feature, test => {
@@ -70,7 +72,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream without options', async () => {
-      expectError = expect(() => publisher.connect())
+      expectError = expect(publisher.connect())
     })
 
     then('throws an error', async () => {
@@ -88,7 +90,7 @@ defineFeature(feature, test => {
     when('I instance a Publish with token generator without connection path', async () => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
       publisher = new Publish('streamName', mockErrorTokenGenerator)
-      expectError = expect(() => publisher.connect({ mediaStream }))
+      expectError = expect(publisher.connect({ mediaStream }))
     })
 
     then('throws an error', async () => {
@@ -106,7 +108,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream without a mediaStream', async () => {
-      expectError = expect(() => publisher.connect())
+      expectError = expect(publisher.connect())
     })
 
     then('throws an error', async () => {
@@ -126,7 +128,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast again to the stream', async () => {
-      expectError = expect(() => publisher.connect({ mediaStream }))
+      expectError = expect(publisher.connect({ mediaStream }))
     })
 
     then('throws an error', async () => {
@@ -235,7 +237,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream', async () => {
-      expectError = expect(() => publisher.connect({ mediaStream }))
+      expectError = expect(publisher.connect({ mediaStream }))
     })
 
     then('throws token generator error', async () => {
@@ -253,7 +255,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast a stream', async () => {
-      expectError = expect(() => publisher.connect({ mediaStream, record: true }))
+      expectError = expect(publisher.connect({ mediaStream, record: true }))
     })
 
     then('throws an error', async () => {
@@ -280,7 +282,7 @@ defineFeature(feature, test => {
     })
 
     when('I broadcast with unsupported codec', async () => {
-      expectedError = expect(() => publisher.connect({ mediaStream, record: true, codec: VideoCodec.H265 }))
+      expectedError = expect(publisher.connect({ mediaStream, record: true, codec: VideoCodec.H265 }))
     })
 
     then('throws an error', async () => {
@@ -311,6 +313,65 @@ defineFeature(feature, test => {
 
     then('peer connection state is connected', async () => {
       expect(publisher.webRTCPeer.getRTCPeerStatus()).toEqual('connected')
+    })
+  })
+
+  test('Broadcast while a connection is in progress', ({ given, when, then }) => {
+    let publisher
+    let tokenGenerator
+    let resolveToken
+    let firstConnect
+    let expectError
+
+    given('an instance of Publish with a connection in progress', async () => {
+      jest.spyOn(Signaling.prototype, 'publish').mockReturnValue('sdp')
+      tokenGenerator = jest.fn(() => new Promise((resolve) => { resolveToken = resolve }))
+      publisher = new Publish('streamName', tokenGenerator)
+      firstConnect = publisher.connect({ mediaStream })
+    })
+
+    when('I broadcast again to the stream', async () => {
+      expectError = expect(publisher.connect({ mediaStream }))
+    })
+
+    then('throws a connection in progress error and only one token is requested', async () => {
+      await expectError.rejects.toThrow('Broadcast connection already in progress')
+      resolveToken(mockTokenGenerator())
+      await firstConnect
+      expect(tokenGenerator).toHaveBeenCalledTimes(1)
+      expect(publisher.isActive()).toBeTruthy()
+    })
+  })
+
+  test('Stop broadcast while publishing', ({ given, when, then, and }) => {
+    let publisher
+    let pendingConnect
+    let signaling
+
+    given('an instance of Publish waiting for the publish response', async () => {
+      jest.spyOn(Signaling.prototype, 'publish').mockReturnValueOnce(new Promise(() => {})).mockReturnValue('sdp')
+      publisher = new Publish('streamName', mockTokenGenerator)
+      pendingConnect = publisher.connect({ mediaStream })
+      await flushPromises()
+      signaling = publisher.signaling
+      expect(signaling.publish).toHaveBeenCalled()
+    })
+
+    when('I stop the broadcast', async () => {
+      publisher.stop()
+    })
+
+    then('the connection is cancelled and the WebSocket is closed', async () => {
+      await expect(pendingConnect).rejects.toMatchObject({ name: 'AbortError' })
+      expect(signaling.close).toHaveBeenCalled()
+      expect(publisher.signaling).toBeNull()
+      expect(publisher.webRTCPeer.peer).toBeNull()
+    })
+
+    and('I can broadcast again', async () => {
+      await publisher.connect({ mediaStream })
+      expect(publisher.isActive()).toBeTruthy()
+      expect(publisher.signaling).not.toBe(signaling)
     })
   })
 })

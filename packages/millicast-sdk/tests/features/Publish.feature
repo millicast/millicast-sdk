@@ -74,3 +74,14 @@ Feature: As a user I want to publish a stream without managing connections
     Given an instance of Publish with valid token generator with no recording available
     When I broadcast a stream
     Then throws an error
+
+  Scenario: Broadcast while a connection is in progress
+    Given an instance of Publish with a connection in progress
+    When I broadcast again to the stream
+    Then throws a connection in progress error and only one token is requested
+
+  Scenario: Stop broadcast while publishing
+    Given an instance of Publish waiting for the publish response
+    When I stop the broadcast
+    Then the connection is cancelled and the WebSocket is closed
+    And I can broadcast again

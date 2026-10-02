@@ -22,6 +22,17 @@ jest.mock('../../src/drm/rtc-drm-transform.js', () => ({
   rtcDrmFeedFrame: jest.fn()
 }))
 
+const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+const createDeferred = () => {
+  const deferred = {}
+  deferred.promise = new Promise((resolve, reject) => {
+    deferred.resolve = resolve
+    deferred.reject = reject
+  })
+  return deferred
+}
+
 const mockTokenGenerator = jest.fn(() => {
   return {
     urls: [
@@ -77,7 +88,7 @@ defineFeature(feature, test => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
       viewer = new View(undefined, mockErrorTokenGenerator)
 
-      expectError = expect(() => viewer.connect())
+      expectError = expect(viewer.connect())
     })
 
     then('throws an error', async () => {
@@ -96,7 +107,7 @@ defineFeature(feature, test => {
     })
 
     when('I connect again to the stream', async () => {
-      expectError = expect(() => viewer.connect())
+      expectError = expect(viewer.connect())
     })
 
     then('throws an error', async () => {
@@ -182,12 +193,125 @@ defineFeature(feature, test => {
     })
 
     when('I subscribe to a stream', async () => {
-      expectError = expect(() => viewer.connect())
+      expectError = expect(viewer.connect())
     })
 
     then('throws token generator error', async () => {
       expectError.rejects.toThrow(Error)
       expectError.rejects.toThrow('Error getting token')
+    })
+  })
+
+  test('Connect subscriber while a connection is in progress', ({ given, when, then }) => {
+    let viewer
+    let tokenGenerator
+    let token
+    let firstConnect
+    let expectError
+
+    given('an instance of View with a connection in progress', async () => {
+      token = createDeferred()
+      tokenGenerator = jest.fn(() => token.promise)
+      viewer = new View(undefined, tokenGenerator)
+      firstConnect = viewer.connect()
+    })
+
+    when('I connect again to the stream', async () => {
+      expectError = expect(viewer.connect())
+    })
+
+    then('throws a connection in progress error and only one token is requested', async () => {
+      await expectError.rejects.toThrow('Viewer connection already in progress')
+      expect(viewer.isConnecting()).toBeTruthy()
+      token.resolve(mockTokenGenerator())
+      await firstConnect
+      expect(tokenGenerator).toHaveBeenCalledTimes(1)
+      expect(viewer.isActive()).toBeTruthy()
+    })
+  })
+
+  test('Connect subscriber while the peer connection is still connecting', ({ given, when, then }) => {
+    let viewer
+    let expectError
+
+    given('an instance of View whose peer connection is still connecting', async () => {
+      viewer = new View(undefined, mockTokenGenerator)
+      await viewer.connect()
+      viewer.webRTCPeer.peer.connectionState = 'connecting'
+    })
+
+    when('I connect again to the stream', async () => {
+      expectError = expect(viewer.connect())
+    })
+
+    then('throws a connection in progress error', async () => {
+      await expectError.rejects.toThrow('Viewer connection already in progress')
+    })
+  })
+
+  test('Stop subscription while requesting a token', ({ given, when, then, and }) => {
+    let viewer
+    let token
+    let pendingConnect
+    let signalingInstances
+
+    given('an instance of View waiting for a token', async () => {
+      token = createDeferred()
+      viewer = new View(undefined, jest.fn(() => token.promise))
+      signalingInstances = Signaling.mock.instances.length
+      pendingConnect = viewer.connect()
+    })
+
+    when('I stop the subscription', async () => {
+      viewer.stop()
+    })
+
+    then('the connection is cancelled without creating a signaling connection', async () => {
+      await expect(pendingConnect).rejects.toMatchObject({ name: 'AbortError' })
+      expect(viewer.isConnecting()).toBeFalsy()
+      token.resolve(mockTokenGenerator())
+      await flushPromises()
+      expect(Signaling.mock.instances.length).toBe(signalingInstances)
+      expect(viewer.signaling).toBeNull()
+      expect(viewer.webRTCPeer.peer).toBeNull()
+    })
+
+    and('I can connect again', async () => {
+      viewer.tokenGenerator = mockTokenGenerator
+      await viewer.connect()
+      expect(viewer.isActive()).toBeTruthy()
+    })
+  })
+
+  test('Stop subscription while subscribing', ({ given, when, then, and }) => {
+    let viewer
+    let pendingConnect
+    let signaling
+
+    given('an instance of View waiting for the subscribe response', async () => {
+      jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValueOnce(new Promise(() => {}))
+      viewer = new View(undefined, mockTokenGenerator)
+      pendingConnect = viewer.connect()
+      await flushPromises()
+      signaling = viewer.signaling
+      expect(signaling.subscribe).toHaveBeenCalled()
+    })
+
+    when('I stop the subscription', async () => {
+      viewer.stop()
+    })
+
+    then('the connection is cancelled and the WebSocket is closed', async () => {
+      await expect(pendingConnect).rejects.toMatchObject({ name: 'AbortError' })
+      expect(signaling.close).toHaveBeenCalled()
+      expect(viewer.signaling).toBeNull()
+      expect(viewer.webRTCPeer.peer).toBeNull()
+    })
+
+    and('I can connect again', async () => {
+      await viewer.connect()
+      expect(viewer.isActive()).toBeTruthy()
+      expect(viewer.signaling).not.toBe(signaling)
     })
   })
 })

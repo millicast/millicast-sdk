@@ -72,7 +72,7 @@ defineFeature(feature, test => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
       viewer = new View(undefined, mockErrorTokenGenerator)
 
-      expectedError = expect(() => viewer.connect())
+      expectedError = expect(viewer.connect())
       expectedError.rejects.toThrow(Error)
     })
 
@@ -158,7 +158,7 @@ defineFeature(feature, test => {
       const mockErrorTokenGenerator = () => Promise.resolve(null)
       publisher = new Publish('streamName', mockErrorTokenGenerator)
 
-      expectedError = expect(() => publisher.connect({ mediaStream }))
+      expectedError = expect(publisher.connect({ mediaStream }))
       expectedError.rejects.toThrow(Error)
     })
 
