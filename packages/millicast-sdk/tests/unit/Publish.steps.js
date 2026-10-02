@@ -2,6 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import Publish from '../../src/Publish'
 import PeerConnection from '../../src/PeerConnection'
 import Signaling from '../../src/Signaling'
+import TransformWorker from '../../src/workers/TransformWorker.worker.js'
 import { VideoCodec } from '../../src/utils/Codecs'
 import './__mocks__/MockRTCPeerConnection'
 import './__mocks__/MockMediaStream'
@@ -372,6 +373,27 @@ defineFeature(feature, test => {
       await publisher.connect({ mediaStream })
       expect(publisher.isActive()).toBeTruthy()
       expect(publisher.signaling).not.toBe(signaling)
+    })
+  })
+
+  test('Broadcast with metadata fails after the worker is created', ({ given, when, then }) => {
+    let publisher
+    let pendingConnect
+
+    given('an instance of Publish whose publish request fails', async () => {
+      jest.spyOn(Signaling.prototype, 'publish').mockRejectedValueOnce(new Error('Publish failed'))
+      publisher = new Publish('streamName', mockTokenGenerator)
+    })
+
+    when('I broadcast a stream with metadata', async () => {
+      pendingConnect = publisher.connect({ mediaStream, metadata: true, codec: VideoCodec.H264 })
+    })
+
+    then('the connection fails and the metadata worker is terminated', async () => {
+      await expect(pendingConnect).rejects.toThrow('Publish failed')
+      expect(TransformWorker).toHaveBeenCalledTimes(1)
+      expect(TransformWorker.mock.results[0].value.terminate).toHaveBeenCalled()
+      expect(publisher.worker).toBeNull()
     })
   })
 })

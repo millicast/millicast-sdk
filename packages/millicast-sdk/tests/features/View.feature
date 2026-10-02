@@ -66,3 +66,8 @@ Feature: As a user I want to subscribe to a stream without managing connections
     When I stop the subscription
     Then the connection is cancelled and the WebSocket is closed
     And I can connect again
+
+  Scenario: Subscribe with metadata fails after the worker is created
+    Given an instance of View whose subscribe request fails
+    When I subscribe to a stream with metadata
+    Then the connection fails and the metadata worker is terminated

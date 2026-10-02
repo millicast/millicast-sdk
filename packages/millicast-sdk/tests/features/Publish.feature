@@ -85,3 +85,8 @@ Feature: As a user I want to publish a stream without managing connections
     When I stop the broadcast
     Then the connection is cancelled and the WebSocket is closed
     And I can broadcast again
+
+  Scenario: Broadcast with metadata fails after the worker is created
+    Given an instance of Publish whose publish request fails
+    When I broadcast a stream with metadata
+    Then the connection fails and the metadata worker is terminated
