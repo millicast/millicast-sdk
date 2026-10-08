@@ -160,9 +160,39 @@ export default class PeerConnection extends EventEmitter {
     if (options.setSDPToPeer) {
       await this.peer.setLocalDescription(this.sessionDescription)
       logger.info('Peer local description set')
+      if (!options.disableVideo && options.simulcast) {
+        await this.setSimulcastScaling()
+      }
     }
 
     return this.sessionDescription.sdp
+  }
+
+  /**
+   * Scale the simulcast layers of the video sender to 1/4, 1/2 and full resolution.
+   * Must be called after the local description with simulcast has been set.
+   * Since Chromium 154, layers added through SDP munging are no longer scaled by default and would all be encoded at full resolution.
+   * @returns {Promise<void>} Promise object which resolves when the scaling has been applied.
+   */
+  async setSimulcastScaling () {
+    const sender = this.peer?.getSenders().find(s => s.track?.kind === 'video')
+    if (!sender?.getParameters) {
+      return
+    }
+    const parameters = sender.getParameters()
+    const encodings = parameters.encodings ?? []
+    if (encodings.length < 2) {
+      return
+    }
+    encodings.forEach((encoding, index) => {
+      encoding.scaleResolutionDownBy = 2 ** (encodings.length - 1 - index)
+    })
+    try {
+      await sender.setParameters(parameters)
+      logger.info('Simulcast layer scaling set: ', encodings.map(e => e.scaleResolutionDownBy))
+    } catch (e) {
+      logger.warn('Could not set simulcast layer scaling: ', e)
+    }
   }
 
   /**
