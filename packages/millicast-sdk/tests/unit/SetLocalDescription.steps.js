@@ -139,6 +139,7 @@ defineFeature(feature, test => {
     let sdp
     let mediaStream
     let simulcast
+    let scalingSpy
 
     given('I have a MediaStream with 1 audio track and 1 video track and I want support simulcast', async () => {
       await peerConnection.createRTCPeer()
@@ -148,12 +149,14 @@ defineFeature(feature, test => {
     })
 
     when('I want to get the RTC Local SDP', async () => {
+      scalingSpy = jest.spyOn(peerConnection, 'setSimulcastScaling')
       sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264', disableVideo: false })
     })
 
     then('returns the SDP', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
+      expect(scalingSpy).toHaveBeenCalledTimes(1)
     })
   })
 
