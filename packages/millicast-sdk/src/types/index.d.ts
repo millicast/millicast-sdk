@@ -1365,7 +1365,7 @@ declare module "@millicast/sdk" {
          */
         getRTCPeerConnection(): RTCPeerConnection
         /**
-         * Stops connection.
+         * Stops connection. A connection attempt still in progress is cancelled and its `connect()` rejects with an `AbortError`.
          */
         stop(): void
         /**
@@ -1373,6 +1373,11 @@ declare module "@millicast/sdk" {
          * @returns {Boolean} - True if connected, false if not.
          */
         isActive(): boolean
+        /**
+         * Returns true if a connection attempt is in progress, from the `connect()` call until the peer connection is established.
+         * @returns {Boolean} - True if connecting, false if not.
+         */
+        isConnecting(): boolean
         /**
          * Sets reconnection if autoReconnect is enabled.
          */
@@ -1407,6 +1412,7 @@ declare module "@millicast/sdk" {
          * In the example, `getYourMediaStream` and `getYourPublisherConnection` is your own implementation.
          * @param {PublishConnectOptions} options - General broadcast options.
          * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
+         * Rejects with `Broadcast connection already in progress` while a previous `connect()` is still connecting, and with an `AbortError` if `stop()` is called before it completes.
          * @fires PeerConnection#connectionStateChange
          * @fires Signaling#broadcastEvent
          * @example await publish.connect(options)
@@ -1524,6 +1530,7 @@ declare module "@millicast/sdk" {
          * In the example, `addStreamToYourVideoTag` and `getYourSubscriberConnectionPath` is your own implementation.
          * @param {ViewConnectOptions} [options] - General subscriber options.
          * @returns {Promise<void>} Promise object which resolves when the connection was successfully established.
+         * Rejects with `Viewer connection already in progress` while a previous `connect()` is still connecting, and with an `AbortError` if `stop()` is called before it completes.
          * @fires PeerConnection#track
          * @fires Signaling#broadcastEvent
          * @fires PeerConnection#connectionStateChange

@@ -51,6 +51,7 @@ export default class BaseWebRTC extends EventEmitter {
     this.isReconnecting = false
     this.tokenGenerator = tokenGenerator
     this.options = null
+    this.connectAttempt = null
   }
 
   /**
@@ -62,10 +63,11 @@ export default class BaseWebRTC extends EventEmitter {
   }
 
   /**
-   * Stops connection.
+   * Stops connection. A connection attempt still in progress is cancelled and its `connect()` rejects with an `AbortError`.
    */
   stop () {
     logger.info('Stopping')
+    this.cancelConnectAttempt()
     this.webRTCPeer.closeRTCPeer()
     this.signaling?.close()
     this.signaling = null
@@ -81,6 +83,83 @@ export default class BaseWebRTC extends EventEmitter {
     const rtcPeerState = this.webRTCPeer.getRTCPeerStatus()
     logger.info('Broadcast status: ', rtcPeerState || 'not_established')
     return rtcPeerState === 'connected'
+  }
+
+  /**
+   * Returns true if a connection attempt is in progress, from the `connect()` call until the peer connection is established.
+   * @returns {Boolean} - True if connecting, false if not.
+   */
+  isConnecting () {
+    return this.connectAttempt !== null || ['new', 'connecting'].includes(this.webRTCPeer.getRTCPeerStatus())
+  }
+
+  /**
+   * Runs a connection attempt that can be cancelled by `stop()`. Rejects if another attempt is in progress.
+   * @param {String} inProgressMessage - Error message used when another attempt is in progress.
+   * @param {Function} connectFn - Async function performing the attempt, receives the attempt object.
+   */
+  async runConnectAttempt (inProgressMessage, connectFn) {
+    if (this.isConnecting()) {
+      logger.warn(inProgressMessage)
+      throw new Error(inProgressMessage)
+    }
+    const attempt = { cancelled: false, signaling: null, webRTCPeer: null, worker: null }
+    const cancellation = new Promise((resolve, reject) => {
+      attempt.cancel = () => {
+        attempt.cancelled = true
+        reject(createAbortError())
+      }
+    })
+    cancellation.catch(() => {})
+    this.connectAttempt = attempt
+    const connection = connectFn(attempt)
+    connection.catch(() => {})
+    try {
+      await Promise.race([connection, cancellation])
+    } catch (error) {
+      this.releaseConnectAttempt(attempt)
+      throw attempt.cancelled ? createAbortError() : error
+    } finally {
+      this.endConnectAttempt(attempt)
+    }
+  }
+
+  /**
+   * Throws an `AbortError` if the connection attempt has been cancelled.
+   * @param {Object} [attempt] - Connection attempt, none when migrating.
+   */
+  throwIfConnectAttemptCancelled (attempt) {
+    if (attempt?.cancelled) {
+      throw createAbortError()
+    }
+  }
+
+  endConnectAttempt (attempt) {
+    if (this.connectAttempt === attempt) {
+      this.connectAttempt = null
+    }
+  }
+
+  cancelConnectAttempt () {
+    const attempt = this.connectAttempt
+    if (attempt) {
+      logger.info('Cancelling connection attempt in progress')
+      this.connectAttempt = null
+      attempt.cancel()
+      attempt.signaling?.close()
+    }
+  }
+
+  releaseConnectAttempt (attempt) {
+    if (attempt.signaling) {
+      attempt.signaling.close()
+      if (this.signaling === attempt.signaling) {
+        this.signaling = null
+      }
+    }
+    if (attempt.webRTCPeer?.getRTCPeer()) {
+      attempt.webRTCPeer.closeRTCPeer()
+    }
   }
 
   /**
@@ -123,7 +202,7 @@ export default class BaseWebRTC extends EventEmitter {
   async reconnect (data) {
     try {
       logger.info('Attempting to reconnect...')
-      if (!this.isActive() && !this.stopReconnection && !this.isReconnecting) {
+      if (!this.isActive() && !this.stopReconnection && !this.isReconnecting && !this.connectAttempt) {
         this.stop()
         /**
          * Emits with every reconnection attempt made when an active stream
@@ -149,6 +228,12 @@ export default class BaseWebRTC extends EventEmitter {
       setTimeout(() => this.reconnect({ error }), this.reconnectionInterval)
     }
   }
+}
+
+const createAbortError = () => {
+  const error = new Error('Connection attempt cancelled by stop()')
+  error.name = 'AbortError'
+  return error
 }
 
 const nextReconnectInterval = (interval) => {
