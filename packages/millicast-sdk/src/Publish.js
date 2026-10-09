@@ -77,6 +77,7 @@ export default class Publish extends BaseWebRTC {
    * @param {Array<String>} [options.events = null] - Specify which events will be delivered by the server (any of "active" | "inactive" | "viewercount").*
    * @param {Number} [options.priority = null] - When multiple ingest streams are provided by the customer, add the ability to specify a priority between all ingest streams. Decimal integer between the range [-2^31, +2^31 - 1]. For more information, visit [our documentation](https://docs.dolby.io/streaming-apis/docs/backup-publishing).
    * @returns {Promise<void>} Promise object which resolves when the broadcast started successfully.
+   * Rejects with `Broadcast connection already in progress` while a previous `connect()` is still connecting, and with an `AbortError` if `stop()` is called before it completes.
    * @fires PeerConnection#connectionStateChange
    * @fires Signaling#broadcastEvent
    * @example await publish.connect(options)
@@ -108,12 +109,14 @@ export default class Publish extends BaseWebRTC {
    */
   async connect (options = connectOptions) {
     validateConnectOptions(options)
-    this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
-    this.options.metadata =
-      this.options.metadata &&
-      this.options.codec === VideoCodec.H264 &&
-      !this.options.disableVideo
-    await this.initConnection({ migrate: false })
+    await this.runConnectAttempt('Broadcast connection already in progress', async (attempt) => {
+      this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+      this.options.metadata =
+        this.options.metadata &&
+        this.options.codec === VideoCodec.H264 &&
+        !this.options.disableVideo
+      await this.initConnection({ migrate: false }, attempt)
+    })
   }
 
   async reconnect (data) {
@@ -159,7 +162,17 @@ export default class Publish extends BaseWebRTC {
     this.worker = null
   }
 
-  async initConnection (data) {
+  releaseConnectAttempt (attempt) {
+    super.releaseConnectAttempt(attempt)
+    if (attempt.worker) {
+      attempt.worker.terminate()
+      if (this.worker === attempt.worker) {
+        this.worker = null
+      }
+    }
+  }
+
+  async initConnection (data, attempt) {
     logger.debug('Broadcast option values: ', this.options)
     this.stopReconnection = false
     let promises
@@ -174,10 +187,12 @@ export default class Publish extends BaseWebRTC {
     let publisherData
     try {
       publisherData = await this.tokenGenerator()
+      this.throwIfConnectAttemptCancelled(attempt)
       //  Set the iceServers from the publish data into the peerConfig
       this.options.peerConfig.iceServers = publisherData?.iceServers
       this.options.peerConfig.encodedInsertableStreams = this.options.metadata
     } catch (error) {
+      this.throwIfConnectAttemptCancelled(attempt)
       logger.error('Error generating token.')
       if (error instanceof FetchError) {
         if (error.status === 401 || !this.autoReconnect) {
@@ -185,6 +200,7 @@ export default class Publish extends BaseWebRTC {
           this.stopReconnection = true
         } else {
           // should reconnect with exponential back off if autoReconnect is true
+          this.endConnectAttempt(attempt)
           this.reconnect()
         }
       }
@@ -206,9 +222,16 @@ export default class Publish extends BaseWebRTC {
       streamName: this.streamName,
       url: `${publisherData.urls[0]}?token=${publisherData.jwt}`
     })
+    if (attempt) {
+      attempt.signaling = signalingInstance
+    }
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig, ConnectionType.Publisher)
+    this.throwIfConnectAttemptCancelled(attempt)
+    if (attempt) {
+      attempt.webRTCPeer = webRTCPeerInstance
+    }
     // Stop emiting events from the previous instances
     this.stopReemitingWebRTCPeerInstanceEvents?.()
     this.stopReemitingSignalingInstanceEvents?.()
@@ -219,11 +242,15 @@ export default class Publish extends BaseWebRTC {
     const getLocalSDPPromise = webRTCPeerInstance.getRTCLocalSDP(this.options)
     const signalingConnectPromise = signalingInstance.connect()
     promises = await Promise.all([getLocalSDPPromise, signalingConnectPromise])
+    this.throwIfConnectAttemptCancelled(attempt)
     const localSdp = promises[0]
 
     if (this.options.metadata) {
       if (!this.worker) {
         this.worker = new TransformWorker()
+        if (attempt) {
+          attempt.worker = this.worker
+        }
       }
 
       const senders = this.getRTCPeerConnection().getSenders()
@@ -252,6 +279,7 @@ export default class Publish extends BaseWebRTC {
     const publishPromise = this.signaling.publish(localSdp, this.options)
     const setLocalDescriptionPromise = webRTCPeerInstance.peer.setLocalDescription(webRTCPeerInstance.sessionDescription)
     promises = await Promise.all([publishPromise, setLocalDescriptionPromise])
+    this.throwIfConnectAttemptCancelled(attempt)
     let remoteSdp = promises[0]
 
     if (!this.options.disableVideo && this.options.simulcast) {
@@ -263,6 +291,7 @@ export default class Publish extends BaseWebRTC {
     }
 
     await webRTCPeerInstance.setRTCRemoteSDP(remoteSdp)
+    this.throwIfConnectAttemptCancelled(attempt)
 
     logger.info('Broadcasting to streamName: ', this.streamName)
 
