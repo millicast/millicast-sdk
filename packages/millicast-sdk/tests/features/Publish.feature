@@ -75,6 +75,16 @@ Feature: As a user I want to publish a stream without managing connections
     When I broadcast a stream
     Then throws an error
 
+  Scenario: Broadcast stream with simulcast
+    Given an instance of Publish with connection path
+    When I broadcast a stream with media stream and simulcast
+    Then the simulcast layer scaling is set
+
+  Scenario: Broadcast stream without simulcast
+    Given an instance of Publish with connection path
+    When I broadcast a stream with media stream
+    Then the simulcast layer scaling is not set
+
   Scenario: Broadcast while a connection is in progress
     Given an instance of Publish with a connection in progress
     When I broadcast again to the stream

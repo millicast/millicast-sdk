@@ -317,6 +317,44 @@ defineFeature(feature, test => {
     })
   })
 
+  test('Broadcast stream with simulcast', ({ given, when, then }) => {
+    let publisher
+    let scalingSpy
+
+    given('an instance of Publish with connection path', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      scalingSpy = jest.spyOn(PeerConnection.prototype, 'setSimulcastScaling')
+    })
+
+    when('I broadcast a stream with media stream and simulcast', async () => {
+      await publisher.connect({ mediaStream, simulcast: true, codec: VideoCodec.H264 })
+    })
+
+    then('the simulcast layer scaling is set', async () => {
+      expect(scalingSpy).toHaveBeenCalledTimes(1)
+      scalingSpy.mockRestore()
+    })
+  })
+
+  test('Broadcast stream without simulcast', ({ given, when, then }) => {
+    let publisher
+    let scalingSpy
+
+    given('an instance of Publish with connection path', async () => {
+      publisher = new Publish('streamName', mockTokenGenerator)
+      scalingSpy = jest.spyOn(PeerConnection.prototype, 'setSimulcastScaling')
+    })
+
+    when('I broadcast a stream with media stream', async () => {
+      await publisher.connect({ mediaStream })
+    })
+
+    then('the simulcast layer scaling is not set', async () => {
+      expect(scalingSpy).not.toHaveBeenCalled()
+      scalingSpy.mockRestore()
+    })
+  })
+
   test('Broadcast while a connection is in progress', ({ given, when, then }) => {
     let publisher
     let tokenGenerator

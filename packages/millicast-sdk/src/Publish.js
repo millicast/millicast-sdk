@@ -282,6 +282,10 @@ export default class Publish extends BaseWebRTC {
     this.throwIfConnectAttemptCancelled(attempt)
     let remoteSdp = promises[0]
 
+    if (!this.options.disableVideo && this.options.simulcast) {
+      await webRTCPeerInstance.setSimulcastScaling()
+    }
+
     if (!this.options.disableVideo && this.options.bandwidth > 0) {
       remoteSdp = webRTCPeerInstance.updateBandwidthRestriction(remoteSdp, this.options.bandwidth)
     }

@@ -139,6 +139,7 @@ defineFeature(feature, test => {
     let sdp
     let mediaStream
     let simulcast
+    let scalingSpy
 
     given('I have a MediaStream with 1 audio track and 1 video track and I want support simulcast', async () => {
       await peerConnection.createRTCPeer()
@@ -148,12 +149,14 @@ defineFeature(feature, test => {
     })
 
     when('I want to get the RTC Local SDP', async () => {
+      scalingSpy = jest.spyOn(peerConnection, 'setSimulcastScaling')
       sdp = await peerConnection.getRTCLocalSDP({ mediaStream, simulcast, codec: 'h264', disableVideo: false })
     })
 
     then('returns the SDP', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
+      expect(scalingSpy).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -274,6 +277,54 @@ defineFeature(feature, test => {
     then('returns the SDP without scalability mode', async () => {
       expect(peerConnection.peer.currentLocalDescription).toBeDefined()
       expect(sdp).toBeDefined()
+    })
+  })
+
+  const addVideoSender = (peerConnection, encodingsCount) => {
+    const sender = {
+      track: { kind: 'video' },
+      getParameters: jest.fn(() => ({ encodings: Array.from({ length: encodingsCount }, () => ({})) })),
+      setParameters: jest.fn(async () => {})
+    }
+    peerConnection.peer.senders.push(sender)
+    return sender
+  }
+
+  test('Set simulcast layer scaling with 3 simulcast encodings', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sender
+
+    given('I have a video sender with 3 simulcast encodings', async () => {
+      await peerConnection.createRTCPeer()
+      sender = addVideoSender(peerConnection, 3)
+    })
+
+    when('I want to set the simulcast scaling', async () => {
+      await peerConnection.setSimulcastScaling()
+    })
+
+    then('the encodings are scaled down by 4, 2 and 1', async () => {
+      expect(sender.setParameters).toHaveBeenCalledTimes(1)
+      const { encodings } = sender.setParameters.mock.calls[0][0]
+      expect(encodings.map(e => e.scaleResolutionDownBy)).toEqual([4, 2, 1])
+    })
+  })
+
+  test('Set simulcast layer scaling with a single encoding', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    let sender
+
+    given('I have a video sender with 1 encoding', async () => {
+      await peerConnection.createRTCPeer()
+      sender = addVideoSender(peerConnection, 1)
+    })
+
+    when('I want to set the simulcast scaling', async () => {
+      await peerConnection.setSimulcastScaling()
+    })
+
+    then('the sender parameters are not updated', async () => {
+      expect(sender.setParameters).not.toHaveBeenCalled()
     })
   })
 })

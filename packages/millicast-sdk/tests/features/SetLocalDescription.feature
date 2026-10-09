@@ -59,3 +59,12 @@ Feature: As a user I want to set my local session description so I can broadcast
     Given I am using Firefox and I have a MediaStream with 1 audio track and 1 video track and I want to support L1T3 mode
     When I want to get the RTC Local SDP
     Then returns the SDP without scalability mode
+  Scenario: Set simulcast layer scaling with 3 simulcast encodings
+    Given I have a video sender with 3 simulcast encodings
+    When I want to set the simulcast scaling
+    Then the encodings are scaled down by 4, 2 and 1
+
+  Scenario: Set simulcast layer scaling with a single encoding
+    Given I have a video sender with 1 encoding
+    When I want to set the simulcast scaling
+    Then the sender parameters are not updated
