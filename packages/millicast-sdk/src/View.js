@@ -11,6 +11,7 @@ import { supportsInsertableStreams, supportsRTCRtpScriptTransform } from './util
 import { rtcDrmConfigure, rtcDrmOnTrack, rtcDrmEnvironments, rtcDrmFeedFrame } from './drm/rtc-drm-transform.js'
 import TransformWorker from './workers/TransformWorker.worker.js?worker&inline'
 import SdpParser from './utils/SdpParser'
+import { createCaptureSession, setCurrentHttpCapture, unregisterCaptureSession } from './DebugCapture'
 
 const logger = Logger.get('View')
 logger.setLevel(Logger.DEBUG)
@@ -112,6 +113,7 @@ export default class View extends BaseWebRTC {
      * @param {Boolean} [options.disableVideo = false]            - Disable the opportunity to receive video stream.
      * @param {Boolean} [options.disableAudio = false]            - Disable the opportunity to receive audio stream.
      * @param {Number} [options.multiplexedAudioTracks]           - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
+     * @param {Boolean|Object} [options.debugCapture=false]       - Opt in to saving viewer client statistics in IndexedDB. Use `{ enabled: true }` to enable; capture initializes raw stats even when `peerConfig.autoInitStats` is false.
      * @param {String} [options.pinnedSourceId]                   - Id of the main source that will be received by the default MediaStream.
      * @param {Array<String>} [options.excludedSourceIds]         - Do not receive media from the these source ids.
      * @param {Array<String>} [options.events]                    - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
@@ -158,6 +160,11 @@ export default class View extends BaseWebRTC {
   async connect (options = connectOptions) {
     await this.runConnectAttempt('Viewer connection already in progress', async (attempt) => {
       this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
+      const captureEnabled = this.options.debugCapture === true || this.options.debugCapture?.enabled === true
+      if (captureEnabled && !this.debugCaptureSession) {
+        this.debugCaptureSession = await createCaptureSession({ view: this, streamName: this.streamName })
+      }
+      this.debugCaptureSession?.recordEvent(null, 'connect-start', { migrate: false })
       this.eventQueue.length = 0
       await this.initConnection({ migrate: false }, attempt)
     })
@@ -233,6 +240,13 @@ export default class View extends BaseWebRTC {
 
   stop () {
     super.stop()
+    if (!this.isReconnectingInternally && this.debugCaptureSession) {
+      const session = this.debugCaptureSession
+      this.debugCaptureSession = null
+      session.end()
+        .catch(error => logger.warn('Debug capture could not be finalized', error))
+        .finally(() => unregisterCaptureSession(session.id))
+    }
     this.drmOptionsMap?.clear()
     this.DRMProfile = null
     this.worker?.terminate()
@@ -269,13 +283,22 @@ export default class View extends BaseWebRTC {
     }
     let subscriberData
     try {
-      subscriberData = await this.tokenGenerator()
+      const session = this.debugCaptureSession
+      let subscriberPromise
+      setCurrentHttpCapture(session || null)
+      try {
+        subscriberPromise = this.tokenGenerator()
+      } finally {
+        setCurrentHttpCapture(null)
+      }
+      subscriberData = await subscriberPromise
       this.throwIfConnectAttemptCancelled(attempt)
       // Set the iceServers from the subscribe data into the peerConfig
       this.options.peerConfig.iceServers = subscriberData?.iceServers
       // We should not set the encodedInsertableStreams if the DRM and the frame metadata are not enabled
       this.options.peerConfig.encodedInsertableStreams = supportsInsertableStreams && (this.options.enableDRM || this.options.metadata)
     } catch (error) {
+      this.debugCaptureSession?.recordEvent(null, 'subscriber-data-error', { name: error?.name, message: error?.message || String(error) })
       this.throwIfConnectAttemptCancelled(attempt)
       // TODO: handle DRM error when DRM is enabled but no subscribe token is provided
       logger.error('Error generating token.')
@@ -297,10 +320,23 @@ export default class View extends BaseWebRTC {
     }
     const decodedJWT = jwtDecode(subscriberData.jwt)
     this.streamName = decodedJWT.millicast.streamName
+    this.debugCaptureSession?.recordEvent(null, 'subscriber-data', {
+      ...subscriberData,
+      streamName: subscriberData.streamName || this.streamName,
+      accountId: subscriberData.accountId || subscriberData.streamAccountId
+    })
+    await this.debugCaptureSession?.updateIdentity(
+      this.streamName || subscriberData.streamName,
+      subscriberData.accountId || subscriberData.streamAccountId
+    )
+    const connId = this.debugCaptureSession?.nextConnId()
     const signalingInstance = new Signaling({
       streamName: this.streamName,
       url: `${subscriberData.urls[0]}?token=${subscriberData.jwt}`
     })
+    if (this.debugCaptureSession) {
+      signalingInstance.debugCapture = { session: this.debugCaptureSession, connId }
+    }
     if (attempt) {
       attempt.signaling = signalingInstance
     }
@@ -310,6 +346,7 @@ export default class View extends BaseWebRTC {
     const webRTCPeerInstance = data.migrate ? new PeerConnection() : this.webRTCPeer
 
     await webRTCPeerInstance.createRTCPeer(this.options.peerConfig)
+    this.debugCaptureSession?.attachPeer(connId, webRTCPeerInstance, this.options.peerConfig)
     this.throwIfConnectAttemptCancelled(attempt)
     if (attempt) {
       attempt.webRTCPeer = webRTCPeerInstance

@@ -163,6 +163,7 @@ export default class PeerConnectionStats extends EventEmitter {
       })
 
       this.collection.on('stats', (stats) => {
+        if (this.listenerCount('rawStats')) this.emit('rawStats', stats.rawStats)
         const parsedStats = parseWebRTCStats(stats)
         Diagnostics.addStats(parsedStats)
         this.emit(peerConnectionStatsEvents.stats, parsedStats)

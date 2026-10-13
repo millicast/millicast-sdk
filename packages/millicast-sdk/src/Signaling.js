@@ -67,6 +67,7 @@ export default class Signaling extends EventEmitter {
     this.serverId = null
     this.clusterId = null
     this.streamViewId = null
+    this.debugCapture = null
   }
 
   /**
@@ -103,6 +104,7 @@ export default class Signaling extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       this.webSocket = new WebSocket(this.wsUrl)
+      this.debugCapture?.session.attachWebSocket(this.debugCapture.connId, this.webSocket)
       this.transactionManager = new TransactionManager(this.webSocket)
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')

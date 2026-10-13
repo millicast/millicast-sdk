@@ -1,0 +1,138 @@
+export default class CaptureStore {
+  constructor (name = 'millicast-debug-capture', version = 1) {
+    this.name = name
+    this.version = version
+    this.db = null
+    this.mode = 'indexeddb'
+    this.sessions = new Map()
+    this.chunks = new Map()
+    this.nextChunkId = 1
+  }
+
+  async open () {
+    if (this.db || this.mode === 'memory') return this
+    if (!globalThis.indexedDB) {
+      this.mode = 'memory'
+      return this
+    }
+    try {
+      this.db = await new Promise((resolve, reject) => {
+        const request = indexedDB.open(this.name, this.version)
+        request.onupgradeneeded = () => {
+          const db = request.result
+          if (!db.objectStoreNames.contains('sessions')) {
+            db.createObjectStore('sessions', { keyPath: 'id' })
+          }
+          if (!db.objectStoreNames.contains('chunks')) {
+            const chunks = db.createObjectStore('chunks', { keyPath: 'key', autoIncrement: true })
+            chunks.createIndex('sessionId', 'sessionId', { unique: false })
+          }
+        }
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error || new Error('IndexedDB open failed'))
+        request.onblocked = () => reject(new Error('IndexedDB open blocked'))
+      })
+    } catch {
+      this.mode = 'memory'
+      this.db = null
+    }
+    return this
+  }
+
+  async getSession (id) {
+    await this.open()
+    if (this.mode === 'memory') return this.sessions.get(id) || null
+    return this._request('sessions', 'readonly', store => store.get(id))
+  }
+
+  async putSession (session) {
+    await this.open()
+    if (this.mode === 'memory') {
+      this.sessions.set(session.id, { ...session })
+      return
+    }
+    await this._request('sessions', 'readwrite', store => store.put(session))
+  }
+
+  async listSessions () {
+    await this.open()
+    if (this.mode === 'memory') return [...this.sessions.values()]
+    return this._request('sessions', 'readonly', store => store.getAll())
+  }
+
+  async appendChunk (chunk) {
+    await this.open()
+    if (this.mode === 'memory') {
+      const key = this.nextChunkId++
+      this.chunks.set(key, { ...chunk, key })
+      return
+    }
+    await this._request('chunks', 'readwrite', store => store.add(chunk))
+  }
+
+  async listChunks (sessionId) {
+    await this.open()
+    if (this.mode === 'memory') {
+      return [...this.chunks.values()].filter(chunk => chunk.sessionId === sessionId).sort((a, b) => a.seq - b.seq)
+    }
+    const rows = await this._request('chunks', 'readonly', store => store.index('sessionId').getAll(sessionId))
+    return rows.sort((a, b) => a.seq - b.seq)
+  }
+
+  async deleteSession (id) {
+    await this.open()
+    if (this.mode === 'memory') {
+      this.sessions.delete(id)
+      for (const [key, chunk] of this.chunks) {
+        if (chunk.sessionId === id) this.chunks.delete(key)
+      }
+      return
+    }
+    await new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(['sessions', 'chunks'], 'readwrite')
+      transaction.objectStore('sessions').delete(id)
+      const request = transaction.objectStore('chunks').index('sessionId').openCursor(IDBKeyRange.only(id))
+      request.onsuccess = () => {
+        const cursor = request.result
+        if (cursor) {
+          cursor.delete()
+          cursor.continue()
+        }
+      }
+      transaction.oncomplete = resolve
+      transaction.onerror = () => reject(transaction.error)
+      transaction.onabort = () => reject(transaction.error || new Error('IndexedDB transaction aborted'))
+    })
+  }
+
+  async clear () {
+    await this.open()
+    if (this.mode === 'memory') {
+      this.sessions.clear()
+      this.chunks.clear()
+      this.nextChunkId = 1
+      return
+    }
+    await new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(['sessions', 'chunks'], 'readwrite')
+      transaction.objectStore('sessions').clear()
+      transaction.objectStore('chunks').clear()
+      transaction.oncomplete = resolve
+      transaction.onerror = () => reject(transaction.error)
+      transaction.onabort = () => reject(transaction.error || new Error('IndexedDB transaction aborted'))
+    })
+  }
+
+  async _request (storeName, mode, requestFactory) {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(storeName, mode)
+      const request = requestFactory(transaction.objectStore(storeName))
+      let result
+      request.onsuccess = () => { result = request.result }
+      request.onerror = () => reject(request.error || transaction.error)
+      transaction.oncomplete = () => resolve(result)
+      transaction.onerror = () => reject(transaction.error || new Error('IndexedDB transaction failed'))
+      transaction.onabort = () => reject(transaction.error || new Error('IndexedDB transaction aborted'))
+    })
+  }
+}
