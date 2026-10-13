@@ -1,5 +1,18 @@
 # @millicast/sdk
 
+## 0.9.0
+
+### Minor Changes
+
+- d098889: `View.connect()` and `Publish.connect()` now reject with `Viewer connection already in progress` / `Broadcast connection already in progress` when called while a previous `connect()` on the same instance is still connecting, instead of opening a second websocket and peer connection. `stop()` now cancels a `connect()` in progress: the pending call rejects with an `AbortError`, its websocket and peer connection are closed, and a new `connect()` can be started straight away. Adds `isConnecting()`.
+
+### Patch Changes
+
+- eb56cc2: Bump dev dependencies with minor and patch updates.
+- fa6097b: Remove unused `dotenv` dev dependency.
+- c159050: Fix simulcast publishing on Chrome 154+ sending all three layers at full resolution. The SDK now sets `scaleResolutionDownBy` to 4, 2 and 1 on the simulcast layers after the local description is set.
+- d098889: A `View.connect()` or `Publish.connect()` with `metadata: true` that fails now terminates its metadata transform worker instead of leaving it running until `stop()`.
+
 ## 0.8.1
 
 ### Patch Changes
