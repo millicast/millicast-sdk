@@ -46,12 +46,18 @@ defineFeature(feature, test => {
     given('I have no previous connection to server', () => null)
 
     when('I want to connect to server', async () => {
+      signaling = new Signaling({
+        streamName,
+        url: `${publishWebSocketLocation}?token=eyJh.eyJz-_.sig`
+      })
       await signaling.connect()
     })
 
     then('the WebSocket URL contains the SDK name and version', () => {
+      const url = new URL(signaling.webSocket.url)
       expect(SDK_IDENTIFIER).toMatch(/^millicast-sdk-js\/\d+\.\d+\.\d+/)
-      expect(new URL(signaling.webSocket.url).searchParams.get('sdk')).toBe(SDK_IDENTIFIER)
+      expect(url.searchParams.get('sdk')).toBe(SDK_IDENTIFIER)
+      expect(url.searchParams.get('token')).toBe('eyJh.eyJz-_.sig')
     })
   })
 
