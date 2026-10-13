@@ -34,10 +34,10 @@ Feature: Viewer debug capture
     When a capture is written to memory
     Then the capture API can still build its export
 
-  Scenario: Reconnection allocates another peer connection id
+  Scenario: Migration records its start and allocates another peer connection id
     Given a capture session
-    When a migrated peer is created
-    Then both peer connections belong to the same session
+    When the viewer migrates to a new peer connection
+    Then both peer connections and the migrate-start event belong to the same session
 
   Scenario: Secrets are redacted from captured values
     Given secret values in strings and objects
@@ -53,3 +53,18 @@ Feature: Viewer debug capture
     Given one old ended session and one unfinished session
     When a new capture session starts
     Then only the old ended session and its chunks are deleted
+
+  Scenario: Storage persistence does not block connection
+    Given navigator persistence never resolves
+    When the viewer connects with capture enabled
+    Then playback setup completes without waiting for persistence
+
+  Scenario: Capture startup failure does not block connection
+    Given capture session creation will fail
+    When the viewer connects with capture enabled
+    Then playback setup completes without a capture session
+
+  Scenario: IndexedDB open timeout falls back to memory
+    Given an IndexedDB open request that never completes
+    When the open timeout expires and the request succeeds late
+    Then the store uses memory and closes the late database

@@ -162,7 +162,12 @@ export default class View extends BaseWebRTC {
       this.options = { ...connectOptions, ...options, peerConfig: { ...connectOptions.peerConfig, ...options.peerConfig }, setSDPToPeer: false }
       const captureEnabled = this.options.debugCapture === true || this.options.debugCapture?.enabled === true
       if (captureEnabled && !this.debugCaptureSession) {
-        this.debugCaptureSession = await createCaptureSession({ view: this, streamName: this.streamName })
+        try {
+          this.debugCaptureSession = await createCaptureSession({ view: this, streamName: this.streamName })
+        } catch (error) {
+          logger.warn('Unable to start debug capture', error)
+          this.debugCaptureSession = null
+        }
       }
       this.debugCaptureSession?.recordEvent(null, 'connect-start', { migrate: false })
       this.eventQueue.length = 0
@@ -235,6 +240,7 @@ export default class View extends BaseWebRTC {
 
   async replaceConnection () {
     logger.info('Migrating current connection')
+    this.debugCaptureSession?.recordEvent(null, 'migrate-start', null)
     await this.initConnection({ migrate: true })
   }
 
@@ -325,10 +331,10 @@ export default class View extends BaseWebRTC {
       streamName: subscriberData.streamName || this.streamName,
       accountId: subscriberData.accountId || subscriberData.streamAccountId
     })
-    await this.debugCaptureSession?.updateIdentity(
+    this.debugCaptureSession?.updateIdentity(
       this.streamName || subscriberData.streamName,
       subscriberData.accountId || subscriberData.streamAccountId
-    )
+    ).catch(error => logger.warn('Unable to update debug capture identity', error))
     const connId = this.debugCaptureSession?.nextConnId()
     const signalingInstance = new Signaling({
       streamName: this.streamName,

@@ -140,7 +140,7 @@ const DebugCapture = {
 export default DebugCapture
 
 const downloadJson = (value, filename) => {
-  const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' })
+  const blob = new Blob([JSON.stringify(value)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url

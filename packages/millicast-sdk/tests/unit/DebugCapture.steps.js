@@ -19,6 +19,14 @@ if (typeof globalThis.structuredClone !== 'function') {
 const feature = loadFeature('../features/DebugCapture.feature', { loadRelativePath: true, errors: true })
 
 jest.mock('../../src/Signaling')
+jest.mock('../../src/DebugCapture', () => {
+  const actual = jest.requireActual('../../src/DebugCapture')
+  return {
+    __esModule: true,
+    ...actual,
+    createCaptureSession: jest.fn(actual.createCaptureSession)
+  }
+})
 jest.mock('jwt-decode', () => ({
   jwtDecode: jest.fn(() => ({ millicast: { streamName: 'capture-stream' } }))
 }))
@@ -174,6 +182,8 @@ defineFeature(feature, test => {
       expect(stats[2].changed['inbound-1']).toEqual({ timestamp: 300 })
       const output = capture.webrtcDump.PeerConnections['pc-1'].stats
       expect(JSON.parse(output['inbound-1-framesDecoded'].values)).toEqual([20, 25, 25])
+      expect(output['inbound-1-framesDecoded'].statsType).toBe('inbound-rtp')
+      expect(JSON.parse(output['inbound-1-kind'].values)).toEqual(['video', 'video', 'video'])
       expect(JSON.parse(output['inbound-1-timestamp'].values)).toEqual([100, 200, 300])
     })
   })
@@ -314,18 +324,24 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Reconnection allocates another peer connection id', ({ given, when, then }) => {
+  test('Migration records its start and allocates another peer connection id', ({ given, when, then }) => {
     let session
     let connectionIds
+    let view
     given('a capture session', async () => {
       session = new CaptureSession({ store: new CaptureStore('capture-reconnect') })
       await session.start()
       connectionIds = [session.nextConnId()]
+      view = {
+        debugCaptureSession: session,
+        initConnection: jest.fn().mockResolvedValue()
+      }
     })
-    when('a migrated peer is created', () => {
+    when('the viewer migrates to a new peer connection', async () => {
+      await View.prototype.replaceConnection.call(view)
       connectionIds.push(session.nextConnId())
     })
-    then('both peer connections belong to the same session', async () => {
+    then('both peer connections and the migrate-start event belong to the same session', async () => {
       expect(connectionIds).toEqual(['pc-1', 'pc-2'])
       session.recordEvent(connectionIds[0], 'connectionstatechange', 'closed')
       session.recordEvent(connectionIds[1], 'connectionstatechange', 'connected')
@@ -333,6 +349,7 @@ defineFeature(feature, test => {
       const records = (await session.store.listChunks(session.id)).flatMap(chunk => chunk.records)
       const capture = buildCapture(session.meta, records)
       expect(Object.keys(capture.webrtcDump.PeerConnections)).toEqual(['pc-1', 'pc-2'])
+      expect(capture.webrtcDump.millicast.events.some(event => event.name === 'migrate-start')).toBe(true)
       await session.end()
     })
   })
@@ -424,6 +441,84 @@ defineFeature(feature, test => {
       expect(await store.listChunks('old-ended')).toEqual([])
       expect(await store.listChunks('old-active')).toHaveLength(1)
       await session.end()
+    })
+  })
+
+  test('Storage persistence does not block connection', ({ given, when, then }) => {
+    let view
+    let session
+    let storageDescriptor
+
+    given('navigator persistence never resolves', () => {
+      storageDescriptor = Object.getOwnPropertyDescriptor(navigator, 'storage')
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: { persist: () => new Promise(() => {}) }
+      })
+      view = new View(undefined, () => ({
+        urls: ['wss://example.test'],
+        jwt: 'test-jwt'
+      }))
+    })
+    when('the viewer connects with capture enabled', async () => {
+      await view.connect({ debugCapture: true })
+      session = view.debugCaptureSession
+    })
+    then('playback setup completes without waiting for persistence', async () => {
+      expect(session?.active).toBe(true)
+      await session.end()
+      view.stop()
+      if (storageDescriptor) Object.defineProperty(navigator, 'storage', storageDescriptor)
+      else delete navigator.storage
+    })
+  })
+
+  test('Capture startup failure does not block connection', ({ given, when, then }) => {
+    let view
+
+    given('capture session creation will fail', () => {
+      createCaptureSession.mockRejectedValueOnce(new Error('capture startup failed'))
+      view = new View(undefined, () => ({
+        urls: ['wss://example.test'],
+        jwt: 'test-jwt'
+      }))
+    })
+    when('the viewer connects with capture enabled', async () => {
+      await view.connect({ debugCapture: true })
+    })
+    then('playback setup completes without a capture session', () => {
+      expect(view.debugCaptureSession).toBeNull()
+      expect(view.webRTCPeer.peer).toBeDefined()
+      view.stop()
+    })
+  })
+
+  test('IndexedDB open timeout falls back to memory', ({ given, when, then }) => {
+    let store
+    let request
+    let opening
+    let close
+
+    given('an IndexedDB open request that never completes', () => {
+      jest.useFakeTimers()
+      request = {}
+      close = jest.fn()
+      jest.spyOn(indexedDB, 'open').mockReturnValue(request)
+      store = new CaptureStore('capture-timeout')
+      opening = store.open()
+    })
+    when('the open timeout expires and the request succeeds late', async () => {
+      await jest.advanceTimersByTimeAsync(3000)
+      await opening
+      request.result = { close }
+      request.onsuccess()
+    })
+    then('the store uses memory and closes the late database', () => {
+      expect(store.mode).toBe('memory')
+      expect(close).toHaveBeenCalledTimes(1)
+      jest.useRealTimers()
     })
   })
 })

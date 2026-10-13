@@ -79,8 +79,9 @@ export default class CaptureSession {
       logger.warn('Debug capture is using in-memory storage because IndexedDB is unavailable')
     }
     try {
-      const persisted = await globalThis.navigator?.storage?.persist?.()
-      this.recordEvent(null, 'storage-persist', Boolean(persisted))
+      Promise.resolve(globalThis.navigator?.storage?.persist?.())
+        .then(persisted => this.recordEvent(null, 'storage-persist', Boolean(persisted)))
+        .catch(() => this.recordEvent(null, 'storage-persist', false))
     } catch {
       this.recordEvent(null, 'storage-persist', false)
     }

@@ -1,3 +1,5 @@
+const DB_OPEN_TIMEOUT_MS = 3000
+
 export default class CaptureStore {
   constructor (name = 'millicast-debug-capture', version = 1) {
     this.name = name
@@ -18,6 +20,11 @@ export default class CaptureStore {
     try {
       this.db = await new Promise((resolve, reject) => {
         const request = indexedDB.open(this.name, this.version)
+        let settled = false
+        const timeout = setTimeout(() => {
+          settled = true
+          reject(new Error('IndexedDB open timed out'))
+        }, DB_OPEN_TIMEOUT_MS)
         request.onupgradeneeded = () => {
           const db = request.result
           if (!db.objectStoreNames.contains('sessions')) {
@@ -28,9 +35,27 @@ export default class CaptureStore {
             chunks.createIndex('sessionId', 'sessionId', { unique: false })
           }
         }
-        request.onsuccess = () => resolve(request.result)
-        request.onerror = () => reject(request.error || new Error('IndexedDB open failed'))
-        request.onblocked = () => reject(new Error('IndexedDB open blocked'))
+        request.onsuccess = () => {
+          if (settled) {
+            request.result.close()
+            return
+          }
+          settled = true
+          clearTimeout(timeout)
+          resolve(request.result)
+        }
+        request.onerror = () => {
+          if (settled) return
+          settled = true
+          clearTimeout(timeout)
+          reject(request.error || new Error('IndexedDB open failed'))
+        }
+        request.onblocked = () => {
+          if (settled) return
+          settled = true
+          clearTimeout(timeout)
+          reject(new Error('IndexedDB open blocked'))
+        }
       })
     } catch {
       this.mode = 'memory'

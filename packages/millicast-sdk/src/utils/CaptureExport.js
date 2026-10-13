@@ -2,20 +2,6 @@ import { redactUrl } from './Redact'
 
 const jsonValue = value => typeof value === 'string' ? value : JSON.stringify(value ?? null)
 const iso = time => new Date(time).toISOString()
-const statValues = (samples, statId, field) => {
-  const values = []
-  const times = []
-  for (const sample of samples) {
-    const stat = sample.reports[statId]
-    if (!stat || !(field in stat)) continue
-    const value = stat[field]
-    if (['number', 'string', 'boolean'].includes(typeof value) || (value && typeof value === 'object')) {
-      values.push(typeof value === 'object' ? JSON.stringify(value) : value)
-      times.push(sample.time)
-    }
-  }
-  return { values, times }
-}
 
 export const buildWebrtcDump = (meta, records) => {
   const connections = new Map()
@@ -25,21 +11,56 @@ export const buildWebrtcDump = (meta, records) => {
       sessionEvents.push(record)
     }
     if (record.connId && !connections.has(record.connId)) {
-      connections.set(record.connId, { events: [], samples: [] })
+      connections.set(record.connId, { events: [], reports: {}, statTypes: {}, stats: {} })
     }
-    if (record.connId && record.kind === 'event') connections.get(record.connId).events.push(record)
+    if (record.connId && record.kind === 'event') {
+      connections.get(record.connId).events.push(record)
+    }
     if (record.connId && record.kind === 'stats') {
       const state = connections.get(record.connId)
-      let reports = state.samples.length ? { ...state.samples[state.samples.length - 1].reports } : {}
-      if (record.full) reports = record.reports || {}
+      if (record.full) state.reports = { ...(record.reports || {}) }
       else {
-        for (const id of record.removed || []) delete reports[id]
-        Object.assign(reports, record.added || {})
+        for (const id of record.removed || []) delete state.reports[id]
+        Object.assign(state.reports, record.added || {})
         for (const [id, fields] of Object.entries(record.changed || {})) {
-          reports[id] = { ...(reports[id] || {}), ...fields }
+          state.reports[id] = { ...(state.reports[id] || {}), ...fields }
         }
       }
-      state.samples.push({ time: record.time, reports })
+      for (const [id, stat] of Object.entries(state.reports)) {
+        if (!Object.prototype.hasOwnProperty.call(state.statTypes, id)) {
+          state.statTypes[id] = stat.type || ''
+        }
+        for (const [field, value] of Object.entries(stat)) {
+          if (['id', 'type', 'timestamp'].includes(field)) continue
+          if (!['number', 'string', 'boolean'].includes(typeof value) && !(value && typeof value === 'object')) continue
+          const key = `${id}-${field}`
+          let series = state.stats[key]
+          if (!series) {
+            series = state.stats[key] = {
+              startTime: iso(record.time),
+              endTime: iso(record.time),
+              statsType: state.statTypes[id],
+              values: []
+            }
+          }
+          series.endTime = iso(record.time)
+          series.values.push(typeof value === 'object' ? JSON.stringify(value) : value)
+        }
+        if (stat.timestamp !== undefined) {
+          const key = `${id}-timestamp`
+          let series = state.stats[key]
+          if (!series) {
+            series = state.stats[key] = {
+              startTime: iso(record.time),
+              endTime: iso(record.time),
+              statsType: state.statTypes[id],
+              values: []
+            }
+          }
+          series.endTime = iso(record.time)
+          series.values.push(stat.timestamp)
+        }
+      }
     }
   }
 
@@ -58,36 +79,10 @@ export const buildWebrtcDump = (meta, records) => {
       }
     }
     updateLog.sort((a, b) => a.timestamp - b.timestamp)
-    const stats = {}
-    const ids = new Set(state.samples.flatMap(sample => Object.keys(sample.reports)))
-    for (const id of ids) {
-      const fields = new Set()
-      for (const sample of state.samples) {
-        for (const field of Object.keys(sample.reports[id] || {})) {
-          if (!['id', 'type', 'timestamp'].includes(field)) fields.add(field)
-        }
-      }
-      for (const field of fields) {
-        const { values, times } = statValues(state.samples, id, field)
-        if (!values.length) continue
-        stats[`${id}-${field}`] = {
-          startTime: iso(times[0]),
-          endTime: iso(times[times.length - 1]),
-          statsType: state.samples.find(sample => sample.reports[id])?.reports[id]?.type || '',
-          values: JSON.stringify(values)
-        }
-      }
-      const timestamps = state.samples.flatMap(sample => sample.reports[id]?.timestamp === undefined ? [] : [sample.reports[id].timestamp])
-      if (timestamps.length) {
-        const times = state.samples.filter(sample => sample.reports[id]?.timestamp !== undefined).map(sample => sample.time)
-        stats[`${id}-timestamp`] = {
-          startTime: iso(times[0]),
-          endTime: iso(times[times.length - 1]),
-          statsType: state.samples.find(sample => sample.reports[id])?.reports[id]?.type || '',
-          values: JSON.stringify(timestamps)
-        }
-      }
-    }
+    const stats = Object.fromEntries(Object.entries(state.stats).map(([key, series]) => [
+      key,
+      { ...series, values: JSON.stringify(series.values) }
+    ]))
     const config = state.events.find(record => record.name === 'rtcConfiguration')?.value || {}
     PeerConnections[connId] = {
       pid: 0,
