@@ -12,6 +12,7 @@ const REDACT_SECRETS = true
 const REDACT_KEEP_LAST_CHARS = 6
 const DB_NAME = 'millicast-debug-capture'
 const DB_VERSION = 1
+let fallbackIdCounter = 0
 
 const logger = Logger.get('DebugCapture')
 const redact = value => REDACT_SECRETS ? redactDeep(value, REDACT_KEEP_LAST_CHARS) : value
@@ -28,7 +29,17 @@ const toStoredDescription = value => {
   return toPlain(value)
 }
 const errorValue = error => ({ name: error?.name || 'Error', message: error?.message || String(error) })
-const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+const makeId = () => {
+  const crypto = globalThis.crypto
+  if (crypto?.randomUUID) return crypto.randomUUID()
+  if (crypto?.getRandomValues) {
+    return Array.from(
+      crypto.getRandomValues(new Uint8Array(16)),
+      byte => byte.toString(16).padStart(2, '0')
+    ).join('')
+  }
+  return `${Date.now()}-${++fallbackIdCounter}`
+}
 
 export default class CaptureSession {
   constructor (options = {}) {

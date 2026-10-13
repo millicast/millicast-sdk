@@ -2,6 +2,16 @@ import CaptureSession from './utils/CaptureSession'
 import CaptureStore from './utils/CaptureStore'
 import { buildCapture } from './utils/CaptureExport'
 
+/**
+ * @typedef {Object} DebugCaptureSessionInfo
+ * @property {string} id
+ * @property {number} startTime
+ * @property {number|null} endTime
+ * @property {string} streamName
+ * @property {string} accountId
+ * @property {boolean} active
+ */
+
 const activeSessions = new Map()
 const store = new CaptureStore()
 let currentHttpCapture = null
@@ -56,7 +66,7 @@ const getStoredSession = async sessionId => {
 const DebugCapture = {
   /**
    * Lists stored capture sessions, newest first.
-   * @returns {Promise<Array<{id:string,startTime:number,endTime:number|null,streamName:string,accountId:string,active:boolean}>>}
+   * @returns {Promise<Array<DebugCaptureSessionInfo>>}
    */
   async listSessions () {
     const sessions = new Map((await store.listSessions()).map(session => [session.id, session]))
