@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import WS from 'jest-websocket-mock'
-import Signaling from '../../src/Signaling'
+import Signaling, { SDK_IDENTIFIER } from '../../src/Signaling'
 import './__mocks__/MockBrowser'
 import { WebSocket } from 'mock-socket'
 const feature = loadFeature('../features/ManageSignaling.feature', { loadRelativePath: true, errors: true })
@@ -39,6 +39,19 @@ defineFeature(feature, test => {
     then('returns the WebSocket connection and fires a connectionSuccess event', async () => {
       expect(handler).toHaveBeenCalledTimes(1)
       expect(handler).toHaveBeenCalledWith({ ws: expect.any(WebSocket), tm: expect.any(Object) })
+    })
+  })
+
+  test('Connect sends the SDK version on the WebSocket URL', ({ given, when, then }) => {
+    given('I have no previous connection to server', () => null)
+
+    when('I want to connect to server', async () => {
+      await signaling.connect()
+    })
+
+    then('the WebSocket URL contains the SDK name and version', () => {
+      expect(SDK_IDENTIFIER).toMatch(/^millicast-sdk-js\/\d+\.\d+\.\d+/)
+      expect(new URL(signaling.webSocket.url).searchParams.get('sdk')).toBe(SDK_IDENTIFIER)
     })
   })
 
