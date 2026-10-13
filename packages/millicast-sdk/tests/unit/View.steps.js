@@ -35,6 +35,19 @@ const createDeferred = () => {
   return deferred
 }
 
+// Like Vue's reactive(): object properties are returned wrapped in their own proxy
+const reactive = (target, cache = new WeakMap()) => {
+  if (cache.has(target)) return cache.get(target)
+  const proxy = new Proxy(target, {
+    get (obj, key, receiver) {
+      const value = Reflect.get(obj, key, receiver)
+      return value !== null && typeof value === 'object' ? reactive(value, cache) : value
+    }
+  })
+  cache.set(target, proxy)
+  return proxy
+}
+
 const mockTokenGenerator = jest.fn(() => {
   return {
     urls: [
@@ -364,19 +377,6 @@ defineFeature(feature, test => {
     let tokenGenerator
     let pendingConnect
 
-    // Like Vue's reactive(): object properties are returned wrapped in their own proxy
-    const reactive = (target, cache = new WeakMap()) => {
-      if (cache.has(target)) return cache.get(target)
-      const proxy = new Proxy(target, {
-        get (obj, key, receiver) {
-          const value = Reflect.get(obj, key, receiver)
-          return value !== null && typeof value === 'object' ? reactive(value, cache) : value
-        }
-      })
-      cache.set(target, proxy)
-      return proxy
-    }
-
     given('an instance of View wrapped in a reactive proxy whose token generator fails', async () => {
       tokenGenerator = jest.fn()
         .mockRejectedValueOnce(new FetchError('stream not being published', 400))
@@ -394,6 +394,25 @@ defineFeature(feature, test => {
       expect(tokenGenerator).toHaveBeenCalledTimes(2)
       expect(viewer.isActive()).toBeTruthy()
       expect(viewer.isConnecting()).toBeFalsy()
+    })
+  })
+  test('Subscribe with metadata fails when the View is wrapped in a reactive proxy', ({ given, when, then }) => {
+    let viewer
+    let pendingConnect
+
+    given('an instance of View wrapped in a reactive proxy whose subscribe request fails', async () => {
+      jest.spyOn(Signaling.prototype, 'subscribe').mockRejectedValueOnce(new Error('Subscribe failed'))
+      viewer = reactive(new View(undefined, mockTokenGenerator, null, false))
+    })
+
+    when('I subscribe to a stream with metadata', async () => {
+      pendingConnect = viewer.connect({ metadata: true })
+    })
+
+    then('the connection fails and the metadata worker is released', async () => {
+      await expect(pendingConnect).rejects.toThrow('Subscribe failed')
+      expect(TransformWorker.mock.results[0].value.terminate).toHaveBeenCalled()
+      expect(viewer.worker).toBeNull()
     })
   })
 })

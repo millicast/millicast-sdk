@@ -81,3 +81,8 @@ Feature: As a user I want to subscribe to a stream without managing connections
     Given an instance of View wrapped in a reactive proxy whose token generator fails
     When I subscribe to a stream
     Then the connection attempt is released and the viewer reconnects
+
+  Scenario: Subscribe with metadata fails when the View is wrapped in a reactive proxy
+    Given an instance of View wrapped in a reactive proxy whose subscribe request fails
+    When I subscribe to a stream with metadata
+    Then the connection fails and the metadata worker is released
