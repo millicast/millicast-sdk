@@ -415,4 +415,20 @@ defineFeature(feature, test => {
       expect(viewer.worker).toBeNull()
     })
   })
+  test('Subscribe successfully when the View is wrapped in a reactive proxy', ({ given, when, then }) => {
+    let viewer
+
+    given('an instance of View wrapped in a reactive proxy', async () => {
+      viewer = reactive(new View(undefined, mockTokenGenerator))
+    })
+
+    when('I subscribe to a stream', async () => {
+      await viewer.connect()
+    })
+
+    then('the viewer is active and no longer connecting', async () => {
+      expect(viewer.isActive()).toBeTruthy()
+      expect(viewer.isConnecting()).toBeFalsy()
+    })
+  })
 })
