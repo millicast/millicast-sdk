@@ -68,3 +68,13 @@ Feature: Viewer debug capture
     Given an IndexedDB open request that never completes
     When the open timeout expires and the request succeeds late
     Then the store uses memory and closes the late database
+
+  Scenario: Capture writes succeed when the session is used through a reactive proxy
+    Given a capture session wrapped in a reactive proxy
+    When its identity and event are updated and flushed
+    Then the session and event are stored without stats being dropped
+
+  Scenario: An unserializable record does not block later writes
+    Given a capture session for resilient writes
+    When a circular event and later records are flushed
+    Then the bad record is marked and later writes are stored

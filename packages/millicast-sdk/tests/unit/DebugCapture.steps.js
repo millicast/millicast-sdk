@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto'
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import { runInThisContext } from 'node:vm'
 import DebugCapture, { createCaptureSession, setCurrentHttpCapture, unregisterCaptureSession } from '../../src/DebugCapture'
 import CaptureSession from '../../src/utils/CaptureSession'
 import CaptureStore from '../../src/utils/CaptureStore'
@@ -45,6 +46,31 @@ const report = (framesDecoded, timestamp) => new Map([[
   'inbound-1',
   { id: 'inbound-1', type: 'inbound-rtp', timestamp, framesDecoded, kind: 'video' }
 ]])
+
+const makeReactiveProxy = (value, cache = new WeakMap()) => {
+  if (!value || typeof value !== 'object') return value
+  const type = Object.prototype.toString.call(value)
+  if (type !== '[object Object]' && type !== '[object Array]') return value
+  if (cache.has(value)) return cache.get(value)
+  const proxy = new Proxy(value, {
+    get (target, key, receiver) {
+      return makeReactiveProxy(Reflect.get(target, key, receiver), cache)
+    }
+  })
+  cache.set(value, proxy)
+  return proxy
+}
+
+const nativeStructuredClone = runInThisContext('structuredClone')
+const cloneIndexedDbWrites = () => {
+  for (const method of ['put', 'add']) {
+    const original = IDBObjectStore.prototype[method]
+    jest.spyOn(IDBObjectStore.prototype, method).mockImplementation(function (value, ...args) {
+      nativeStructuredClone(value)
+      return original.call(this, value, ...args)
+    })
+  }
+}
 
 defineFeature(feature, test => {
   beforeEach(async () => {
@@ -520,6 +546,85 @@ defineFeature(feature, test => {
       expect(store.mode).toBe('memory')
       expect(close).toHaveBeenCalledTimes(1)
       jest.useRealTimers()
+    })
+  })
+
+  test('Capture writes succeed when the session is used through a reactive proxy', ({ given, when, then }) => {
+    let store
+    let rawSession
+    let session
+    let identityError
+    let flushError
+    let storedSession
+    let records
+
+    given('a capture session wrapped in a reactive proxy', async () => {
+      cloneIndexedDbWrites()
+      store = new CaptureStore('capture-reactive-proxy')
+      rawSession = new CaptureSession({ store })
+      await rawSession.start()
+      session = makeReactiveProxy(rawSession)
+    })
+    when('its identity and event are updated and flushed', async () => {
+      try {
+        await session.updateIdentity('s', 'a')
+      } catch (error) {
+        identityError = `${error.name}: ${error.message}`
+      }
+      session.recordEvent(null, 'test', { nested: { a: 1 } })
+      try {
+        await session.flush()
+      } catch (error) {
+        flushError = `${error.name}: ${error.message}`
+      }
+      storedSession = await store.getSession(rawSession.id)
+      records = (await store.listChunks(rawSession.id)).flatMap(chunk => chunk.records)
+    })
+    then('the session and event are stored without stats being dropped', async () => {
+      try {
+        expect(identityError).toBeUndefined()
+        expect(flushError).toBeUndefined()
+        expect(storedSession).toMatchObject({ streamName: 's', accountId: 'a' })
+        expect(records.some(record => record.name === 'test' && record.value.nested.a === 1)).toBe(true)
+        expect(records.some(record => record.name === 'stats-dropped')).toBe(false)
+      } finally {
+        await rawSession.end().catch(() => {})
+      }
+    })
+  })
+
+  test('An unserializable record does not block later writes', ({ given, when, then }) => {
+    let store
+    let session
+    let records
+
+    given('a capture session for resilient writes', async () => {
+      cloneIndexedDbWrites()
+      store = new CaptureStore('capture-unserializable-record')
+      session = new CaptureSession({ store })
+      await session.start()
+    })
+    when('a circular event and later records are flushed', async () => {
+      const circularValue = {}
+      circularValue.self = circularValue
+      session.recordEvent(null, 'circular-event')
+      session.buffer.at(-1).value = circularValue
+      await session.flush()
+      session.recordEvent(null, 'later-event', { written: true })
+      session.recordStats('pc-1', report(1, Date.now()))
+      await session.flush()
+      records = (await store.listChunks(session.id)).flatMap(chunk => chunk.records)
+    })
+    then('the bad record is marked and later writes are stored', async () => {
+      try {
+        const badRecord = records.find(record => record.name === 'circular-event')
+        expect(badRecord.value).toContain('[unserializable:')
+        expect(records.some(record => record.name === 'later-event')).toBe(true)
+        expect(records.some(record => record.kind === 'stats')).toBe(true)
+        expect(records.some(record => record.name === 'stats-dropped')).toBe(false)
+      } finally {
+        await session.end()
+      }
     })
   })
 })

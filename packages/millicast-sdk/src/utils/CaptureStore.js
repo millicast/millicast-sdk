@@ -1,4 +1,31 @@
 const DB_OPEN_TIMEOUT_MS = 3000
+const toPlain = value => JSON.parse(JSON.stringify(value))
+const toPlainRecord = record => {
+  try {
+    return toPlain(record)
+  } catch (error) {
+    const read = key => {
+      try {
+        return toPlain(record?.[key]) ?? null
+      } catch {
+        return null
+      }
+    }
+    let message
+    try {
+      message = String(error?.message ?? error)
+    } catch {
+      message = 'serialization failed'
+    }
+    return {
+      time: read('time'),
+      kind: read('kind'),
+      connId: read('connId'),
+      name: read('name'),
+      value: `[unserializable: ${message}]`
+    }
+  }
+}
 
 export default class CaptureStore {
   constructor (name = 'millicast-debug-capture', version = 1) {
@@ -72,11 +99,12 @@ export default class CaptureStore {
 
   async putSession (session) {
     await this.open()
+    const plainSession = toPlain(session)
     if (this.mode === 'memory') {
-      this.sessions.set(session.id, { ...session })
+      this.sessions.set(plainSession.id, plainSession)
       return
     }
-    await this._request('sessions', 'readwrite', store => store.put(session))
+    await this._request('sessions', 'readwrite', store => store.put(plainSession))
   }
 
   async listSessions () {
@@ -87,12 +115,14 @@ export default class CaptureStore {
 
   async appendChunk (chunk) {
     await this.open()
+    const { records, ...fields } = chunk
+    const plainChunk = { ...toPlain(fields), records: records.map(toPlainRecord) }
     if (this.mode === 'memory') {
       const key = this.nextChunkId++
-      this.chunks.set(key, { ...chunk, key })
+      this.chunks.set(key, { ...plainChunk, key })
       return
     }
-    await this._request('chunks', 'readwrite', store => store.add(chunk))
+    await this._request('chunks', 'readwrite', store => store.add(plainChunk))
   }
 
   async listChunks (sessionId) {
