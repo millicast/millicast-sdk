@@ -5,8 +5,21 @@ import SdpParser from './utils/SdpParser'
 import { VideoCodec } from './utils/Codecs'
 import PeerConnection from './PeerConnection'
 import Diagnostics from './utils/Diagnostics'
+import { version } from '../package.json' with { type: 'json' }
 
 const logger = Logger.get('Signaling')
+
+export const SDK_IDENTIFIER = `millicast-sdk-js/${version}`
+
+const withSdkIdentifier = (wsUrl) => {
+  try {
+    const url = new URL(wsUrl)
+    url.searchParams.set('sdk', SDK_IDENTIFIER)
+    return url.toString()
+  } catch {
+    return wsUrl
+  }
+}
 
 export const signalingEvents = {
   connectionSuccess: 'wsConnectionSuccess',
@@ -102,7 +115,7 @@ export default class Signaling extends EventEmitter {
     }
 
     return new Promise((resolve, reject) => {
-      this.webSocket = new WebSocket(this.wsUrl)
+      this.webSocket = new WebSocket(withSdkIdentifier(this.wsUrl))
       this.transactionManager = new TransactionManager(this.webSocket)
       this.webSocket.onopen = () => {
         logger.info('WebSocket opened')
