@@ -1,6 +1,6 @@
 import Logger from '../Logger'
 import { version } from '../../package.json' with { type: 'json' }
-import CaptureStore from './CaptureStore'
+import CaptureStore, { CAPTURE_TAIL_KEY_PREFIX, toPlain as toPlainCaptureData, toPlainRecord } from './CaptureStore'
 import { redactDeep, redactMessage, redactSecret, redactUrl } from './Redact'
 
 const FLUSH_INTERVAL_MS = 5000
@@ -12,6 +12,7 @@ const REDACT_SECRETS = true
 const REDACT_KEEP_LAST_CHARS = 6
 const DB_NAME = 'millicast-debug-capture'
 const DB_VERSION = 1
+export const TAIL_MAX_BYTES = 512 * 1024
 let fallbackIdCounter = 0
 
 const logger = Logger.get('DebugCapture')
@@ -66,6 +67,7 @@ export default class CaptureSession {
     this.store = options.store || new CaptureStore(DB_NAME, DB_VERSION)
     this.buffer = []
     this.seq = 0
+    this.inflightChunk = null
     this.flushChain = Promise.resolve()
     this.timer = null
     this.active = true
@@ -83,6 +85,7 @@ export default class CaptureSession {
 
   async start () {
     await this.store.open()
+    await this.store.mergeTails?.()
     this.meta.storageMode = this.store.mode
     await this._deleteExpiredSessions()
     await this.store.putSession(this.meta)
@@ -288,11 +291,14 @@ export default class CaptureSession {
       const records = this.buffer
       this.buffer = []
       const chunk = { sessionId: this.id, seq: ++this.seq, records }
+      this.inflightChunk = chunk
       try {
         await this.store.appendChunk(chunk)
         this.flushCount++
         if (this.flushCount % 6 === 0) await this._checkStoragePressure()
+        this.inflightChunk = null
       } catch (error) {
+        this.inflightChunk = null
         const nonStats = records.filter(record => record.kind !== 'stats')
         const stats = records.filter(record => record.kind === 'stats')
         for (const state of this.connStats.values()) state.forceFull = true
@@ -343,15 +349,21 @@ export default class CaptureSession {
       this.recordEvent(null, 'pagehide', { persisted: !!event?.persisted })
       this.endTime = this.meta.endTime = Date.now()
       this.meta.endReason = 'pagehide'
+      this._saveTail()
       this.flush().catch(error => logger.debug(error))
       this.store.putSession(this.meta).catch(error => logger.debug(error))
     })
     add(globalThis, 'pageshow', event => {
       this.recordEvent(null, 'pageshow', { persisted: !!event?.persisted })
-      if (event?.persisted && this.meta.endReason === 'pagehide') {
-        this.endTime = this.meta.endTime = null
-        this.meta.endReason = null
-        this.store.putSession(this.meta).catch(error => logger.debug(error))
+      if (event?.persisted) {
+        try {
+          globalThis.localStorage?.removeItem(`${CAPTURE_TAIL_KEY_PREFIX}${this.id}`)
+        } catch (error) { logger.debug(error) }
+        if (this.meta.endReason === 'pagehide') {
+          this.endTime = this.meta.endTime = null
+          this.meta.endReason = null
+          this.store.putSession(this.meta).catch(error => logger.debug(error))
+        }
       }
     })
     add(globalThis, 'online', () => this.recordEvent(null, 'online', null))
@@ -375,6 +387,67 @@ export default class CaptureSession {
         this.cleanup.push(() => observer.disconnect())
       } catch (error) { logger.debug(error) }
     }
+  }
+
+  _saveTail () {
+    if (this.meta.storageMode === 'memory' || this.store.mode === 'memory') return
+    try {
+      const storage = globalThis.localStorage
+      if (!storage) return
+
+      const chunks = []
+      if (this.inflightChunk) {
+        const { records, ...fields } = this.inflightChunk
+        chunks.push({
+          ...toPlainCaptureData(fields),
+          records: records.map(toPlainRecord)
+        })
+      }
+      chunks.push({
+        sessionId: this.id,
+        seq: (this.inflightChunk?.seq ?? this.seq) + 1,
+        records: this.buffer.map(toPlainRecord)
+      })
+
+      const tail = {
+        version: 1,
+        meta: toPlainCaptureData(this.meta),
+        chunks
+      }
+      let serialized = JSON.stringify(tail)
+      if (serialized.length > TAIL_MAX_BYTES) {
+        let count = 0
+        for (const chunk of tail.chunks) {
+          chunk.records = chunk.records.filter(record => {
+            if (record.kind !== 'stats') return true
+            count++
+            return false
+          })
+        }
+        tail.chunks.at(-1).records.push({
+          time: Date.now(),
+          kind: 'event',
+          connId: null,
+          name: 'tail-stats-omitted',
+          value: { count }
+        })
+        serialized = JSON.stringify(tail)
+        if (serialized.length > TAIL_MAX_BYTES) {
+          tail.chunks = []
+          serialized = JSON.stringify(tail)
+        }
+      }
+
+      try {
+        storage.setItem(`${CAPTURE_TAIL_KEY_PREFIX}${this.id}`, serialized)
+      } catch (error) {
+        logger.debug(error)
+        tail.chunks = []
+        try {
+          storage.setItem(`${CAPTURE_TAIL_KEY_PREFIX}${this.id}`, JSON.stringify(tail))
+        } catch (fallbackError) { logger.debug(fallbackError) }
+      }
+    } catch (error) { logger.debug(error) }
   }
 
   async _checkStoragePressure () {

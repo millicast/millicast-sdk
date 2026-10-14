@@ -2,8 +2,8 @@ import 'fake-indexeddb/auto'
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { runInThisContext } from 'node:vm'
 import DebugCapture, { createCaptureSession, setCurrentHttpCapture, unregisterCaptureSession } from '../../src/DebugCapture'
-import CaptureSession from '../../src/utils/CaptureSession'
-import CaptureStore from '../../src/utils/CaptureStore'
+import CaptureSession, { TAIL_MAX_BYTES } from '../../src/utils/CaptureSession'
+import CaptureStore, { CAPTURE_TAIL_KEY_PREFIX } from '../../src/utils/CaptureStore'
 import { buildCapture } from '../../src/utils/CaptureExport'
 import { redactDeep, redactMessage, redactSecret, redactUrl } from '../../src/utils/Redact'
 import Director from '../../src/Director'
@@ -102,6 +102,10 @@ defineFeature(feature, test => {
   beforeEach(async () => {
     jest.useRealTimers()
     jest.restoreAllMocks()
+    for (let index = localStorage.length - 1; index >= 0; index--) {
+      const key = localStorage.key(index)
+      if (key?.startsWith(CAPTURE_TAIL_KEY_PREFIX)) localStorage.removeItem(key)
+    }
     await DebugCapture.clear()
     jest.spyOn(Signaling.prototype, 'subscribe').mockReturnValue('sdp')
   })
@@ -736,6 +740,7 @@ defineFeature(feature, test => {
         expect(storedSession.endTime).toBeNull()
         expect(storedSession.endReason).toBeNull()
         expect(records.some(record => record.name === 'after-pageshow')).toBe(true)
+        expect(localStorage.getItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`)).toBeNull()
       } finally {
         await session.end()
         unregisterCaptureSession(session.id)
@@ -807,6 +812,236 @@ defineFeature(feature, test => {
     then('the export uses the last record time and not-closed end reason', () => {
       expect(millicast.endTime).toBe(200)
       expect(millicast.endReason).toBe('not-closed')
+    })
+  })
+
+  test('Pagehide tail saves an in-flight chunk and buffered records', ({ given, when, then }) => {
+    let store
+    let session
+    let appendStarted
+    let startAppend
+    let pendingChunk
+    let tail
+
+    given('a capture session with a pending chunk write', async () => {
+      store = new CaptureStore('capture-tail-inflight')
+      session = new CaptureSession({ store })
+      await session.start()
+      appendStarted = new Promise(resolve => { startAppend = resolve })
+      jest.spyOn(store, 'appendChunk').mockImplementation(chunk => {
+        pendingChunk = chunk
+        startAppend()
+        return new Promise(() => {})
+      })
+      jest.spyOn(store, 'putSession').mockImplementation(() => new Promise(() => {}))
+    })
+    when('pagehide fires while the chunk is in flight', async () => {
+      session.recordEvent(null, 'inflight-event')
+      session.flush().catch(() => {})
+      await appendStarted
+      dispatchPageEvent('pagehide', false)
+      tail = JSON.parse(localStorage.getItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`))
+    })
+    then('the local tail contains both chunks and the pagehide end metadata', () => {
+      try {
+        expect(tail.meta.endReason).toBe('pagehide')
+        expect(tail.meta.endTime).toEqual(expect.any(Number))
+        expect(tail.chunks.map(chunk => chunk.seq)).toEqual([pendingChunk.seq, pendingChunk.seq + 1])
+        expect(tail.chunks[0].records.some(record => record.name === 'inflight-event')).toBe(true)
+        expect(tail.chunks[1].records.some(record => record.name === 'pagehide')).toBe(true)
+      } finally {
+        localStorage.removeItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`)
+        clearInterval(session.timer)
+        session.active = false
+        session.cleanup.splice(0).forEach(remove => remove())
+        store.db?.close()
+      }
+    })
+  })
+
+  test('Reload merges the pagehide tail into IndexedDB', ({ given, when, then }) => {
+    let store
+    let reloadedStore
+    let session
+    let storedSession
+    let chunks
+    let capture
+
+    given('a capture session with a pagehide tail', async () => {
+      store = new CaptureStore('capture-tail-reload')
+      session = new CaptureSession({ store })
+      await session.start()
+      session.recordEvent(null, 'before-pagehide')
+      await session.flush()
+      jest.spyOn(store, 'appendChunk').mockImplementation(() => new Promise(() => {}))
+      jest.spyOn(store, 'putSession').mockImplementation(() => new Promise(() => {}))
+    })
+    when('a new store merges the tail after reload', async () => {
+      dispatchPageEvent('pagehide', false)
+      reloadedStore = new CaptureStore('capture-tail-reload')
+      await reloadedStore.mergeTails()
+      storedSession = await reloadedStore.getSession(session.id)
+      chunks = await reloadedStore.listChunks(session.id)
+      capture = buildCapture(storedSession, chunks.flatMap(chunk => chunk.records))
+    })
+    then('the merged session and export contain the pagehide data', () => {
+      try {
+        const sequences = chunks.map(chunk => chunk.seq)
+        expect(storedSession.endTime).toEqual(expect.any(Number))
+        expect(storedSession.endReason).toBe('pagehide')
+        expect(sequences).toEqual([1, 2])
+        expect(new Set(sequences).size).toBe(sequences.length)
+        expect(localStorage.getItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`)).toBeNull()
+        expect(capture.webrtcDump.millicast.endReason).toBe('pagehide')
+        expect(capture.webrtcDump.millicast.events.some(event => event.name === 'pagehide')).toBe(true)
+      } finally {
+        localStorage.removeItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`)
+        clearInterval(session.timer)
+        session.active = false
+        session.cleanup.splice(0).forEach(remove => remove())
+        store.db?.close()
+        reloadedStore.db?.close()
+      }
+    })
+  })
+
+  test('Tail merge deduplicates sequences and retains failed writes', ({ given, when, then }) => {
+    let store
+    let chunks
+    let failedKey
+    let failedTailRetained
+
+    given('a tail whose sequence already exists in IndexedDB', async () => {
+      const sessionId = 'tail-deduplicate'
+      const meta = { id: sessionId, startTime: 1, endTime: 10, endReason: 'pagehide', storageMode: 'indexeddb' }
+      store = new CaptureStore('capture-tail-deduplicate')
+      await store.open()
+      await store.putSession({ ...meta, endTime: null, endReason: null })
+      await store.appendChunk({
+        sessionId,
+        seq: 4,
+        records: [{ time: 4, kind: 'event', connId: null, name: 'existing-sequence', value: null }]
+      })
+      localStorage.setItem(`${CAPTURE_TAIL_KEY_PREFIX}${sessionId}`, JSON.stringify({
+        version: 1,
+        meta,
+        chunks: [
+          { sessionId, seq: 4, records: [{ time: 5, kind: 'event', connId: null, name: 'duplicate-sequence', value: null }] },
+          { sessionId, seq: 5, records: [{ time: 6, kind: 'event', connId: null, name: 'new-sequence', value: null }] }
+        ]
+      }))
+    })
+    when('the tail is merged more than once', async () => {
+      await Promise.all([store.mergeTails(), store.mergeTails()])
+      await store.mergeTails()
+      chunks = await store.listChunks('tail-deduplicate')
+
+      const failedSessionId = 'tail-write-failure'
+      failedKey = `${CAPTURE_TAIL_KEY_PREFIX}${failedSessionId}`
+      await store.putSession({ id: failedSessionId, startTime: 1, endTime: null, endReason: null })
+      localStorage.setItem(failedKey, JSON.stringify({
+        version: 1,
+        meta: { id: failedSessionId, startTime: 1, endTime: 10, endReason: 'pagehide' },
+        chunks: [{ sessionId: failedSessionId, seq: 1, records: [] }]
+      }))
+      jest.spyOn(store, 'appendChunk').mockRejectedValue(new Error('write failed'))
+      await store.mergeTails()
+      failedTailRetained = localStorage.getItem(failedKey) !== null
+    })
+    then('only one chunk per sequence remains and failed writes keep their key', () => {
+      try {
+        const sequences = chunks.map(chunk => chunk.seq)
+        expect(sequences).toEqual([4, 5])
+        expect(new Set(sequences).size).toBe(sequences.length)
+        expect(chunks.flatMap(chunk => chunk.records).some(record => record.name === 'duplicate-sequence')).toBe(false)
+        expect(localStorage.getItem(`${CAPTURE_TAIL_KEY_PREFIX}tail-deduplicate`)).toBeNull()
+        expect(failedTailRetained).toBe(true)
+      } finally {
+        localStorage.removeItem(`${CAPTURE_TAIL_KEY_PREFIX}tail-deduplicate`)
+        localStorage.removeItem(failedKey)
+        store.db?.close()
+      }
+    })
+  })
+
+  test('Oversized tails omit stats but preserve events and metadata', ({ given, when, then }) => {
+    let store
+    let session
+    let serialized
+    let tail
+
+    given('a capture session with a large stats record', async () => {
+      store = new CaptureStore('capture-tail-size')
+      session = new CaptureSession({ store })
+      await session.start()
+      session.recordEvent(null, 'preserved-event', { value: true })
+      session.buffer.push({
+        time: Date.now(),
+        kind: 'stats',
+        connId: 'pc-1',
+        full: true,
+        reports: { large: 'x'.repeat(TAIL_MAX_BYTES) }
+      })
+      jest.spyOn(store, 'appendChunk').mockImplementation(() => new Promise(() => {}))
+      jest.spyOn(store, 'putSession').mockImplementation(() => new Promise(() => {}))
+    })
+    when('pagehide saves its tail', () => {
+      dispatchPageEvent('pagehide', false)
+      serialized = localStorage.getItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`)
+      tail = JSON.parse(serialized)
+    })
+    then('stats are omitted and the tail remains under the size limit', () => {
+      try {
+        const records = tail.chunks.flatMap(chunk => chunk.records)
+        expect(serialized.length).toBeLessThan(TAIL_MAX_BYTES)
+        expect(records.some(record => record.kind === 'stats')).toBe(false)
+        expect(records.find(record => record.name === 'tail-stats-omitted').value.count).toBe(1)
+        expect(records.some(record => record.name === 'preserved-event')).toBe(true)
+        expect(records.some(record => record.name === 'pagehide')).toBe(true)
+        expect(tail.meta.endReason).toBe('pagehide')
+      } finally {
+        localStorage.removeItem(`${CAPTURE_TAIL_KEY_PREFIX}${session.id}`)
+        clearInterval(session.timer)
+        session.active = false
+        session.cleanup.splice(0).forEach(remove => remove())
+        store.db?.close()
+      }
+    })
+  })
+
+  test('Export orders chunks by sequence', ({ given, when, then }) => {
+    let store
+    let session
+    let capture
+
+    given('chunks were stored out of sequence order', async () => {
+      store = new CaptureStore('capture-sequence-order')
+      session = await createCaptureSession({ store })
+      await store.appendChunk({
+        sessionId: session.id,
+        seq: 2,
+        records: [{ time: 200, kind: 'event', connId: null, name: 'ordered-second', value: null }]
+      })
+      await store.appendChunk({
+        sessionId: session.id,
+        seq: 1,
+        records: [{ time: 100, kind: 'event', connId: null, name: 'ordered-first', value: null }]
+      })
+      session.seq = 2
+    })
+    when('the capture export is built', async () => {
+      capture = await DebugCapture.getCapture(session.id)
+    })
+    then('exported events follow chunk sequence order', async () => {
+      try {
+        const names = capture.webrtcDump.millicast.events
+          .map(event => event.name)
+          .filter(name => name.startsWith('ordered-'))
+        expect(names).toEqual(['ordered-first', 'ordered-second'])
+      } finally {
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
     })
   })
 })

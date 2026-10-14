@@ -54,7 +54,7 @@ export const unregisterCaptureSession = id => {
 const getRecords = async (sessionId, captureSession) => {
   if (captureSession?.active) await captureSession.flush()
   const chunks = await (captureSession?.store || store).listChunks(sessionId)
-  return [...chunks.flatMap(chunk => chunk.records || []), ...(captureSession?.buffer || [])]
+  return [...chunks.sort((a, b) => a.seq - b.seq).flatMap(chunk => chunk.records || []), ...(captureSession?.buffer || [])]
 }
 
 const getStoredSession = async sessionId => {
@@ -70,6 +70,8 @@ const DebugCapture = {
    * @returns {Promise<Array<DebugCaptureSessionInfo>>}
    */
   async listSessions () {
+    await store.open()
+    await store.mergeTails()
     const sessions = new Map((await store.listSessions()).map(session => [session.id, session]))
     for (const session of activeSessions.values()) sessions.set(session.id, session.meta)
     return [...sessions.values()]
@@ -97,6 +99,9 @@ const DebugCapture = {
       if (!newest) return null
       id = newest.id
     }
+    const captureStore = activeSessions.get(id)?.store || store
+    await captureStore.open()
+    await captureStore.mergeTails()
     const found = await getStoredSession(id)
     if (!found) return null
     const records = await getRecords(id, found.captureSession)

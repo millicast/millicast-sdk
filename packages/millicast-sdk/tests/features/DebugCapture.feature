@@ -103,3 +103,28 @@ Feature: Viewer debug capture
     Given a capture session that was never closed
     When its capture export is built
     Then the export uses the last record time and not-closed end reason
+
+  Scenario: Pagehide tail saves an in-flight chunk and buffered records
+    Given a capture session with a pending chunk write
+    When pagehide fires while the chunk is in flight
+    Then the local tail contains both chunks and the pagehide end metadata
+
+  Scenario: Reload merges the pagehide tail into IndexedDB
+    Given a capture session with a pagehide tail
+    When a new store merges the tail after reload
+    Then the merged session and export contain the pagehide data
+
+  Scenario: Tail merge deduplicates sequences and retains failed writes
+    Given a tail whose sequence already exists in IndexedDB
+    When the tail is merged more than once
+    Then only one chunk per sequence remains and failed writes keep their key
+
+  Scenario: Oversized tails omit stats but preserve events and metadata
+    Given a capture session with a large stats record
+    When pagehide saves its tail
+    Then stats are omitted and the tail remains under the size limit
+
+  Scenario: Export orders chunks by sequence
+    Given chunks were stored out of sequence order
+    When the capture export is built
+    Then exported events follow chunk sequence order

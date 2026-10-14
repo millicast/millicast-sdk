@@ -1,6 +1,11 @@
+import Logger from '../Logger'
+
 const DB_OPEN_TIMEOUT_MS = 3000
-const toPlain = value => JSON.parse(JSON.stringify(value))
-const toPlainRecord = record => {
+export const CAPTURE_TAIL_KEY_PREFIX = 'millicast-debug-capture-tail:'
+const logger = Logger.get('DebugCapture')
+
+export const toPlain = value => JSON.parse(JSON.stringify(value))
+export const toPlainRecord = record => {
   try {
     return toPlain(record)
   } catch (error) {
@@ -36,6 +41,7 @@ export default class CaptureStore {
     this.sessions = new Map()
     this.chunks = new Map()
     this.nextChunkId = 1
+    this.mergeTailsPromise = null
   }
 
   async open () {
@@ -123,6 +129,85 @@ export default class CaptureStore {
       return
     }
     await this._request('chunks', 'readwrite', store => store.add(plainChunk))
+  }
+
+  mergeTails () {
+    if (!this.mergeTailsPromise) {
+      this.mergeTailsPromise = this._mergeTails().finally(() => {
+        this.mergeTailsPromise = null
+      })
+    }
+    return this.mergeTailsPromise
+  }
+
+  async _mergeTails () {
+    await this.open()
+    if (this.mode === 'memory') return
+
+    let storage
+    try {
+      storage = globalThis.localStorage
+    } catch {
+      return
+    }
+    if (!storage) return
+
+    const keys = []
+    try {
+      for (let index = 0; index < storage.length; index++) {
+        const key = storage.key(index)
+        if (key?.startsWith(CAPTURE_TAIL_KEY_PREFIX)) keys.push(key)
+      }
+    } catch (error) {
+      logger.debug(error)
+      return
+    }
+
+    for (const key of keys) {
+      try {
+        const serialized = storage.getItem(key)
+        if (serialized === null) continue
+        let tail
+        try {
+          tail = JSON.parse(serialized)
+        } catch (error) {
+          logger.debug(error)
+          storage.removeItem(key)
+          continue
+        }
+
+        const sessionId = key.slice(CAPTURE_TAIL_KEY_PREFIX.length)
+        if (tail?.version !== 1 || tail.meta?.id !== sessionId || !Array.isArray(tail.chunks)) {
+          logger.debug(new Error('Invalid debug capture tail'))
+          storage.removeItem(key)
+          continue
+        }
+
+        const [session, existingChunks] = await Promise.all([
+          this.getSession(sessionId),
+          this.listChunks(sessionId)
+        ])
+        await this.putSession({
+          ...(session || tail.meta),
+          endTime: tail.meta.endTime ?? null,
+          endReason: tail.meta.endReason ?? null
+        })
+
+        const sequences = new Set(existingChunks.map(chunk => chunk.seq))
+        for (const chunk of tail.chunks) {
+          if (!chunk || chunk.sessionId !== sessionId || !Number.isFinite(chunk.seq) || !Array.isArray(chunk.records)) {
+            throw new Error('Invalid debug capture tail chunk')
+          }
+          if (sequences.has(chunk.seq)) continue
+          // A failed in-flight write can requeue records that also appear in the tail.
+          await this.appendChunk(chunk)
+          sequences.add(chunk.seq)
+        }
+        storage.removeItem(key)
+      } catch (error) {
+        logger.debug(error)
+      }
+    }
   }
 
   async listChunks (sessionId) {
