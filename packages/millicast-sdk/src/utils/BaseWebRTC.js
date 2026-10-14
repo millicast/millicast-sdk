@@ -5,6 +5,7 @@ import Diagnostics from './Diagnostics'
 let logger
 const maxReconnectionInterval = 32000
 const baseInterval = 1000
+let connectAttemptId = 0
 
 /**
  * @typedef {Object} MillicastDirectorResponse
@@ -103,7 +104,7 @@ export default class BaseWebRTC extends EventEmitter {
       logger.warn(inProgressMessage)
       throw new Error(inProgressMessage)
     }
-    const attempt = { cancelled: false, signaling: null, webRTCPeer: null, worker: null }
+    const attempt = { id: ++connectAttemptId, cancelled: false, signaling: null, webRTCPeer: null, worker: null }
     const cancellation = new Promise((resolve, reject) => {
       attempt.cancel = () => {
         attempt.cancelled = true
@@ -135,7 +136,8 @@ export default class BaseWebRTC extends EventEmitter {
   }
 
   endConnectAttempt (attempt) {
-    if (this.connectAttempt === attempt) {
+    // Compare ids, not objects: reactive proxies (e.g. Vue) wrap this.connectAttempt in a new object
+    if (attempt && this.connectAttempt?.id === attempt.id) {
       this.connectAttempt = null
     }
   }
