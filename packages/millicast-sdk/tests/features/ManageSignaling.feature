@@ -5,6 +5,11 @@ Feature: As a developer I want to manage signaling to Millicast Server so I can 
     When I want to connect to server
     Then returns the WebSocket connection and fires a connectionSuccess event
 
+  Scenario: Connect sends the SDK version on the WebSocket URL
+    Given I have no previous connection to server
+    When I want to connect to server
+    Then the WebSocket URL contains the SDK name and version
+
   Scenario: Connect again to existing server with no errors
     Given I have a previous connection to server
     When I want to connect to server

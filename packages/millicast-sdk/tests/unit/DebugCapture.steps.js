@@ -139,6 +139,7 @@ defineFeature(feature, test => {
       expect(events.some(event => event.type === 'setRemoteDescriptionOnSuccess')).toBe(true)
       expect(events.some(event => event.type === 'connectionstatechange')).toBe(true)
       expect(events.some(event => event.type === 'ws-created')).toBe(true)
+      expect(events.find(event => event.type === 'ws-created').value).toContain('token=REDACTED')
       const dump = JSON.stringify(capture)
       expect(dump).toContain('rtcConfiguration')
       expect(dump).toContain('REDACTED')
