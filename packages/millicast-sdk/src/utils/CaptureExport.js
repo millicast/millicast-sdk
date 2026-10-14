@@ -107,6 +107,7 @@ export const buildWebrtcDump = (meta, records) => {
       accountId: meta.accountId,
       startTime: meta.startTime,
       endTime,
+      endReason: meta.endReason || 'not-closed',
       storageMode: meta.storageMode,
       events: sessionEvents.map(record => ({ time: iso(record.time), name: record.name, value: record.value }))
     }

@@ -78,3 +78,28 @@ Feature: Viewer debug capture
     Given a capture session for resilient writes
     When a circular event and later records are flushed
     Then the bad record is marked and later writes are stored
+
+  Scenario: Pagehide ends an active capture session
+    Given an active capture session
+    When pagehide fires without persisted storage
+    Then the stored session and export show a pagehide end reason
+
+  Scenario: Persisted pageshow resumes a capture session
+    Given an active capture session
+    When pagehide and persisted pageshow fire
+    Then the session is reopened and later events are stored
+
+  Scenario: Visibility change does not end a capture session
+    Given an active capture session
+    When the document becomes hidden
+    Then the capture session remains open
+
+  Scenario: Stop records the capture end reason
+    Given an active capture session
+    When the capture session is stopped
+    Then the stored session and session list show a stop end reason
+
+  Scenario: Never-closed capture exports its last record time
+    Given a capture session that was never closed
+    When its capture export is built
+    Then the export uses the last record time and not-closed end reason

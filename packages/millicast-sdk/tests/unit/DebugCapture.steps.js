@@ -72,6 +72,32 @@ const cloneIndexedDbWrites = () => {
   }
 }
 
+const trackSessionWrites = store => {
+  const writes = []
+  const putSession = store.putSession.bind(store)
+  jest.spyOn(store, 'putSession').mockImplementation(session => {
+    const write = putSession(session)
+    writes.push(write)
+    return write
+  })
+  return async () => Promise.all(writes.splice(0))
+}
+
+const dispatchPageEvent = (name, persisted) => {
+  const event = new Event(name)
+  Object.defineProperty(event, 'persisted', { value: persisted })
+  globalThis.dispatchEvent(event)
+}
+
+const setVisibilityState = state => {
+  const original = Object.getOwnPropertyDescriptor(document, 'visibilityState')
+  Object.defineProperty(document, 'visibilityState', { configurable: true, value: state })
+  return () => {
+    if (original) Object.defineProperty(document, 'visibilityState', original)
+    else delete document.visibilityState
+  }
+}
+
 defineFeature(feature, test => {
   beforeEach(async () => {
     jest.useRealTimers()
@@ -139,8 +165,19 @@ defineFeature(feature, test => {
       socket.send('{"jwt":"message-secret-123456"}')
       listeners.get('open')()
 
+      const directorResponse = {
+        status: 'success',
+        data: {
+          urls: ['wss://signal.example.test'],
+          jwt: 'director-jwt',
+          iceServers: [
+            { urls: 'turn:turn-one.example.test', username: '1791945353:k9Mwad', credential: 'abcdefghijklmnop123' },
+            { urls: 'turn:turn-two.example.test', username: '1791945353:k9Mwad', credential: 'abcdefghijklmnop123' }
+          ]
+        }
+      }
       jest.spyOn(global, 'fetch').mockResolvedValue({
-        text: async () => JSON.stringify({ status: 'success', data: { urls: ['wss://signal.example.test'], jwt: 'director-jwt' } }),
+        text: async () => JSON.stringify(directorResponse),
         status: 200,
         statusText: 'OK',
         headers: new Headers({ 'content-type': 'application/json', authorization: 'Bearer response-secret-123456' })
@@ -177,7 +214,17 @@ defineFeature(feature, test => {
       expect(dump).not.toContain('response-secret-123456')
       expect(dump).not.toContain('message-secret-123456')
       expect(dump).not.toContain('director-jwt')
-      expect(capture.har.log.entries.some(entry => entry.request.url.includes('director'))).toBe(true)
+      const directorEntry = capture.har.log.entries.find(entry => entry.request.url.includes('director'))
+      expect(directorEntry).toBeDefined()
+      const directorResponse = JSON.parse(directorEntry.response.content.text)
+      expect(directorResponse.data.iceServers.map(server => server.username)).toEqual([
+        'REDACTED...k9Mwad',
+        'REDACTED...k9Mwad'
+      ])
+      expect(directorResponse.data.iceServers.every(server => server.credential.includes('REDACTED'))).toBe(true)
+      const har = JSON.stringify(capture.har)
+      expect(har).not.toContain('1791945353:k9Mwad')
+      expect(har).not.toContain('abcdefghijklmnop123')
       await session.end()
       view.stop()
       unregisterCaptureSession(session.id)
@@ -402,6 +449,7 @@ defineFeature(feature, test => {
       expect(values.url).toContain('token=REDACTED')
       expect(values.message).toContain('REDACTED')
       expect(redactSecret('tiny')).toBe('REDACTED')
+      expect(redactDeep({ username: 'x'.repeat(20) }).username).toBe('x'.repeat(20))
     })
   })
 
@@ -625,6 +673,140 @@ defineFeature(feature, test => {
       } finally {
         await session.end()
       }
+    })
+  })
+
+  test('Pagehide ends an active capture session', ({ given, when, then }) => {
+    let store
+    let session
+    let waitForWrites
+    let storedSession
+    let capture
+
+    given('an active capture session', async () => {
+      store = new CaptureStore('capture-pagehide')
+      session = await createCaptureSession({ store })
+      waitForWrites = trackSessionWrites(store)
+    })
+    when('pagehide fires without persisted storage', async () => {
+      dispatchPageEvent('pagehide', false)
+      await session.flushChain
+      await waitForWrites()
+      storedSession = await store.getSession(session.id)
+      const records = (await store.listChunks(session.id)).flatMap(chunk => chunk.records)
+      capture = buildCapture(storedSession, records)
+    })
+    then('the stored session and export show a pagehide end reason', async () => {
+      try {
+        expect(storedSession.endTime).toEqual(expect.any(Number))
+        expect(storedSession.endReason).toBe('pagehide')
+        expect(capture.webrtcDump.millicast.endReason).toBe('pagehide')
+      } finally {
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Persisted pageshow resumes a capture session', ({ given, when, then }) => {
+    let store
+    let session
+    let waitForWrites
+    let storedSession
+    let records
+
+    given('an active capture session', async () => {
+      store = new CaptureStore('capture-pageshow')
+      session = await createCaptureSession({ store })
+      waitForWrites = trackSessionWrites(store)
+    })
+    when('pagehide and persisted pageshow fire', async () => {
+      dispatchPageEvent('pagehide', false)
+      await session.flushChain
+      await waitForWrites()
+      dispatchPageEvent('pageshow', true)
+      await waitForWrites()
+      session.recordEvent(null, 'after-pageshow', { active: true })
+      await session.flush()
+      storedSession = await store.getSession(session.id)
+      records = (await store.listChunks(session.id)).flatMap(chunk => chunk.records)
+    })
+    then('the session is reopened and later events are stored', async () => {
+      try {
+        expect(storedSession.endTime).toBeNull()
+        expect(storedSession.endReason).toBeNull()
+        expect(records.some(record => record.name === 'after-pageshow')).toBe(true)
+      } finally {
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Visibility change does not end a capture session', ({ given, when, then }) => {
+    let session
+    let restoreVisibility
+
+    given('an active capture session', async () => {
+      session = await createCaptureSession({ store: new CaptureStore('capture-visibility') })
+      restoreVisibility = setVisibilityState('hidden')
+    })
+    when('the document becomes hidden', async () => {
+      document.dispatchEvent(new Event('visibilitychange'))
+      await session.flushChain
+    })
+    then('the capture session remains open', async () => {
+      try {
+        expect(session.endTime).toBeNull()
+        expect(session.meta.endTime).toBeNull()
+      } finally {
+        restoreVisibility()
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Stop records the capture end reason', ({ given, when, then }) => {
+    let store
+    let session
+    let storedSession
+    let sessionInfo
+
+    given('an active capture session', async () => {
+      store = new CaptureStore('capture-stop')
+      session = await createCaptureSession({ store })
+    })
+    when('the capture session is stopped', async () => {
+      await session.end()
+      storedSession = await store.getSession(session.id)
+      sessionInfo = (await DebugCapture.listSessions()).find(item => item.id === session.id)
+    })
+    then('the stored session and session list show a stop end reason', () => {
+      try {
+        expect(storedSession.endReason).toBe('stop')
+        expect(sessionInfo.endReason).toBe('stop')
+      } finally {
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Never-closed capture exports its last record time', ({ given, when, then }) => {
+    let meta
+    let records
+    let millicast
+
+    given('a capture session that was never closed', () => {
+      meta = { id: 'never-closed', startTime: 100, endTime: null, endReason: null, sdkVersion: '1.0.0' }
+      records = [{ time: 200, kind: 'event', connId: null, name: 'test', value: null }]
+    })
+    when('its capture export is built', () => {
+      millicast = buildCapture(meta, records).webrtcDump.millicast
+    })
+    then('the export uses the last record time and not-closed end reason', () => {
+      expect(millicast.endTime).toBe(200)
+      expect(millicast.endReason).toBe('not-closed')
     })
   })
 })

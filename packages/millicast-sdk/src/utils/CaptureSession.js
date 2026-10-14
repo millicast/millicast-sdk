@@ -55,6 +55,7 @@ export default class CaptureSession {
       id: this.id,
       startTime,
       endTime: null,
+      endReason: null,
       sdkVersion: version,
       userAgent: this.userAgent,
       pageUrl: this.pageUrl,
@@ -323,6 +324,7 @@ export default class CaptureSession {
     await this.flush()
     this.endTime = Date.now()
     this.meta.endTime = this.endTime
+    this.meta.endReason = 'stop'
     await this.store.putSession(this.meta)
   }
 
@@ -337,8 +339,21 @@ export default class CaptureSession {
       target?.addEventListener?.(event, listener)
       this.cleanup.push(() => target?.removeEventListener?.(event, listener))
     }
-    add(globalThis, 'pagehide', () => { this.recordEvent(null, 'pagehide', null); this.flush() })
-    add(globalThis, 'pageshow', () => this.recordEvent(null, 'pageshow', null))
+    add(globalThis, 'pagehide', event => {
+      this.recordEvent(null, 'pagehide', { persisted: !!event?.persisted })
+      this.endTime = this.meta.endTime = Date.now()
+      this.meta.endReason = 'pagehide'
+      this.flush().catch(error => logger.debug(error))
+      this.store.putSession(this.meta).catch(error => logger.debug(error))
+    })
+    add(globalThis, 'pageshow', event => {
+      this.recordEvent(null, 'pageshow', { persisted: !!event?.persisted })
+      if (event?.persisted && this.meta.endReason === 'pagehide') {
+        this.endTime = this.meta.endTime = null
+        this.meta.endReason = null
+        this.store.putSession(this.meta).catch(error => logger.debug(error))
+      }
+    })
     add(globalThis, 'online', () => this.recordEvent(null, 'online', null))
     add(globalThis, 'offline', () => this.recordEvent(null, 'offline', null))
     add(globalThis.document, 'visibilitychange', () => {

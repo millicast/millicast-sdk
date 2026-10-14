@@ -7,6 +7,7 @@ import { buildCapture } from './utils/CaptureExport'
  * @property {string} id
  * @property {number} startTime
  * @property {number|null} endTime
+ * @property {string|null} endReason
  * @property {string} streamName
  * @property {string} accountId
  * @property {boolean} active
@@ -73,10 +74,11 @@ const DebugCapture = {
     for (const session of activeSessions.values()) sessions.set(session.id, session.meta)
     return [...sessions.values()]
       .sort((a, b) => b.startTime - a.startTime)
-      .map(({ id, startTime, endTime, streamName, accountId }) => ({
+      .map(({ id, startTime, endTime, endReason, streamName, accountId }) => ({
         id,
         startTime,
         endTime: endTime ?? null,
+        endReason: endReason ?? null,
         streamName,
         accountId,
         active: Boolean(activeSessions.get(id)?.active)

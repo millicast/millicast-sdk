@@ -20,18 +20,18 @@ export const redactSecret = (value, keepLastChars = 6) => {
  * @param {unknown} value
  * @returns {unknown}
  */
-export const redactDeep = (value, keepLastChars = 6) => {
+export const redactDeep = (value, keepLastChars = 6, parentKey = '') => {
   if (Array.isArray(value)) {
-    return value.map(item => redactDeep(item, keepLastChars))
+    return value.map(item => redactDeep(item, keepLastChars, parentKey))
   }
   if (!value || typeof value !== 'object') {
     return value
   }
   return Object.fromEntries(Object.entries(value).map(([key, child]) => [
     key,
-    SECRET_KEY.test(key) && typeof child === 'string'
+    (SECRET_KEY.test(key) || (key === 'username' && parentKey === 'iceServers')) && typeof child === 'string'
       ? redactSecret(child, keepLastChars)
-      : redactDeep(child, keepLastChars)
+      : redactDeep(child, keepLastChars, key)
   ]))
 }
 
