@@ -1,5 +1,12 @@
 # @millicast/sdk
 
+## 0.9.1
+
+### Patch Changes
+
+- 6b78f64: Fix a `View`/`Publish` stuck in `isConnecting()` with no retries after a failed `connect()` when the instance is wrapped in a reactive proxy (e.g. stored in Vue/Vuex state).
+- d65bca4: Send the SDK name and version (`sdk=millicast-sdk-js/<version>`) as a query parameter on the signaling WebSocket URL so the media server can log which Web SDK version a publisher or viewer is running.
+
 ## 0.9.0
 
 ### Minor Changes

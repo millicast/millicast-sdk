@@ -1,5 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import View from '../../src/View'
+import FetchError from '../../src/utils/FetchError'
 import Signaling from '../../src/Signaling'
 import TransformWorker from '../../src/workers/TransformWorker.worker.js'
 import './__mocks__/MockRTCPeerConnection'
@@ -32,6 +33,19 @@ const createDeferred = () => {
     deferred.reject = reject
   })
   return deferred
+}
+
+// Like Vue's reactive(): object properties are returned wrapped in their own proxy
+const reactive = (target, cache = new WeakMap()) => {
+  if (cache.has(target)) return cache.get(target)
+  const proxy = new Proxy(target, {
+    get (obj, key, receiver) {
+      const value = Reflect.get(obj, key, receiver)
+      return value !== null && typeof value === 'object' ? reactive(value, cache) : value
+    }
+  })
+  cache.set(target, proxy)
+  return proxy
 }
 
 const mockTokenGenerator = jest.fn(() => {
@@ -356,6 +370,65 @@ defineFeature(feature, test => {
       await expect(pendingConnect).rejects.toThrow('Viewer currently subscribed')
       expect(worker.terminate).not.toHaveBeenCalled()
       expect(viewer.worker).toBe(worker)
+    })
+  })
+  test('Retry after a token error when the View is wrapped in a reactive proxy', ({ given, when, then }) => {
+    let viewer
+    let tokenGenerator
+    let pendingConnect
+
+    given('an instance of View wrapped in a reactive proxy whose token generator fails', async () => {
+      tokenGenerator = jest.fn()
+        .mockRejectedValueOnce(new FetchError('stream not being published', 400))
+        .mockResolvedValue(mockTokenGenerator())
+      viewer = reactive(new View(undefined, tokenGenerator))
+    })
+
+    when('I subscribe to a stream', async () => {
+      pendingConnect = viewer.connect()
+    })
+
+    then('the connection attempt is released and the viewer reconnects', async () => {
+      await expect(pendingConnect).rejects.toThrow('stream not being published')
+      await flushPromises()
+      expect(tokenGenerator).toHaveBeenCalledTimes(2)
+      expect(viewer.isActive()).toBeTruthy()
+      expect(viewer.isConnecting()).toBeFalsy()
+    })
+  })
+  test('Subscribe with metadata fails when the View is wrapped in a reactive proxy', ({ given, when, then }) => {
+    let viewer
+    let pendingConnect
+
+    given('an instance of View wrapped in a reactive proxy whose subscribe request fails', async () => {
+      jest.spyOn(Signaling.prototype, 'subscribe').mockRejectedValueOnce(new Error('Subscribe failed'))
+      viewer = reactive(new View(undefined, mockTokenGenerator, null, false))
+    })
+
+    when('I subscribe to a stream with metadata', async () => {
+      pendingConnect = viewer.connect({ metadata: true })
+    })
+
+    then('the connection fails and the metadata worker is released', async () => {
+      await expect(pendingConnect).rejects.toThrow('Subscribe failed')
+      expect(TransformWorker.mock.results[0].value.terminate).toHaveBeenCalled()
+      expect(viewer.worker).toBeNull()
+    })
+  })
+  test('Subscribe successfully when the View is wrapped in a reactive proxy', ({ given, when, then }) => {
+    let viewer
+
+    given('an instance of View wrapped in a reactive proxy', async () => {
+      viewer = reactive(new View(undefined, mockTokenGenerator))
+    })
+
+    when('I subscribe to a stream', async () => {
+      await viewer.connect()
+    })
+
+    then('the viewer is active and no longer connecting', async () => {
+      expect(viewer.isActive()).toBeTruthy()
+      expect(viewer.isConnecting()).toBeFalsy()
     })
   })
 })
