@@ -45,3 +45,22 @@ updates:
 
     reviewers:
       - "millicast/reviewers"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Australia/Sydney"
+
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+    reviewers:
+      - "millicast/reviewers"

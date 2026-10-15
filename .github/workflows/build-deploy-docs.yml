@@ -7,7 +7,6 @@ jobs:
   build-deploy-docs:
     name: "build-deploy-docs ${{ github.ref_name }}"
     runs-on: ubuntu-latest
-    container: node:24-slim
     permissions:
       contents: read
       id-token: write
@@ -17,15 +16,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     defaults:
       run:
-        shell: bash
+        shell: 'bash --noprofile --norc -euo pipefail {0}'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+
+      - uses: millicast/pnpm-setup@v3
+        with:
+          node-version-file: .nvmrc
+          cache: true
+          install: false
 
       - name: "pnpm build"
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          corepack enable
           pnpm ci
 
           pnpm --filter @millicast/sdk run build-docs
