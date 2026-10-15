@@ -1,11 +1,4 @@
 version: 2
-registries:
-  optiview-actions:
-    type: git
-    url: https://github.com
-    username: x-access-token
-    password: ${{ secrets.DOLBY_OPTIVIEW_DEPENDABOT_WORKFLOW_ACCESS }}
-
 updates:
   - package-ecosystem: "npm"
     directory: "/"
@@ -55,8 +48,6 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
-    registries:
-      - optiview-actions
     schedule:
       interval: "weekly"
       day: "monday"
