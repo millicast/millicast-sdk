@@ -33,12 +33,16 @@ jobs:
           fetch-depth: 0
           filter: blob:none
 
+      - uses: pnpm/setup@v3
+        with:
+          node-version-file: false
+          install: false
+
       - id: changeset-status
         name: changeset status
         run: |
           apk add --no-cache jq
 
-          corepack enable
           pnpm ci
 
           # changeset hackfix

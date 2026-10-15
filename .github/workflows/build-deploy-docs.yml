@@ -21,11 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: pnpm/setup@v3
+        with:
+          node-version-file: false
+          install: false
+
       - name: "pnpm build"
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          corepack enable
           pnpm ci
 
           pnpm --filter @millicast/sdk run build-docs
