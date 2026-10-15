@@ -7,7 +7,6 @@ jobs:
   build-deploy-docs:
     name: "build-deploy-docs ${{ github.ref_name }}"
     runs-on: ubuntu-latest
-    container: node:24-slim
     permissions:
       contents: read
       id-token: write
@@ -23,7 +22,7 @@ jobs:
 
       - uses: millicast/pnpm-setup@v3
         with:
-          node-version-file: false
+          node-version-file: .nvmrc
           cache: true
           install: false
 
