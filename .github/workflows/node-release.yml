@@ -43,6 +43,7 @@ jobs:
           rc=$?
           set -e
           if [ "${rc}" -ne 0 ]; then
+            # shellcheck disable=SC2016
             echo '::error::No changesets added or other error involving `pnpm exec changeset status`.'
             exit 1
           fi
