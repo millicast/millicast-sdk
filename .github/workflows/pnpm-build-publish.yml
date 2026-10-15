@@ -43,7 +43,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - uses: pnpm/setup@v3
+      - uses: millicast/pnpm-setup@v3
         with:
           node-version-file: false
           cache: true
