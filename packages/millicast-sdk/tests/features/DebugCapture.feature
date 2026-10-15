@@ -149,6 +149,11 @@ Feature: Viewer debug capture
     When client stats are downloaded at fixed UTC times
     Then the downloads identify the current connection with exact UTC names
 
+  Scenario: Download revokes blob URLs after a delay
+    Given a capture session for delayed URL revocation
+    When client stats are downloaded with fake timers
+    Then both blob URLs remain available until the delay expires
+
   Scenario: Get capture defaults to the full session
     Given a capture session with two connection attempts for the API
     When the default and connection captures are built

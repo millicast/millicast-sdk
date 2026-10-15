@@ -160,6 +160,7 @@ const twoAttemptRecords = () => [
 const installDownloadCapture = () => {
   const downloads = []
   const blobs = []
+  const revoked = []
   const originalCreateElement = document.createElement.bind(document)
   const createElement = jest.spyOn(document, 'createElement').mockImplementation(tagName => {
     const element = originalCreateElement(tagName)
@@ -172,10 +173,11 @@ const installDownloadCapture = () => {
     blobs.push(blob)
     return 'blob:debug-capture'
   }
-  URL.revokeObjectURL = () => {}
+  URL.revokeObjectURL = url => revoked.push(url)
   return {
     downloads,
     blobs,
+    revoked,
     restore: () => {
       createElement.mockRestore()
       if (createObjectUrl) URL.createObjectURL = createObjectUrl
@@ -1284,6 +1286,38 @@ defineFeature(feature, test => {
         await new Promise(resolve => setTimeout(resolve, 0))
         downloadCapture.restore()
         jest.spyOn(Date, 'now').mockRestore()
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Download revokes blob URLs after a delay', ({ given, when, then }) => {
+    let session
+    let downloadCapture
+
+    given('a capture session for delayed URL revocation', async () => {
+      session = await createSessionWithRecords('capture-download-revoke', [
+        { time: 1000, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+        { time: 1100, kind: 'event', connId: 'pc-1', name: 'view-result', value: { streamViewId: 'view-1' } }
+      ], { startTime: 1000, streamName: 'stream name', accountId: 'acct/1' })
+    })
+    when('client stats are downloaded with fake timers', async () => {
+      downloadCapture = installDownloadCapture()
+      jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask', 'performance'] })
+      await DebugCapture.download(session.id)
+    })
+    then('both blob URLs remain available until the delay expires', async () => {
+      try {
+        expect(downloadCapture.downloads).toHaveLength(2)
+        expect(downloadCapture.revoked).toEqual([])
+        jest.advanceTimersByTime(59999)
+        expect(downloadCapture.revoked).toEqual([])
+        jest.advanceTimersByTime(1)
+        expect(downloadCapture.revoked).toHaveLength(2)
+      } finally {
+        jest.useRealTimers()
+        downloadCapture.restore()
         await session.end()
         unregisterCaptureSession(session.id)
       }

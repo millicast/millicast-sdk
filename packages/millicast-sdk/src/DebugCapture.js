@@ -2,6 +2,9 @@ import CaptureSession from './utils/CaptureSession'
 import CaptureStore from './utils/CaptureStore'
 import { buildCapture, selectCurrentConnection } from './utils/CaptureExport'
 
+// Android Chrome may read the blob after click returns; revoking too early can drop the download.
+const REVOKE_URL_DELAY_MS = 60000
+
 /**
  * @typedef {Object} DebugCaptureSessionInfo
  * @property {string} id
@@ -199,5 +202,5 @@ const downloadJson = (value, filename) => {
   document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  setTimeout(() => URL.revokeObjectURL(url), REVOKE_URL_DELAY_MS)
 }
