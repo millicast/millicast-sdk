@@ -31,17 +31,22 @@ jobs:
   build-publish:
     name: "build-publish ${{ inputs.ref }}"
     runs-on: ubuntu-latest
-    container: node:24-alpine
     permissions:
       contents: read
       id-token: write
     defaults:
       run:
-        shell: 'ash -euo pipefail {0}'
+        shell: 'bash --noprofile --norc -euo pipefail {0}'
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
+
+      - uses: millicast/pnpm-setup@v3
+        with:
+          node-version-file: .nvmrc
+          cache: true
+          install: false
 
       - name: "pnpm build"
         env:
@@ -49,7 +54,6 @@ jobs:
         run: |
           cp README.md ./packages/millicast-sdk/
 
-          corepack enable
           pnpm ci
 
           pnpm --filter @millicast/sdk run build
@@ -93,7 +97,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     defaults:
       run:
-        shell: bash
+        shell: 'bash --noprofile --norc -euo pipefail {0}'
     steps:
       - uses: actions/download-artifact@v8
         with:

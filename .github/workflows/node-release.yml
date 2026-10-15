@@ -12,7 +12,6 @@ on:
 jobs:
   changeset:
     runs-on: ubuntu-latest
-    container: node:24-alpine
     if: github.ref_name == 'main'
     environment: release
     outputs:
@@ -21,34 +20,30 @@ jobs:
       newHeadSha: ${{ steps.commit-tag-release.outputs.newHeadSha }}
     defaults:
       run:
-        shell: 'ash -euo pipefail {0}'
+        shell: 'bash --noprofile --norc -euo pipefail {0}'
     steps:
-      - name: changeset dependencies
-        run: |
-          # hard dependency of changeset unfortunately
-          apk add --no-cache git
-
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           filter: blob:none
 
+      - uses: millicast/pnpm-setup@v3
+        with:
+          node-version-file: .nvmrc
+          cache: true
+          install: false
+
       - id: changeset-status
         name: changeset status
         run: |
-          apk add --no-cache jq
-
-          corepack enable
           pnpm ci
-
-          # changeset hackfix
-          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
 
           set +e
           pnpm exec changeset status --output changeset_preview.json
           rc=$?
           set -e
           if [ "${rc}" -ne 0 ]; then
+            # shellcheck disable=SC2016
             echo '::error::No changesets added or other error involving `pnpm exec changeset status`.'
             exit 1
           fi

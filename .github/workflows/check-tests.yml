@@ -10,22 +10,23 @@ on:
 
 defaults:
   run:
-    shell: bash
+    shell: 'bash --noprofile --norc -euo pipefail {0}'
 
 jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: millicast/pnpm-setup@v3
         with:
-          node-version: 24
+          node-version-file: .nvmrc
+          cache: true
+          install: false
 
       - name: Install the dependencies 🧱
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          corepack enable
           pnpm ci
 
       - name: Check Linter and Build 📑
@@ -37,15 +38,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: millicast/pnpm-setup@v3
         with:
-          node-version: 24
+          node-version-file: .nvmrc
+          cache: true
+          install: false
 
       - name: Install the dependencies 🧱
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          corepack enable
           pnpm ci
 
       - name: Install Chromium
@@ -61,15 +63,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: millicast/pnpm-setup@v3
         with:
-          node-version: 24
+          node-version-file: .nvmrc
+          cache: true
+          install: false
 
       - name: Install the dependencies 🧱
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          corepack enable
           pnpm ci
 
       - name: Install Chromium
@@ -88,15 +91,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: millicast/pnpm-setup@v3
         with:
-          node-version: 24
+          node-version-file: .nvmrc
+          cache: true
+          install: false
 
       - name: Install the dependencies 🧱
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          corepack enable
           pnpm ci
 
       - name: build docs
