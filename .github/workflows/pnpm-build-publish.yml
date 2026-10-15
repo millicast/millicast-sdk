@@ -97,7 +97,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     defaults:
       run:
-        shell: bash
+        shell: 'bash --noprofile --norc -euo pipefail {0}'
     steps:
       - uses: actions/download-artifact@v8
         with:
