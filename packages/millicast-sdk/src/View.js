@@ -18,6 +18,15 @@ import PeerRepairMonitor, { defaultPeerRepairOptions } from './utils/PeerRepairM
 const logger = Logger.get('View')
 // Firefox reports the raw iceConnectionState, which can be 'completed' instead of 'connected'.
 const isConnectedState = (state) => state === 'connected' || state === 'completed'
+const createTrackEventsByPeer = () => {
+  const eventsByPeer = new Map()
+  return {
+    clear: () => eventsByPeer.clear(),
+    delete: peer => eventsByPeer.delete(peer),
+    get: peer => eventsByPeer.get(peer),
+    set: (peer, events) => eventsByPeer.set(peer, events)
+  }
+}
 logger.setLevel(Logger.DEBUG)
 
 const connectOptions = {
@@ -66,7 +75,7 @@ export default class View extends BaseWebRTC {
     this.repairInProgress = false
     this.repairPeer = null
     this.connectionGeneration = 0
-    this.trackEventsByPeer = new Map()
+    this.trackEventsByPeer = createTrackEventsByPeer()
     if (mediaElement) {
       this.on(webRTCEvents.track, (e) => {
         mediaElement.srcObject = e.streams[0]
