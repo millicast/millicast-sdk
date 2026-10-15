@@ -199,6 +199,15 @@ const readJsonBlob = blob => new Promise((resolve, reject) => {
   reader.readAsText(blob)
 })
 
+const setNavigatorUserAgentData = value => {
+  const original = Object.getOwnPropertyDescriptor(navigator, 'userAgentData')
+  Object.defineProperty(navigator, 'userAgentData', { configurable: true, value })
+  return () => {
+    if (original) Object.defineProperty(navigator, 'userAgentData', original)
+    else delete navigator.userAgentData
+  }
+}
+
 defineFeature(feature, test => {
   beforeEach(async () => {
     jest.useRealTimers()
@@ -1413,6 +1422,58 @@ defineFeature(feature, test => {
         if (originalReceiver) global.RTCRtpReceiver = originalReceiver
         else delete global.RTCRtpReceiver
       }
+    })
+  })
+
+  test('WebRTC dump includes user agent brands', ({ given, when, then }) => {
+    let sourceBrands
+    let dump
+    let restoreUserAgentData
+    const meta = { id: 'ua-data-session', startTime: 1000, userAgent: 'Test browser', sdkVersion: '1.0.0', storageMode: 'memory' }
+
+    given('navigator user agent data with browser brands', () => {
+      sourceBrands = [
+        { brand: 'Chromium', version: '124' },
+        { brand: 'Not(A:Brand)', version: '99' }
+      ]
+      restoreUserAgentData = setNavigatorUserAgentData({ brands: sourceBrands })
+    })
+    when('the WebRTC dump is built', () => {
+      try {
+        dump = buildCapture(meta, []).webrtcDump
+      } finally {
+        restoreUserAgentData?.()
+        restoreUserAgentData = null
+      }
+    })
+    then('it contains plain copies of the brand data', () => {
+      expect(dump.UserAgentData).toEqual(sourceBrands)
+      expect(dump.UserAgentData).not.toBe(sourceBrands)
+      sourceBrands.forEach((brand, index) => {
+        expect(dump.UserAgentData[index]).not.toBe(brand)
+        expect(Object.getPrototypeOf(dump.UserAgentData[index])).toBe(Object.prototype)
+      })
+    })
+  })
+
+  test('WebRTC dump has empty user agent data when unavailable', ({ given, when, then }) => {
+    let dump
+    let restoreUserAgentData
+    const meta = { id: 'ua-data-missing-session', startTime: 1000, userAgent: 'Test browser', sdkVersion: '1.0.0', storageMode: 'memory' }
+
+    given('navigator user agent data is unavailable', () => {
+      restoreUserAgentData = setNavigatorUserAgentData(undefined)
+    })
+    when('the WebRTC dump is built', () => {
+      try {
+        dump = buildCapture(meta, []).webrtcDump
+      } finally {
+        restoreUserAgentData?.()
+        restoreUserAgentData = null
+      }
+    })
+    then('UserAgentData is an empty array', () => {
+      expect(dump.UserAgentData).toEqual([])
     })
   })
 })

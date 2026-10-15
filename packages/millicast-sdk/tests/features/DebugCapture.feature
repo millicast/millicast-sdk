@@ -168,3 +168,13 @@ Feature: Viewer debug capture
     Given a capture session with records before and after download time
     When client stats are downloaded at the cutoff
     Then the download omits later records and retains valid stats
+
+  Scenario: WebRTC dump includes user agent brands
+    Given navigator user agent data with browser brands
+    When the WebRTC dump is built
+    Then it contains plain copies of the brand data
+
+  Scenario: WebRTC dump has empty user agent data when unavailable
+    Given navigator user agent data is unavailable
+    When the WebRTC dump is built
+    Then UserAgentData is an empty array

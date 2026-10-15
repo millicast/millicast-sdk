@@ -46,6 +46,11 @@ export const selectCurrentConnection = (meta, records) => {
   return { records: currentRecords, connectionStartTime, streamViewId: currentStreamViewId }
 }
 
+const userAgentBrands = () => {
+  if (typeof navigator === 'undefined' || !Array.isArray(navigator.userAgentData?.brands)) return []
+  return navigator.userAgentData.brands.map(({ brand, version }) => ({ brand, version }))
+}
+
 export const buildWebrtcDump = (meta, records) => {
   const connections = new Map()
   const sessionEvents = []
@@ -143,6 +148,7 @@ export const buildWebrtcDump = (meta, records) => {
     getUserMedia: [],
     PeerConnections,
     UserAgent: meta.userAgent,
+    UserAgentData: userAgentBrands(),
     millicast: {
       sessionId: meta.id,
       sdkVersion: meta.sdkVersion,
