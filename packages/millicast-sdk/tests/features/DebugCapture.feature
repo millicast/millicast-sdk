@@ -158,3 +158,13 @@ Feature: Viewer debug capture
     Given a signaling instance with debug capture enabled
     When it receives a view result
     Then the view result is recorded for the connection
+
+  Scenario: Failed Director request keeps the configured capture identity
+    Given a viewer with capture identity and a failed Director request
+    When it connects and downloads client stats
+    Then the filenames use the caller identity and null view id
+
+  Scenario: Download excludes records after its cutoff
+    Given a capture session with records before and after download time
+    When client stats are downloaded at the cutoff
+    Then the download omits later records and retains valid stats

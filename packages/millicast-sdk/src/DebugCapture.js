@@ -79,6 +79,9 @@ const getCaptureForScope = async (sessionId, scope, downloadTime) => {
   const records = await getRecords(id, found.captureSession)
   const currentConnection = selectCurrentConnection(found.session, records)
   const selectedRecords = scope === 'connection' ? currentConnection.records : records
+  const exportRecords = downloadTime === null
+    ? selectedRecords
+    : selectedRecords.filter(record => !(record.time > downloadTime))
   const exportMeta = {
     ...found.session,
     sessionStartTime: found.session.startTime,
@@ -87,7 +90,7 @@ const getCaptureForScope = async (sessionId, scope, downloadTime) => {
     streamViewId: currentConnection.streamViewId,
     scope
   }
-  return buildCapture(exportMeta, selectedRecords)
+  return buildCapture(exportMeta, exportRecords)
 }
 
 const DebugCapture = {

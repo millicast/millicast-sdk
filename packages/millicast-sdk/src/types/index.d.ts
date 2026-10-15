@@ -1142,9 +1142,10 @@ declare module "@millicast/sdk" {
         /**
          * - Opt in to storing viewer-side client statistics and connection diagnostics.
          *   When enabled, DebugCapture initializes raw peer statistics collection even when
-         *   `peerConfig.autoInitStats` is false.
+         *   `peerConfig.autoInitStats` is false. The object form can include `accountId` and
+         *   `streamName` as capture identity until the Director responds.
          */
-        debugCapture?: boolean | { enabled: boolean }
+        debugCapture?: boolean | { enabled: boolean, accountId?: string, streamName?: string }
         /**
          * - True to modify SDP for supporting dtx in opus. Otherwise False.
          */

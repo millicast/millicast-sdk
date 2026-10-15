@@ -159,6 +159,7 @@ const twoAttemptRecords = () => [
 
 const installDownloadCapture = () => {
   const downloads = []
+  const blobs = []
   const originalCreateElement = document.createElement.bind(document)
   const createElement = jest.spyOn(document, 'createElement').mockImplementation(tagName => {
     const element = originalCreateElement(tagName)
@@ -167,10 +168,14 @@ const installDownloadCapture = () => {
   })
   const createObjectUrl = URL.createObjectURL
   const revokeObjectUrl = URL.revokeObjectURL
-  URL.createObjectURL = () => 'blob:debug-capture'
+  URL.createObjectURL = blob => {
+    blobs.push(blob)
+    return 'blob:debug-capture'
+  }
   URL.revokeObjectURL = () => {}
   return {
     downloads,
+    blobs,
     restore: () => {
       createElement.mockRestore()
       if (createObjectUrl) URL.createObjectURL = createObjectUrl
@@ -180,6 +185,19 @@ const installDownloadCapture = () => {
     }
   }
 }
+
+const readJsonBlob = blob => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => {
+    try {
+      resolve(JSON.parse(reader.result))
+    } catch (error) {
+      reject(error)
+    }
+  }
+  reader.onerror = () => reject(reader.error)
+  reader.readAsText(blob)
+})
 
 defineFeature(feature, test => {
   beforeEach(async () => {
@@ -1256,6 +1274,78 @@ defineFeature(feature, test => {
       } finally {
         await new Promise(resolve => setTimeout(resolve, 0))
         downloadCapture.restore()
+        jest.spyOn(Date, 'now').mockRestore()
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Failed Director request keeps the configured capture identity', ({ given, when, then }) => {
+    let view
+    let session
+    let downloadCapture
+
+    given('a viewer with capture identity and a failed Director request', () => {
+      view = new View(undefined, () => Promise.reject(new Error('Director request failed')))
+    })
+    when('it connects and downloads client stats', async () => {
+      await expect(view.connect({
+        debugCapture: { enabled: true, accountId: 'acc', streamName: 'a/b' }
+      })).rejects.toThrow('Director request failed')
+      session = view.debugCaptureSession
+      downloadCapture = installDownloadCapture()
+      await DebugCapture.download(session.id)
+    })
+    then('the filenames use the caller identity and null view id', async () => {
+      try {
+        expect(session.meta.accountId).toBe('acc')
+        expect(session.meta.streamName).toBe('a/b')
+        expect(downloadCapture.downloads).toHaveLength(2)
+        expect(downloadCapture.downloads.every(name => name.startsWith('client-stats-acc-a-b-null-start-'))).toBe(true)
+      } finally {
+        await new Promise(resolve => setTimeout(resolve, 0))
+        downloadCapture?.restore()
+        await session?.end()
+        view.stop()
+        if (session) unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Download excludes records after its cutoff', ({ given, when, then }) => {
+    let session
+    let downloadCapture
+    let downloaded
+    let fullCapture
+    const downloadTime = Date.now() + 10000
+
+    given('a capture session with records before and after download time', async () => {
+      session = await createSessionWithRecords('capture-download-cutoff', [
+        { time: downloadTime - 1000, kind: 'event', connId: null, name: 'connect-start', value: null },
+        statsRecord(downloadTime - 500, 'pc-1', 10, true),
+        statsRecord(downloadTime + 100, 'pc-1', 20),
+        { time: downloadTime + 200, kind: 'event', connId: null, name: 'after-download', value: null }
+      ], { startTime: downloadTime - 1000 })
+    })
+    when('client stats are downloaded at the cutoff', async () => {
+      downloadCapture = installDownloadCapture()
+      jest.spyOn(Date, 'now').mockReturnValue(downloadTime)
+      await DebugCapture.download(session.id)
+      downloaded = await readJsonBlob(downloadCapture.blobs[0])
+      fullCapture = await DebugCapture.getCapture(session.id)
+    })
+    then('the download omits later records and retains valid stats', async () => {
+      try {
+        expect(downloaded.millicast.events.some(event => event.name === 'after-download')).toBe(false)
+        const downloadedStats = downloaded.PeerConnections['pc-1'].stats['inbound-1-framesDecoded']
+        expect(JSON.parse(downloadedStats.values)).toEqual([10])
+        expect(fullCapture.webrtcDump.millicast.events.some(event => event.name === 'after-download')).toBe(true)
+        const fullStats = fullCapture.webrtcDump.PeerConnections['pc-1'].stats['inbound-1-framesDecoded']
+        expect(JSON.parse(fullStats.values)).toEqual([10, 20])
+      } finally {
+        await new Promise(resolve => setTimeout(resolve, 0))
+        downloadCapture?.restore()
         jest.spyOn(Date, 'now').mockRestore()
         await session.end()
         unregisterCaptureSession(session.id)

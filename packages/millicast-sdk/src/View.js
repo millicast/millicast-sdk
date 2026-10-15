@@ -113,7 +113,8 @@ export default class View extends BaseWebRTC {
      * @param {Boolean} [options.disableVideo = false]            - Disable the opportunity to receive video stream.
      * @param {Boolean} [options.disableAudio = false]            - Disable the opportunity to receive audio stream.
      * @param {Number} [options.multiplexedAudioTracks]           - Number of audio tracks to recieve VAD multiplexed audio for secondary sources.
-     * @param {Boolean|Object} [options.debugCapture=false]       - Opt in to saving viewer client statistics in IndexedDB. Use `{ enabled: true }` to enable; capture initializes raw stats even when `peerConfig.autoInitStats` is false.
+     * @param {Boolean|Object} [options.debugCapture=false]       - Opt in to saving viewer client statistics in IndexedDB. Use `{ enabled: true }` to enable; capture initializes raw stats even when
+     *   `peerConfig.autoInitStats` is false. Provide `accountId` and `streamName` to preserve caller identity if the Director request fails.
      * @param {String} [options.pinnedSourceId]                   - Id of the main source that will be received by the default MediaStream.
      * @param {Array<String>} [options.excludedSourceIds]         - Do not receive media from the these source ids.
      * @param {Array<String>} [options.events]                    - Override which events will be delivered by the server (any of "active" | "inactive" | "vad" | "layers" | "viewercount" | "updated").*
@@ -163,7 +164,11 @@ export default class View extends BaseWebRTC {
       const captureEnabled = this.options.debugCapture === true || this.options.debugCapture?.enabled === true
       if (captureEnabled && !this.debugCaptureSession) {
         try {
-          this.debugCaptureSession = await createCaptureSession({ view: this, streamName: this.streamName })
+          this.debugCaptureSession = await createCaptureSession({
+            view: this,
+            streamName: this.options.debugCapture?.streamName || this.streamName,
+            accountId: this.options.debugCapture?.accountId
+          })
         } catch (error) {
           logger.warn('Unable to start debug capture', error)
           this.debugCaptureSession = null
