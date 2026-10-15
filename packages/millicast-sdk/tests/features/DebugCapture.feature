@@ -128,3 +128,33 @@ Feature: Viewer debug capture
     Given chunks were stored out of sequence order
     When the capture export is built
     Then exported events follow chunk sequence order
+
+  Scenario: Current connection export excludes stale connection records
+    Given a capture session with two connection attempts
+    When the current connection export is built
+    Then only the current connection data and stats are exported
+
+  Scenario: Single attempt connection export preserves the full session
+    Given a capture session with one connection attempt
+    When session and connection exports are built
+    Then both exports contain the same records
+
+  Scenario: Failed current attempt has no stream view id
+    Given a capture session whose latest attempt failed
+    When the failed connection export is built and downloaded
+    Then the export has no stream view id and the filenames use null
+
+  Scenario: Download uses UTC current connection filenames
+    Given a capture session with two connection attempts for download
+    When client stats are downloaded at fixed UTC times
+    Then the downloads identify the current connection with exact UTC names
+
+  Scenario: Get capture defaults to the full session
+    Given a capture session with two connection attempts for the API
+    When the default and connection captures are built
+    Then the default capture contains both connections
+
+  Scenario: Signaling capture records the view result
+    Given a signaling instance with debug capture enabled
+    When it receives a view result
+    Then the view result is recorded for the connection

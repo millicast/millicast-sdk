@@ -1265,8 +1265,15 @@ declare module "@millicast/sdk" {
      */
     export type DebugCaptureResult = {
         sessionId: string
+        connectionStartTime: number
+        streamViewId: string | null
+        downloadTime: number | null
         webrtcDump: Record<string, unknown>
         har: Record<string, unknown>
+    }
+
+    export type DebugCaptureScopeOptions = {
+        scope?: 'session' | 'connection'
     }
 
     /**
@@ -1280,11 +1287,11 @@ declare module "@millicast/sdk" {
         /**
          * Builds WebRTC dump and HAR JSON for the newest session or the supplied session id.
          */
-        static getCapture(sessionId?: string): Promise<DebugCaptureResult | null>
+        static getCapture(sessionId?: string, options?: DebugCaptureScopeOptions): Promise<DebugCaptureResult | null>
         /**
          * Downloads WebRTC dump and HAR JSON for the newest session or the supplied session id.
          */
-        static download(sessionId?: string): Promise<void>
+        static download(sessionId?: string, options?: DebugCaptureScopeOptions): Promise<void>
         /**
          * Deletes a session and its captured records.
          */

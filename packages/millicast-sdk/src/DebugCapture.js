@@ -1,6 +1,6 @@
 import CaptureSession from './utils/CaptureSession'
 import CaptureStore from './utils/CaptureStore'
-import { buildCapture } from './utils/CaptureExport'
+import { buildCapture, selectCurrentConnection } from './utils/CaptureExport'
 
 /**
  * @typedef {Object} DebugCaptureSessionInfo
@@ -64,6 +64,32 @@ const getStoredSession = async sessionId => {
   return { session, captureSession }
 }
 
+const getCaptureForScope = async (sessionId, scope, downloadTime) => {
+  let id = sessionId
+  if (!id) {
+    const [newest] = await DebugCapture.listSessions()
+    if (!newest) return null
+    id = newest.id
+  }
+  const captureStore = activeSessions.get(id)?.store || store
+  await captureStore.open()
+  await captureStore.mergeTails()
+  const found = await getStoredSession(id)
+  if (!found) return null
+  const records = await getRecords(id, found.captureSession)
+  const currentConnection = selectCurrentConnection(found.session, records)
+  const selectedRecords = scope === 'connection' ? currentConnection.records : records
+  const exportMeta = {
+    ...found.session,
+    sessionStartTime: found.session.startTime,
+    connectionStartTime: scope === 'connection' ? currentConnection.connectionStartTime : found.session.startTime,
+    downloadTime,
+    streamViewId: currentConnection.streamViewId,
+    scope
+  }
+  return buildCapture(exportMeta, selectedRecords)
+}
+
 const DebugCapture = {
   /**
    * Lists stored capture sessions, newest first.
@@ -92,20 +118,8 @@ const DebugCapture = {
    * @param {string} [sessionId]
    * @returns {Promise<{sessionId:string,webrtcDump:Object,har:Object}|null>}
    */
-  async getCapture (sessionId) {
-    let id = sessionId
-    if (!id) {
-      const [newest] = await this.listSessions()
-      if (!newest) return null
-      id = newest.id
-    }
-    const captureStore = activeSessions.get(id)?.store || store
-    await captureStore.open()
-    await captureStore.mergeTails()
-    const found = await getStoredSession(id)
-    if (!found) return null
-    const records = await getRecords(id, found.captureSession)
-    return buildCapture(found.session, records)
+  async getCapture (sessionId, { scope = 'session' } = {}) {
+    return getCaptureForScope(sessionId, scope, null)
   },
 
   /**
@@ -113,16 +127,32 @@ const DebugCapture = {
    * @param {string} [sessionId]
    * @returns {Promise<void>}
    */
-  async download (sessionId) {
-    const capture = await this.getCapture(sessionId)
+  async download (sessionId, { scope = 'connection' } = {}) {
+    const downloadTime = Date.now()
+    const capture = await getCaptureForScope(sessionId, scope, downloadTime)
     if (!capture) return
     const meta = (await getStoredSession(capture.sessionId)).session
-    const safeName = String(meta.streamName || 'stream').replace(/[^a-z0-9_-]+/gi, '-')
-    const date = new Date(meta.startTime)
-    const pad = value => String(value).padStart(2, '0')
-    const timestamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
-    downloadJson(capture.webrtcDump, `client-stats-${safeName}-${timestamp}-webrtc-dump.json`)
-    downloadJson(capture.har, `client-stats-${safeName}-${timestamp}-network.har`)
+    const safePart = value => {
+      if (value === null || value === undefined || value === '') return 'null'
+      return String(value).replace(/[^a-z0-9_-]+/gi, '-') || 'null'
+    }
+    const formatUtcTimestamp = time => {
+      const date = new Date(time)
+      const pad = value => String(value).padStart(2, '0')
+      return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}-${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`
+    }
+    const filenamePrefix = [
+      'client-stats',
+      safePart(meta.accountId),
+      safePart(meta.streamName),
+      safePart(capture.streamViewId),
+      'start',
+      formatUtcTimestamp(capture.connectionStartTime),
+      'download',
+      formatUtcTimestamp(capture.downloadTime)
+    ].join('-')
+    downloadJson(capture.webrtcDump, `${filenamePrefix}-webrtc-dump.json`)
+    downloadJson(capture.har, `${filenamePrefix}-network.har`)
   },
 
   /**

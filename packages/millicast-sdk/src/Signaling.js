@@ -264,6 +264,15 @@ export default class Signaling extends EventEmitter {
       this.serverId = result.subscriberId
       this.clusterId = result.clusterId
       this.streamViewId = result.streamViewId
+      try {
+        this.debugCapture?.session?.recordEvent(this.debugCapture.connId, 'view-result', {
+          streamViewId: result.streamViewId ?? null,
+          subscriberId: result.subscriberId ?? null,
+          clusterId: result.clusterId ?? null
+        })
+      } catch (error) {
+        logger.debug(error)
+      }
 
       // Save for diagnostics
       Diagnostics.initStreamName(this.streamName)

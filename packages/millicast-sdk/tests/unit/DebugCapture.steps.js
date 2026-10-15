@@ -98,6 +98,89 @@ const setVisibilityState = state => {
   }
 }
 
+const httpRecord = (time, id) => ({
+  time,
+  kind: 'http',
+  entry: {
+    startedDateTime: new Date(time).toISOString(),
+    time: 10,
+    request: { method: 'POST', url: `https://director.test/subscribe/${id}`, headers: {}, postData: '{}' },
+    response: { status: 200, headers: {}, body: JSON.stringify({ id }) }
+  }
+})
+
+const statsRecord = (time, connId, framesDecoded, full = false) => ({
+  time,
+  kind: 'stats',
+  connId,
+  ...(full
+    ? {
+        full: true,
+        reports: {
+          'inbound-1': {
+            id: 'inbound-1',
+            type: 'inbound-rtp',
+            timestamp: time,
+            framesDecoded,
+            kind: 'video'
+          }
+        }
+      }
+    : { changed: { 'inbound-1': { timestamp: time, framesDecoded } }, added: {}, removed: [] })
+})
+
+const createSessionWithRecords = async (name, records, options = {}) => {
+  const session = await createCaptureSession({
+    store: new CaptureStore(name),
+    streamName: options.streamName || 'multiview',
+    accountId: options.accountId || 'k9Mwad'
+  })
+  session.meta.startTime = options.startTime || 1000
+  session.buffer = records
+  return session
+}
+
+const twoAttemptRecords = () => [
+  { time: 1000, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+  httpRecord(1100, 'director-1'),
+  { time: 1200, kind: 'event', connId: 'pc-1', name: 'ws-created', value: { url: 'wss://signal.test/one' } },
+  { time: 1250, kind: 'ws', connId: 'pc-1', dir: 'send', data: '{"cmd":"view-1"}' },
+  statsRecord(1300, 'pc-1', 10, true),
+  { time: 1400, kind: 'event', connId: 'pc-1', name: 'view-result', value: { streamViewId: 'A' } },
+  { time: 2000, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+  httpRecord(2100, 'director-2'),
+  { time: 2200, kind: 'event', connId: 'pc-2', name: 'ws-created', value: { url: 'wss://signal.test/two' } },
+  statsRecord(2300, 'pc-2', 30, true),
+  statsRecord(2400, 'pc-2', 31),
+  { time: 2500, kind: 'event', connId: 'pc-2', name: 'view-result', value: { streamViewId: 'B' } },
+  { time: 2600, kind: 'event', connId: 'pc-1', name: 'ws-close', value: null },
+  { time: 2700, kind: 'event', connId: null, name: 'visibilitychange', value: { hidden: true } }
+]
+
+const installDownloadCapture = () => {
+  const downloads = []
+  const originalCreateElement = document.createElement.bind(document)
+  const createElement = jest.spyOn(document, 'createElement').mockImplementation(tagName => {
+    const element = originalCreateElement(tagName)
+    if (tagName === 'a') element.click = () => downloads.push(element.download)
+    return element
+  })
+  const createObjectUrl = URL.createObjectURL
+  const revokeObjectUrl = URL.revokeObjectURL
+  URL.createObjectURL = () => 'blob:debug-capture'
+  URL.revokeObjectURL = () => {}
+  return {
+    downloads,
+    restore: () => {
+      createElement.mockRestore()
+      if (createObjectUrl) URL.createObjectURL = createObjectUrl
+      else delete URL.createObjectURL
+      if (revokeObjectUrl) URL.revokeObjectURL = revokeObjectUrl
+      else delete URL.revokeObjectURL
+    }
+  }
+}
+
 defineFeature(feature, test => {
   beforeEach(async () => {
     jest.useRealTimers()
@@ -1041,6 +1124,204 @@ defineFeature(feature, test => {
       } finally {
         await session.end()
         unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Current connection export excludes stale connection records', ({ given, when, then }) => {
+    let session
+    let capture
+
+    given('a capture session with two connection attempts', async () => {
+      session = await createSessionWithRecords('capture-current-connection', twoAttemptRecords())
+    })
+    when('the current connection export is built', async () => {
+      capture = await DebugCapture.getCapture(session.id, { scope: 'connection' })
+    })
+    then('only the current connection data and stats are exported', async () => {
+      try {
+        expect(Object.keys(capture.webrtcDump.PeerConnections)).toEqual(['pc-2'])
+        const httpUrls = capture.har.log.entries
+          .filter(entry => entry.request.method === 'POST')
+          .map(entry => entry.request.url)
+        expect(httpUrls).toEqual(['https://director.test/subscribe/director-2'])
+        const websocketUrls = capture.har.log.entries
+          .filter(entry => entry._resourceType === 'websocket')
+          .map(entry => entry.request.url)
+        expect(websocketUrls).toEqual(['wss://signal.test/two'])
+        expect(capture.webrtcDump.millicast.events.some(event => event.name === 'visibilitychange')).toBe(true)
+        expect(capture.webrtcDump.millicast.events.some(event => event.name === 'ws-close')).toBe(false)
+        expect(capture.streamViewId).toBe('B')
+        expect(capture.connectionStartTime).toBe(2000)
+        const stats = capture.webrtcDump.PeerConnections['pc-2'].stats['inbound-1-framesDecoded']
+        expect(JSON.parse(stats.values)).toEqual([30, 31])
+      } finally {
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Single attempt connection export preserves the full session', ({ given, when, then }) => {
+    let session
+    let fullCapture
+    let connectionCapture
+
+    given('a capture session with one connection attempt', async () => {
+      session = await createSessionWithRecords('capture-single-connection', [
+        { time: 1000, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+        httpRecord(1100, 'director'),
+        { time: 1200, kind: 'event', connId: 'pc-1', name: 'view-result', value: { streamViewId: 'A' } },
+        { time: 1300, kind: 'event', connId: null, name: 'visibilitychange', value: { hidden: true } }
+      ])
+    })
+    when('session and connection exports are built', async () => {
+      fullCapture = await DebugCapture.getCapture(session.id)
+      connectionCapture = await DebugCapture.getCapture(session.id, { scope: 'connection' })
+    })
+    then('both exports contain the same records', async () => {
+      try {
+        expect(connectionCapture.webrtcDump.PeerConnections).toEqual(fullCapture.webrtcDump.PeerConnections)
+        expect(connectionCapture.webrtcDump.millicast.events).toEqual(fullCapture.webrtcDump.millicast.events)
+        expect(connectionCapture.har.log.entries).toEqual(fullCapture.har.log.entries)
+        expect(connectionCapture.connectionStartTime).toBe(fullCapture.connectionStartTime)
+      } finally {
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Failed current attempt has no stream view id', ({ given, when, then }) => {
+    let session
+    let capture
+    let downloadCapture
+
+    given('a capture session whose latest attempt failed', async () => {
+      session = await createSessionWithRecords('capture-failed-current', [
+        { time: 1000, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+        { time: 1100, kind: 'event', connId: 'pc-1', name: 'view-result', value: { streamViewId: 'A' } },
+        { time: 2000, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+        { time: 2100, kind: 'event', connId: null, name: 'subscriber-data-error', value: { name: 'Error', message: 'failed' } }
+      ])
+    })
+    when('the failed connection export is built and downloaded', async () => {
+      capture = await DebugCapture.getCapture(session.id, { scope: 'connection' })
+      downloadCapture = installDownloadCapture()
+      jest.spyOn(Date, 'now').mockReturnValue(2200)
+      await DebugCapture.download(session.id)
+    })
+    then('the export has no stream view id and the filenames use null', async () => {
+      try {
+        expect(capture.streamViewId).toBeNull()
+        expect(downloadCapture.downloads).toHaveLength(2)
+        expect(downloadCapture.downloads[0]).toContain('-null-start-')
+        expect(downloadCapture.downloads[1]).toContain('-null-start-')
+      } finally {
+        await new Promise(resolve => setTimeout(resolve, 0))
+        downloadCapture.restore()
+        jest.spyOn(Date, 'now').mockRestore()
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Download uses UTC current connection filenames', ({ given, when, then }) => {
+    let session
+    let downloadCapture
+    const sessionStartTime = Date.UTC(2026, 9, 15, 0, 17, 45)
+    const connectionStartTime = sessionStartTime + 5000
+    const downloadTime = Date.UTC(2026, 9, 15, 0, 20, 10)
+
+    given('a capture session with two connection attempts for download', async () => {
+      session = await createSessionWithRecords('capture-download-names', [
+        { time: sessionStartTime, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+        { time: sessionStartTime + 1000, kind: 'event', connId: 'pc-1', name: 'view-result', value: { streamViewId: 'old' } },
+        { time: connectionStartTime, kind: 'event', connId: null, name: 'connect-start', value: { migrate: false } },
+        { time: connectionStartTime + 1000, kind: 'event', connId: 'pc-2', name: 'view-result', value: { streamViewId: 'view/2' } }
+      ], { startTime: sessionStartTime, streamName: 'stream name', accountId: 'acct/1' })
+    })
+    when('client stats are downloaded at fixed UTC times', async () => {
+      downloadCapture = installDownloadCapture()
+      jest.spyOn(Date, 'now').mockReturnValue(downloadTime)
+      await DebugCapture.download(session.id)
+    })
+    then('the downloads identify the current connection with exact UTC names', async () => {
+      try {
+        expect(downloadCapture.downloads).toEqual([
+          'client-stats-acct-1-stream-name-view-2-start-20261015-001750Z-download-20261015-002010Z-webrtc-dump.json',
+          'client-stats-acct-1-stream-name-view-2-start-20261015-001750Z-download-20261015-002010Z-network.har'
+        ])
+      } finally {
+        await new Promise(resolve => setTimeout(resolve, 0))
+        downloadCapture.restore()
+        jest.spyOn(Date, 'now').mockRestore()
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Get capture defaults to the full session', ({ given, when, then }) => {
+    let session
+    let fullCapture
+    let connectionCapture
+
+    given('a capture session with two connection attempts for the API', async () => {
+      session = await createSessionWithRecords('capture-api-scope', twoAttemptRecords())
+    })
+    when('the default and connection captures are built', async () => {
+      fullCapture = await DebugCapture.getCapture(session.id)
+      connectionCapture = await DebugCapture.getCapture(session.id, { scope: 'connection' })
+    })
+    then('the default capture contains both connections', async () => {
+      try {
+        expect(Object.keys(fullCapture.webrtcDump.PeerConnections)).toEqual(['pc-1', 'pc-2'])
+        expect(fullCapture.webrtcDump.millicast.scope).toBe('session')
+        expect(connectionCapture.webrtcDump.millicast.scope).toBe('connection')
+      } finally {
+        await session.end()
+        unregisterCaptureSession(session.id)
+      }
+    })
+  })
+
+  test('Signaling capture records the view result', ({ given, when, then }) => {
+    let signaling
+    let recordEvent
+    let originalReceiver
+
+    given('a signaling instance with debug capture enabled', () => {
+      const ActualSignaling = jest.requireActual('../../src/Signaling').default
+      signaling = new ActualSignaling({ streamName: 'stream', url: 'wss://signal.test' })
+      signaling.connect = jest.fn().mockResolvedValue()
+      signaling.transactionManager = {
+        cmd: jest.fn().mockResolvedValue({
+          sdp: 'v=0',
+          streamViewId: 'view-1',
+          subscriberId: 'subscriber-1',
+          clusterId: 'cluster-1'
+        })
+      }
+      recordEvent = jest.fn()
+      signaling.debugCapture = { session: { recordEvent }, connId: 'pc-1' }
+      originalReceiver = global.RTCRtpReceiver
+      global.RTCRtpReceiver = { getCapabilities: () => ({ codecs: [] }) }
+    })
+    when('it receives a view result', async () => {
+      await signaling.subscribe('v=0', {})
+    })
+    then('the view result is recorded for the connection', () => {
+      try {
+        expect(recordEvent).toHaveBeenCalledWith('pc-1', 'view-result', {
+          streamViewId: 'view-1',
+          subscriberId: 'subscriber-1',
+          clusterId: 'cluster-1'
+        })
+      } finally {
+        if (originalReceiver) global.RTCRtpReceiver = originalReceiver
+        else delete global.RTCRtpReceiver
       }
     })
   })

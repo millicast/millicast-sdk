@@ -2,6 +2,49 @@ import { redactUrl } from './Redact'
 
 const jsonValue = value => typeof value === 'string' ? value : JSON.stringify(value ?? null)
 const iso = time => new Date(time).toISOString()
+const connectionBoundaryNames = new Set(['connect-start', 'migrate-start'])
+
+const exportMetadata = meta => ({
+  sessionStartTime: meta.sessionStartTime ?? meta.startTime,
+  connectionStartTime: meta.connectionStartTime ?? meta.startTime,
+  downloadTime: meta.downloadTime ?? null,
+  streamViewId: meta.streamViewId ?? null,
+  scope: meta.scope || 'session'
+})
+
+export const selectCurrentConnection = (meta, records) => {
+  const boundaries = records.filter(record =>
+    record.kind === 'event' &&
+    record.connId === null &&
+    connectionBoundaryNames.has(record.name)
+  )
+  const lastBoundary = boundaries.at(-1)
+  const streamViewId = [...records]
+    .reverse()
+    .find(record => record.kind === 'event' && record.name === 'view-result')
+    ?.value?.streamViewId ?? null
+
+  if (boundaries.length <= 1) {
+    return { records, connectionStartTime: meta.startTime, streamViewId }
+  }
+
+  const connectionStartTime = lastBoundary.time
+  const previousConnectionIds = new Set(
+    records
+      .filter(record => record.time < connectionStartTime && record.connId != null)
+      .map(record => record.connId)
+  )
+  const currentRecords = records.filter(record =>
+    record.time >= connectionStartTime &&
+    (record.connId == null || !previousConnectionIds.has(record.connId))
+  )
+  const currentStreamViewId = [...currentRecords]
+    .reverse()
+    .find(record => record.kind === 'event' && record.name === 'view-result')
+    ?.value?.streamViewId ?? null
+
+  return { records: currentRecords, connectionStartTime, streamViewId: currentStreamViewId }
+}
 
 export const buildWebrtcDump = (meta, records) => {
   const connections = new Map()
@@ -109,6 +152,7 @@ export const buildWebrtcDump = (meta, records) => {
       endTime,
       endReason: meta.endReason || 'not-closed',
       storageMode: meta.storageMode,
+      ...exportMetadata(meta),
       events: sessionEvents.map(record => ({ time: iso(record.time), name: record.name, value: record.value }))
     }
   }
@@ -206,6 +250,7 @@ export const buildHar = (meta, records) => {
     log: {
       version: '1.2',
       creator: { name: '@millicast/sdk DebugCapture', version: meta.sdkVersion },
+      comment: JSON.stringify(exportMetadata(meta)),
       browser: { name: meta.userAgent },
       pages: [{ startedDateTime: iso(meta.startTime), id: 'page_1', title: pageUrl, pageTimings: {} }],
       entries
@@ -215,6 +260,9 @@ export const buildHar = (meta, records) => {
 
 export const buildCapture = (meta, records) => ({
   sessionId: meta.id,
+  connectionStartTime: meta.connectionStartTime ?? meta.startTime,
+  streamViewId: meta.streamViewId ?? null,
+  downloadTime: meta.downloadTime ?? null,
   webrtcDump: buildWebrtcDump(meta, records),
   har: buildHar(meta, records)
 })
