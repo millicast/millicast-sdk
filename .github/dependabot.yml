@@ -63,10 +63,10 @@ updates:
       include: "scope"
 
     groups:
-      # Each reusable workflow/action is a separate dependency; bump them together in one PR
       optiview-actions:
         patterns:
           - "Dolby-OptiView/actions/*"
+          - "Dolby-OptiView/actions"
 
     reviewers:
       - "millicast/reviewers"
