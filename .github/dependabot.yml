@@ -62,5 +62,11 @@ updates:
       prefix: "deps"
       include: "scope"
 
+    groups:
+      optiview-actions:
+        patterns:
+          - "Dolby-OptiView/actions/*"
+          - "Dolby-OptiView/actions"
+
     reviewers:
       - "millicast/reviewers"
