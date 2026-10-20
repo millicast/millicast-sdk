@@ -1140,6 +1140,13 @@ declare module "@millicast/sdk" {
 
     export type ViewConnectOptions = {
         /**
+         * - Opt in to storing viewer-side client statistics and connection diagnostics.
+         *   When enabled, DebugCapture initializes raw peer statistics collection even when
+         *   `peerConfig.autoInitStats` is false. The object form can include `accountId` and
+         *   `streamName` as capture identity until the Director responds.
+         */
+        debugCapture?: boolean | { enabled: boolean, accountId?: string, streamName?: string }
+        /**
          * - True to modify SDP for supporting dtx in opus. Otherwise False.
          */
         dtx?: boolean
@@ -1240,6 +1247,60 @@ declare module "@millicast/sdk" {
          * The strategy for initial playback behavior.
          */
         abrConfiguration?: AbrConfigurationOptions
+    }
+
+    /**
+     * Information describing one stored viewer debug capture session.
+     */
+    export type DebugCaptureSessionInfo = {
+        id: string
+        startTime: number
+        endTime: number | null
+        streamName: string
+        accountId: string
+        active: boolean
+    }
+
+    /**
+     * WebRTC-internals-style and HAR exports for a capture session.
+     */
+    export type DebugCaptureResult = {
+        sessionId: string
+        connectionStartTime: number
+        streamViewId: string | null
+        downloadTime: number | null
+        webrtcDump: Record<string, unknown>
+        har: Record<string, unknown>
+    }
+
+    export type DebugCaptureScopeOptions = {
+        scope?: 'session' | 'connection'
+    }
+
+    /**
+     * Builds and manages opt-in viewer-side client statistics captures.
+     */
+    export class DebugCapture {
+        /**
+         * Lists stored capture sessions, newest first.
+         */
+        static listSessions(): Promise<Array<DebugCaptureSessionInfo>>
+        /**
+         * Builds WebRTC dump and HAR JSON for the newest session or the supplied session id.
+         */
+        static getCapture(sessionId?: string, options?: DebugCaptureScopeOptions): Promise<DebugCaptureResult | null>
+        /**
+         * Downloads WebRTC dump and HAR JSON for the newest session or the supplied session id.
+         */
+        static download(sessionId?: string, options?: DebugCaptureScopeOptions): Promise<void>
+        /**
+         * Deletes a session and its captured records.
+         */
+        static deleteSession(id: string): Promise<void>
+        /**
+         * Deletes all captured sessions and records.
+         */
+        static clear(): Promise<void>
     }
 
     export type PublishConnectOptions = {
