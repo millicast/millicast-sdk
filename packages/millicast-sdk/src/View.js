@@ -65,12 +65,21 @@ export default class View extends BaseWebRTC {
   }
 
   /**
+     * Layer selection and resolution constraints for a video track.
+     *
+     * Supplying only `maxWidth` and/or `maxHeight` does not pin the track to a layer: server side ABR
+     * stays active and selects the highest layer whose resolution fits within the given limits.
+     * Supplying `encodingId`, `spatialLayerId` or `temporalLayerId` fixes the track to that layer and
+     * bypasses ABR.
+     *
      * @typedef {Object} LayerInfo
      * @property {String} encodingId         - rid value of the simulcast encoding of the track  (default: automatic selection)
      * @property {Number} spatialLayerId     - The spatial layer id to send to the outgoing stream (default: max layer available)
      * @property {Number} temporalLayerId    - The temporaral layer id to send to the outgoing stream (default: max layer available)
      * @property {Number} maxSpatialLayerId  - Max spatial layer id (default: unlimited)
      * @property {Number} maxTemporalLayerId - Max temporal layer id (default: unlimited)
+     * @property {Number} [maxWidth]         - Max width, in pixels, of the layer to receive. ABR stays active and selects the highest layer not wider than this value (default: unlimited, 0 resets the restriction)
+     * @property {Number} [maxHeight]        - Max height, in pixels, of the layer to receive. ABR stays active and selects the highest layer not taller than this value (default: unlimited, 0 resets the restriction)
      */
 
   /**
