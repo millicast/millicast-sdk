@@ -52,6 +52,49 @@ defineFeature(feature, test => {
     })
   })
 
+  // contentHint lives on the track, not the sender, so replacing a track drops it unless it is
+  // carried across. Without this the maintainResolution publish option would stop applying the
+  // first time an application switched camera.
+  test('Replace track keeps the content hint of the track it replaces', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const track = { id: 3, kind: 'video', label: 'Video2' }
+
+    given('I have a peer connected with a hinted video track', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1', contentHint: 'detail' }]
+      const mediaStream = new MediaStream(tracks)
+      await peerConnection.getRTCLocalSDP({ mediaStream, disableVideo: false, disableAudio: false })
+    })
+
+    when('I want to change current video track', () => {
+      peerConnection.replaceTrack(track)
+    })
+
+    then('the new track keeps the content hint', async () => {
+      expect(track.contentHint).toEqual('detail')
+    })
+  })
+
+  test('Replace track does not override an explicit content hint', ({ given, when, then }) => {
+    const peerConnection = new PeerConnection()
+    const track = { id: 3, kind: 'video', label: 'Video2', contentHint: 'motion' }
+
+    given('I have a peer connected with a hinted video track', async () => {
+      await peerConnection.createRTCPeer()
+      const tracks = [{ id: 1, kind: 'audio', label: 'Audio1' }, { id: 2, kind: 'video', label: 'Video1', contentHint: 'detail' }]
+      const mediaStream = new MediaStream(tracks)
+      await peerConnection.getRTCLocalSDP({ mediaStream, disableVideo: false, disableAudio: false })
+    })
+
+    when('I want to change current video track for one that is hinted for motion', () => {
+      peerConnection.replaceTrack(track)
+    })
+
+    then('the new track keeps its own content hint', async () => {
+      expect(track.contentHint).toEqual('motion')
+    })
+  })
+
   test('Replace unexisting track to peer', ({ given, when, then }) => {
     const peerConnection = new PeerConnection()
     const track = { id: 2, kind: 'audio', label: 'Audio2' }
