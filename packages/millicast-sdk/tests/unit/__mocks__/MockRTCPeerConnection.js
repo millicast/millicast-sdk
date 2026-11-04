@@ -69,6 +69,7 @@ export default class MockRTCPeerConnection {
     this.currentLocalDescription = null
     this.connectionState = 'new'
     this.senders = []
+    this.eventListeners = new Map()
   }
 
   getConfiguration () {
@@ -122,6 +123,21 @@ export default class MockRTCPeerConnection {
     } else if (eventName === 'onconnectionstatechange') {
       this.onconnectionstatechange(data)
     }
+  }
+
+  addEventListener (eventName, listener) {
+    const listeners = this.eventListeners.get(eventName) || new Set()
+    listeners.add(listener)
+    this.eventListeners.set(eventName, listeners)
+  }
+
+  removeEventListener (eventName, listener) {
+    this.eventListeners.get(eventName)?.delete(listener)
+  }
+
+  dispatchEvent (event) {
+    for (const listener of this.eventListeners.get(event.type) || []) listener.call(this, event)
+    return true
   }
 
   addTransceiver (track, options) {
