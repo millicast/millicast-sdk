@@ -220,13 +220,22 @@ const updateLayers = (layers) => {
     const activeLayers = layers[videoMediaId]?.active || []
     const selectedLayer = layersDropDown.value
 
-    layersDropDown.innerHTML =
-        `<option hidden selected>Select a source</option>` +
-        activeLayers
-            .map((layer) => {
-                return `<option value="${layer.id}" ${layer.id === selectedLayer ? "selected" : ""}>${layer.width}p</option>`
-            })
-            .join("")
+    renderLayerOptions(activeLayers, selectedLayer)
+}
+
+const renderLayerOptions = (layers, selectedLayer) => {
+    const placeholder = document.createElement("option")
+    placeholder.hidden = true
+    placeholder.selected = true
+    placeholder.text = "Select a source"
+    const options = layers.map((layer) => {
+        const option = document.createElement("option")
+        option.value = layer.id
+        option.text = `${layer.width}p`
+        option.selected = selectedLayer !== undefined && layer.id === selectedLayer
+        return option
+    })
+    layersDropDown.replaceChildren(placeholder, ...options)
 }
 
 const createVideoElement = () => {
@@ -283,7 +292,7 @@ const addSourceOption = (sourceId) => {
 }
 
 const removeSourceOption = (sourceId) => {
-    const sourceToRemove = sourcesDropDown.querySelector(`option[value="${sourceId}"]`)
+    const sourceToRemove = sourcesDropDown.querySelector(`option[value="${CSS.escape(sourceId)}"]`)
     if (sourceToRemove) {
         sourcesDropDown.removeChild(sourceToRemove)
     }
@@ -295,13 +304,7 @@ sourcesDropDown.addEventListener("change", () => {
 
     const sourceActiveLayers = transceiverToLayersMap[videoMediaId]?.active || []
 
-    layersDropDown.innerHTML =
-        `<option hidden selected>Select a source</option>` +
-        sourceActiveLayers
-            .map((layer) => {
-                return `<option value="${layer.id}">${layer.width}p</option>`
-            })
-            .join("")
+    renderLayerOptions(sourceActiveLayers)
 })
 
 layersDropDown.addEventListener("change", async (event) => {

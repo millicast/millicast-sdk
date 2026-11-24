@@ -1,6 +1,6 @@
 {
   "name": "@millicast/sdk",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "SDK for building a realtime broadcaster using the Millicast platform.",
   "keywords": [
     "sdk",
@@ -85,7 +85,7 @@
     "jsdoc-export-default-interop": "^0.3.1",
     "mock-socket": "^9.0.3",
     "puppeteer": "^25.9.0",
-    "rollup": "4.64.0",
+    "rollup": "4.65.0",
     "rollup-plugin-dts": "^6.5.1",
     "serve": "^14.2.6",
     "typescript": "^7.0.2",
