@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto'
 import { loadFeature, defineFeature } from 'jest-cucumber'
+import { strFromU8, unzipSync } from 'fflate'
 import { runInThisContext } from 'node:vm'
 import DebugCapture, { createCaptureSession, setCurrentHttpCapture, unregisterCaptureSession } from '../../src/DebugCapture'
 import CaptureSession, { TAIL_MAX_BYTES } from '../../src/utils/CaptureSession'
@@ -188,18 +189,21 @@ const installDownloadCapture = () => {
   }
 }
 
-const readJsonBlob = blob => new Promise((resolve, reject) => {
+const readZipBlob = blob => new Promise((resolve, reject) => {
   const reader = new FileReader()
   reader.onload = () => {
     try {
-      resolve(JSON.parse(reader.result))
+      const files = unzipSync(new Uint8Array(reader.result))
+      resolve(Object.fromEntries(Object.entries(files).map(([name, data]) => [name, JSON.parse(strFromU8(data))])))
     } catch (error) {
       reject(error)
     }
   }
   reader.onerror = () => reject(reader.error)
-  reader.readAsText(blob)
+  reader.readAsArrayBuffer(blob)
 })
+
+const zipEntry = (files, suffix) => Object.entries(files).find(([name]) => name.endsWith(suffix))?.[1]
 
 const setNavigatorUserAgentData = value => {
   const original = Object.getOwnPropertyDescriptor(navigator, 'userAgentData')
@@ -1225,6 +1229,7 @@ defineFeature(feature, test => {
     let session
     let capture
     let downloadCapture
+    let files
 
     given('a capture session whose latest attempt failed', async () => {
       session = await createSessionWithRecords('capture-failed-current', [
@@ -1239,13 +1244,19 @@ defineFeature(feature, test => {
       downloadCapture = installDownloadCapture()
       jest.spyOn(Date, 'now').mockReturnValue(2200)
       await DebugCapture.download(session.id)
+      files = await readZipBlob(downloadCapture.blobs[0])
     })
-    then('the export has no stream view id and the filenames use null', async () => {
+    then('the export has no stream view id and the zip keeps the dump and HAR', async () => {
       try {
         expect(capture.streamViewId).toBeNull()
-        expect(downloadCapture.downloads).toHaveLength(2)
+        expect(downloadCapture.downloads).toHaveLength(1)
         expect(downloadCapture.downloads[0]).toContain('-null-start-')
-        expect(downloadCapture.downloads[1]).toContain('-null-start-')
+        expect(downloadCapture.downloads[0]).toMatch(/\.zip$/)
+        expect(downloadCapture.blobs[0].type).toBe('application/zip')
+        expect(Object.keys(files)).toHaveLength(2)
+        const dump = zipEntry(files, '-webrtc-dump.json')
+        expect(dump.millicast.events.some(event => event.name === 'subscriber-data-error')).toBe(true)
+        expect(zipEntry(files, '-network.har').log).toBeDefined()
       } finally {
         await new Promise(resolve => setTimeout(resolve, 0))
         downloadCapture.restore()
@@ -1256,9 +1267,10 @@ defineFeature(feature, test => {
     })
   })
 
-  test('Download uses UTC current connection filenames', ({ given, when, then }) => {
+  test('Download zips the full session with UTC filenames', ({ given, when, then }) => {
     let session
     let downloadCapture
+    let files
     const sessionStartTime = Date.UTC(2026, 9, 15, 0, 17, 45)
     const connectionStartTime = sessionStartTime + 5000
     const downloadTime = Date.UTC(2026, 9, 15, 0, 20, 10)
@@ -1275,13 +1287,16 @@ defineFeature(feature, test => {
       downloadCapture = installDownloadCapture()
       jest.spyOn(Date, 'now').mockReturnValue(downloadTime)
       await DebugCapture.download(session.id)
+      files = await readZipBlob(downloadCapture.blobs[0])
     })
-    then('the downloads identify the current connection with exact UTC names', async () => {
+    then('the zip has exact UTC names and contains every connection attempt', async () => {
       try {
-        expect(downloadCapture.downloads).toEqual([
-          'client-stats-acct-1-stream-name-view-2-start-20261015-001750Z-download-20261015-002010Z-webrtc-dump.json',
-          'client-stats-acct-1-stream-name-view-2-start-20261015-001750Z-download-20261015-002010Z-network.har'
-        ])
+        const prefix = 'client-stats-acct-1-stream-name-view-2-start-20261015-001745Z-download-20261015-002010Z'
+        expect(downloadCapture.downloads).toEqual([`${prefix}.zip`])
+        expect(Object.keys(files).sort()).toEqual([`${prefix}-network.har`, `${prefix}-webrtc-dump.json`])
+        const dump = files[`${prefix}-webrtc-dump.json`]
+        expect(dump.millicast.scope).toBe('session')
+        expect(dump.millicast.events.filter(event => event.name === 'connect-start')).toHaveLength(2)
       } finally {
         await new Promise(resolve => setTimeout(resolve, 0))
         downloadCapture.restore()
@@ -1307,14 +1322,14 @@ defineFeature(feature, test => {
       jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask', 'performance'] })
       await DebugCapture.download(session.id)
     })
-    then('both blob URLs remain available until the delay expires', async () => {
+    then('the zip blob URL remains available until the delay expires', async () => {
       try {
-        expect(downloadCapture.downloads).toHaveLength(2)
+        expect(downloadCapture.downloads).toHaveLength(1)
         expect(downloadCapture.revoked).toEqual([])
         jest.advanceTimersByTime(59999)
         expect(downloadCapture.revoked).toEqual([])
         jest.advanceTimersByTime(1)
-        expect(downloadCapture.revoked).toHaveLength(2)
+        expect(downloadCapture.revoked).toHaveLength(1)
       } finally {
         jest.useRealTimers()
         downloadCapture.restore()
@@ -1344,8 +1359,8 @@ defineFeature(feature, test => {
       try {
         expect(session.meta.accountId).toBe('acc')
         expect(session.meta.streamName).toBe('a/b')
-        expect(downloadCapture.downloads).toHaveLength(2)
-        expect(downloadCapture.downloads.every(name => name.startsWith('client-stats-acc-a-b-null-start-'))).toBe(true)
+        expect(downloadCapture.downloads).toHaveLength(1)
+        expect(downloadCapture.downloads[0]).toMatch(/^client-stats-acc-a-b-null-start-.*\.zip$/)
       } finally {
         await new Promise(resolve => setTimeout(resolve, 0))
         downloadCapture?.restore()
@@ -1375,7 +1390,7 @@ defineFeature(feature, test => {
       downloadCapture = installDownloadCapture()
       jest.spyOn(Date, 'now').mockReturnValue(downloadTime)
       await DebugCapture.download(session.id)
-      downloaded = await readJsonBlob(downloadCapture.blobs[0])
+      downloaded = zipEntry(await readZipBlob(downloadCapture.blobs[0]), '-webrtc-dump.json')
       fullCapture = await DebugCapture.getCapture(session.id)
     })
     then('the download omits later records and retains valid stats', async () => {

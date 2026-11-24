@@ -57,6 +57,7 @@
     "Base64": "^1.1.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
+    "fflate": "0.8.2",
     "js-logger": "^1.6.1",
     "jsdoc-i18n-plugin": "^0.0.3",
     "jwt-decode": "^4.0.0",
