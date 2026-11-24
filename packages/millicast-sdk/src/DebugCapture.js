@@ -1,9 +1,12 @@
+import { strToU8, zipSync } from 'fflate'
 import CaptureSession from './utils/CaptureSession'
 import CaptureStore from './utils/CaptureStore'
 import { buildCapture, selectCurrentConnection } from './utils/CaptureExport'
 
 // Android Chrome may read the blob after click returns; revoking too early can drop the download.
 const REVOKE_URL_DELAY_MS = 60000
+// Zip entry times must be 1980 or later; a wrong device clock must not block the download.
+const ZIP_MIN_MTIME_MS = Date.UTC(1980, 0, 2)
 
 /**
  * @typedef {Object} DebugCaptureSessionInfo
@@ -129,11 +132,11 @@ const DebugCapture = {
   },
 
   /**
-   * Downloads WebRTC-internals-style JSON and HAR JSON files for a session.
+   * Downloads one zip file with the WebRTC-internals-style JSON and HAR JSON for a session.
    * @param {string} [sessionId]
    * @returns {Promise<void>}
    */
-  async download (sessionId, { scope = 'connection' } = {}) {
+  async download (sessionId, { scope = 'session' } = {}) {
     const downloadTime = Date.now()
     const capture = await getCaptureForScope(sessionId, scope, downloadTime)
     if (!capture) return
@@ -157,8 +160,11 @@ const DebugCapture = {
       'download',
       formatUtcTimestamp(capture.downloadTime)
     ].join('-')
-    downloadJson(capture.webrtcDump, `${filenamePrefix}-webrtc-dump.json`)
-    downloadJson(capture.har, `${filenamePrefix}-network.har`)
+    const zip = zipSync({
+      [`${filenamePrefix}-webrtc-dump.json`]: strToU8(JSON.stringify(capture.webrtcDump)),
+      [`${filenamePrefix}-network.har`]: strToU8(JSON.stringify(capture.har))
+    }, { mtime: Math.max(capture.downloadTime, ZIP_MIN_MTIME_MS) })
+    downloadBlob(new Blob([zip], { type: 'application/zip' }), `${filenamePrefix}.zip`)
   },
 
   /**
@@ -192,8 +198,7 @@ const DebugCapture = {
 
 export default DebugCapture
 
-const downloadJson = (value, filename) => {
-  const blob = new Blob([JSON.stringify(value)], { type: 'application/json' })
+const downloadBlob = (blob, filename) => {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url

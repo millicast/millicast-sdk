@@ -1290,7 +1290,7 @@ declare module "@millicast/sdk" {
          */
         static getCapture(sessionId?: string, options?: DebugCaptureScopeOptions): Promise<DebugCaptureResult | null>
         /**
-         * Downloads WebRTC dump and HAR JSON for the newest session or the supplied session id.
+         * Downloads one zip file with WebRTC dump and HAR JSON for the newest session or the supplied session id.
          */
         static download(sessionId?: string, options?: DebugCaptureScopeOptions): Promise<void>
         /**

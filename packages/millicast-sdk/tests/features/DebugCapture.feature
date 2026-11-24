@@ -142,17 +142,17 @@ Feature: Viewer debug capture
   Scenario: Failed current attempt has no stream view id
     Given a capture session whose latest attempt failed
     When the failed connection export is built and downloaded
-    Then the export has no stream view id and the filenames use null
+    Then the export has no stream view id and the zip keeps the dump and HAR
 
-  Scenario: Download uses UTC current connection filenames
+  Scenario: Download zips the full session with UTC filenames
     Given a capture session with two connection attempts for download
     When client stats are downloaded at fixed UTC times
-    Then the downloads identify the current connection with exact UTC names
+    Then the zip has exact UTC names and contains every connection attempt
 
   Scenario: Download revokes blob URLs after a delay
     Given a capture session for delayed URL revocation
     When client stats are downloaded with fake timers
-    Then both blob URLs remain available until the delay expires
+    Then the zip blob URL remains available until the delay expires
 
   Scenario: Get capture defaults to the full session
     Given a capture session with two connection attempts for the API
