@@ -1,0 +1,206 @@
+import CaptureSession from './utils/CaptureSession'
+import CaptureStore from './utils/CaptureStore'
+import { buildCapture, selectCurrentConnection } from './utils/CaptureExport'
+
+// Android Chrome may read the blob after click returns; revoking too early can drop the download.
+const REVOKE_URL_DELAY_MS = 60000
+
+/**
+ * @typedef {Object} DebugCaptureSessionInfo
+ * @property {string} id
+ * @property {number} startTime
+ * @property {number|null} endTime
+ * @property {string|null} endReason
+ * @property {string} streamName
+ * @property {string} accountId
+ * @property {boolean} active
+ */
+
+const activeSessions = new Map()
+const store = new CaptureStore()
+let currentHttpCapture = null
+
+/**
+ * Sets the synchronous capture context used by Director.getSubscriber.
+ * @param {CaptureSession|null} session
+ * @returns {void}
+ */
+export const setCurrentHttpCapture = session => { currentHttpCapture = session }
+
+/**
+ * Gets the synchronous capture context used by Director.getSubscriber.
+ * @returns {CaptureSession|null}
+ */
+export const getCurrentHttpCapture = () => currentHttpCapture
+
+/**
+ * Starts and registers a viewer-side debug capture session.
+ * @param {Object} options
+ * @returns {Promise<CaptureSession>}
+ */
+export const createCaptureSession = async options => {
+  const session = new CaptureSession({ ...options, store: options.store || store })
+  await session.start()
+  activeSessions.set(session.id, session)
+  return session
+}
+
+/**
+ * Removes a completed session from the active-session registry.
+ * @param {string} id
+ * @returns {void}
+ */
+export const unregisterCaptureSession = id => {
+  if (!activeSessions.get(id)?.buffer.length) activeSessions.delete(id)
+}
+
+const getRecords = async (sessionId, captureSession) => {
+  if (captureSession?.active) await captureSession.flush()
+  const chunks = await (captureSession?.store || store).listChunks(sessionId)
+  return [...chunks.sort((a, b) => a.seq - b.seq).flatMap(chunk => chunk.records || []), ...(captureSession?.buffer || [])]
+}
+
+const getStoredSession = async sessionId => {
+  const captureSession = activeSessions.get(sessionId)
+  const session = captureSession ? captureSession.meta : await (captureSession?.store || store).getSession(sessionId)
+  if (!session) return null
+  return { session, captureSession }
+}
+
+const getCaptureForScope = async (sessionId, scope, downloadTime) => {
+  let id = sessionId
+  if (!id) {
+    const [newest] = await DebugCapture.listSessions()
+    if (!newest) return null
+    id = newest.id
+  }
+  const captureStore = activeSessions.get(id)?.store || store
+  await captureStore.open()
+  await captureStore.mergeTails()
+  const found = await getStoredSession(id)
+  if (!found) return null
+  const records = await getRecords(id, found.captureSession)
+  const currentConnection = selectCurrentConnection(found.session, records)
+  const selectedRecords = scope === 'connection' ? currentConnection.records : records
+  const exportRecords = downloadTime === null
+    ? selectedRecords
+    : selectedRecords.filter(record => !(record.time > downloadTime))
+  const exportMeta = {
+    ...found.session,
+    sessionStartTime: found.session.startTime,
+    connectionStartTime: scope === 'connection' ? currentConnection.connectionStartTime : found.session.startTime,
+    downloadTime,
+    streamViewId: currentConnection.streamViewId,
+    scope
+  }
+  return buildCapture(exportMeta, exportRecords)
+}
+
+const DebugCapture = {
+  /**
+   * Lists stored capture sessions, newest first.
+   * @returns {Promise<Array<DebugCaptureSessionInfo>>}
+   */
+  async listSessions () {
+    await store.open()
+    await store.mergeTails()
+    const sessions = new Map((await store.listSessions()).map(session => [session.id, session]))
+    for (const session of activeSessions.values()) sessions.set(session.id, session.meta)
+    return [...sessions.values()]
+      .sort((a, b) => b.startTime - a.startTime)
+      .map(({ id, startTime, endTime, endReason, streamName, accountId }) => ({
+        id,
+        startTime,
+        endTime: endTime ?? null,
+        endReason: endReason ?? null,
+        streamName,
+        accountId,
+        active: Boolean(activeSessions.get(id)?.active)
+      }))
+  },
+
+  /**
+   * Builds WebRTC-internals-style and HAR exports for a stored session.
+   * @param {string} [sessionId]
+   * @returns {Promise<{sessionId:string,webrtcDump:Object,har:Object}|null>}
+   */
+  async getCapture (sessionId, { scope = 'session' } = {}) {
+    return getCaptureForScope(sessionId, scope, null)
+  },
+
+  /**
+   * Downloads WebRTC-internals-style JSON and HAR JSON files for a session.
+   * @param {string} [sessionId]
+   * @returns {Promise<void>}
+   */
+  async download (sessionId, { scope = 'connection' } = {}) {
+    const downloadTime = Date.now()
+    const capture = await getCaptureForScope(sessionId, scope, downloadTime)
+    if (!capture) return
+    const meta = (await getStoredSession(capture.sessionId)).session
+    const safePart = value => {
+      if (value === null || value === undefined || value === '') return 'null'
+      return String(value).replace(/[^a-z0-9_-]+/gi, '-') || 'null'
+    }
+    const formatUtcTimestamp = time => {
+      const date = new Date(time)
+      const pad = value => String(value).padStart(2, '0')
+      return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}-${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`
+    }
+    const filenamePrefix = [
+      'client-stats',
+      safePart(meta.accountId),
+      safePart(meta.streamName),
+      safePart(capture.streamViewId),
+      'start',
+      formatUtcTimestamp(capture.connectionStartTime),
+      'download',
+      formatUtcTimestamp(capture.downloadTime)
+    ].join('-')
+    downloadJson(capture.webrtcDump, `${filenamePrefix}-webrtc-dump.json`)
+    downloadJson(capture.har, `${filenamePrefix}-network.har`)
+  },
+
+  /**
+   * Deletes a capture session and its stored chunks.
+   * @param {string} id
+   * @returns {Promise<void>}
+   */
+  async deleteSession (id) {
+    const active = activeSessions.get(id)
+    if (active) {
+      await active.end()
+      activeSessions.delete(id)
+    }
+    await (active?.store || store).deleteSession(id)
+  },
+
+  /**
+   * Deletes all stored capture sessions.
+   * @returns {Promise<void>}
+   */
+  async clear () {
+    const stores = new Set([store])
+    for (const session of activeSessions.values()) {
+      stores.add(session.store)
+      await session.end()
+    }
+    activeSessions.clear()
+    await Promise.all([...stores].map(sessionStore => sessionStore.clear()))
+  }
+}
+
+export default DebugCapture
+
+const downloadJson = (value, filename) => {
+  const blob = new Blob([JSON.stringify(value)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  setTimeout(() => URL.revokeObjectURL(url), REVOKE_URL_DELAY_MS)
+}
