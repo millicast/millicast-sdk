@@ -1,6 +1,7 @@
 import Logger from './Logger'
 import Diagnostics from './utils/Diagnostics'
 import FetchError from './utils/FetchError'
+import { getCurrentHttpCapture } from './DebugCapture'
 
 const logger = Logger.get('Director')
 const streamTypes = {
@@ -185,6 +186,7 @@ const Director = {
    */
 
   getSubscriber: async (options, streamAccountId = null, subscriberToken = null) => {
+    const captureSession = getCurrentHttpCapture()
     const optionsParsed = getSubscriberOptions(options, streamAccountId, subscriberToken)
     Diagnostics.initAccountId(optionsParsed.streamAccountId)
     logger.info(`Getting subscriber connection data for stream name: ${optionsParsed.streamName} and account id: ${optionsParsed.streamAccountId}`)
@@ -195,9 +197,38 @@ const Director = {
       headers = { ...headers, Authorization: `Bearer ${optionsParsed.subscriberToken}` }
     }
     const url = `${getDirectorPath('subscribe')}`
+    const startedAt = Date.now()
+    const startedDateTime = new Date(startedAt).toISOString()
+    let responseCaptured = false
     try {
       const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) })
-      let data = await response.json()
+      let responseText
+      let data
+      if (captureSession) {
+        responseText = typeof response.text === 'function' ? await response.text() : JSON.stringify(await response.json())
+        captureSession.recordHttp({
+          startedDateTime,
+          time: Date.now() - startedAt,
+          request: {
+            method: 'POST',
+            url,
+            headers,
+            postData: JSON.stringify(payload),
+            mimeType: headers['Content-Type']
+          },
+          response: {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers?.entries?.() || []),
+            body: responseText,
+            mimeType: response.headers?.get?.('content-type') || ''
+          }
+        })
+        responseCaptured = true
+        data = JSON.parse(responseText)
+      } else {
+        data = await response.json()
+      }
       if (data.status === 'fail') {
         const error = new FetchError(data.data.message, response.status)
         throw error
@@ -207,6 +238,14 @@ const Director = {
       if (optionsParsed.subscriberToken) data.data.subscriberToken = optionsParsed.subscriberToken
       return data.data
     } catch (e) {
+      if (captureSession && !responseCaptured) {
+        captureSession.recordHttp({
+          startedDateTime,
+          time: Date.now() - startedAt,
+          request: { method: 'POST', url, headers, postData: JSON.stringify(payload), mimeType: headers['Content-Type'] },
+          error: e?.message || String(e)
+        })
+      }
       logger.error('Error while getting subscriber connection path. ', e)
       throw e
     }
